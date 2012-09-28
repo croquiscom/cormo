@@ -2,10 +2,12 @@
   "name": "croquis-orm",
   "version": "1.0.0",
   "dependencies": {
-    "coffee-script": ""
   },
   "devDependencies": {
+    "coffee-script": "",
     "mocha": "",
+    "mongodb": "",
+    "mysql": ">=2.0.0-alpha3",
     "should": ""
   }
 }
