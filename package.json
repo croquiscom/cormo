@@ -1,0 +1,11 @@
+{
+  "name": "croquis-orm",
+  "version": "1.0.0",
+  "dependencies": {
+    "coffee-script": ""
+  },
+  "devDependencies": {
+    "mocha": "",
+    "should": ""
+  }
+}
