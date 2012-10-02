@@ -1,10 +1,17 @@
 class DBModel
-  constructor: ->
+  constructor: (data) ->
+    data = data or {}
+    schema = @constructor._schema
+    Object.keys(schema).forEach (field) =>
+      if data[field]
+        @[field] = data[field]
 
   save: (callback) ->
     if @id
       # TODO update
     else
+      if Object.keys(@).length is 0
+        return callback new Error 'empty data'
       ctor = @constructor
       ctor._connection._adapter.create ctor._name, @, (error, id) =>
         if not error
