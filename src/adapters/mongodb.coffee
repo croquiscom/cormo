@@ -4,6 +4,8 @@ catch error
   console.log 'Install mongodb module to use this adapter'
   process.exit 1
 
+ObjectID = mongodb.ObjectID
+
 AdapterBase = require './base'
 
 ###
@@ -47,12 +49,22 @@ class MongoDBAdapter extends AdapterBase
   create: (model, data, callback) ->
     @_collection(model).insert data, safe: true, (error, result) ->
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      id = result?[0]?._id
+      id = result?[0]?._id.toString()
       if id
         delete data._id
         callback null, id
       else
         callback new Error 'unexpected result'
+
+  _convertToModelInstance: (model, data) ->
+    data.id = data._id.toString()
+    delete data._id
+    return data
+
+  findById: (model, id, callback) ->
+    @_collection(model).findOne _id: new ObjectID(id), (error, result) =>
+      return callback MongoDBAdapter.wrapError 'unknown error', error if error or not result
+      callback null, @_convertToModelInstance model, result
 
 ###
 # Initialize MongoDB adapter

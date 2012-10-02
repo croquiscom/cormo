@@ -90,6 +90,19 @@ class MySQLAdapter extends AdapterBase
       else
         callback new Error 'unexpected result'
 
+  _convertToModelInstance: (model, data) ->
+    data.id = Number(data.id)
+    return data
+
+  findById: (model, id, callback) ->
+    table = MySQLAdapter.toCollectionName model
+    @_query "SELECT * FROM #{table} WHERE id=? LIMIT 1", id, (error, result) =>
+      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      if result?.length is 1
+        callback null, @_convertToModelInstance model, result[0]
+      else
+        callback new Error 'unknown error'
+
 ###
 # Initialize MySQL adapter
 # @param {Connection} connection

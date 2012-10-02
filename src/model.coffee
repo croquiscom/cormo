@@ -18,6 +18,9 @@ class DBModel
           @id = id
         callback error
 
+  @findById: (id, callback) ->
+    @_connection._adapter.findById @_name, id, callback
+
   @drop: (callback) ->
     @_connection._adapter.drop @_name, callback
 
