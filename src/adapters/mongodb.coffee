@@ -47,8 +47,10 @@ class MongoDBAdapter extends AdapterBase
   create: (model, data, callback) ->
     @_collection(model).insert data, safe: true, (error, result) ->
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      if result?[0]?._id
-        callback null, result[0]._id
+      id = result?[0]?._id
+      if id
+        delete data._id
+        callback null, id
       else
         callback new Error 'unexpected result'
 
