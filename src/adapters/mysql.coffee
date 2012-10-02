@@ -1,13 +1,82 @@
 try
   mysql = require 'mysql'
-catch error
+catch e
   console.log 'Install mysql module to use this adapter'
   process.exit 1
 
-_wrapError = (msg, cause) ->
-  error = new Error msg
-  error.cause = cause
-  return error
+AdapterBase = require './base'
+
+async = require 'async'
+
+_typeToSQL = (property) ->
+  switch property.type
+    when String then 'VARCHAR(255)'
+    when Number then 'INT(11)'
+
+_propertyToSQL = (property) ->
+  type = _typeToSQL property
+  if type
+    return type + ' NULL'
+
+###
+# Adapter for MySQL
+# @param {mysql.Connection} client
+###
+class MySQLAdapter extends AdapterBase
+  constructor: (connection, client) ->
+    @_connection = connection
+    @_client = client
+
+  _query: (sql, data, callback) ->
+    @_client.query sql, data, callback
+
+  _createTable: (model, callback) ->
+    table = MySQLAdapter.toCollectionName model
+    sql = []
+    sql.push 'id BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY'
+    for field, property of @_connection.models[model]._schema
+      field_sql = _propertyToSQL property
+      if field_sql
+        sql.push field + ' ' + field_sql
+    sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
+    @_query sql, (error, result) ->
+      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      callback null
+
+  _alterTable: (model, fields, callback) ->
+    # TODO
+    callback null
+
+  _applySchema: (model, callback) ->
+    table = MySQLAdapter.toCollectionName model
+    @_query "SHOW FIELDS FROM #{table}", (error, fields) =>
+      if error?.code is 'ER_NO_SUCH_TABLE'
+        @_createTable model, callback
+      else
+        @_alterTable model, fields, callback
+
+  applySchemas: (callback) ->
+    async.forEach Object.keys(@_connection.models), (model, callback) =>
+        @_applySchema model, callback
+      , (error) ->
+        callback error
+
+  ###
+  # Create a record
+  # @param {String} model
+  # @param {Object} data
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {String} callback.id
+  ###
+  create: (model, data, callback) ->
+    table = MySQLAdapter.toCollectionName model
+    @_query "INSERT INTO #{table} SET ?", data, (error, result) ->
+      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      if result?.insertId
+        callback null, result.insertId
+      else
+        callback new Error 'unexpected result'
 
 ###
 # Initialize MySQL adapter
@@ -30,17 +99,19 @@ module.exports = (connection, settings, callback) ->
     user: settings.user
     password: settings.password
   client.connect (error) ->
-    return callback _wrapError 'failed to connect', error if error
+    return callback MySQLAdapter.wrapError 'failed to connect', error if error
+
+    adapter = new MySQLAdapter connection, client
 
     # select database
     client.query "USE `#{settings.database}`", (error) ->
-      return callback null if not error
+      return callback null, adapter if not error
 
       # create one if not exist
       if error.code is 'ER_BAD_DB_ERROR'
         client.query "CREATE DATABASE `#{settings.database}`", (error) ->
-          return callback _wrapError 'unknown error', error if error
-          return callback null
+          return callback MySQLAdapter.wrapError 'unknown error', error if error
+          return callback null, adapter
       else
         msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{settings.database}'" else 'unknown error'
-        callback _wrapError msg, error
+        callback MySQLAdapter.wrapError msg, error

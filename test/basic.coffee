@@ -7,7 +7,7 @@ _dbs =
     database: 'test'
 
 Object.keys(_dbs).forEach (db) ->
-  describe db, ->
+  describe 'basic-' + db, ->
     connection = undefined
     connect = (callback) ->
       connection = new DBConnection db, _dbs[db]
@@ -18,7 +18,16 @@ Object.keys(_dbs).forEach (db) ->
         connection.on 'error', (error) ->
           callback error
 
-    before (done) ->
-      connect done
+    models = {}
 
-    require('./cases/basic')()
+    before (done) ->
+      connect (error) ->
+        return done error if error
+
+        models.User = connection.model 'User',
+          name: String
+          age: Number
+
+        connection.applySchemas done
+
+    require('./cases/basic')(models)
