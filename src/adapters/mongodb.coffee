@@ -21,7 +21,21 @@ class MongoDBAdapter extends AdapterBase
       return @_collections[name] = new mongodb.Collection @_client, name
     else
       return @_collections[name]
-    
+
+  drop: (model, callback) ->
+    name = MongoDBAdapter.toCollectionName model
+    delete @_collections[name]
+    @_client.dropCollection name, (error) ->
+      # ignore not found error
+      if error and error.errmsg isnt 'ns not found'
+        return callback MongoDBAdapter.wrapError 'unknown error', error
+      callback null
+
+  deleteAll: (model, callback) ->
+    @_collection(model).remove {}, (error) ->
+      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      callback null
+
   ###
   # Create a record
   # @param {String} model

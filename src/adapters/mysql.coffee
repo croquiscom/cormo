@@ -61,6 +61,18 @@ class MySQLAdapter extends AdapterBase
       , (error) ->
         callback error
 
+  drop: (model, callback) ->
+    table = MySQLAdapter.toCollectionName model
+    @_query "DROP TABLE IF EXISTS #{table}", (error) ->
+      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      callback null
+
+  deleteAll: (model, callback) ->
+    table = MySQLAdapter.toCollectionName model
+    @_query "DELETE FROM #{table}", (error) ->
+      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      callback null
+
   ###
   # Create a record
   # @param {String} model

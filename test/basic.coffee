@@ -28,6 +28,18 @@ Object.keys(_dbs).forEach (db) ->
           name: String
           age: Number
 
-        connection.applySchemas done
+        models.User.drop (error) ->
+          return done error if error
+          connection.applySchemas (error) ->
+            return done error if error
+            done null
+
+    beforeEach (done) ->
+      models.User.deleteAll (error) ->
+        return done error if error
+        done null
+
+    after (done) ->
+      models.User.drop done
 
     require('./cases/basic')(models)

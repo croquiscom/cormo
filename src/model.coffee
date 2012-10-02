@@ -11,4 +11,10 @@ class DBModel
           @id = id
         callback error
 
+  @drop: (callback) ->
+    @_connection._adapter.drop @_name, callback
+
+  @deleteAll: (callback) ->
+    @_connection._adapter.deleteAll @_name, callback
+
 module.exports = DBModel
