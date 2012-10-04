@@ -1,7 +1,13 @@
+inflector = require './inflector'
+
 ###
 # Base class for models
 ###
 class DBModel
+  @String: String
+  @Number: Number
+  @ForeignKey: ->
+  
   ###
   # Creates a record
   # @param {Object} data
@@ -39,6 +45,43 @@ class DBModel
     @_connection._adapter.findById @_name, id, callback
 
   ###
+  # Adds a has-many association
+  # @param {Class} target_model
+  ###
+  @hasMany: (target_model) ->
+    target_model._addForeignKey inflector.foreign_key @_name
+
+    field = inflector.tableize(target_model._name)
+    fieldCache = '__' + field
+    fieldGetter = '__getter_' + field
+
+    Object.defineProperty @prototype, field,
+      get: ->
+        if not @.hasOwnProperty fieldGetter
+          @[fieldGetter] = getter = (callback) ->
+            # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
+            # but use getter.__scope for safety
+            self = getter.__scope
+            if not self.hasOwnProperty fieldCache
+              self[fieldCache] = []
+            callback null, self[fieldCache]
+          getter.build = (data) ->
+            # @ is getter, so use getter.__scope instead
+            self = getter.__scope
+            new_object = new target_model data
+            self[fieldCache].push new_object
+            return new_object
+          getter.__scope = @
+        return @[fieldGetter]
+
+  ###
+  # Adds a belongs-to association
+  # @param {Class} target_model
+  ###
+  @belongsTo: (target_model) ->
+    @_addForeignKey inflector.foreign_key target_model._name
+
+  ###
   # Drops this model from the database
   # @param {Function} callback
   # @param {Error} callback.error
@@ -53,5 +96,10 @@ class DBModel
   ###
   @deleteAll: (callback) ->
     @_connection._adapter.deleteAll @_name, callback
+
+  @_addForeignKey: (field) ->
+    return if @_schema.hasOwnProperty field
+
+    @_schema[field] = { type: @ForeignKey }
 
 module.exports = DBModel

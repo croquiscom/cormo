@@ -5,13 +5,15 @@ catch e
   process.exit 1
 
 AdapterBase = require './base'
-
+DBModel = require '../model'
+tableize = require('../inflector').tableize
 async = require 'async'
 
 _typeToSQL = (property) ->
   switch property.type
-    when String then 'VARCHAR(255)'
-    when Number then 'INT(11)'
+    when DBModel.String then 'VARCHAR(255)'
+    when DBModel.Number then 'INT(11)'
+    when DBModel.ForeignKey then 'BIGINT'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property
@@ -31,10 +33,11 @@ class MySQLAdapter extends AdapterBase
     @_client = client
 
   _query: (sql, data, callback) ->
+    #console.log 'MySQLAdapter:', sql
     @_client.query sql, data, callback
 
   _createTable: (model, callback) ->
-    table = MySQLAdapter.toCollectionName model
+    table = tableize model
     sql = []
     sql.push 'id BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY'
     for field, property of @_connection.models[model]._schema
@@ -51,7 +54,7 @@ class MySQLAdapter extends AdapterBase
     callback null
 
   _applySchema: (model, callback) ->
-    table = MySQLAdapter.toCollectionName model
+    table = tableize model
     @_query "SHOW FIELDS FROM #{table}", (error, fields) =>
       if error?.code is 'ER_NO_SUCH_TABLE'
         @_createTable model, callback
@@ -78,7 +81,7 @@ class MySQLAdapter extends AdapterBase
   # @see DBModel.drop
   ###
   drop: (model, callback) ->
-    table = MySQLAdapter.toCollectionName model
+    table = tableize model
     @_query "DROP TABLE IF EXISTS #{table}", (error) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
@@ -91,7 +94,7 @@ class MySQLAdapter extends AdapterBase
   # @see DBModel.deleteAll
   ###
   deleteAll: (model, callback) ->
-    table = MySQLAdapter.toCollectionName model
+    table = tableize model
     @_query "DELETE FROM #{table}", (error) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
@@ -105,7 +108,7 @@ class MySQLAdapter extends AdapterBase
   # @param {String} callback.id
   ###
   create: (model, data, callback) ->
-    table = MySQLAdapter.toCollectionName model
+    table = tableize model
     @_query "INSERT INTO #{table} SET ?", data, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       if result?.insertId
@@ -130,7 +133,7 @@ class MySQLAdapter extends AdapterBase
   # @param {DBModel} callback.record
   ###
   findById: (model, id, callback) ->
-    table = MySQLAdapter.toCollectionName model
+    table = tableize model
     @_query "SELECT * FROM #{table} WHERE id=? LIMIT 1", id, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       if result?.length is 1

@@ -7,6 +7,7 @@ catch error
 ObjectID = mongodb.ObjectID
 
 AdapterBase = require './base'
+tableize = require('../inflector').tableize
 
 ###
 # Adapter for MongoDB
@@ -22,7 +23,7 @@ class MongoDBAdapter extends AdapterBase
     @_collections = {}
 
   _collection: (name) ->
-    name = MongoDBAdapter.toCollectionName name
+    name = tableize name
     if not @_collections[name]
       return @_collections[name] = new mongodb.Collection @_client, name
     else
@@ -36,7 +37,7 @@ class MongoDBAdapter extends AdapterBase
   # @see DBModel.drop
   ###
   drop: (model, callback) ->
-    name = MongoDBAdapter.toCollectionName model
+    name = tableize model
     delete @_collections[name]
     @_client.dropCollection name, (error) ->
       # ignore not found error

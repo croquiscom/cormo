@@ -7,7 +7,7 @@ _dbs =
     database: 'test'
 
 Object.keys(_dbs).forEach (db) ->
-  describe 'basic-' + db, ->
+  describe 'association-' + db, ->
     connection = undefined
     connect = (callback) ->
       connection = new DBConnection db, _dbs[db]
@@ -28,18 +28,29 @@ Object.keys(_dbs).forEach (db) ->
           name: String
           age: Number
 
+        Post = models.Post = connection.model 'Post',
+          title: String
+          body: String
+
+        User.hasMany Post
+        Post.belongsTo User
+
         User.drop (error) ->
           return done error if error
-          connection.applySchemas (error) ->
+          Post.drop (error) ->
             return done error if error
-            done null
+            connection.applySchemas (error) ->
+              return done error if error
+              done null
 
     beforeEach (done) ->
       models.User.deleteAll (error) ->
         return done error if error
-        done null
+        models.Post.deleteAll (error) ->
+          return done error if error
+          done null
 
     after (done) ->
       models.User.drop done
 
-    require('./cases/basic')(models)
+    require('./cases/association')(models)
