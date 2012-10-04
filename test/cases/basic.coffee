@@ -27,7 +27,7 @@ module.exports = (models) ->
     user.save (error) ->
       return done error if error
 
-      models.User.findById user.id, (error, found) ->
+      models.User.find user.id, (error, found) ->
         return done error if error
         should.exist found
         found.should.have.property 'id', user.id

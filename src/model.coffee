@@ -35,7 +35,7 @@ class DBModel
   # @param {Error} callback.error
   # @param {DBModel} callback.record
   ###
-  @findById: (id, callback) ->
+  @find: (id, callback) ->
     @_connection._adapter.findById @_name, id, callback
 
   ###
