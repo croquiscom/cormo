@@ -114,8 +114,12 @@ class MySQLAdapter extends AdapterBase
         callback new Error 'unexpected result'
 
   _convertToModelInstance: (model, data) ->
-    data.id = Number(data.id)
-    return data
+    modelClass = @_connection.models[model]
+    record = new modelClass()
+    record.id = Number(data.id)
+    for field of modelClass._schema
+      record[field] = data[field]
+    return record
 
   ###
   # Finds a record by id

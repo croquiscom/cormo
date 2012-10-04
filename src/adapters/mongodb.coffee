@@ -16,7 +16,8 @@ class MongoDBAdapter extends AdapterBase
   # Creates a MongoDB adapter
   # @param {mongodb.Db} client
   ###
-  constructor: (client) ->
+  constructor: (connection, client) ->
+    @_connection = connection
     @_client = client
     @_collections = {}
 
@@ -74,9 +75,12 @@ class MongoDBAdapter extends AdapterBase
         callback new Error 'unexpected result'
 
   _convertToModelInstance: (model, data) ->
-    data.id = data._id.toString()
-    delete data._id
-    return data
+    modelClass = @_connection.models[model]
+    record = new modelClass()
+    record.id = data._id.toString()
+    for field of modelClass._schema
+      record[field] = data[field]
+    return record
 
   ###
   # Finds a record by id
@@ -107,6 +111,6 @@ class MongoDBAdapter extends AdapterBase
     db = new mongodb.Db settings.database, server, {}
     db.open (error, client) ->
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null, new MongoDBAdapter client
+      callback null, new MongoDBAdapter connection, client
 
 module.exports = MongoDBAdapter.createAdapter

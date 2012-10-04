@@ -27,10 +27,11 @@ module.exports = (models) ->
     user.save (error) ->
       return done error if error
 
-      models.User.find user.id, (error, found) ->
+      models.User.find user.id, (error, record) ->
         return done error if error
-        should.exist found
-        found.should.have.property 'id', user.id
-        found.should.have.property 'name', user.name
-        found.should.have.property 'age', user.age
+        should.exist record
+        record.should.be.an.instanceOf models.User
+        record.should.have.property 'id', user.id
+        record.should.have.property 'name', user.name
+        record.should.have.property 'age', user.age
         done null
