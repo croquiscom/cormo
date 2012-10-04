@@ -20,9 +20,12 @@ _propertyToSQL = (property) ->
 
 ###
 # Adapter for MySQL
-# @param {mysql.Connection} client
 ###
 class MySQLAdapter extends AdapterBase
+  ###
+  # Creates a MySQL adapter
+  # @param {mysql.Connection} client
+  ###
   constructor: (connection, client) ->
     @_connection = connection
     @_client = client
@@ -55,18 +58,38 @@ class MySQLAdapter extends AdapterBase
       else
         @_alterTable model, fields, callback
 
+  ###
+  # Creates or alters tables reflecting schemas
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @see DBConnection.applySchemas
+  ###
   applySchemas: (callback) ->
     async.forEach Object.keys(@_connection.models), (model, callback) =>
         @_applySchema model, callback
       , (error) ->
         callback error
 
+  ###
+  # Drops a model from the database
+  # @param {String} model
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @see DBModel.drop
+  ###
   drop: (model, callback) ->
     table = MySQLAdapter.toCollectionName model
     @_query "DROP TABLE IF EXISTS #{table}", (error) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
 
+  ###
+  # Deletes all records from the database
+  # @param {String} model
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @see DBModel.deleteAll
+  ###
   deleteAll: (model, callback) ->
     table = MySQLAdapter.toCollectionName model
     @_query "DELETE FROM #{table}", (error) ->
@@ -94,6 +117,14 @@ class MySQLAdapter extends AdapterBase
     data.id = Number(data.id)
     return data
 
+  ###
+  # Finds a record by id
+  # @param {String} model
+  # @param {String} id
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {DBModel} callback.record
+  ###
   findById: (model, id, callback) ->
     table = MySQLAdapter.toCollectionName model
     @_query "SELECT * FROM #{table} WHERE id=? LIMIT 1", id, (error, result) =>
@@ -103,40 +134,42 @@ class MySQLAdapter extends AdapterBase
       else
         callback new Error 'unknown error'
 
-###
-# Initialize MySQL adapter
-# @param {Connection} connection
-# @param {Object} settings
-# @param {String} [settings.host]
-# @param {Number} [settings.port]
-# @param {String} [settings.user]
-# @param {String} [settings.password]
-# @param {String} settings.database
-# @param {Function} callback
-# @param {Error} callback.error
-# @param {MySQLAdapter} callback.adapter
-###
-module.exports = (connection, settings, callback) ->
-  # connect
-  client = mysql.createConnection
-    host: settings.host
-    port: settings.port
-    user: settings.user
-    password: settings.password
-  client.connect (error) ->
-    return callback MySQLAdapter.wrapError 'failed to connect', error if error
+  ###
+  # Creates a MySQL adapter
+  # @param {Connection} connection
+  # @param {Object} settings
+  # @param {String} [settings.host]
+  # @param {Number} [settings.port]
+  # @param {String} [settings.user]
+  # @param {String} [settings.password]
+  # @param {String} settings.database
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {MySQLAdapter} callback.adapter
+  ###
+  @createAdapter: (connection, settings, callback) ->
+    # connect
+    client = mysql.createConnection
+      host: settings.host
+      port: settings.port
+      user: settings.user
+      password: settings.password
+    client.connect (error) ->
+      return callback MySQLAdapter.wrapError 'failed to connect', error if error
 
-    adapter = new MySQLAdapter connection, client
+      adapter = new MySQLAdapter connection, client
 
-    # select database
-    client.query "USE `#{settings.database}`", (error) ->
-      return callback null, adapter if not error
+      # select database
+      client.query "USE `#{settings.database}`", (error) ->
+        return callback null, adapter if not error
 
-      # create one if not exist
-      if error.code is 'ER_BAD_DB_ERROR'
-        client.query "CREATE DATABASE `#{settings.database}`", (error) ->
-          return callback MySQLAdapter.wrapError 'unknown error', error if error
-          return callback null, adapter
-      else
-        msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{settings.database}'" else 'unknown error'
-        callback MySQLAdapter.wrapError msg, error
+        # create one if not exist
+        if error.code is 'ER_BAD_DB_ERROR'
+          client.query "CREATE DATABASE `#{settings.database}`", (error) ->
+            return callback MySQLAdapter.wrapError 'unknown error', error if error
+            return callback null, adapter
+        else
+          msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{settings.database}'" else 'unknown error'
+          callback MySQLAdapter.wrapError msg, error
+
+module.exports = MySQLAdapter.createAdapter

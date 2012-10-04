@@ -21,6 +21,9 @@ _pluralize = (str) ->
         return str.replace rule[0], rule[1]
   return str
 
+###
+# Base class for adapters
+###
 class AdapterBase
   @wrapError: (msg, cause) ->
     error = new Error msg

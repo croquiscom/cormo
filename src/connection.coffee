@@ -14,16 +14,21 @@ _normalizeSchema = (schema) ->
 
 ###
 # Manages connection to a database
-# @param {String} adapater_name
-# @param {Object} settings
 ###
 class DBConnection extends EventEmitter
+  ###
+  # Creates a connection
+  # @param {String} adapater_name
+  # @param {Object} settings
+  # @see MySQLAdapter.createAdapter
+  # @see MongoDBAdapter.createAdapter
+  ###
   constructor: (adapter_name, settings) ->
     @connected = false
     @models = {}
 
-    initialize = require __dirname + '/adapters/' + adapter_name
-    initialize @, settings, (error, adapter) =>
+    createAdapter = require __dirname + '/adapters/' + adapter_name
+    createAdapter @, settings, (error, adapter) =>
       if error
         @emit 'error', error
         return
@@ -35,7 +40,7 @@ class DBConnection extends EventEmitter
   # Creates a Model class
   # @param {String} name
   # @param {Object} schema
-  # @return {Object}
+  # @return {Class}
   ###
   model: (name, schema) ->
     _normalizeSchema schema
@@ -44,11 +49,12 @@ class DBConnection extends EventEmitter
     Object.defineProperty NewModel, '_connection', value: @
     Object.defineProperty NewModel, '_name', value: name
     Object.defineProperty NewModel, '_schema', value: schema
+
     @models[name] = NewModel
     return NewModel
 
   ###
-  # Applies schemas.
+  # Applies schemas
   # (This makes sense only for SQL adapters)
   ###
   applySchemas: (callback) ->
