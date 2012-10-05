@@ -49,6 +49,7 @@ class DBConnection extends EventEmitter
     Object.defineProperty NewModel, '_connection', value: @
     Object.defineProperty NewModel, '_name', value: name
     Object.defineProperty NewModel, '_schema', value: schema
+    Object.defineProperty NewModel, '_associations', value: {}
 
     @models[name] = NewModel
     return NewModel

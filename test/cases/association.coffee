@@ -6,9 +6,9 @@ module.exports = (models) ->
     async.waterfall [
       # create two new objects
       (callback) ->
-        user1 = new models.User name: 'John Doe', age: 27
+        user1 = models.User.build name: 'John Doe', age: 27
         should.exist user1.posts
-        user2 = new models.User name: 'Bill Smith', age: 45
+        user2 = models.User.build name: 'Bill Smith', age: 45
         should.exist user2.posts
         callback null, user1, user2
       # check default status
@@ -81,3 +81,16 @@ module.exports = (models) ->
             callback null
     ], (error) ->
       done error
+
+  it 'save object after creating a sub object', (done) ->
+    user = models.User.build name: 'John Doe', age: 27
+    post = user.posts.build title: 'first post', body: 'This is the 1st post.'
+    should.not.exist user.id
+    should.not.exist post.id
+    should.not.exist post.user_id
+    user.save (error) ->
+      return done error if error
+      user.should.have.property 'id'
+      post.should.have.property 'id'
+      post.should.have.property 'user_id', user.id
+      done null

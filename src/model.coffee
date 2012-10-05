@@ -1,4 +1,5 @@
 inflector = require './inflector'
+async = require 'async'
 
 ###
 # Base class for models
@@ -56,9 +57,19 @@ class DBModel
         return callback new Error 'empty data', @
       ctor = @constructor
       ctor._connection._adapter.create ctor._name, @, (error, id) =>
-        if not error
-          @id = id
-        callback error, @
+        return callback error, @ if error
+        @id = id
+        # save sub objects of each association
+        foreign_key = inflector.foreign_key ctor._name
+        async.forEach Object.keys(ctor._associations), (field, callback) =>
+            async.forEach @['__cache_' + field] or [], (sub, callback) ->
+                sub[foreign_key] = id
+                sub.save (error) ->
+                  callback error
+              , (error) ->
+                callback error
+          , (error) =>
+            callback null, @
 
   ###
   # Finds a record by id
@@ -79,18 +90,19 @@ class DBModel
     target_model._addForeignKey foreign_key
 
     field = inflector.tableize(target_model._name)
-    fieldCache = '__' + field
+    fieldCache = '__cache_' + field
     fieldGetter = '__getter_' + field
+
+    @_associations[field] = { type: 'hasMany' }
 
     Object.defineProperty @prototype, field,
       get: ->
+        # getter must be created per instance due to __scope
         if not @.hasOwnProperty fieldGetter
-          @[fieldGetter] = getter = (callback) ->
+          getter = (callback) ->
             # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
             # but use getter.__scope for safety
             self = getter.__scope
-            if not self.hasOwnProperty fieldCache
-              self[fieldCache] = []
             callback null, self[fieldCache]
           getter.build = (data) ->
             # @ is getter, so use getter.__scope instead
@@ -100,6 +112,8 @@ class DBModel
             self[fieldCache].push new_object
             return new_object
           getter.__scope = @
+          Object.defineProperty @, fieldCache, value: []
+          Object.defineProperty @, fieldGetter, value: getter
         return @[fieldGetter]
 
   ###
