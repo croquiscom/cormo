@@ -52,7 +52,10 @@ class DBModel
   ###
   save: (callback) ->
     if @id
-      # TODO update
+      ctor = @constructor
+      ctor._connection._adapter.update ctor._name, @, (error) =>
+        return callback error, @ if error
+        callback null, @
     else
       if Object.keys(@).length is 0
         return callback new Error 'empty data', @

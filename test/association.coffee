@@ -51,6 +51,8 @@ Object.keys(_dbs).forEach (db) ->
           done null
 
     after (done) ->
-      models.User.drop done
+      models.User.drop (error) ->
+        models.Post.drop (error) ->
+          done null
 
     require('./cases/association')(models)

@@ -103,7 +103,7 @@ class MySQLAdapter extends AdapterBase
       callback null
 
   ###
-  # Create a record
+  # Creates a record
   # @param {String} model
   # @param {Object} data
   # @param {Function} callback
@@ -121,6 +121,19 @@ class MySQLAdapter extends AdapterBase
         callback null, result.insertId
       else
         callback new Error 'unexpected result'
+
+  ###
+  # Updates a record
+  # @param {String} model
+  # @param {Object} data
+  # @param {Function} callback
+  # @param {Error} callback.error
+  ###
+  update: (model, data, callback) ->
+    table = tableize model
+    @_query "UPDATE #{table} SET ? WHERE id=?", [data, data.id], (error) ->
+      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      callback null
 
   _convertToModelInstance: (model, data) ->
     modelClass = @_connection.models[model]

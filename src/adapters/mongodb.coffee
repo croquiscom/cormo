@@ -83,7 +83,7 @@ class MongoDBAdapter extends AdapterBase
       callback null
 
   ###
-  # Create a record
+  # Creates a record
   # @param {String} model
   # @param {Object} data
   # @param {Function} callback
@@ -102,6 +102,22 @@ class MongoDBAdapter extends AdapterBase
         callback null, id
       else
         callback new Error 'unexpected result'
+
+  ###
+  # Updates a record
+  # @param {String} model
+  # @param {Object} data
+  # @param {Function} callback
+  # @param {Error} callback.error
+  ###
+  update: (model, data, callback) ->
+    try
+      id = new ObjectID data.id
+    catch e
+      return callback new Error('unknown error')
+    @_collection(model).update { _id: id }, data, safe: true, (error) ->
+      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      callback null
 
   _convertToModelInstance: (model, data) ->
     modelClass = @_connection.models[model]

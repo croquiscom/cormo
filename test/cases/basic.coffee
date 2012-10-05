@@ -63,3 +63,24 @@ module.exports = (models) ->
         error.should.be.an.instanceOf Error
         error.message.should.equal 'not found'
         done null
+
+  it 'update a record', (done) ->
+    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      return done error if error
+      user.name = 'Bill Smith'
+      models.User.find user.id, (error, record) ->
+        # not yet saved, you will get previous values
+        return done error if error
+        should.exist record
+        record.should.have.property 'id', user.id
+        record.should.have.property 'name', 'John Doe'
+        record.should.have.property 'age', 27
+        user.save (error) ->
+          return done error if error
+          models.User.find user.id, (error, record) ->
+            return done error if error
+            should.exist record
+            record.should.have.property 'id', user.id
+            record.should.have.property 'name', 'Bill Smith'
+            record.should.have.property 'age', 27
+            done null
