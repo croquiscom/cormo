@@ -18,7 +18,10 @@ _typeToSQL = (property) ->
 _propertyToSQL = (property) ->
   type = _typeToSQL property
   if type
-    return type + ' NULL'
+    type += ' NULL'
+    if property.unique
+      type += ' UNIQUE'
+    return type
 
 ###
 # Adapter for MySQL
@@ -110,6 +113,9 @@ class MySQLAdapter extends AdapterBase
   create: (model, data, callback) ->
     table = tableize model
     @_query "INSERT INTO #{table} SET ?", data, (error, result) ->
+      if error?.code is 'ER_DUP_ENTRY'
+        key = error.message.match /for key '([^']*)'/
+        return callback new Error('duplicated ' + key?[1])
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       if result?.insertId
         callback null, result.insertId

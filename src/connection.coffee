@@ -61,7 +61,6 @@ class DBConnection extends EventEmitter
 
   ###
   # Applies schemas
-  # (This makes sense only for SQL adapters)
   # @param {Function} callback
   # @param {Error} callback.error
   ###

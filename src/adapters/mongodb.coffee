@@ -8,6 +8,7 @@ ObjectID = mongodb.ObjectID
 
 AdapterBase = require './base'
 tableize = require('../inflector').tableize
+async = require 'async'
 
 ###
 # Adapter for MongoDB
@@ -28,6 +29,30 @@ class MongoDBAdapter extends AdapterBase
       return @_collections[name] = new mongodb.Collection @_client, name
     else
       return @_collections[name]
+
+  _applySchema: (model, callback) ->
+    collection = @_collection(model)
+    unique_fields = []
+    for field, property of @_connection.models[model]._schema
+      if property.unique
+        unique_fields.push field
+    async.forEach unique_fields, (field, callback) ->
+        collection.ensureIndex field, { unique: true, sparse: true }, (error) ->
+          callback error
+      , (error) ->
+        callback error
+
+  ###
+  # Ensures indexes
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @see DBConnection.applySchemas
+  ###
+  applySchemas: (callback) ->
+    async.forEach Object.keys(@_connection.models), (model, callback) =>
+        @_applySchema model, callback
+      , (error) ->
+        callback error
 
   ###
   # Drops a model from the database
@@ -67,6 +92,9 @@ class MongoDBAdapter extends AdapterBase
   ###
   create: (model, data, callback) ->
     @_collection(model).insert data, safe: true, (error, result) ->
+      if error?.code is 11000
+        key = error.err.match /index: [\w-.]+\$(\w+)_1/
+        return callback new Error('duplicated ' + key?[1])
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       id = result?[0]?._id.toString()
       if id
