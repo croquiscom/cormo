@@ -1,6 +1,6 @@
 {
-  "name": "croquis-orm",
-  "version": "1.0.0",
+  "name": "cormo",
+  "version": "0.1.0",
   "dependencies": {
     "async": ""
   },
