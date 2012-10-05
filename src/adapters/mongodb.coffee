@@ -115,7 +115,7 @@ class MongoDBAdapter extends AdapterBase
       id = new ObjectID data.id
     catch e
       return callback new Error('unknown error')
-    @_collection(model).update { _id: id }, data, safe: true, (error) ->
+    @_collection(model).update { _id: id }, { $set: data }, safe: true, (error) ->
       if error?.code is 11001
         key = error.err.match /index: [\w-.]+\$(\w+)_1/
         return callback new Error('duplicated ' + key?[1])
