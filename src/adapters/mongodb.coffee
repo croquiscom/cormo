@@ -37,7 +37,7 @@ class MongoDBAdapter extends AdapterBase
       if property.unique
         unique_fields.push field
     async.forEach unique_fields, (field, callback) ->
-        collection.ensureIndex field, { unique: true, sparse: true }, (error) ->
+        collection.ensureIndex field, { safe: true, unique: true, sparse: true }, (error) ->
           callback error
       , (error) ->
         callback error
@@ -116,6 +116,9 @@ class MongoDBAdapter extends AdapterBase
     catch e
       return callback new Error('unknown error')
     @_collection(model).update { _id: id }, data, safe: true, (error) ->
+      if error?.code is 11001
+        key = error.err.match /index: [\w-.]+\$(\w+)_1/
+        return callback new Error('duplicated ' + key?[1])
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null
 

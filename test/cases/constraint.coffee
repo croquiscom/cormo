@@ -26,3 +26,12 @@ module.exports = (models) ->
         user.should.have.property 'age', 38
         user.should.have.property 'email', 'bill@foo.org'
         done null
+
+  it 'check uniqueness on update', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      users[0].email = 'bill@foo.org'
+      users[0].save (error) ->
+        should.exist error
+        error.message.should.equal 'duplicated email'
+        done null

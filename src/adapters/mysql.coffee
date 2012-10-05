@@ -132,6 +132,9 @@ class MySQLAdapter extends AdapterBase
   update: (model, data, callback) ->
     table = tableize model
     @_query "UPDATE #{table} SET ? WHERE id=?", [data, data.id], (error) ->
+      if error?.code is 'ER_DUP_ENTRY'
+        key = error.message.match /for key '([^']*)'/
+        return callback new Error('duplicated ' + key?[1])
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
 
