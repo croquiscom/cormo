@@ -46,11 +46,12 @@ class DBModel
 
   ###
   # Saves data to the database
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {DBModel} callback.record this
   ###
   save: (callback) ->
+    callback = (->) if typeof callback isnt 'function'
     if @id
       ctor = @constructor
       ctor._connection._adapter.update ctor._name, @, (error) =>
