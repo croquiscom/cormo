@@ -1,1 +1,1 @@
-module.exports = require('./lib/connection');
+exports.DBConnection = require('./lib/connection');

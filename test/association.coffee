@@ -1,4 +1,4 @@
-DBConnection = require '../index'
+DBConnection = require('../index').DBConnection
 
 _dbs =
   mysql:
