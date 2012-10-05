@@ -120,8 +120,11 @@ class MySQLAdapter extends AdapterBase
     modelClass = @_connection.models[model]
     record = new modelClass()
     record.id = Number(data.id)
-    for field of modelClass._schema
-      record[field] = data[field]
+    for field, property of modelClass._schema
+      if property.type is DBModel.ForeignKey
+        record[field] = Number(data[field])
+      else
+        record[field] = data[field]
     return record
 
   ###
@@ -140,6 +143,25 @@ class MySQLAdapter extends AdapterBase
         callback null, @_convertToModelInstance model, result[0]
       else
         callback new Error 'unknown error'
+
+  ###
+  # Finds records
+  # @param {String} model
+  # @param {Object} conditions
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Array<DBModel>} callback.records
+  ###
+  find: (model, conditions, callback) ->
+    params = null
+    sql = "SELECT * FROM #{tableize model}"
+    if (keys = Object.keys(conditions)).length > 0
+      params = keys.map (key) -> return conditions[key]
+      keys = keys.map (key) -> return key + '=?'
+      sql += ' WHERE ' + keys.join ' AND '
+    @_query sql, params, (error, result) =>
+      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      callback null, result.map (instance) => @_convertToModelInstance model, instance
 
   ###
   # Creates a MySQL adapter

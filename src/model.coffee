@@ -103,16 +103,25 @@ class DBModel
             # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
             # but use getter.__scope for safety
             self = getter.__scope
-            callback null, self[fieldCache]
+            if not self[fieldCache] and @id
+              conditions = {}
+              conditions[foreign_key] = @id
+              target_model._connection._adapter.find target_model._name, conditions, (error, records) ->
+                return callback error if error
+                self[fieldCache] = records
+                callback null, records
+            else
+              callback null, self[fieldCache] or []
           getter.build = (data) ->
             # @ is getter, so use getter.__scope instead
             self = getter.__scope
             new_object = new target_model data
             new_object[foreign_key] = self.id
+            self[fieldCache] = [] if not self[fieldCache]
             self[fieldCache].push new_object
             return new_object
           getter.__scope = @
-          Object.defineProperty @, fieldCache, value: []
+          Object.defineProperty @, fieldCache, value: null, writable: true
           Object.defineProperty @, fieldGetter, value: getter
         return @[fieldGetter]
 

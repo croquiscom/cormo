@@ -94,3 +94,17 @@ module.exports = (models) ->
       post.should.have.property 'id'
       post.should.have.property 'user_id', user.id
       done null
+
+  it 'get sub objects', (done) ->
+    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      models.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
+        models.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
+          user.posts (error, posts) ->
+            posts.should.have.length 2
+            if posts[0].id is post1.id
+              posts[0].should.eql post1
+              posts[1].should.eql post2
+            else
+              posts[0].should.eql post2
+              posts[1].should.eql post1
+            done null

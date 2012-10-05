@@ -97,6 +97,21 @@ class MongoDBAdapter extends AdapterBase
       callback null, @_convertToModelInstance model, result
 
   ###
+  # Finds records
+  # @param {String} model
+  # @param {Object} conditions
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Array<DBModel>} callback.records
+  ###
+  find: (model, conditions, callback) ->
+    @_collection(model).find conditions, (error, cursor) =>
+      return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
+      cursor.toArray (error, result) =>
+        return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
+        callback null, result.map (instance) => @_convertToModelInstance model, instance
+
+  ###
   # Creates a MongoDB adapter
   # @param {Connection} connection
   # @param {Object} settings
