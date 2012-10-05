@@ -14,8 +14,8 @@ Object.keys(_dbs).forEach (db) ->
       if connection.connected
         callback()
       else
-        connection.on 'connected', callback
-        connection.on 'error', (error) ->
+        connection.once 'connected', callback
+        connection.once 'error', (error) ->
           callback error
 
     models = {}

@@ -53,11 +53,21 @@ class DBConnection extends EventEmitter
     @models[name] = NewModel
     return NewModel
 
+  _waitingForConnection: (object, method, args) ->
+    return false if @connected
+    @once 'connected', ->
+      method.apply object, args
+    return true
+
   ###
   # Applies schemas
   # (This makes sense only for SQL adapters)
+  # @param {Function} callback
+  # @param {Error} callback.error
   ###
   applySchemas: (callback) ->
+    return if @_waitingForConnection @, @applySchemas, arguments
+
     if @_adapter.applySchemas?
       @_adapter.applySchemas callback
     else
