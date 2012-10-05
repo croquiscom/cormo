@@ -75,7 +75,8 @@ class DBModel
   # @param {Class} target_model
   ###
   @hasMany: (target_model) ->
-    target_model._addForeignKey inflector.foreign_key @_name
+    foreign_key = inflector.foreign_key @_name
+    target_model._addForeignKey foreign_key
 
     field = inflector.tableize(target_model._name)
     fieldCache = '__' + field
@@ -95,6 +96,7 @@ class DBModel
             # @ is getter, so use getter.__scope instead
             self = getter.__scope
             new_object = new target_model data
+            new_object[foreign_key] = self.id
             self[fieldCache].push new_object
             return new_object
           getter.__scope = @
