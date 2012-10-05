@@ -108,3 +108,25 @@ module.exports = (models) ->
               posts[0].should.eql post2
               posts[1].should.eql post1
             done null
+
+  it 'sub objects are cached', (done) ->
+    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      models.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
+        user.posts (error, posts) ->
+          posts.should.have.length 1
+          posts[0].should.eql post1
+          models.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
+            user.posts (error, posts) ->
+              # added object is not fetched
+              posts.should.have.length 1
+              posts[0].should.eql post1
+              # ignore cache and force reload
+              user.posts true, (error, posts) ->
+                posts.should.have.length 2
+                if posts[0].id is post1.id
+                  posts[0].should.eql post1
+                  posts[1].should.eql post2
+                else
+                  posts[0].should.eql post2
+                  posts[1].should.eql post1
+                done null

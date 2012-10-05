@@ -99,11 +99,14 @@ class DBModel
       get: ->
         # getter must be created per instance due to __scope
         if not @.hasOwnProperty fieldGetter
-          getter = (callback) ->
+          getter = (reload, callback) ->
+            if typeof reload is 'function'
+              callback = reload
+              reload = false
             # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
             # but use getter.__scope for safety
             self = getter.__scope
-            if not self[fieldCache] and @id
+            if (not self[fieldCache] or reload) and @id
               conditions = {}
               conditions[foreign_key] = @id
               target_model._connection._adapter.find target_model._name, conditions, (error, records) ->
