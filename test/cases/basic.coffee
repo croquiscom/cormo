@@ -35,10 +35,8 @@ module.exports = (models) ->
       done null
 
   it 'find a record', (done) ->
-    user = new models.User name: 'John Doe', age: 27
-    user.save (error) ->
+    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
-
       models.User.find user.id, (error, record) ->
         return done error if error
         should.exist record
@@ -46,4 +44,22 @@ module.exports = (models) ->
         record.should.have.property 'id', user.id
         record.should.have.property 'name', user.name
         record.should.have.property 'age', user.age
+        done null
+
+  it 'find non-existing record', (done) ->
+    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      return done error if error
+      id = user.id
+      if typeof id is 'number'
+        # MySQL
+        id = -1
+      else if typeof id is 'string'
+        # MongoDB
+        id = id.replace /./, '9'
+      else
+        throw new Error 'no support'
+      models.User.find id, (error) ->
+        should.exist error
+        error.should.be.an.instanceOf Error
+        error.message.should.equal 'not found'
         done null

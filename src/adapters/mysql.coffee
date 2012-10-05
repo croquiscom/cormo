@@ -134,6 +134,7 @@ class MySQLAdapter extends AdapterBase
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {DBModel} callback.record
+  # @throws Error('not found')
   ###
   findById: (model, id, callback) ->
     table = tableize model
@@ -141,8 +142,10 @@ class MySQLAdapter extends AdapterBase
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       if result?.length is 1
         callback null, @_convertToModelInstance model, result[0]
-      else
+      else if result?.length > 1
         callback new Error 'unknown error'
+      else
+        callback new Error 'not found'
 
   ###
   # Finds records

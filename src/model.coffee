@@ -79,6 +79,7 @@ class DBModel
   # @param {Error} callback.error
   # @param {DBModel} callback.record
   # @return {DBQuery}
+  # @throws Error('not found')
   ###
   @find: (id, callback) ->
     query = new DBQuery @
@@ -86,7 +87,7 @@ class DBModel
     if typeof callback is 'function'
       query.exec (error, records) ->
         return callback error if error
-        return callback new Error('not found') if records.length is 0
+        return callback new Error('unknown error') if records.length isnt 1
         callback null, records[0]
     return query
 

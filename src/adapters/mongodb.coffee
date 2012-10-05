@@ -90,14 +90,16 @@ class MongoDBAdapter extends AdapterBase
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {DBModel} callback.record
+  # @throws Error('not found')
   ###
   findById: (model, id, callback) ->
     try
       id = new ObjectID id
     catch e
-      return callback new Error('no exist')
+      return callback new Error('not found')
     @_collection(model).findOne _id: id, (error, result) =>
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error or not result
+      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      return callback new Error('not found') if not result
       callback null, @_convertToModelInstance model, result
 
   ###
