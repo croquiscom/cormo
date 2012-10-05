@@ -10,7 +10,7 @@ class DBModel
   
   ###
   # Creates a record
-  # @param {Object} data
+  # @param {Object} [data={}]
   ###
   constructor: (data) ->
     data = data or {}
@@ -20,19 +20,45 @@ class DBModel
         @[field] = data[field]
 
   ###
+  # Creates a record.
+  # 'Model.build(data)' is the same as 'new Model(data)'
+  # @param {Object} [data={}]
+  # @return {DBModel}
+  ###
+  @build: (data) ->
+    return new @ data
+
+  ###
+  # Creates a record and saves it to the database
+  # 'Model.create(data, callback)' is the same as 'Model.build(data).save(callback)'
+  # @param {Object} [data={}]
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {DBModel} callback.record created record
+  ###
+  @create: (data, callback) ->
+    if typeof data is 'function'
+      callback = data
+      data = {}
+    @build(data).save callback
+
+  ###
   # Saves data to the database
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {DBModel} callback.record this
   ###
   save: (callback) ->
     if @id
       # TODO update
     else
       if Object.keys(@).length is 0
-        return callback new Error 'empty data'
+        return callback new Error 'empty data', @
       ctor = @constructor
       ctor._connection._adapter.create ctor._name, @, (error, id) =>
         if not error
           @id = id
-        callback error
+        callback error, @
 
   ###
   # Finds a record by id

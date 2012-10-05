@@ -2,14 +2,16 @@ should = require 'should'
 async = require 'async'
 
 module.exports = (models) ->
-  it 'create one-to-many records', (done) ->
+  it 'collection_accessor.build on a new object', (done) ->
     async.waterfall [
+      # create two new objects
       (callback) ->
         user1 = new models.User name: 'John Doe', age: 27
         should.exist user1.posts
         user2 = new models.User name: 'Bill Smith', age: 45
         should.exist user2.posts
         callback null, user1, user2
+      # check default status
       (user1, user2, callback) ->
         user1.posts (error, posts) ->
           posts.should.have.length 0
@@ -18,6 +20,7 @@ module.exports = (models) ->
             posts.should.have.length 0
             return callback error if error
             callback null, user1.posts, user2.posts
+      # call build method and check status
       (posts1, posts2, callback) ->
         posts1.build title: 'first post', body: 'This is the 1st post.'
         posts1.build title: 'second post', body: 'This is the 2nd post.'

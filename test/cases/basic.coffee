@@ -15,9 +15,21 @@ module.exports = (models) ->
     user.should.have.property 'age', 27
     done null
 
+  it 'build method', (done) ->
+    user = models.User.build name: 'John Doe', age: 27
+    user.should.have.property 'name', 'John Doe'
+    user.should.have.property 'age', 27
+    done null
+
   it 'add a new record to the database', (done) ->
     user = new models.User name: 'John Doe', age: 27
     user.save (error) ->
+      return done error if error
+      user.should.have.property 'id'
+      done null
+
+  it 'create method', (done) ->
+    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
       user.should.have.property 'id'
       done null
