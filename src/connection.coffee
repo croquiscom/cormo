@@ -1,5 +1,4 @@
 EventEmitter = require('events').EventEmitter
-
 DBModel = require './model'
 
 ###

@@ -1,5 +1,6 @@
 inflector = require './inflector'
 async = require 'async'
+DBQuery = require './query'
 
 ###
 # Base class for models
@@ -74,12 +75,35 @@ class DBModel
   ###
   # Finds a record by id
   # @param {String} id
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {DBModel} callback.record
+  # @return {DBQuery}
   ###
   @find: (id, callback) ->
-    @_connection._adapter.findById @_name, id, callback
+    query = new DBQuery @
+    query.find id
+    if typeof callback is 'function'
+      query.exec (error, records) ->
+        return callback error if error
+        return callback new Error('not found') if records.length is 0
+        callback null, records[0]
+    return query
+
+  ###
+  # Find records by conditions
+  # @param {Object} conditions
+  # @param {Function} [callback]
+  # @param {Error} callback.error
+  # @param {Array<DBModel>} callback.records
+  # @return {DBQuery}
+  ###
+  @where: (conditions, callback) ->
+    query = new DBQuery @
+    query.where conditions
+    if typeof callback is 'function'
+      query.exec callback
+    return query
 
   ###
   # Adds a has-many association
