@@ -35,9 +35,10 @@ class DBModel
     Object.defineProperty NewModel, '_name', value: name
     Object.defineProperty NewModel, '_schema', value: schema
     Object.defineProperty NewModel, '_associations', value: {}
+    Object.defineProperty NewModel, '_validators', value: []
 
     return NewModel
-  
+
   ###
   # Creates a record
   # @param {Object} [data={}]
@@ -73,13 +74,49 @@ class DBModel
     @build(data).save callback
 
   ###
+  # Validates data
+  # @param {Function} [callback]
+  # @param {Error} callback.error
+  # @return {Boolean}
+  ###
+  validate: (callback) ->
+    errors = []
+    @constructor._validators.forEach (validator) =>
+      try
+        r = validator @
+        if r is false
+          errors.push 'validation failed'
+        else if typeof r is 'string'
+          errors.push r
+      catch e
+        errors.push e.message
+    if errors.length > 0
+      callback? new Error errors.join ','
+      return false
+    else
+      callback? null
+      return true
+
+  ###
   # Saves data to the database
+  # @param {Object} [options]
+  # @param {Boolean} [options.validate=true]
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {DBModel} callback.record this
   ###
-  save: (callback) ->
+  save: (options, callback) ->
+    if typeof options is 'function'
+      callback = options
+      options = {}
     callback = (->) if typeof callback isnt 'function'
+
+    if options?.validate isnt false
+      @validate (error) =>
+        return callback error if error
+        @save validate: false, callback
+      return
+
     if @id
       ctor = @constructor
       ctor._connection._adapter.update ctor._name, @, (error) =>
@@ -191,6 +228,16 @@ class DBModel
   ###
   @belongsTo: (target_model) ->
     @_addForeignKey inflector.foreign_key target_model._name
+  
+  ###
+  # Adds a validator
+  #
+  # A validator must return false(boolean) or error message(string), or throw an Error exception if invalid
+  # @param {Function} validator
+  # @param {DBModel} validator.record
+  ###
+  @addValidator: (validator) ->
+    @_validators.push validator
 
   ###
   # Drops this model from the database
