@@ -10,7 +10,7 @@ class DBQuery
     @_model = model
     @_name = model._name
     @_adapter = model._connection._adapter
-    @_conditions = {}
+    @_conditions = []
  
   ###
   # Finds a record by id
@@ -21,10 +21,16 @@ class DBQuery
     @_id = id
     return @
 
-  where: (conditions) ->
-    target = @_conditions
-    for own field of conditions
-      target[field] = conditions[field]
+  ###
+  # Find records by condition
+  # @param {Object} condition
+  # @return {DBQuery} this
+  ###
+  where: (condition) ->
+    if Array.isArray condition
+      @_conditions.push.apply @_conditions, condition
+    else
+      @_conditions.push condition
     return @
 
   ###

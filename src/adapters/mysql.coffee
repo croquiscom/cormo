@@ -23,6 +23,50 @@ _propertyToSQL = (property) ->
       type += ' UNIQUE'
     return type
 
+_buildWhere = (conditions, params, conjunction='AND') ->
+  if Array.isArray conditions
+    subs = conditions.map (condition) -> _buildWhere condition, params
+  else if typeof conditions is 'object'
+    keys = Object.keys conditions
+    if keys.length is 0
+      return ''
+    if keys.length is 1
+      key = keys[0]
+      if key.substr(0, 1) is '$'
+        switch key
+          when '$and'
+            return _buildWhere conditions[key], params, 'AND'
+          when '$or'
+            return _buildWhere conditions[key], params, 'OR'
+      else
+        value = conditions[key]
+        op = '='
+        if typeof value is 'object' and (keys = Object.keys value).length is 1
+          sub_key = keys[0]
+          switch sub_key
+            when '$gt'
+              op = '>'
+              value = value[sub_key]
+            when '$lt'
+              op = '<'
+              value = value[sub_key]
+            when '$gte'
+              op = '>='
+              value = value[sub_key]
+            when '$lte'
+              op = '<='
+              value = value[sub_key]
+            when '$include'
+              op = ' LIKE '
+              value = '%' + value[sub_key] + '%'
+        params.push value
+        return key + op + '?'
+    else
+      subs = keys.map (key) -> _buildWhere conditions[key], params
+  else
+    return ''
+  return '(' + subs.join(' ' + conjunction + ' ') + ')'
+
 ###
 # Adapter for MySQL
 ###
@@ -178,12 +222,11 @@ class MySQLAdapter extends AdapterBase
   # @param {Array<DBModel>} callback.records
   ###
   find: (model, conditions, callback) ->
-    params = null
+    params = []
     sql = "SELECT * FROM #{tableize model}"
-    if (keys = Object.keys(conditions)).length > 0
-      params = keys.map (key) -> return conditions[key]
-      keys = keys.map (key) -> return key + '=?'
-      sql += ' WHERE ' + keys.join ' AND '
+    if conditions.length > 0
+      sql += ' WHERE ' + _buildWhere conditions, params
+    #console.log sql, params
     @_query sql, params, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null, result.map (instance) => @_convertToModelInstance model, instance

@@ -162,15 +162,15 @@ class DBModel
 
   ###
   # Find records by conditions
-  # @param {Object} conditions
+  # @param {Object} condition
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Array<DBModel>} callback.records
   # @return {DBQuery}
   ###
-  @where: (conditions, callback) ->
+  @where: (condition, callback) ->
     query = new DBQuery @
-    query.where conditions
+    query.where condition
     if typeof callback is 'function'
       query.exec callback
     return query

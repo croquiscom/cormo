@@ -10,6 +10,45 @@ AdapterBase = require './base'
 tableize = require('../inflector').tableize
 async = require 'async'
 
+_buildWhere = (conditions, conjunction='$and') ->
+  if Array.isArray conditions
+    subs = conditions.map (condition) -> _buildWhere condition
+  else if typeof conditions is 'object'
+    keys = Object.keys conditions
+    if keys.length is 0
+      return
+    else if keys.length is 1
+      key = keys[0]
+      if key.substr(0, 1) is '$'
+        switch key
+          when '$and'
+            return _buildWhere conditions[key], '$and'
+          when '$or'
+            return _buildWhere conditions[key], '$or'
+        return
+      else
+        value = conditions[key]
+        if typeof value is 'object' and (keys = Object.keys value).length is 1
+          sub_key = keys[0]
+          switch sub_key
+            when '$gt' or '$lt' or '$gte' or '$lte'
+              obj = {}
+              obj[key] = {}
+              obj[key][sub_key] = value[sub_key]
+              return obj
+            when '$include'
+              value = new RegExp value[sub_key], 'i'
+        obj = {}
+        obj[key] = value
+        return obj
+    else
+      subs = keys.map (key) -> _buildWhere conditions[key]
+  else
+    return
+  obj = {}
+  obj[conjunction] = subs
+  return obj
+
 ###
 # Adapter for MongoDB
 ###
@@ -158,7 +197,8 @@ class MongoDBAdapter extends AdapterBase
   # @param {Array<DBModel>} callback.records
   ###
   find: (model, conditions, callback) ->
-    @_collection(model).find conditions, (error, cursor) =>
+    #console.log JSON.stringify _buildWhere conditions
+    @_collection(model).find _buildWhere(conditions), (error, cursor) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
       cursor.toArray (error, result) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
