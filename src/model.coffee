@@ -3,12 +3,40 @@ async = require 'async'
 DBQuery = require './query'
 
 ###
+# Normalizes a schema
+# (field: String -> field: {type: String})
+###
+_normalizeSchema = (schema) ->
+  for field, property of schema
+    if typeof property is 'function'
+      schema[field] = type: property
+  return
+
+###
 # Base class for models
 ###
 class DBModel
   @String: String
   @Number: Number
   @ForeignKey: ->
+
+  ###
+  # Returns a new model class extending DBModel
+  # @param {DBConnection} connection
+  # @param {String} name
+  # @param {Object} schema
+  # @return {Class}
+  ###
+  @newModel: (connection, name, schema) ->
+    _normalizeSchema schema
+
+    class NewModel extends DBModel
+    Object.defineProperty NewModel, '_connection', value: connection
+    Object.defineProperty NewModel, '_name', value: name
+    Object.defineProperty NewModel, '_schema', value: schema
+    Object.defineProperty NewModel, '_associations', value: {}
+
+    return NewModel
   
   ###
   # Creates a record

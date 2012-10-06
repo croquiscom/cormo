@@ -2,16 +2,6 @@ EventEmitter = require('events').EventEmitter
 DBModel = require './model'
 
 ###
-# Normalizes a schema
-# (field: String -> field: {type: String})
-###
-_normalizeSchema = (schema) ->
-  for field, property of schema
-    if typeof property is 'function'
-      schema[field] = type: property
-  return
-
-###
 # Manages connection to a database
 ###
 class DBConnection extends EventEmitter
@@ -36,22 +26,13 @@ class DBConnection extends EventEmitter
       @emit 'connected'
 
   ###
-  # Creates a Model class
+  # Creates a model class
   # @param {String} name
   # @param {Object} schema
   # @return {Class}
   ###
   model: (name, schema) ->
-    _normalizeSchema schema
-
-    class NewModel extends DBModel
-    Object.defineProperty NewModel, '_connection', value: @
-    Object.defineProperty NewModel, '_name', value: name
-    Object.defineProperty NewModel, '_schema', value: schema
-    Object.defineProperty NewModel, '_associations', value: {}
-
-    @models[name] = NewModel
-    return NewModel
+    return @models[name] = DBModel.newModel @, name, schema
 
   _waitingForConnection: (object, method, args) ->
     return false if @connected
