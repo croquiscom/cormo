@@ -240,10 +240,10 @@ class DBModel
             # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
             # but use getter.__scope for safety
             self = getter.__scope
-            if (not self[fieldCache] or reload) and @id
+            if (not self[fieldCache] or reload) and self.id
               conditions = {}
-              conditions[foreign_key] = @id
-              target_model._connection._adapter.find target_model._name, conditions, (error, records) ->
+              conditions[foreign_key] = self.id
+              target_model.where conditions, (error, records) ->
                 return callback error if error
                 self[fieldCache] = records
                 callback null, records
@@ -267,7 +267,35 @@ class DBModel
   # @param {Class} target_model
   ###
   @belongsTo: (target_model) ->
-    @_addForeignKey inflector.foreign_key target_model._name
+    foreign_key = inflector.foreign_key target_model._name
+    @_addForeignKey foreign_key
+
+    field = inflector.underscore(target_model._name)
+    fieldCache = '__cache_' + field
+    fieldGetter = '__getter_' + field
+
+    Object.defineProperty @prototype, field,
+      get: ->
+        # getter must be created per instance due to __scope
+        if not @.hasOwnProperty fieldGetter
+          getter = (reload, callback) ->
+            if typeof reload is 'function'
+              callback = reload
+              reload = false
+            # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
+            # but use getter.__scope for safety
+            self = getter.__scope
+            if (not self[fieldCache] or reload) and self[foreign_key]
+              target_model.find self[foreign_key], (error, record) ->
+                return callback error if error
+                self[fieldCache] = record
+                callback null, record
+            else
+              callback null, self[fieldCache]
+          getter.__scope = @
+          Object.defineProperty @, fieldCache, value: null, writable: true
+          Object.defineProperty @, fieldGetter, value: getter
+        return @[fieldGetter]
   
   ###
   # Adds a validator

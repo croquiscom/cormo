@@ -55,4 +55,7 @@ Object.keys(_dbs).forEach (db) ->
         models.Post.drop (error) ->
           done null
 
-    require('./cases/association')(models)
+    describe '#hasMany', ->
+      require('./cases/association_has_many')(models)
+    describe '#belongsTo', ->
+      require('./cases/association_belongs_to')(models)
