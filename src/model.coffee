@@ -50,6 +50,8 @@ class DBModel
       if data[field]
         @[field] = data[field]
 
+    Object.defineProperty @, 'id', configurable: true, enumerable: true, writable: false, value: undefined
+
   ###
   # Creates a record.
   # 'Model.build(data)' is the same as 'new Model(data)'
@@ -139,7 +141,7 @@ class DBModel
       ctor = @constructor
       ctor._connection._adapter.create ctor._name, @, (error, id) =>
         return callback error, @ if error
-        @id = id
+        Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
         # save sub objects of each association
         foreign_key = inflector.foreign_key ctor._name
         async.forEach Object.keys(ctor._associations), (field, callback) =>

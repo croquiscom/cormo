@@ -162,7 +162,7 @@ class MongoDBAdapter extends AdapterBase
   _convertToModelInstance: (model, data) ->
     modelClass = @_connection.models[model]
     record = new modelClass()
-    record.id = data._id.toString()
+    Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: data._id.toString()
     for field of modelClass._schema
       record[field] = data[field]
     return record

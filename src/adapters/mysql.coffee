@@ -175,7 +175,7 @@ class MySQLAdapter extends AdapterBase
   _convertToModelInstance: (model, data) ->
     modelClass = @_connection.models[model]
     record = new modelClass()
-    record.id = Number(data.id)
+    Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: Number(data.id)
     for field, property of modelClass._schema
       if property.type is DBModel.ForeignKey
         record[field] = Number(data[field])
