@@ -41,11 +41,14 @@ class DBQuery
   # @return {DBQuery} this
   ###
   exec: (callback) ->
-    if @_id
+    if @_id and @_conditions.length is 0
       @_adapter.findById @_name, @_id, (error, record) ->
         return callback error if error
         callback null, [record]
-    else
-      @_adapter.find @_name, @_conditions, callback
+      return
+    if @_id
+      @_conditions.push id: @_id
+      delete @_id
+    @_adapter.find @_name, @_conditions, callback
 
 module.exports = DBQuery

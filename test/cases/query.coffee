@@ -44,6 +44,16 @@ module.exports = (models) ->
         users[0].should.have.property 'age', 27
         done null
 
+  it 'id', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.where { id: users[2].id }, (error, users) ->
+        return done error if error
+        users.should.have.length 1
+        users[0].should.have.property 'name', 'Alice Jackson'
+        users[0].should.have.property 'age', 27
+        done null
+
   it '$or', (done) ->
     _createUsers models.User, (error, users) ->
       return done error if error

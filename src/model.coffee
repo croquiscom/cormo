@@ -155,8 +155,9 @@ class DBModel
     query.find id
     if typeof callback is 'function'
       query.exec (error, records) ->
+        error = new Error('not found') if records?.length is 0
+        error = new Error('unknown error') if records?.length > 1
         return callback error if error
-        return callback new Error('unknown error') if records.length isnt 1
         callback null, records[0]
     return query
 

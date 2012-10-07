@@ -39,7 +39,13 @@ _buildWhere = (conditions, conjunction='$and') ->
             when '$include'
               value = new RegExp value[sub_key], 'i'
         obj = {}
-        obj[key] = value
+        if key is 'id'
+          try
+            obj._id = new ObjectID value
+          catch e
+            throw new Error('unknown error')
+        else
+          obj[key] = value
         return obj
     else
       subs = keys.map (key) -> _buildWhere conditions[key]
@@ -197,8 +203,12 @@ class MongoDBAdapter extends AdapterBase
   # @param {Array<DBModel>} callback.records
   ###
   find: (model, conditions, callback) ->
-    #console.log JSON.stringify _buildWhere conditions
-    @_collection(model).find _buildWhere(conditions), (error, cursor) =>
+    try
+      conditions = _buildWhere conditions
+    catch e
+      return callback e
+    #console.log JSON.stringify conditions
+    @_collection(model).find conditions, (error, cursor) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
       cursor.toArray (error, result) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
