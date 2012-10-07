@@ -48,7 +48,10 @@ _buildWhere = (conditions, conjunction='$and') ->
           obj[key] = value
         return obj
     else
-      subs = keys.map (key) -> _buildWhere conditions[key]
+      subs = keys.map (key) ->
+        obj = {}
+        obj[key] = conditions[key]
+        _buildWhere obj
   else
     return
   return if subs.length is 0

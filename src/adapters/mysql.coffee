@@ -62,7 +62,10 @@ _buildWhere = (conditions, params, conjunction='AND') ->
         params.push value
         return key + op + '?'
     else
-      subs = keys.map (key) -> _buildWhere conditions[key], params
+      subs = keys.map (key) ->
+        obj = {}
+        obj[key] = conditions[key]
+        _buildWhere obj, params
   else
     return ''
   return '(' + subs.join(' ' + conjunction + ' ') + ')'

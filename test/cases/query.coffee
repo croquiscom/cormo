@@ -19,7 +19,7 @@ module.exports = (models) ->
   it 'simple where', (done) ->
     _createUsers models.User, (error, users) ->
       return done error if error
-      models.User.where { age: 27 }, (error, users) ->
+      models.User.where age: 27, (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -43,6 +43,16 @@ module.exports = (models) ->
     _createUsers models.User, (error, users) ->
       return done error if error
       models.User.where { id: users[2].id }, (error, users) ->
+        return done error if error
+        users.should.have.length 1
+        users[0].should.have.property 'name', 'Alice Jackson'
+        users[0].should.have.property 'age', 27
+        done null
+
+  it 'implicit and', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.where age: 27, name: 'Alice Jackson', (error, users) ->
         return done error if error
         users.should.have.length 1
         users[0].should.have.property 'name', 'Alice Jackson'
