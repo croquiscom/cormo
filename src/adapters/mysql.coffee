@@ -12,7 +12,7 @@ async = require 'async'
 _typeToSQL = (property) ->
   switch property.type
     when DBModel.String then 'VARCHAR(255)'
-    when DBModel.Number then 'INT(11)'
+    when DBModel.Number then 'DOUBLE'
     when DBModel.ForeignKey then 'BIGINT'
 
 _propertyToSQL = (property) ->

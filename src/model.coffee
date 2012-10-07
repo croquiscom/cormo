@@ -81,6 +81,17 @@ class DBModel
   ###
   validate: (callback) ->
     errors = []
+
+    schema = @constructor._schema
+    Object.keys(schema).forEach (field) =>
+      property = schema[field]
+      if property.type is DBModel.Number
+        value = Number @[field]
+        if isNaN value
+          errors.push "'#{field}' is not a number"
+        else
+          @[field] = value
+
     @constructor._validators.forEach (validator) =>
       try
         r = validator @
