@@ -198,6 +198,24 @@ class DBModel
     return query
 
   ###
+  # Deletes records by conditions
+  # @param {Object} [condition]
+  # @param {Function} [callback]
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  # @return {DBQuery}
+  ###
+  @delete: (condition, callback) ->
+    if typeof condition is 'function'
+      callback = condition
+      condition = null
+    query = new DBQuery @
+    query.where condition
+    if typeof callback is 'function'
+      query.delete callback
+    return query
+
+  ###
   # Adds a has-many association
   # @param {Class} target_model
   ###
@@ -275,7 +293,9 @@ class DBModel
   # @param {Error} callback.error
   ###
   @deleteAll: (callback) ->
-    @_connection._adapter.deleteAll @_name, callback
+    callback = (->) if typeof callback isnt 'function'
+    @delete callback
+    return
 
   @_addForeignKey: (field) ->
     return if @_schema.hasOwnProperty field

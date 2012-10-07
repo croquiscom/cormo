@@ -117,18 +117,6 @@ class MongoDBAdapter extends AdapterBase
       callback null
 
   ###
-  # Deletes all records from the database
-  # @param {String} model
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @see DBModel.deleteAll
-  ###
-  deleteAll: (model, callback) ->
-    @_collection(model).remove {}, (error) ->
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null
-
-  ###
   # Creates a record
   # @param {String} model
   # @param {Object} data
@@ -230,6 +218,24 @@ class MongoDBAdapter extends AdapterBase
       return callback e
     #console.log JSON.stringify conditions
     @_collection(model).count conditions, (error, count) =>
+      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      callback null, count
+
+  ###
+  # Deletes records from the database
+  # @param {String} model
+  # @param {Object} conditions
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  ###
+  delete: (model, conditions, callback) ->
+    try
+      conditions = _buildWhere conditions
+    catch e
+      return callback e
+    #console.log JSON.stringify conditions
+    @_collection(model).remove conditions, safe: true, (error, count) ->
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null, count
 

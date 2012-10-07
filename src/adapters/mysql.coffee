@@ -134,19 +134,6 @@ class MySQLAdapter extends AdapterBase
       callback null
 
   ###
-  # Deletes all records from the database
-  # @param {String} model
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @see DBModel.deleteAll
-  ###
-  deleteAll: (model, callback) ->
-    table = tableize model
-    @_query "DELETE FROM #{table}", (error) ->
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null
-
-  ###
   # Creates a record
   # @param {String} model
   # @param {Object} data
@@ -249,6 +236,24 @@ class MySQLAdapter extends AdapterBase
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       return callback error 'unknown error' if result?.length isnt 1
       callback null, Number(result[0].count)
+
+  ###
+  # Deletes records from the database
+  # @param {String} model
+  # @param {Object} conditions
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  ###
+  delete: (model, conditions, callback) ->
+    params = []
+    sql = "DELETE FROM #{tableize model}"
+    if conditions.length > 0
+      sql += ' WHERE ' + _buildWhere conditions, params
+    #console.log sql, params
+    @_query sql, params, (error, result) ->
+      return callback MySQLAdapter.wrapError 'unknown error', error if error or not result?
+      callback null, result.affectedRows
 
   ###
   # Creates a MySQL adapter

@@ -106,3 +106,30 @@ module.exports = (models) ->
       models.User.count age: 27, (error, count) ->
         count.should.equal 2
         done null
+
+  it 'delete all', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.delete (error, count) ->
+        count.should.equal 5
+        models.User.where (error, users) ->
+          return done error if error
+          users.should.have.length 0
+          done null
+
+  it 'delete condition', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.delete age: 27, (error, count) ->
+        count.should.equal 2
+        models.User.where (error, users) ->
+          return done error if error
+          users.should.have.length 3
+          users.sort (a, b) -> if a.name < b.name then -1 else 1
+          users[0].should.have.property 'name', 'Bill Smith'
+          users[0].should.have.property 'age', 45
+          users[1].should.have.property 'name', 'Daniel Smith'
+          users[1].should.have.property 'age', 53
+          users[2].should.have.property 'name', 'Gina Baker'
+          users[2].should.have.property 'age', 32
+          done null

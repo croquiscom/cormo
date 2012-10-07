@@ -64,4 +64,17 @@ class DBQuery
       delete @_id
     @_adapter.count @_name, @_conditions, callback
 
+  ###
+  # Executes the query as a delete operation
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  # @return {DBQuery} this
+  ###
+  delete: (callback) ->
+    if @_id
+      @_conditions.push id: @_id
+      delete @_id
+    @_adapter.delete @_name, @_conditions, callback
+
 module.exports = DBQuery
