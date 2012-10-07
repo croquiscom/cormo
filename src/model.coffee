@@ -142,6 +142,16 @@ class DBModel
             callback null, @
 
   ###
+  # Destroys this record (remove from the database)
+  # @param {Function} callback
+  # @param {Error} callback.error
+  ###
+  destroy: (callback) ->
+    callback = (->) if typeof callback isnt 'function'
+    @constructor.delete { id: @id }, callback
+    return
+
+  ###
   # Finds a record by id
   # @param {String} id
   # @param {Function} [callback]

@@ -84,3 +84,20 @@ module.exports = (models) ->
             record.should.have.property 'name', 'Bill Smith'
             record.should.have.property 'age', 27
             done null
+
+  it 'destroy a record', (done) ->
+    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      return done error if error
+      models.User.find user.id, (error, record) ->
+        return done error if error
+        should.exist record
+        record.should.have.property 'id', user.id
+        record.should.have.property 'name', 'John Doe'
+        record.should.have.property 'age', 27
+        user.destroy (error) ->
+          return done error if error
+          models.User.find user.id, (error, record) ->
+            should.exist error
+            error.should.be.an.instanceOf Error
+            error.message.should.equal 'not found'
+            done null
