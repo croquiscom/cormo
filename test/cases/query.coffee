@@ -22,16 +22,11 @@ module.exports = (models) ->
       models.User.where { age: 27 }, (error, users) ->
         return done error if error
         users.should.have.length 2
-        if users[0].name is 'John Doe'
-          users[0].should.have.property 'name', 'John Doe'
-          users[0].should.have.property 'age', 27
-          users[1].should.have.property 'name', 'Alice Jackson'
-          users[1].should.have.property 'age', 27
-        else
-          users[0].should.have.property 'name', 'Alice Jackson'
-          users[0].should.have.property 'age', 27
-          users[1].should.have.property 'name', 'John Doe'
-          users[1].should.have.property 'age', 27
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        users[0].should.have.property 'name', 'Alice Jackson'
+        users[0].should.have.property 'age', 27
+        users[1].should.have.property 'name', 'John Doe'
+        users[1].should.have.property 'age', 27
         done null
 
   it 'where chain', (done) ->
@@ -60,16 +55,11 @@ module.exports = (models) ->
       models.User.where $or: [ { age: 32 }, { name: 'John Doe' } ], (error, users) ->
         return done error if error
         users.should.have.length 2
-        if users[0].name is 'John Doe'
-          users[0].should.have.property 'name', 'John Doe'
-          users[0].should.have.property 'age', 27
-          users[1].should.have.property 'name', 'Gina Baker'
-          users[1].should.have.property 'age', 32
-        else
-          users[0].should.have.property 'name', 'Gina Baker'
-          users[0].should.have.property 'age', 32
-          users[1].should.have.property 'name', 'John Doe'
-          users[1].should.have.property 'age', 27
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        users[0].should.have.property 'name', 'Gina Baker'
+        users[0].should.have.property 'age', 32
+        users[1].should.have.property 'name', 'John Doe'
+        users[1].should.have.property 'age', 27
         done null
 
   it 'comparison', (done) ->
@@ -78,16 +68,11 @@ module.exports = (models) ->
       models.User.where [ { age: { $gt: 30 } }, { age: { $lte: 45 } } ], (error, users) ->
         return done error if error
         users.should.have.length 2
-        if users[0].name is 'Bill Smith'
-          users[0].should.have.property 'name', 'Bill Smith'
-          users[0].should.have.property 'age', 45
-          users[1].should.have.property 'name', 'Gina Baker'
-          users[1].should.have.property 'age', 32
-        else
-          users[0].should.have.property 'name', 'Gina Baker'
-          users[0].should.have.property 'age', 32
-          users[1].should.have.property 'name', 'Bill Smith'
-          users[1].should.have.property 'age', 45
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        users[0].should.have.property 'name', 'Bill Smith'
+        users[0].should.have.property 'age', 45
+        users[1].should.have.property 'name', 'Gina Baker'
+        users[1].should.have.property 'age', 32
         done null
 
   it 'include', (done) ->
@@ -96,16 +81,11 @@ module.exports = (models) ->
       models.User.where { name: { $include: 'smi' } }, (error, users) ->
         return done error if error
         users.should.have.length 2
-        if users[0].name is 'Bill Smith'
-          users[0].should.have.property 'name', 'Bill Smith'
-          users[0].should.have.property 'age', 45
-          users[1].should.have.property 'name', 'Daniel Smith'
-          users[1].should.have.property 'age', 53
-        else
-          users[0].should.have.property 'name', 'Daniel Smith'
-          users[0].should.have.property 'age', 53
-          users[1].should.have.property 'name', 'Bill Smith'
-          users[1].should.have.property 'age', 45
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        users[0].should.have.property 'name', 'Bill Smith'
+        users[0].should.have.property 'age', 45
+        users[1].should.have.property 'name', 'Daniel Smith'
+        users[1].should.have.property 'age', 53
         done null
 
   it 'count none', (done) ->

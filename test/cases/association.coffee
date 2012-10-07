@@ -101,12 +101,9 @@ module.exports = (models) ->
         models.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
           user.posts (error, posts) ->
             posts.should.have.length 2
-            if posts[0].id is post1.id
-              posts[0].should.eql post1
-              posts[1].should.eql post2
-            else
-              posts[0].should.eql post2
-              posts[1].should.eql post1
+            posts.sort (a, b) -> if a.body < b.body then -1 else 1
+            posts[0].should.eql post1
+            posts[1].should.eql post2
             done null
 
   it 'sub objects are cached', (done) ->
@@ -123,10 +120,7 @@ module.exports = (models) ->
               # ignore cache and force reload
               user.posts true, (error, posts) ->
                 posts.should.have.length 2
-                if posts[0].id is post1.id
-                  posts[0].should.eql post1
-                  posts[1].should.eql post2
-                else
-                  posts[0].should.eql post2
-                  posts[1].should.eql post1
+                posts.sort (a, b) -> if a.body < b.body then -1 else 1
+                posts[0].should.eql post1
+                posts[1].should.eql post2
                 done null
