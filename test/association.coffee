@@ -35,6 +35,9 @@ Object.keys(_dbs).forEach (db) ->
         User.hasMany Post
         Post.belongsTo User
 
+        Post.hasMany Post, as: 'comments', foreign_key: 'parent_post_id'
+        Post.belongsTo Post, as: 'parent_post'
+
         User.drop (error) ->
           return done error if error
           Post.drop (error) ->
@@ -59,3 +62,5 @@ Object.keys(_dbs).forEach (db) ->
       require('./cases/association_has_many')(models)
     describe '#belongsTo', ->
       require('./cases/association_belongs_to')(models)
+    describe '#as', ->
+      require('./cases/association_as')(models)

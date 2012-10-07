@@ -1,6 +1,11 @@
 should = require 'should'
 async = require 'async'
 
+_comparePost = (a, b) ->
+  a.should.have.property 'user_id', b.user_id
+  a.should.have.property 'title', b.title
+  a.should.have.property 'body', b.body
+
 module.exports = (models) ->
   it 'collection_accessor.build on a new object', (done) ->
     async.waterfall [
@@ -102,8 +107,8 @@ module.exports = (models) ->
           user.posts (error, posts) ->
             posts.should.have.length 2
             posts.sort (a, b) -> if a.body < b.body then -1 else 1
-            posts[0].should.eql post1
-            posts[1].should.eql post2
+            _comparePost posts[0], post1
+            _comparePost posts[1], post2
             done null
 
   it 'sub objects are cached', (done) ->
@@ -111,16 +116,16 @@ module.exports = (models) ->
       models.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
         user.posts (error, posts) ->
           posts.should.have.length 1
-          posts[0].should.eql post1
+          _comparePost posts[0], post1
           models.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
             user.posts (error, posts) ->
               # added object is not fetched
               posts.should.have.length 1
-              posts[0].should.eql post1
+              _comparePost posts[0], post1
               # ignore cache and force reload
               user.posts true, (error, posts) ->
                 posts.should.have.length 2
                 posts.sort (a, b) -> if a.body < b.body then -1 else 1
-                posts[0].should.eql post1
-                posts[1].should.eql post2
+                _comparePost posts[0], post1
+                _comparePost posts[1], post2
                 done null

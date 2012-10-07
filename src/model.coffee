@@ -218,12 +218,20 @@ class DBModel
   ###
   # Adds a has-many association
   # @param {Class} target_model
+  # @param {Object} [options]
+  # @param {String} [options.as]
+  # @param {String} [options.foreign_key]
   ###
-  @hasMany: (target_model) ->
-    foreign_key = inflector.foreign_key @_name
+  @hasMany: (target_model, options) ->
+    if options?.foreign_key
+      foreign_key = options.foreign_key
+    else if options?.as
+      foreign_key = options.as + '_id'
+    else
+      foreign_key = inflector.foreign_key @_name
     target_model._addForeignKey foreign_key
 
-    field = inflector.tableize(target_model._name)
+    field = options?.as or inflector.tableize(target_model._name)
     fieldCache = '__cache_' + field
     fieldGetter = '__getter_' + field
 
@@ -265,12 +273,20 @@ class DBModel
   ###
   # Adds a belongs-to association
   # @param {Class} target_model
+  # @param {Object} [options]
+  # @param {String} [options.as]
+  # @param {String} [options.foreign_key]
   ###
-  @belongsTo: (target_model) ->
-    foreign_key = inflector.foreign_key target_model._name
+  @belongsTo: (target_model, options) ->
+    if options?.foreign_key
+      foreign_key = options.foreign_key
+    else if options?.as
+      foreign_key = options.as + '_id'
+    else
+      foreign_key = inflector.foreign_key target_model._name
     @_addForeignKey foreign_key
 
-    field = inflector.underscore(target_model._name)
+    field = options?.as or inflector.underscore(target_model._name)
     fieldCache = '__cache_' + field
     fieldGetter = '__getter_' + field
 
