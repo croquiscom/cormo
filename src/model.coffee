@@ -162,18 +162,39 @@ class DBModel
     return query
 
   ###
-  # Find records by conditions
-  # @param {Object} condition
+  # Finds records by conditions
+  # @param {Object} [condition]
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Array<DBModel>} callback.records
   # @return {DBQuery}
   ###
   @where: (condition, callback) ->
+    if typeof condition is 'function'
+      callback = condition
+      condition = null
     query = new DBQuery @
     query.where condition
     if typeof callback is 'function'
       query.exec callback
+    return query
+
+  ###
+  # Counts records by conditions
+  # @param {Object} [condition]
+  # @param {Function} [callback]
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  # @return {DBQuery}
+  ###
+  @count: (condition, callback) ->
+    if typeof condition is 'function'
+      callback = condition
+      condition = null
+    query = new DBQuery @
+    query.where condition
+    if typeof callback is 'function'
+      query.count callback
     return query
 
   ###

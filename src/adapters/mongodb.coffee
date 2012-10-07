@@ -51,6 +51,7 @@ _buildWhere = (conditions, conjunction='$and') ->
       subs = keys.map (key) -> _buildWhere conditions[key]
   else
     return
+  return if subs.length is 0
   obj = {}
   obj[conjunction] = subs
   return obj
@@ -213,6 +214,24 @@ class MongoDBAdapter extends AdapterBase
       cursor.toArray (error, result) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
         callback null, result.map (instance) => @_convertToModelInstance model, instance
+
+  ###
+  # Counts records
+  # @param {String} model
+  # @param {Object} conditions
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  ###
+  count: (model, conditions, callback) ->
+    try
+      conditions = _buildWhere conditions
+    catch e
+      return callback e
+    #console.log JSON.stringify conditions
+    @_collection(model).count conditions, (error, count) =>
+      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      callback null, count
 
   ###
   # Creates a MongoDB adapter

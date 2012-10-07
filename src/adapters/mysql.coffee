@@ -232,6 +232,25 @@ class MySQLAdapter extends AdapterBase
       callback null, result.map (instance) => @_convertToModelInstance model, instance
 
   ###
+  # Counts records
+  # @param {String} model
+  # @param {Object} conditions
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  ###
+  count: (model, conditions, callback) ->
+    params = []
+    sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
+    if conditions.length > 0
+      sql += ' WHERE ' + _buildWhere conditions, params
+    #console.log sql, params
+    @_query sql, params, (error, result) =>
+      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      return callback error 'unknown error' if result?.length isnt 1
+      callback null, Number(result[0].count)
+
+  ###
   # Creates a MySQL adapter
   # @param {Connection} connection
   # @param {Object} settings

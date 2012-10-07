@@ -29,7 +29,7 @@ class DBQuery
   where: (condition) ->
     if Array.isArray condition
       @_conditions.push.apply @_conditions, condition
-    else
+    else if condition?
       @_conditions.push condition
     return @
 
@@ -50,5 +50,18 @@ class DBQuery
       @_conditions.push id: @_id
       delete @_id
     @_adapter.find @_name, @_conditions, callback
+
+  ###
+  # Executes the query as a count operation
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  # @return {DBQuery} this
+  ###
+  count: (callback) ->
+    if @_id
+      @_conditions.push id: @_id
+      delete @_id
+    @_adapter.count @_name, @_conditions, callback
 
 module.exports = DBQuery

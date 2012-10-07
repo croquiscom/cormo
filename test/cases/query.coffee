@@ -107,3 +107,22 @@ module.exports = (models) ->
           users[1].should.have.property 'name', 'Bill Smith'
           users[1].should.have.property 'age', 45
         done null
+
+  it 'count none', (done) ->
+    models.User.count (error, count) ->
+      count.should.equal 0
+      done null
+
+  it 'count all', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.count (error, count) ->
+        count.should.equal 5
+        done null
+
+  it 'count condition', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.count age: 27, (error, count) ->
+        count.should.equal 2
+        done null
