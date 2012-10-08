@@ -132,6 +132,6 @@ module.exports = (models) ->
         user.should.be.equal record
         models.User.find user.id, (error, record) ->
           return done error if error
-          should.not.exist record.name
-          should.not.exist record.age
+          record.should.not.have.property 'name'
+          record.should.not.have.property 'age'
           done null

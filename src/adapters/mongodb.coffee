@@ -128,6 +128,10 @@ class MongoDBAdapter extends AdapterBase
   # @param {String} callback.id
   ###
   create: (model, data, callback) ->
+    # remove null field before save
+    Object.keys(data).forEach (field) ->
+      delete data[field] if not data[field]?
+
     @_collection(model).insert data, safe: true, (error, result) ->
       if error?.code is 11000
         key = error.err.match /index: [\w-.]+\$(\w+)_1/
@@ -152,6 +156,11 @@ class MongoDBAdapter extends AdapterBase
       id = new ObjectID data.id
     catch e
       return callback new Error('unknown error')
+
+    # remove null field before save
+    Object.keys(data).forEach (field) ->
+      delete data[field] if not data[field]?
+
     @_collection(model).update { _id: id }, data, safe: true, (error) ->
       if error?.code is 11001
         key = error.err.match /index: [\w-.]+\$(\w+)_1/

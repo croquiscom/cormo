@@ -177,6 +177,7 @@ class MySQLAdapter extends AdapterBase
     record = new modelClass()
     Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: Number(data.id)
     for field, property of modelClass._schema
+      continue if not data[field]?
       if property.type is DBModel.ForeignKey
         record[field] = Number(data[field])
       else
