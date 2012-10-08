@@ -87,6 +87,8 @@ class DBModel
     schema = @constructor._schema
     Object.keys(schema).forEach (column) =>
       property = schema[column]
+      if property.required and not @[column]?
+        errors.push "'#{column}' is required"
       if property.type is DBModel.Number and @[column]?
         value = Number @[column]
         if isNaN value

@@ -18,7 +18,10 @@ _typeToSQL = (property) ->
 _propertyToSQL = (property) ->
   type = _typeToSQL property
   if type
-    type += ' NULL'
+    if property.required
+      type += ' NOT NULL'
+    else
+      type += ' NULL'
     if property.unique
       type += ' UNIQUE'
     return type
@@ -136,6 +139,17 @@ class MySQLAdapter extends AdapterBase
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
 
+  _processSaveError = (error, callback) ->
+    if error.code is 'ER_DUP_ENTRY'
+      key = error.message.match /for key '([^']*)'/
+      error = new Error('duplicated ' + key?[1])
+    else if error.code is 'ER_BAD_NULL_ERROR'
+      key = error.message.match /Column '([^']*)'/
+      error = new Error("'#{key?[1]}' is required")
+    else
+      error = MySQLAdapter.wrapError 'unknown error', error
+    callback error
+
   ###
   # Creates a record
   # @param {String} model
@@ -147,10 +161,7 @@ class MySQLAdapter extends AdapterBase
   create: (model, data, callback) ->
     table = tableize model
     @_query "INSERT INTO #{table} SET ?", data, (error, result) ->
-      if error?.code is 'ER_DUP_ENTRY'
-        key = error.message.match /for key '([^']*)'/
-        return callback new Error('duplicated ' + key?[1])
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      return _processSaveError error, callback if error
       if result?.insertId
         callback null, result.insertId
       else
@@ -166,10 +177,7 @@ class MySQLAdapter extends AdapterBase
   update: (model, data, callback) ->
     table = tableize model
     @_query "UPDATE #{table} SET ? WHERE id=?", [data, data.id], (error) ->
-      if error?.code is 'ER_DUP_ENTRY'
-        key = error.message.match /for key '([^']*)'/
-        return callback new Error('duplicated ' + key?[1])
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      return _processSaveError error, callback if error
       callback null
 
   _convertToModelInstance: (model, data) ->

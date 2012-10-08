@@ -25,9 +25,10 @@ Object.keys(_dbs).forEach (db) ->
         return done error if error
 
         User = models.User = connection.model 'User',
-          name: String
-          age: Number
-          email: { type: String, unique: true }
+          name: { type: String, required: true }
+          age: { type: Number, required: true }
+          email: { type: String, unique: true, required: true }
+          facebook_id: { type: String, unique: true }
 
         User.drop (error) ->
           return done error if error
