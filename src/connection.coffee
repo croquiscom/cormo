@@ -53,4 +53,7 @@ class DBConnection extends EventEmitter
     else
       callback null
 
+for type, value of require './types'
+  DBConnection[type] = value
+
 module.exports = DBConnection

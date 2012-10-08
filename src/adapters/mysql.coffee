@@ -5,15 +5,16 @@ catch e
   process.exit 1
 
 AdapterBase = require './base'
-DBModel = require '../model'
+types = require '../types'
 tableize = require('../inflector').tableize
 async = require 'async'
 
 _typeToSQL = (property) ->
   switch property.type
-    when DBModel.String then 'VARCHAR(255)'
-    when DBModel.Number then 'DOUBLE'
-    when DBModel.ForeignKey then 'BIGINT'
+    when types.String then 'VARCHAR(255)'
+    when types.Number then 'DOUBLE'
+    when types.Integer then 'INT'
+    when types.ForeignKey then 'BIGINT'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property
@@ -186,7 +187,7 @@ class MySQLAdapter extends AdapterBase
     Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: Number(data.id)
     for column, property of modelClass._schema
       continue if not data[column]?
-      if property.type is DBModel.ForeignKey
+      if property.type is types.ForeignKey
         record[column] = Number(data[column])
       else
         record[column] = data[column]

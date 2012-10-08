@@ -16,10 +16,6 @@ _normalizeSchema = (schema) ->
 # Base class for models
 ###
 class DBModel
-  @String: String
-  @Number: Number
-  @ForeignKey: ->
-
   ###
   # Returns a new model class extending DBModel
   # @param {DBConnection} connection
@@ -87,14 +83,23 @@ class DBModel
     schema = @constructor._schema
     Object.keys(schema).forEach (column) =>
       property = schema[column]
-      if property.required and not @[column]?
-        errors.push "'#{column}' is required"
-      if property.type is DBModel.Number and @[column]?
-        value = Number @[column]
-        if isNaN value
-          errors.push "'#{column}' is not a number"
-        else
-          @[column] = value
+      if @[column]?
+        switch property.type
+          when DBModel.Number
+            value = Number @[column]
+            if isNaN value
+              errors.push "'#{column}' is not a number"
+            else
+              @[column] = value
+          when DBModel.Integer
+            value = Number @[column]
+            if isNaN(value) or Math.floor(value) isnt value
+              errors.push "'#{column}' is not an integer"
+            else
+              @[column] = value
+      else
+        if property.required
+          errors.push "'#{column}' is required"
 
     @constructor._validators.forEach (validator) =>
       try
@@ -391,5 +396,8 @@ class DBModel
     return if @_schema.hasOwnProperty column
 
     @_schema[column] = { type: @ForeignKey }
+
+for type, value of require './types'
+  DBModel[type] = value
 
 module.exports = DBModel

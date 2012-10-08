@@ -26,6 +26,7 @@ Object.keys(_dbs).forEach (db) ->
 
         Type = models.Type = connection.model 'Type',
           number: Number
+          int_c: DBConnection.Integer
 
         Type.drop (error) ->
           return done error if error
