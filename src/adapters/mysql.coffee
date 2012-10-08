@@ -216,15 +216,18 @@ class MySQLAdapter extends AdapterBase
   # Finds records
   # @param {String} model
   # @param {Object} conditions
+  # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Array<DBModel>} callback.records
   ###
-  find: (model, conditions, callback) ->
+  find: (model, conditions, options, callback) ->
     params = []
     sql = "SELECT * FROM #{tableize model}"
     if conditions.length > 0
       sql += ' WHERE ' + _buildWhere conditions, params
+    if options?.limit?
+      sql += ' LIMIT ' + options.limit
     #console.log sql, params
     @_query sql, params, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error

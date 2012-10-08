@@ -11,6 +11,7 @@ class DBQuery
     @_name = model._name
     @_adapter = model._connection._adapter
     @_conditions = []
+    @_options = {}
  
   ###
   # Finds a record by id
@@ -34,6 +35,15 @@ class DBQuery
     return @
 
   ###
+  # Sets limit of query
+  # @param {Number} limit
+  # @return {DBQuery} this
+  ###
+  limit: (limit) ->
+    @_options.limit = limit
+    return @
+
+  ###
   # Executes the query
   # @param {Function} callback
   # @param {Error} callback.error
@@ -49,7 +59,7 @@ class DBQuery
     if @_id
       @_conditions.push id: @_id
       delete @_id
-    @_adapter.find @_name, @_conditions, callback
+    @_adapter.find @_name, @_conditions, @_options, callback
 
   ###
   # Executes the query as a count operation

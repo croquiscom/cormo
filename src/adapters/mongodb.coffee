@@ -199,17 +199,18 @@ class MongoDBAdapter extends AdapterBase
   # Finds records
   # @param {String} model
   # @param {Object} conditions
+  # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Array<DBModel>} callback.records
   ###
-  find: (model, conditions, callback) ->
+  find: (model, conditions, options, callback) ->
     try
       conditions = _buildWhere conditions
     catch e
       return callback e
     #console.log JSON.stringify conditions
-    @_collection(model).find conditions, (error, cursor) =>
+    @_collection(model).find conditions, options, (error, cursor) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
       cursor.toArray (error, result) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor

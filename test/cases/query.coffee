@@ -11,6 +11,7 @@ _createUsers = (User, data, callback) ->
       { name: 'Gina Baker', age: 32 }
       { name: 'Daniel Smith', age: 53 }
     ]
+  data.sort -> 0.5 - Math.random() # random sort
   async.map data, (item, callback) ->
       User.create item, callback
     , callback
@@ -41,12 +42,13 @@ module.exports = (models) ->
 
   it 'id', (done) ->
     _createUsers models.User, (error, users) ->
+      target = users[0]
       return done error if error
-      models.User.where { id: users[2].id }, (error, users) ->
+      models.User.where { id: target.id }, (error, users) ->
         return done error if error
         users.should.have.length 1
-        users[0].should.have.property 'name', 'Alice Jackson'
-        users[0].should.have.property 'age', 27
+        users[0].should.have.property 'name', target.name
+        users[0].should.have.property 'age', target.age
         done null
 
   it 'implicit and', (done) ->
@@ -143,3 +145,38 @@ module.exports = (models) ->
           users[2].should.have.property 'name', 'Gina Baker'
           users[2].should.have.property 'age', 32
           done null
+
+  it 'limit', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      async.series [
+        (callback) ->
+          models.User.where().exec (error, users) ->
+            return callback error if error
+            users.should.have.length 5
+            callback null
+        (callback) ->
+          models.User.where().limit(3).exec (error, users) ->
+            return callback error if error
+            users.should.have.length 3
+            callback null
+        (callback) ->
+          models.User.where(age: { $lt: 40 }).exec (error, users) ->
+            return callback error if error
+            users.should.have.length 3
+            callback null
+        (callback) ->
+          models.User.where(age: { $lt: 40 }).limit(1).exec (error, users) ->
+            return callback error if error
+            users.should.have.length 1
+            users[0].should.have.property 'name'
+            if users[0].name is 'Alice Jackson'
+              users[0].should.have.property 'age', 27
+            else if users[0].name is 'John Doe'
+              users[0].should.have.property 'age', 27
+            else
+              users[0].should.have.property 'name', 'Gina Baker'
+              users[0].should.have.property 'age', 32
+            callback null
+      ], (error) ->
+        done error
