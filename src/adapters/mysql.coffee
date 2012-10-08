@@ -90,26 +90,26 @@ class MySQLAdapter extends AdapterBase
     table = tableize model
     sql = []
     sql.push 'id BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY'
-    for field, property of @_connection.models[model]._schema
-      field_sql = _propertyToSQL property
-      if field_sql
-        sql.push field + ' ' + field_sql
+    for column, property of @_connection.models[model]._schema
+      column_sql = _propertyToSQL property
+      if column_sql
+        sql.push column + ' ' + column_sql
     sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
     @_query sql, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
 
-  _alterTable: (model, fields, callback) ->
+  _alterTable: (model, columns, callback) ->
     # TODO
     callback null
 
   _applySchema: (model, callback) ->
     table = tableize model
-    @_query "SHOW FIELDS FROM #{table}", (error, fields) =>
+    @_query "SHOW COLUMNS FROM #{table}", (error, columns) =>
       if error?.code is 'ER_NO_SUCH_TABLE'
         @_createTable model, callback
       else
-        @_alterTable model, fields, callback
+        @_alterTable model, columns, callback
 
   ###
   # Creates or alters tables reflecting schemas
@@ -176,12 +176,12 @@ class MySQLAdapter extends AdapterBase
     modelClass = @_connection.models[model]
     record = new modelClass()
     Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: Number(data.id)
-    for field, property of modelClass._schema
-      continue if not data[field]?
+    for column, property of modelClass._schema
+      continue if not data[column]?
       if property.type is DBModel.ForeignKey
-        record[field] = Number(data[field])
+        record[column] = Number(data[column])
       else
-        record[field] = data[field]
+        record[column] = data[column]
     return record
 
   ###
@@ -220,7 +220,7 @@ class MySQLAdapter extends AdapterBase
     #console.log sql, params
     @_query sql, params, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null, result.map (instance) => @_convertToModelInstance model, instance
+      callback null, result.map (record) => @_convertToModelInstance model, record
 
   ###
   # Counts records

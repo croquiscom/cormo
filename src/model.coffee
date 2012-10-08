@@ -4,12 +4,12 @@ DBQuery = require './query'
 
 ###
 # Normalizes a schema
-# (field: String -> field: {type: String})
+# (column: String -> column: {type: String})
 ###
 _normalizeSchema = (schema) ->
-  for field, property of schema
+  for column, property of schema
     if typeof property is 'function'
-      schema[field] = type: property
+      schema[column] = type: property
   return
 
 ###
@@ -46,9 +46,9 @@ class DBModel
   constructor: (data) ->
     data = data or {}
     schema = @constructor._schema
-    Object.keys(schema).forEach (field) =>
-      if data[field]?
-        @[field] = data[field]
+    Object.keys(schema).forEach (column) =>
+      if data[column]?
+        @[column] = data[column]
 
     Object.defineProperty @, 'id', configurable: true, enumerable: true, writable: false, value: undefined
 
@@ -85,14 +85,14 @@ class DBModel
     errors = []
 
     schema = @constructor._schema
-    Object.keys(schema).forEach (field) =>
-      property = schema[field]
-      if property.type is DBModel.Number and @[field]?
-        value = Number @[field]
+    Object.keys(schema).forEach (column) =>
+      property = schema[column]
+      if property.type is DBModel.Number and @[column]?
+        value = Number @[column]
         if isNaN value
-          errors.push "'#{field}' is not a number"
+          errors.push "'#{column}' is not a number"
         else
-          @[field] = value
+          @[column] = value
 
     @constructor._validators.forEach (validator) =>
       try
@@ -113,11 +113,11 @@ class DBModel
   _buildSaveData: ->
     data = {}
     schema = @constructor._schema
-    Object.keys(schema).forEach (field) =>
-      if @[field]?
-        data[field] = @[field]
+    Object.keys(schema).forEach (column) =>
+      if @[column]?
+        data[column] = @[column]
       else
-        data[field] = null
+        data[column] = null
     return data
 
   _create: (callback) ->
@@ -131,8 +131,8 @@ class DBModel
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
       # save sub objects of each association
       foreign_key = inflector.foreign_key ctor._name
-      async.forEach Object.keys(ctor._associations), (field, callback) =>
-          async.forEach @['__cache_' + field] or [], (sub, callback) ->
+      async.forEach Object.keys(ctor._associations), (column, callback) =>
+          async.forEach @['__cache_' + column] or [], (sub, callback) ->
               sub[foreign_key] = id
               sub.save (error) ->
                 callback error
@@ -275,16 +275,16 @@ class DBModel
       foreign_key = inflector.foreign_key @_name
     target_model._addForeignKey foreign_key
 
-    field = options?.as or inflector.tableize(target_model._name)
-    fieldCache = '__cache_' + field
-    fieldGetter = '__getter_' + field
+    column = options?.as or inflector.tableize(target_model._name)
+    columnCache = '__cache_' + column
+    columnGetter = '__getter_' + column
 
-    @_associations[field] = { type: 'hasMany' }
+    @_associations[column] = { type: 'hasMany' }
 
-    Object.defineProperty @prototype, field,
+    Object.defineProperty @prototype, column,
       get: ->
         # getter must be created per instance due to __scope
-        if not @.hasOwnProperty fieldGetter
+        if not @.hasOwnProperty columnGetter
           getter = (reload, callback) ->
             if typeof reload is 'function'
               callback = reload
@@ -292,27 +292,27 @@ class DBModel
             # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
             # but use getter.__scope for safety
             self = getter.__scope
-            if (not self[fieldCache] or reload) and self.id
+            if (not self[columnCache] or reload) and self.id
               conditions = {}
               conditions[foreign_key] = self.id
               target_model.where conditions, (error, records) ->
                 return callback error if error
-                self[fieldCache] = records
+                self[columnCache] = records
                 callback null, records
             else
-              callback null, self[fieldCache] or []
+              callback null, self[columnCache] or []
           getter.build = (data) ->
             # @ is getter, so use getter.__scope instead
             self = getter.__scope
             new_object = new target_model data
             new_object[foreign_key] = self.id
-            self[fieldCache] = [] if not self[fieldCache]
-            self[fieldCache].push new_object
+            self[columnCache] = [] if not self[columnCache]
+            self[columnCache].push new_object
             return new_object
           getter.__scope = @
-          Object.defineProperty @, fieldCache, value: null, writable: true
-          Object.defineProperty @, fieldGetter, value: getter
-        return @[fieldGetter]
+          Object.defineProperty @, columnCache, value: null, writable: true
+          Object.defineProperty @, columnGetter, value: getter
+        return @[columnGetter]
 
   ###
   # Adds a belongs-to association
@@ -330,14 +330,14 @@ class DBModel
       foreign_key = inflector.foreign_key target_model._name
     @_addForeignKey foreign_key
 
-    field = options?.as or inflector.underscore(target_model._name)
-    fieldCache = '__cache_' + field
-    fieldGetter = '__getter_' + field
+    column = options?.as or inflector.underscore(target_model._name)
+    columnCache = '__cache_' + column
+    columnGetter = '__getter_' + column
 
-    Object.defineProperty @prototype, field,
+    Object.defineProperty @prototype, column,
       get: ->
         # getter must be created per instance due to __scope
-        if not @.hasOwnProperty fieldGetter
+        if not @.hasOwnProperty columnGetter
           getter = (reload, callback) ->
             if typeof reload is 'function'
               callback = reload
@@ -345,17 +345,17 @@ class DBModel
             # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
             # but use getter.__scope for safety
             self = getter.__scope
-            if (not self[fieldCache] or reload) and self[foreign_key]
+            if (not self[columnCache] or reload) and self[foreign_key]
               target_model.find self[foreign_key], (error, record) ->
                 return callback error if error
-                self[fieldCache] = record
+                self[columnCache] = record
                 callback null, record
             else
-              callback null, self[fieldCache]
+              callback null, self[columnCache]
           getter.__scope = @
-          Object.defineProperty @, fieldCache, value: null, writable: true
-          Object.defineProperty @, fieldGetter, value: getter
-        return @[fieldGetter]
+          Object.defineProperty @, columnCache, value: null, writable: true
+          Object.defineProperty @, columnGetter, value: getter
+        return @[columnGetter]
   
   ###
   # Adds a validator
@@ -385,9 +385,9 @@ class DBModel
     @delete callback
     return
 
-  @_addForeignKey: (field) ->
-    return if @_schema.hasOwnProperty field
+  @_addForeignKey: (column) ->
+    return if @_schema.hasOwnProperty column
 
-    @_schema[field] = { type: @ForeignKey }
+    @_schema[column] = { type: @ForeignKey }
 
 module.exports = DBModel

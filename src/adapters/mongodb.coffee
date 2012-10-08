@@ -81,12 +81,12 @@ class MongoDBAdapter extends AdapterBase
 
   _applySchema: (model, callback) ->
     collection = @_collection(model)
-    unique_fields = []
-    for field, property of @_connection.models[model]._schema
+    unique_columns = []
+    for column, property of @_connection.models[model]._schema
       if property.unique
-        unique_fields.push field
-    async.forEach unique_fields, (field, callback) ->
-        collection.ensureIndex field, { safe: true, unique: true, sparse: true }, (error) ->
+        unique_columns.push column
+    async.forEach unique_columns, (column, callback) ->
+        collection.ensureIndex column, { safe: true, unique: true, sparse: true }, (error) ->
           callback error
       , (error) ->
         callback error
@@ -172,8 +172,8 @@ class MongoDBAdapter extends AdapterBase
     modelClass = @_connection.models[model]
     record = new modelClass()
     Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: data._id.toString()
-    for field of modelClass._schema
-      record[field] = data[field]
+    for column of modelClass._schema
+      record[column] = data[column]
     return record
 
   ###
@@ -213,7 +213,7 @@ class MongoDBAdapter extends AdapterBase
       return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
       cursor.toArray (error, result) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
-        callback null, result.map (instance) => @_convertToModelInstance model, instance
+        callback null, result.map (record) => @_convertToModelInstance model, record
 
   ###
   # Counts records
