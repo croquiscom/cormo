@@ -101,3 +101,37 @@ module.exports = (models) ->
             error.should.be.an.instanceOf Error
             error.message.should.equal 'not found'
             done null
+
+  it 'try to create with extra data', (done) ->
+    user = new models.User { id: 1, name: 'John Doe', age: 27, extra: 'extra' }
+    user.should.not.have.property 'id'
+    user.should.not.have.property 'extra'
+    user.id = 1
+    user.should.not.have.property 'id' # id is read only
+    user.extra = 'extra'
+    user.should.have.property 'extra', 'extra'
+    user.save (error, record) ->
+      return done error if error
+      user.should.be.equal record
+      user.should.have.property 'extra', 'extra'
+      models.User.find user.id, (error, record) ->
+        return done error if error
+        record.should.have.property 'id', user.id
+        record.should.have.property 'name', user.name
+        record.should.have.property 'age', user.age
+        record.should.not.have.property 'extra'
+        done null
+
+  it 'delete some fields', (done) ->
+    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      return done error if error
+      delete user.name
+      delete user.age
+      user.save (error, record) ->
+        return done error if error
+        user.should.be.equal record
+        models.User.find user.id, (error, record) ->
+          return done error if error
+          should.not.exist record.name
+          should.not.exist record.age
+          done null

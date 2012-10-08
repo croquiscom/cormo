@@ -47,7 +47,7 @@ class DBModel
     data = data or {}
     schema = @constructor._schema
     Object.keys(schema).forEach (field) =>
-      if data[field]
+      if data[field]?
         @[field] = data[field]
 
     Object.defineProperty @, 'id', configurable: true, enumerable: true, writable: false, value: undefined
@@ -87,7 +87,7 @@ class DBModel
     schema = @constructor._schema
     Object.keys(schema).forEach (field) =>
       property = schema[field]
-      if property.type is DBModel.Number
+      if property.type is DBModel.Number and @[field]?
         value = Number @[field]
         if isNaN value
           errors.push "'#{field}' is not a number"
@@ -110,6 +110,46 @@ class DBModel
       callback? null
       return true
 
+  _buildSaveData: ->
+    data = {}
+    schema = @constructor._schema
+    Object.keys(schema).forEach (field) =>
+      if @[field]?
+        data[field] = @[field]
+      else
+        data[field] = null
+    return data
+
+  _create: (callback) ->
+    ctor = @constructor
+    data = @_buildSaveData()
+    if Object.keys(data).length is 0
+      return callback new Error 'empty data', @
+
+    ctor._connection._adapter.create ctor._name, data, (error, id) =>
+      return callback error, @ if error
+      Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
+      # save sub objects of each association
+      foreign_key = inflector.foreign_key ctor._name
+      async.forEach Object.keys(ctor._associations), (field, callback) =>
+          async.forEach @['__cache_' + field] or [], (sub, callback) ->
+              sub[foreign_key] = id
+              sub.save (error) ->
+                callback error
+            , (error) ->
+              callback error
+        , (error) =>
+          callback null, @
+
+  _update: (callback) ->
+    ctor = @constructor
+    data = @_buildSaveData()
+    data.id = @id
+
+    ctor._connection._adapter.update ctor._name, data, (error) =>
+      return callback error, @ if error
+      callback null, @
+
   ###
   # Saves data to the database
   # @param {Object} [options]
@@ -131,28 +171,9 @@ class DBModel
       return
 
     if @id
-      ctor = @constructor
-      ctor._connection._adapter.update ctor._name, @, (error) =>
-        return callback error, @ if error
-        callback null, @
+      @_update callback
     else
-      if Object.keys(@).length is 0
-        return callback new Error 'empty data', @
-      ctor = @constructor
-      ctor._connection._adapter.create ctor._name, @, (error, id) =>
-        return callback error, @ if error
-        Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
-        # save sub objects of each association
-        foreign_key = inflector.foreign_key ctor._name
-        async.forEach Object.keys(ctor._associations), (field, callback) =>
-            async.forEach @['__cache_' + field] or [], (sub, callback) ->
-                sub[foreign_key] = id
-                sub.save (error) ->
-                  callback error
-              , (error) ->
-                callback error
-          , (error) =>
-            callback null, @
+      @_create callback
 
   ###
   # Destroys this record (remove from the database)
