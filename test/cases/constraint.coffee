@@ -20,7 +20,8 @@ module.exports = (models) ->
       return done error if error
       models.User.create { name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, (error, user) ->
         should.exist error
-        error.message.should.equal 'duplicated email'
+        # 'duplicated email' or 'duplicated'
+        error.message.should.match /^duplicated( email)?$/
         should.exist user
         user.should.have.property 'name', 'Bill Simpson'
         user.should.have.property 'age', 38
@@ -33,7 +34,8 @@ module.exports = (models) ->
       users[0].email = 'bill@foo.org'
       users[0].save (error) ->
         should.exist error
-        error.message.should.equal 'duplicated email'
+        # 'duplicated email' or 'duplicated'
+        error.message.should.match /^duplicated( email)?$/
         done null
 
   it 'required', (done) ->

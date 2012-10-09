@@ -5,6 +5,8 @@ _dbs =
     database: 'test'
   mongodb:
     database: 'test'
+  sqlite3:
+    database: __dirname + '/test.sqlite3'
 
 Object.keys(_dbs).forEach (db) ->
   describe 'association-' + db, ->
