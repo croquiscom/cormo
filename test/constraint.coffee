@@ -7,6 +7,7 @@ _dbs =
     database: 'test'
   sqlite3:
     database: __dirname + '/test.sqlite3'
+  sqlite3_memory: {}
 
 Object.keys(_dbs).forEach (db) ->
   describe 'constraint-' + db, ->
