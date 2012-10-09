@@ -9,6 +9,7 @@
     "mocha": "",
     "mongodb": "",
     "mysql": ">=2.0.0-alpha3",
+    "pg": "",
     "sqlite3": "",
     "should": ""
   }
