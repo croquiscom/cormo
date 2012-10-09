@@ -3,19 +3,24 @@ async = require 'async'
 DBQuery = require './query'
 
 ###
-# Normalizes a schema
-# (column: String -> column: {type: String})
-###
-_normalizeSchema = (schema) ->
-  for column, property of schema
-    if typeof property is 'function'
-      schema[column] = type: property
-  return
-
-###
 # Base class for models
 ###
 class DBModel
+  ###
+  # Normalizes a schema
+  # (column: String -> column: {type: String})
+  # @param {Object} schema
+  # @param {DBConnection} connection
+  ###
+  @_normalizeSchema: (schema, connection) ->
+    adapter = connection._adapter
+    for column, property of schema
+      if typeof property is 'function'
+        schema[column] = type: property
+      if schema[column].type is DBModel.GeoPoint and not adapter.support_geopoint
+        throw new Error 'this adapter does not support GeoPoint'
+    return
+
   ###
   # Returns a new model class extending DBModel
   # @param {DBConnection} connection
@@ -24,7 +29,7 @@ class DBModel
   # @return {Class}
   ###
   @newModel: (connection, name, schema) ->
-    _normalizeSchema schema
+    @_normalizeSchema schema, connection
 
     class NewModel extends DBModel
     Object.defineProperty NewModel, '_connection', value: connection
@@ -97,6 +102,10 @@ class DBModel
               errors.push "'#{column}' is not an integer"
             else
               @[column] = value
+          when DBModel.GeoPoint
+            value = @[column]
+            if not ( Array.isArray(value) and value.length is 2 )
+              errors.push "'#{column}' is not a geo point"
       else
         if property.required
           errors.push "'#{column}' is required"

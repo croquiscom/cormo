@@ -23,7 +23,16 @@ class DBQuery
     return @
 
   ###
-  # Find records by condition
+  # Finds records near target
+  # @param {Object} target
+  # @return {DBQuery} this
+  ###
+  near: (target) ->
+    @_options.near = target
+    return @
+
+  ###
+  # Finds records by condition
   # @param {Object} condition
   # @return {DBQuery} this
   ###

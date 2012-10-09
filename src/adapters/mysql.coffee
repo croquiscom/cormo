@@ -15,6 +15,7 @@ _typeToSQL = (property) ->
     when types.Number then 'DOUBLE'
     when types.Integer then 'INT'
     when types.ForeignKey then 'BIGINT'
+    when types.GeoPoint then 'POINT'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property
@@ -78,6 +79,8 @@ _buildWhere = (conditions, params, conjunction='AND') ->
 # Adapter for MySQL
 ###
 class MySQLAdapter extends AdapterBase
+  support_geopoint: true
+
   ###
   # Creates a MySQL adapter
   # @param {mysql.Connection} client
@@ -85,6 +88,7 @@ class MySQLAdapter extends AdapterBase
   constructor: (connection, client) ->
     @_connection = connection
     @_client = client
+    @_select_all_columns = {}
 
   _query: (sql, data, callback) ->
     #console.log 'MySQLAdapter:', sql
@@ -108,8 +112,15 @@ class MySQLAdapter extends AdapterBase
     callback null
 
   _applySchema: (model, callback) ->
-    table = tableize model
-    @_query "SHOW COLUMNS FROM #{table}", (error, columns) =>
+    columns = ['id']
+    for column, property of @_connection.models[model]._schema
+      if property.type is types.GeoPoint
+        columns.push "ASTEXT(#{column}) as #{column}"
+      else
+        columns.push column
+    @_select_all_columns[model] = columns
+
+    @_query "SHOW COLUMNS FROM #{tableize model}", (error, columns) =>
       if error?.code is 'ER_NO_SUCH_TABLE'
         @_createTable model, callback
       else
@@ -160,8 +171,20 @@ class MySQLAdapter extends AdapterBase
   # @param {String} callback.id
   ###
   create: (model, data, callback) ->
-    table = tableize model
-    @_query "INSERT INTO #{table} SET ?", data, (error, result) ->
+    schema = @_connection.models[model]._schema
+    fields = []
+    values = []
+    Object.keys(data).forEach (field) ->
+      return if field is 'id'
+      if schema[field].type is types.GeoPoint
+        fields.push field + '=POINT(?,?)'
+        values.push data[field][0]
+        values.push data[field][1]
+      else
+        fields.push field + '=?'
+        values.push data[field]
+    sql = "INSERT INTO #{tableize model} SET #{fields.join ','}"
+    @_query sql, values, (error, result) ->
       return _processSaveError error, callback if error
       if result?.insertId
         callback null, result.insertId
@@ -176,8 +199,21 @@ class MySQLAdapter extends AdapterBase
   # @param {Error} callback.error
   ###
   update: (model, data, callback) ->
-    table = tableize model
-    @_query "UPDATE #{table} SET ? WHERE id=?", [data, data.id], (error) ->
+    schema = @_connection.models[model]._schema
+    fields = []
+    values = []
+    Object.keys(data).forEach (field) ->
+      return if field is 'id'
+      if schema[field].type is types.GeoPoint
+        fields.push field + '=POINT(?,?)'
+        values.push data[field][0]
+        values.push data[field][1]
+      else
+        fields.push field + '=?'
+        values.push data[field]
+    sql = "UPDATE #{tableize model} SET #{fields.join ','} WHERE id=?"
+    values.push data.id
+    @_query sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null
 
@@ -189,6 +225,9 @@ class MySQLAdapter extends AdapterBase
       continue if not data[column]?
       if property.type is types.ForeignKey
         record[column] = Number(data[column])
+      else if property.type is types.GeoPoint
+        match = /POINT\((.*) (.*)\)/.exec data[column]
+        record[column] = [Number(match[1]),Number(match[2])]
       else
         record[column] = data[column]
     return record
@@ -203,8 +242,9 @@ class MySQLAdapter extends AdapterBase
   # @throws Error('not found')
   ###
   findById: (model, id, callback) ->
-    table = tableize model
-    @_query "SELECT * FROM #{table} WHERE id=? LIMIT 1", id, (error, result) =>
+    selects = @_select_all_columns[model].join ','
+    sql = "SELECT #{selects} FROM #{tableize model} WHERE id=? LIMIT 1"
+    @_query sql, id, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       if result?.length is 1
         callback null, @_convertToModelInstance model, result[0]
@@ -223,14 +263,22 @@ class MySQLAdapter extends AdapterBase
   # @param {Array<DBModel>} callback.records
   ###
   find: (model, conditions, options, callback) ->
+    selects = @_select_all_columns[model].join ','
+    if options.near? and field = Object.keys(options.near)[0]
+      order_by = "#{field}_distance"
+      location = options.near[field]
+      selects += ",GLENGTH(LINESTRING(#{field},POINT(#{location[0]},#{location[1]}))) AS #{field}_distance"
     params = []
-    sql = "SELECT * FROM #{tableize model}"
+    sql = "SELECT #{selects} FROM #{tableize model}"
     if conditions.length > 0
       sql += ' WHERE ' + _buildWhere conditions, params
+    if order_by
+      sql += ' ORDER BY ' + order_by
     if options?.limit?
       sql += ' LIMIT ' + options.limit
     #console.log sql, params
     @_query sql, params, (error, result) =>
+      #console.log result
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null, result.map (record) => @_convertToModelInstance model, record
 

@@ -7,6 +7,7 @@ catch error
 ObjectID = mongodb.ObjectID
 
 AdapterBase = require './base'
+types = require '../types'
 tableize = require('../inflector').tableize
 async = require 'async'
 
@@ -55,6 +56,7 @@ _buildWhere = (conditions, conjunction='$and') ->
   else
     return
   return if subs.length is 0
+  return subs[0] if subs.length is 1
   obj = {}
   obj[conjunction] = subs
   return obj
@@ -63,6 +65,8 @@ _buildWhere = (conditions, conjunction='$and') ->
 # Adapter for MongoDB
 ###
 class MongoDBAdapter extends AdapterBase
+  support_geopoint: true
+
   ###
   # Creates a MongoDB adapter
   # @param {mongodb.Db} client
@@ -81,12 +85,16 @@ class MongoDBAdapter extends AdapterBase
 
   _applySchema: (model, callback) ->
     collection = @_collection(model)
-    unique_columns = []
+    indexes = []
     for column, property of @_connection.models[model]._schema
       if property.unique
-        unique_columns.push column
-    async.forEach unique_columns, (column, callback) ->
-        collection.ensureIndex column, { safe: true, unique: true, sparse: true }, (error) ->
+        indexes.push [ column, { safe: true, unique: true, sparse: true } ]
+      if property.type is types.GeoPoint
+        obj = {}
+        obj[column] = '2d'
+        indexes.push [ obj ]
+    async.forEach indexes, (index, callback) ->
+        collection.ensureIndex index[0], index[1], (error) ->
           callback error
       , (error) ->
         callback error
@@ -209,7 +217,16 @@ class MongoDBAdapter extends AdapterBase
       conditions = _buildWhere conditions
     catch e
       return callback e
+    if options.near? and field = Object.keys(options.near)[0]
+      obj = {}
+      obj[field] = { $near: options.near[field] }
+      if conditions
+        conditions = { $and : [  conditions, obj ] }
+      else
+        conditions = obj
     #console.log JSON.stringify conditions
+    options =
+      limit: options.limit
     @_collection(model).find conditions, options, (error, cursor) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
       cursor.toArray (error, result) =>
