@@ -52,13 +52,15 @@ class DBConnection extends EventEmitter
   # @param {Error} callback.error
   ###
   applySchemas: (callback) ->
-    if @_adapter.applySchemas?
+    if @_adapter.applySchemas? and not @_applying_schemas
       @_applying_schemas = true
-      return if @_waitingForConnection @, @applySchemas, arguments
-      @_adapter.applySchemas (error) =>
-        @_applying_schemas = false
-        @emit 'schemas_applied'
-        callback? error
+      callAdapter = =>
+        @_adapter.applySchemas (error) =>
+          @_applying_schemas = false
+          @emit 'schemas_applied'
+          callback? error
+      return if @_waitingForConnection @, callAdapter, arguments
+      callAdapter()
     else
       callback? null
 
