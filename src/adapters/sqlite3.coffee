@@ -14,7 +14,6 @@ _typeToSQL = (property) ->
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE'
     when types.Integer then 'INT'
-    when types.ForeignKey then 'INTEGER'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property
@@ -78,6 +77,8 @@ _buildWhere = (conditions, params, conjunction='AND') ->
 # Adapter for SQLite3
 ###
 class SQLite3Adapter extends AdapterBase
+  key_type: types.Integer
+
   ###
   # Creates a SQLite3 adapter
   # @param {sqlite3.Database} client
@@ -186,10 +187,7 @@ class SQLite3Adapter extends AdapterBase
     Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: Number(data.id)
     for column, property of modelClass._schema
       continue if not data[column]?
-      if property.type is types.ForeignKey
-        record[column] = Number(data[column])
-      else
-        record[column] = data[column]
+      record[column] = data[column]
     return record
 
   ###

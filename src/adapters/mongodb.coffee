@@ -66,6 +66,7 @@ _buildWhere = (conditions, conjunction='$and') ->
 ###
 class MongoDBAdapter extends AdapterBase
   support_geopoint: true
+  key_type: types.String
 
   ###
   # Creates a MongoDB adapter

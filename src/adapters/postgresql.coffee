@@ -14,7 +14,6 @@ _typeToSQL = (property) ->
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE PRECISION'
     when types.Integer then 'INT'
-    when types.ForeignKey then 'BIGINT'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property
@@ -78,6 +77,8 @@ _buildWhere = (conditions, params, conjunction='AND') ->
 # Adapter for PostgreSQL
 ###
 class PostgreSQLAdapter extends AdapterBase
+  key_type: types.Integer
+
   ###
   # Creates a PostgreSQL adapter
   # @param {pg.Client} client
@@ -94,7 +95,7 @@ class PostgreSQLAdapter extends AdapterBase
   _createTable: (model, callback) ->
     table = tableize model
     sql = []
-    sql.push 'id BIGSERIAL PRIMARY KEY'
+    sql.push 'id SERIAL PRIMARY KEY'
     for column, property of @_connection.models[model]._schema
       column_sql = _propertyToSQL property
       if column_sql
@@ -202,10 +203,7 @@ class PostgreSQLAdapter extends AdapterBase
     Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: Number(data.id)
     for column, property of modelClass._schema
       continue if not data[column]?
-      if property.type is types.ForeignKey
-        record[column] = Number(data[column])
-      else
-        record[column] = data[column]
+      record[column] = data[column]
     return record
 
   ###

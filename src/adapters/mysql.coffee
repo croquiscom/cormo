@@ -14,7 +14,6 @@ _typeToSQL = (property) ->
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE'
     when types.Integer then 'INT'
-    when types.ForeignKey then 'BIGINT'
     when types.GeoPoint then 'POINT'
 
 _propertyToSQL = (property) ->
@@ -80,6 +79,7 @@ _buildWhere = (conditions, params, conjunction='AND') ->
 ###
 class MySQLAdapter extends AdapterBase
   support_geopoint: true
+  key_type: types.Integer
 
   ###
   # Creates a MySQL adapter
@@ -97,7 +97,7 @@ class MySQLAdapter extends AdapterBase
   _createTable: (model, callback) ->
     table = tableize model
     sql = []
-    sql.push 'id BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY'
+    sql.push 'id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY'
     for column, property of @_connection.models[model]._schema
       column_sql = _propertyToSQL property
       if column_sql
@@ -223,9 +223,7 @@ class MySQLAdapter extends AdapterBase
     Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: Number(data.id)
     for column, property of modelClass._schema
       continue if not data[column]?
-      if property.type is types.ForeignKey
-        record[column] = Number(data[column])
-      else if property.type is types.GeoPoint
+      if property.type is types.GeoPoint
         match = /POINT\((.*) (.*)\)/.exec data[column]
         record[column] = [Number(match[1]),Number(match[2])]
       else
