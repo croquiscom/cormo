@@ -132,7 +132,9 @@ class SQLite3Adapter extends AdapterBase
       callback null
 
   _processSaveError = (error, callback) ->
-    if error.code is 'SQLITE_CONSTRAINT'
+    if /no such table/.test error.message
+      error = new Error('table does not exist')
+    else if error.code is 'SQLITE_CONSTRAINT'
       error = new Error('duplicated')
     else
       error = SQLite3Adapter.wrapError 'unknown error', error

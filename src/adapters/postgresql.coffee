@@ -142,7 +142,9 @@ class PostgreSQLAdapter extends AdapterBase
       callback null
 
   _processSaveError = (model, error, callback) ->
-    if error.code is '23505'
+    if error.code is '42P01'
+      error = new Error('table does not exist')
+    else if error.code is '23505'
       re = new RegExp "unique constraint \"#{tableize model}_([^']*)_key\""
       key = error.message.match re
       error = new Error('duplicated ' + key?[1])

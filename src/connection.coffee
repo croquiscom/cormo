@@ -40,18 +40,27 @@ class DBConnection extends EventEmitter
       method.apply object, args
     return true
 
+  _waitingForApplyingSchemas: (object, method, args) ->
+    return false if not @_applying_schemas
+    @once 'schemas_applied', ->
+      method.apply object, args
+    return true
+
   ###
   # Applies schemas
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
   ###
   applySchemas: (callback) ->
-    return if @_waitingForConnection @, @applySchemas, arguments
-
     if @_adapter.applySchemas?
-      @_adapter.applySchemas callback
+      @_applying_schemas = true
+      return if @_waitingForConnection @, @applySchemas, arguments
+      @_adapter.applySchemas (error) =>
+        @_applying_schemas = false
+        @emit 'schemas_applied'
+        callback? error
     else
-      callback null
+      callback? null
 
 for type, value of require './types'
   DBConnection[type] = value

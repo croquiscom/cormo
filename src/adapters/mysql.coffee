@@ -150,7 +150,9 @@ class MySQLAdapter extends AdapterBase
       callback null
 
   _processSaveError = (error, callback) ->
-    if error.code is 'ER_DUP_ENTRY'
+    if error.code is 'ER_NO_SUCH_TABLE'
+      error = new Error('table does not exist')
+    else if error.code is 'ER_DUP_ENTRY'
       key = error.message.match /for key '([^']*)'/
       error = new Error('duplicated ' + key?[1])
     else if error.code is 'ER_BAD_NULL_ERROR'

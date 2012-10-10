@@ -7,21 +7,6 @@ DBQuery = require './query'
 ###
 class DBModel
   ###
-  # Normalizes a schema
-  # (column: String -> column: {type: String})
-  # @param {Object} schema
-  # @param {DBConnection} connection
-  ###
-  @_normalizeSchema: (schema, connection) ->
-    adapter = connection._adapter
-    for column, property of schema
-      if typeof property is 'function'
-        schema[column] = type: property
-      if schema[column].type is DBModel.GeoPoint and not adapter.support_geopoint
-        throw new Error 'this adapter does not support GeoPoint'
-    return
-
-  ###
   # Returns a new model class extending DBModel
   # @param {DBConnection} connection
   # @param {String} name
@@ -29,16 +14,35 @@ class DBModel
   # @return {Class}
   ###
   @newModel: (connection, name, schema) ->
-    @_normalizeSchema schema, connection
-
     class NewModel extends DBModel
     Object.defineProperty NewModel, '_connection', value: connection
+    Object.defineProperty NewModel, '_adapter', value: connection._adapter
     Object.defineProperty NewModel, '_name', value: name
     Object.defineProperty NewModel, '_schema', value: schema
     Object.defineProperty NewModel, '_associations', value: {}
     Object.defineProperty NewModel, '_validators', value: []
 
+    NewModel._normalizeSchema()
+
     return NewModel
+
+  ###
+  # Normalizes a schema
+  # (column: String -> column: {type: String})
+  ###
+  @_normalizeSchema: ->
+    adapter = @_adapter
+    schema = @_schema
+    for column, property of schema
+      if typeof property is 'function'
+        schema[column] = type: property
+      if schema[column].type is DBModel.GeoPoint and not adapter.support_geopoint
+        throw new Error 'this adapter does not support GeoPoint'
+    return
+
+  @_waitingForConnection: (object, method, args) ->
+    return true if @_connection._waitingForApplyingSchemas object, method, args
+    return @_connection._waitingForConnection object, method, args
 
   ###
   # Creates a record
@@ -140,12 +144,14 @@ class DBModel
     return data
 
   _create: (callback) ->
+    return if @constructor._waitingForConnection @, @_create, arguments
+
     ctor = @constructor
     data = @_buildSaveData()
     if Object.keys(data).length is 0
       return callback new Error 'empty data', @
 
-    ctor._connection._adapter.create ctor._name, data, (error, id) =>
+    ctor._adapter.create ctor._name, data, (error, id) =>
       return callback error, @ if error
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
       # save sub objects of each association
@@ -161,11 +167,13 @@ class DBModel
           callback null, @
 
   _update: (callback) ->
+    return if @constructor._waitingForConnection @, @_update, arguments
+
     ctor = @constructor
     data = @_buildSaveData()
     data.id = @id
 
-    ctor._connection._adapter.update ctor._name, data, (error) =>
+    ctor._adapter.update ctor._name, data, (error) =>
       return callback error, @ if error
       callback null, @
 
@@ -214,6 +222,8 @@ class DBModel
   # @throws Error('not found')
   ###
   @find: (id, callback) ->
+    return if @_waitingForConnection @, @find, arguments
+
     query = new DBQuery @
     query.find id
     if typeof callback is 'function'
@@ -233,6 +243,8 @@ class DBModel
   # @return {DBQuery}
   ###
   @where: (condition, callback) ->
+    return if @_waitingForConnection @, @where, arguments
+
     if typeof condition is 'function'
       callback = condition
       condition = null
@@ -251,6 +263,8 @@ class DBModel
   # @return {DBQuery}
   ###
   @count: (condition, callback) ->
+    return if @_waitingForConnection @, @count, arguments
+
     if typeof condition is 'function'
       callback = condition
       condition = null
@@ -269,6 +283,8 @@ class DBModel
   # @return {DBQuery}
   ###
   @delete: (condition, callback) ->
+    return if @_waitingForConnection @, @delete, arguments
+
     if typeof condition is 'function'
       callback = condition
       condition = null
@@ -347,7 +363,7 @@ class DBModel
       foreign_key = options.as + '_id'
     else
       foreign_key = inflector.foreign_key target_model._name
-    @_addForeignKey foreign_key, target_model._connection._adapter.key_type
+    @_addForeignKey foreign_key, target_model._adapter.key_type
 
     column = options?.as or inflector.underscore(target_model._name)
     columnCache = '__cache_' + column
@@ -392,7 +408,9 @@ class DBModel
   # @param {Error} callback.error
   ###
   @drop: (callback) ->
-    @_connection._adapter.drop @_name, callback
+    return if @_waitingForConnection @, @drop, arguments
+
+    @_adapter.drop @_name, callback
 
   ###
   # Deletes all records from the database
