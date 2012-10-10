@@ -98,7 +98,8 @@ class DBModel
               @[column] = value
           when DBModel.Integer
             value = Number @[column]
-            if isNaN(value) or Math.floor(value) isnt value
+            # value>>0 checkes integer and 32bit
+            if isNaN(value) or (value>>0) isnt value
               errors.push "'#{column}' is not an integer"
             else
               @[column] = value

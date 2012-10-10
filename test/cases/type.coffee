@@ -27,6 +27,7 @@ module.exports = (models) ->
   it 'integer', (done) ->
     data = [
       [ '30', 30 ]
+      [ '9876543210', NaN ]
       [ '12.8', NaN ]
       [ '8a', NaN ]
       [ 'abc', NaN ]
