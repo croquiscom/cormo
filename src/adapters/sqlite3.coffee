@@ -81,11 +81,9 @@ class SQLite3Adapter extends AdapterBase
 
   ###
   # Creates a SQLite3 adapter
-  # @param {sqlite3.Database} client
   ###
-  constructor: (connection, client) ->
+  constructor: (connection) ->
     @_connection = connection
-    @_client = client
 
   _query: (method, sql, data, callback) ->
     #console.log 'SQLite3Adapter:', sql
@@ -270,19 +268,18 @@ class SQLite3Adapter extends AdapterBase
       callback null, @changes
 
   ###
-  # Creates a SQLite3 adapter
-  # @param {Connection} connection
+  # Connects to the database
   # @param {Object} settings
   # @param {String} settings.database
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {SQLite3Adapter} callback.adapter
   ###
-  @createAdapter: (connection, settings, callback) ->
-    client = new sqlite3.Database settings.database, (error) ->
+  connect: (settings, callback) ->
+    client = new sqlite3.Database settings.database, (error) =>
       return callback SQLite3Adapter.wrapError 'failed to open', error if error
 
-      adapter = new SQLite3Adapter connection, client
-      callback null, adapter
+      @_client = client
+      callback null
 
-module.exports = SQLite3Adapter.createAdapter
+module.exports = (connection) ->
+  new SQLite3Adapter connection

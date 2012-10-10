@@ -70,11 +70,9 @@ class MongoDBAdapter extends AdapterBase
 
   ###
   # Creates a MongoDB adapter
-  # @param {mongodb.Db} client
   ###
-  constructor: (connection, client) ->
+  constructor: (connection) ->
     @_connection = connection
-    @_client = client
     @_collections = {}
 
   _collection: (name) ->
@@ -271,21 +269,21 @@ class MongoDBAdapter extends AdapterBase
       callback null, count
 
   ###
-  # Creates a MongoDB adapter
-  # @param {Connection} connection
+  # Connects to the database
   # @param {Object} settings
   # @param {String} [settings.host='localhost']
   # @param {Number} [settings.port=27017]
   # @param {String} settings.database
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {MongoDBAdapter} callback.adapter
   ###
-  @createAdapter: (connection, settings, callback) ->
+  connect: (settings, callback) ->
     server = new mongodb.Server settings.host or 'localhost', settings.port or 27017, {}
     db = new mongodb.Db settings.database, server, {}
-    db.open (error, client) ->
+    db.open (error, client) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null, new MongoDBAdapter connection, client
+      @_client = client
+      callback null
 
-module.exports = MongoDBAdapter.createAdapter
+module.exports = (connection) ->
+  new MongoDBAdapter connection

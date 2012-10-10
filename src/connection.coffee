@@ -16,12 +16,12 @@ class DBConnection extends EventEmitter
     @connected = false
     @models = {}
 
-    createAdapter = require __dirname + '/adapters/' + adapter_name
-    createAdapter @, settings, (error, adapter) =>
+    @_adapter = require(__dirname + '/adapters/' + adapter_name) @
+    @_adapter.connect settings, (error) =>
       if error
+        @_adapter = null
         @emit 'error', error
         return
-      @_adapter = adapter
       @connected = true
       @emit 'connected'
 
@@ -55,5 +55,6 @@ class DBConnection extends EventEmitter
 
 for type, value of require './types'
   DBConnection[type] = value
+  DBConnection::[type] = value
 
 module.exports = DBConnection

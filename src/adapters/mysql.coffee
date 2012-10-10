@@ -83,11 +83,9 @@ class MySQLAdapter extends AdapterBase
 
   ###
   # Creates a MySQL adapter
-  # @param {mysql.Connection} client
   ###
-  constructor: (connection, client) ->
+  constructor: (connection) ->
     @_connection = connection
-    @_client = client
     @_select_all_columns = {}
 
   _query: (sql, data, callback) ->
@@ -318,8 +316,7 @@ class MySQLAdapter extends AdapterBase
       callback null, result.affectedRows
 
   ###
-  # Creates a MySQL adapter
-  # @param {Connection} connection
+  # Connects to the database
   # @param {Object} settings
   # @param {String} [settings.host]
   # @param {Number} [settings.port]
@@ -328,31 +325,31 @@ class MySQLAdapter extends AdapterBase
   # @param {String} settings.database
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {MySQLAdapter} callback.adapter
   ###
-  @createAdapter: (connection, settings, callback) ->
+  connect: (settings, callback) ->
     # connect
     client = mysql.createConnection
       host: settings.host
       port: settings.port
       user: settings.user
       password: settings.password
-    client.connect (error) ->
+    client.connect (error) =>
       return callback MySQLAdapter.wrapError 'failed to connect', error if error
 
-      adapter = new MySQLAdapter connection, client
+      @_client = client
 
       # select database
       client.query "USE `#{settings.database}`", (error) ->
-        return callback null, adapter if not error
+        return callback null if not error
 
         # create one if not exist
         if error.code is 'ER_BAD_DB_ERROR'
           client.query "CREATE DATABASE `#{settings.database}`", (error) ->
             return callback MySQLAdapter.wrapError 'unknown error', error if error
-            return callback null, adapter
+            return callback null
         else
           msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{settings.database}'" else 'unknown error'
           callback MySQLAdapter.wrapError msg, error
 
-module.exports = MySQLAdapter.createAdapter
+module.exports = (connection) ->
+  new MySQLAdapter connection

@@ -81,11 +81,9 @@ class PostgreSQLAdapter extends AdapterBase
 
   ###
   # Creates a PostgreSQL adapter
-  # @param {pg.Client} client
   ###
-  constructor: (connection, client) ->
+  constructor: (connection) ->
     @_connection = connection
-    @_client = client
 
   _query: (sql, data, callback) ->
     #console.log 'PostgreSQLAdapter:', sql
@@ -288,8 +286,7 @@ class PostgreSQLAdapter extends AdapterBase
       callback null, result.rowCount
 
   ###
-  # Creates a PostgreSQL adapter
-  # @param {Connection} connection
+  # Connects to the database
   # @param {Object} settings
   # @param {String} [settings.host]
   # @param {Number} [settings.port]
@@ -298,9 +295,8 @@ class PostgreSQLAdapter extends AdapterBase
   # @param {String} settings.database
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {PostgreSQLAdapter} callback.adapter
   ###
-  @createAdapter: (connection, settings, callback) ->
+  connect: (settings, callback) ->
     # connect
     pg.connect
         host: settings.host
@@ -308,12 +304,13 @@ class PostgreSQLAdapter extends AdapterBase
         user: settings.user
         password: settings.password
         database: settings.database
-      , (error, client) ->
+      , (error, client) =>
         if error?.code is '3D000'
           return callback new Error 'database does not exist'
         return callback PostgreSQLAdapter.wrapError 'failed to connect', error if error
-      
-        adapter = new PostgreSQLAdapter connection, client
-        return callback null, adapter
 
-module.exports = PostgreSQLAdapter.createAdapter
+        @_client = client
+        return callback null
+
+module.exports = (connection) ->
+  new PostgreSQLAdapter connection

@@ -409,5 +409,6 @@ class DBModel
 
 for type, value of require './types'
   DBModel[type] = value
+  DBModel::[type] = value
 
 module.exports = DBModel
