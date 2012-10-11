@@ -30,3 +30,8 @@ task 'test:cov', 'Gets tests coverage', (options) ->
     cov_html.write data
   child.on 'exit', ->
     cov_html.end()
+
+task 'doc', 'Make documents', ->
+  command = './node_modules/.bin/croquis-jsdoc'
+  args = ['src']
+  spawn command, args, stdio: 'inherit'
