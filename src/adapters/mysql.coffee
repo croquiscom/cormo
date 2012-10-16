@@ -60,7 +60,7 @@ _buildWhere = (conditions, params, conjunction='AND') ->
             when '$lte'
               op = '<='
               value = value[sub_key]
-            when '$include'
+            when '$contains'
               op = ' LIKE '
               value = '%' + value[sub_key] + '%'
         params.push value

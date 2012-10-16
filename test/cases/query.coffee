@@ -87,10 +87,10 @@ module.exports = (models) ->
         users[1].should.have.property 'age', 32
         done null
 
-  it 'include', (done) ->
+  it 'contains', (done) ->
     _createUsers models.User, (error, users) ->
       return done error if error
-      models.User.where { name: { $include: 'smi' } }, (error, users) ->
+      models.User.where { name: { $contains: 'smi' } }, (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1

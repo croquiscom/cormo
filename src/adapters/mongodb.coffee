@@ -37,7 +37,7 @@ _buildWhere = (conditions, conjunction='$and') ->
               obj[key] = {}
               obj[key][sub_key] = value[sub_key]
               return obj
-            when '$include'
+            when '$contains'
               value = new RegExp value[sub_key], 'i'
         obj = {}
         if key is 'id'
