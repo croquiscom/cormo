@@ -111,8 +111,16 @@ class DBModel
             value = @[column]
             if not ( Array.isArray(value) and value.length is 2 )
               errors.push "'#{column}' is not a geo point"
-            value[0] = Number value[0]
-            value[1] = Number value[1]
+            else
+              value[0] = Number value[0]
+              value[1] = Number value[1]
+          when DBModel.Date
+            value = @[column]
+            value = new Date value
+            if isNaN value.getTime()
+              errors.push "'#{column}' is not a date"
+            else
+              @[column] = value
       else
         if property.required
           errors.push "'#{column}' is required"

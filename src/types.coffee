@@ -17,3 +17,8 @@ exports.Integer = ->
 # two-dimensional point
 ###
 exports.GeoPoint = ->
+
+###
+# Date
+###
+exports.Date = Date

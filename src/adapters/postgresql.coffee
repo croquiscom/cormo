@@ -14,6 +14,7 @@ _typeToSQL = (property) ->
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE PRECISION'
     when types.Integer then 'INT'
+    when types.Date then 'TIMESTAMP WITHOUT TIME ZONE'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property

@@ -15,6 +15,7 @@ _typeToSQL = (property) ->
     when types.Number then 'DOUBLE'
     when types.Integer then 'INT'
     when types.GeoPoint then 'POINT'
+    when types.Date then 'DATETIME'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property

@@ -14,6 +14,7 @@ _typeToSQL = (property) ->
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE'
     when types.Integer then 'INT'
+    when types.Date then 'REAL'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property
@@ -149,13 +150,18 @@ class SQLite3Adapter extends AdapterBase
   # @param {String} callback.id
   ###
   create: (model, data, callback) ->
+    schema = @_connection.models[model]._schema
     fields = []
     places = []
     values = []
     Object.keys(data).forEach (field) ->
       fields.push field
-      places.push '?'
-      values.push data[field]
+      if schema[field].type is types.Date
+        places.push '?'
+        values.push data[field]?.getTime()
+      else
+        places.push '?'
+        values.push data[field]
     sql = "INSERT INTO #{tableize model} (#{fields.join ','}) VALUES (#{places.join ','})"
     @_query 'run', sql, values, (error) ->
       return _processSaveError error, callback if error
@@ -169,12 +175,17 @@ class SQLite3Adapter extends AdapterBase
   # @param {Error} callback.error
   ###
   update: (model, data, callback) ->
+    schema = @_connection.models[model]._schema
     fields = []
     values = []
     Object.keys(data).forEach (field) ->
       return if field is 'id'
-      fields.push field + '=?'
-      values.push data[field]
+      if schema[field].type is types.Date
+        fields.push field + '=?'
+        values.push data[field]?.getTime()
+      else
+        fields.push field + '=?'
+        values.push data[field]
     sql = "UPDATE #{tableize model} SET #{fields.join ','} WHERE id=?"
     values.push data.id
     @_query 'run', sql, values, (error) ->
@@ -187,7 +198,10 @@ class SQLite3Adapter extends AdapterBase
     Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: Number(data.id)
     for column, property of modelClass._schema
       continue if not data[column]?
-      record[column] = data[column]
+      if property.type is types.Date
+        record[column] = new Date data[column]
+      else
+        record[column] = data[column]
     return record
 
   ###
