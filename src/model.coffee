@@ -263,6 +263,26 @@ class DBModel
     return query
 
   ###
+  # Selects columns for result
+  # @param {Object} [columns]
+  # @param {Function} [callback]
+  # @param {Error} callback.error
+  # @param {Array<DBModel>} callback.records
+  # @return {DBQuery}
+  ###
+  @select: (columns, callback) ->
+    return if @_waitingForConnection @, @select, arguments
+
+    if typeof columns is 'function'
+      callback = columns
+      columns = null
+    query = new DBQuery @
+    query.select columns
+    if typeof callback is 'function'
+      query.exec callback
+    return query
+
+  ###
   # Counts records by conditions
   # @param {Object} [condition]
   # @param {Function} [callback]

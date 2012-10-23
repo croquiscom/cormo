@@ -90,6 +90,11 @@ User.where age: 27, (error, users) ->
 User.where(age: 27).exec (error, users) ->
   console.log users
 
+ # select partial columns
+ # the same as "SELECT name,age FROM users"
+User.select 'name age', (error, users) ->
+  console.log users
+
  # two condition
  # the same as "SELECT * FROM users WHERE name='John Doe' AND age=27"
 User.where name: 'John Doe', age: 27, (error, users) ->

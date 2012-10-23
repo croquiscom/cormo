@@ -211,14 +211,19 @@ class PostgreSQLAdapter extends AdapterBase
   # Finds a record by id
   # @param {String} model
   # @param {String} id
+  # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {DBModel} callback.record
   # @throws Error('not found')
   ###
-  findById: (model, id, callback) ->
+  findById: (model, id, options, callback) ->
+    if options.select
+      selects = 'id,' + options.select.join ','
+    else
+      selects = '*'
     table = tableize model
-    @_query "SELECT * FROM #{table} WHERE id=$1 LIMIT 1", [id], (error, result) =>
+    @_query "SELECT #{selects} FROM #{table} WHERE id=$1 LIMIT 1", [id], (error, result) =>
       rows = result?.rows
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       if rows?.length is 1
@@ -238,8 +243,12 @@ class PostgreSQLAdapter extends AdapterBase
   # @param {Array<DBModel>} callback.records
   ###
   find: (model, conditions, options, callback) ->
+    if options.select
+      selects = 'id,' + options.select.join ','
+    else
+      selects = '*'
     params = []
-    sql = "SELECT * FROM #{tableize model}"
+    sql = "SELECT #{selects} FROM #{tableize model}"
     if conditions.length > 0
       sql += ' WHERE ' + _buildWhere conditions, params
     if options?.limit?

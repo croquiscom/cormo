@@ -208,14 +208,19 @@ class SQLite3Adapter extends AdapterBase
   # Finds a record by id
   # @param {String} model
   # @param {String} id
+  # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {DBModel} callback.record
   # @throws Error('not found')
   ###
-  findById: (model, id, callback) ->
+  findById: (model, id, options, callback) ->
+    if options.select
+      selects = 'id,' + options.select.join ','
+    else
+      selects = '*'
     table = tableize model
-    @_query 'all', "SELECT * FROM #{table} WHERE id=? LIMIT 1", id, (error, result) =>
+    @_query 'all', "SELECT #{selects} FROM #{table} WHERE id=? LIMIT 1", id, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       if result?.length is 1
         callback null, @_convertToModelInstance model, result[0]
@@ -234,8 +239,12 @@ class SQLite3Adapter extends AdapterBase
   # @param {Array<DBModel>} callback.records
   ###
   find: (model, conditions, options, callback) ->
+    if options.select
+      selects = 'id,' + options.select.join ','
+    else
+      selects = '*'
     params = []
-    sql = "SELECT * FROM #{tableize model}"
+    sql = "SELECT #{selects} FROM #{tableize model}"
     if conditions.length > 0
       sql += ' WHERE ' + _buildWhere conditions, params
     if options?.limit?

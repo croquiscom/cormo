@@ -44,6 +44,19 @@ class DBQuery
     return @
 
   ###
+  # Selects columns for result
+  # @param {Object} columns
+  # @return {DBQuery} this
+  ###
+  select: (columns) ->
+    @_options.select = null
+    schema_columns = Object.keys @_model._schema
+    if typeof columns is 'string'
+      columns = columns.split(/\s+/).filter (column) -> schema_columns.indexOf(column) >= 0
+      @_options.select = columns
+    return @
+
+  ###
   # Sets limit of query
   # @param {Number} limit
   # @return {DBQuery} this
@@ -61,7 +74,7 @@ class DBQuery
   ###
   exec: (callback) ->
     if @_id and @_conditions.length is 0
-      @_adapter.findById @_name, @_id, (error, record) ->
+      @_adapter.findById @_name, @_id, @_options, (error, record) ->
         return callback error if error
         callback null, [record]
       return

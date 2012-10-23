@@ -180,3 +180,25 @@ module.exports = (models) ->
             callback null
       ], (error) ->
         done error
+
+  it 'select', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      async.series [
+        (callback) ->
+          models.User.select (error, users) ->
+            return callback error if error
+            users[0].should.have.keys [ 'id', 'name', 'age' ]
+            callback null
+        (callback) ->
+          models.User.select 'name age address', (error, users) ->
+            return callback error if error
+            users[0].should.have.keys [ 'id', 'name', 'age' ]
+            callback null
+        (callback) ->
+          models.User.select 'name', (error, users) ->
+            return callback error if error
+            users[0].should.have.keys [ 'id', 'name' ]
+            callback null
+      ], (error) ->
+        done error

@@ -180,6 +180,7 @@ class MongoDBAdapter extends AdapterBase
     record = new modelClass()
     Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: data._id.toString()
     for column of modelClass._schema
+      continue if not data[column]?
       record[column] = data[column]
     return record
 
@@ -187,17 +188,24 @@ class MongoDBAdapter extends AdapterBase
   # Finds a record by id
   # @param {String} model
   # @param {String} id
+  # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {DBModel} callback.record
   # @throws Error('not found')
   ###
-  findById: (model, id, callback) ->
+  findById: (model, id, options, callback) ->
+    if options.select
+      fields = {}
+      options.select.forEach (column) -> fields[column] = 1
     try
       id = new ObjectID id
     catch e
       return callback new Error('not found')
-    @_collection(model).findOne _id: id, (error, result) =>
+    options = {}
+    if fields
+      options.fields = fields
+    @_collection(model).findOne _id: id, options, (error, result) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       return callback new Error('not found') if not result
       callback null, @_convertToModelInstance model, result
@@ -212,6 +220,9 @@ class MongoDBAdapter extends AdapterBase
   # @param {Array<DBModel>} callback.records
   ###
   find: (model, conditions, options, callback) ->
+    if options.select
+      fields = {}
+      options.select.forEach (column) -> fields[column] = 1
     try
       conditions = _buildWhere conditions
     catch e
@@ -226,6 +237,8 @@ class MongoDBAdapter extends AdapterBase
     #console.log JSON.stringify conditions
     options =
       limit: options.limit
+    if fields
+      options.fields = fields
     @_collection(model).find conditions, options, (error, cursor) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
       cursor.toArray (error, result) =>

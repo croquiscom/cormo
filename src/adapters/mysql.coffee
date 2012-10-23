@@ -235,13 +235,17 @@ class MySQLAdapter extends AdapterBase
   # Finds a record by id
   # @param {String} model
   # @param {String} id
+  # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {DBModel} callback.record
   # @throws Error('not found')
   ###
-  findById: (model, id, callback) ->
-    selects = @_select_all_columns[model].join ','
+  findById: (model, id, options, callback) ->
+    if options.select
+      selects = 'id,' + options.select.join ','
+    else
+      selects = @_select_all_columns[model].join ','
     sql = "SELECT #{selects} FROM #{tableize model} WHERE id=? LIMIT 1"
     @_query sql, id, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
@@ -262,7 +266,10 @@ class MySQLAdapter extends AdapterBase
   # @param {Array<DBModel>} callback.records
   ###
   find: (model, conditions, options, callback) ->
-    selects = @_select_all_columns[model].join ','
+    if options.select
+      selects = 'id,' + options.select.join ','
+    else
+      selects = @_select_all_columns[model].join ','
     if options.near? and field = Object.keys(options.near)[0]
       order_by = "#{field}_distance"
       location = options.near[field]
