@@ -8,9 +8,11 @@ class DBConnection extends EventEmitter
   ###
   # Creates a connection
   # @param {String} adapater_name
-  # @param {Object} settings
-  # @see MySQLAdapter.createAdapter
-  # @see MongoDBAdapter.createAdapter
+  # @param {Object} settings adapter specific settings
+  # @see MySQLAdapter::connect
+  # @see MongoDBAdapter::connect
+  # @see PostgreSQLAdapter::connect
+  # @see SQLite3Adapter::connect
   ###
   constructor: (adapter_name, settings) ->
     @connected = false
