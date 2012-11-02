@@ -49,6 +49,17 @@ connection.applySchemas (error) ->
   console.log error
 ```
 
+You can use any of cormo.String, DBConnection.String, connection.String, or 'string'
+(also native JavaScript Function - String - if exists) to specify a type.
+
+Currently supported types:
+
+* String
+* Number
+* Integer
+* Date
+* GeoPoint (MySQL, MonogoDB only)
+
 See [[#DBConnection::model]], [[#DBConnection::applySchemas]] for more details.
 
 ## Create a record

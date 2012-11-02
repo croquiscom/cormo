@@ -34,9 +34,22 @@ class DBModel
     adapter = @_adapter
     schema = @_schema
     for column, property of schema
-      if typeof property is 'function'
+      # convert simple type to object
+      if typeof property is 'function' or typeof property is 'string'
         schema[column] = type: property
-      if schema[column].type is DBModel.GeoPoint and not adapter.support_geopoint
+
+      # convert javascript built-in class
+      type = schema[column].type
+      switch type
+        when String then type = DBModel.String
+        when Number then type = DBModel.Number
+        when Date then type = DBModel.Date
+      if typeof type isnt 'string'
+        throw new Error 'unknown type : ' + type
+      schema[column].type = type.toLowerCase()
+
+      # check supports of GeoPoint
+      if type is DBModel.GeoPoint and not adapter.support_geopoint
         throw new Error 'this adapter does not support GeoPoint'
     return
 
@@ -222,7 +235,7 @@ class DBModel
 
   ###
   # Finds a record by id
-  # @param {String} id
+  # @param {RecordID} id
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {DBModel} callback.record
