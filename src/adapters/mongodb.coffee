@@ -11,9 +11,9 @@ types = require '../types'
 tableize = require('../inflector').tableize
 async = require 'async'
 
-_buildWhere = (conditions, conjunction='$and') ->
+_buildWhere = (schema, conditions, conjunction='$and') ->
   if Array.isArray conditions
-    subs = conditions.map (condition) -> _buildWhere condition
+    subs = conditions.map (condition) -> _buildWhere schema, condition
   else if typeof conditions is 'object'
     keys = Object.keys conditions
     if keys.length is 0
@@ -23,9 +23,9 @@ _buildWhere = (conditions, conjunction='$and') ->
       if key.substr(0, 1) is '$'
         switch key
           when '$and'
-            return _buildWhere conditions[key], '$and'
+            return _buildWhere schema, conditions[key], '$and'
           when '$or'
-            return _buildWhere conditions[key], '$or'
+            return _buildWhere schema, conditions[key], '$or'
         return
       else
         value = conditions[key]
@@ -39,20 +39,25 @@ _buildWhere = (conditions, conjunction='$and') ->
               return obj
             when '$contains'
               value = new RegExp value[sub_key], 'i'
-        obj = {}
-        if key is 'id'
+        else if key is 'id'
+          key = '_id'
           try
-            obj._id = new ObjectID value
+            value = new ObjectID value
           catch e
             throw new Error('unknown error')
-        else
-          obj[key] = value
+        else if schema[key].type is 'objectid'
+          try
+            value = new ObjectID value
+          catch e
+            throw new Error("'#{key}' is not a valid id")
+        obj = {}
+        obj[key] = value
         return obj
     else
       subs = keys.map (key) ->
         obj = {}
         obj[key] = conditions[key]
-        _buildWhere obj
+        _buildWhere schema, obj
   else
     return
   return if subs.length is 0
@@ -67,6 +72,7 @@ _buildWhere = (conditions, conjunction='$and') ->
 class MongoDBAdapter extends AdapterBase
   support_geopoint: true
   key_type: types.String
+  key_type_internal: 'objectid'
 
   ###
   # Creates a MongoDB adapter
@@ -126,6 +132,23 @@ class MongoDBAdapter extends AdapterBase
         return callback MongoDBAdapter.wrapError 'unknown error', error
       callback null
 
+  _buildSaveData: (model, data, callback) ->
+    schema = @_connection.models[model]._schema
+
+    Object.keys(data).forEach (field) ->
+      # remove null field before save
+      if not data[field]?
+        delete data[field]
+      # convert id type
+      else if schema[field].type is 'objectid'
+        try
+          data[field] = new ObjectID data[field]
+        catch e
+          callback new Error("'#{field}' is not a ID")
+          return false
+
+    return true
+
   ###
   # Creates a record
   # @param {String} model
@@ -135,9 +158,7 @@ class MongoDBAdapter extends AdapterBase
   # @param {String} callback.id
   ###
   create: (model, data, callback) ->
-    # remove null field before save
-    Object.keys(data).forEach (field) ->
-      delete data[field] if not data[field]?
+    return if not @_buildSaveData model, data, callback
 
     @_collection(model).insert data, safe: true, (error, result) ->
       if error?.code is 11000
@@ -161,12 +182,11 @@ class MongoDBAdapter extends AdapterBase
   update: (model, data, callback) ->
     try
       id = new ObjectID data.id
+      delete data.id
     catch e
       return callback new Error('unknown error')
 
-    # remove null field before save
-    Object.keys(data).forEach (field) ->
-      delete data[field] if not data[field]?
+    return if not @_buildSaveData model, data, callback
 
     @_collection(model).update { _id: id }, data, safe: true, (error) ->
       if error?.code is 11001
@@ -179,9 +199,12 @@ class MongoDBAdapter extends AdapterBase
     modelClass = @_connection.models[model]
     record = new modelClass()
     Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: data._id.toString()
-    for column of modelClass._schema
+    for column, property of modelClass._schema
       continue if not data[column]?
-      record[column] = data[column]
+      if property.type is 'objectid'
+        record[column] = data[column].toString()
+      else
+        record[column] = data[column]
     return record
 
   ###
@@ -224,7 +247,7 @@ class MongoDBAdapter extends AdapterBase
       fields = {}
       options.select.forEach (column) -> fields[column] = 1
     try
-      conditions = _buildWhere conditions
+      conditions = _buildWhere @_connection.models[model]._schema, conditions
     catch e
       return callback e
     if options.near? and field = Object.keys(options.near)[0]
@@ -255,7 +278,7 @@ class MongoDBAdapter extends AdapterBase
   ###
   count: (model, conditions, callback) ->
     try
-      conditions = _buildWhere conditions
+      conditions = _buildWhere @_connection.models[model]._schema, conditions
     catch e
       return callback e
     #console.log JSON.stringify conditions
@@ -273,7 +296,7 @@ class MongoDBAdapter extends AdapterBase
   ###
   delete: (model, conditions, callback) ->
     try
-      conditions = _buildWhere conditions
+      conditions = _buildWhere @_connection.models[model]._schema, conditions
     catch e
       return callback e
     #console.log JSON.stringify conditions

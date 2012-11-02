@@ -349,7 +349,7 @@ class DBModel
       foreign_key = options.as + '_id'
     else
       foreign_key = inflector.foreign_key @_name
-    target_model._addForeignKey foreign_key, @_connection._adapter.key_type
+    target_model._addForeignKey foreign_key, @_connection._adapter
 
     column = options?.as or inflector.tableize(target_model._name)
     columnCache = '__cache_' + column
@@ -404,7 +404,7 @@ class DBModel
       foreign_key = options.as + '_id'
     else
       foreign_key = inflector.foreign_key target_model._name
-    @_addForeignKey foreign_key, target_model._adapter.key_type
+    @_addForeignKey foreign_key, target_model._adapter
 
     column = options?.as or inflector.underscore(target_model._name)
     columnCache = '__cache_' + column
@@ -463,8 +463,13 @@ class DBModel
     @delete callback
     return
 
-  @_addForeignKey: (column, type) ->
+  @_addForeignKey: (column, target_adapter) ->
     return if @_schema.hasOwnProperty column
+
+    if @_adapter is target_adapter and target_adapter.key_type_internal
+      type = target_adapter.key_type_internal
+    else
+      type = target_adapter.key_type
 
     @_schema[column] = { type: type }
 
