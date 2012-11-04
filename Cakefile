@@ -33,5 +33,5 @@ task 'test:cov', 'Gets tests coverage', (options) ->
 
 task 'doc', 'Make documents', ->
   command = './node_modules/.bin/croquis-jsdoc'
-  args = ['-q','--title','CORMO','src']
+  args = ['-q','--title','CORMO','--external-types','src/doc_types.json','src']
   spawn command, args, stdio: 'inherit'

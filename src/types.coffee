@@ -28,3 +28,13 @@ exports.GeoPoint = 'geopoint'
 # @memberOf cormo
 ###
 exports.Date = 'date'
+
+###
+# A pseudo class represents a record's unique identifier.
+#
+# Its real type differs by adapters.
+#
+# * String for MongoDB
+# * Integer for MySQL, SQLite3, PostegreSQL
+###
+class RecordID
