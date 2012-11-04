@@ -1,24 +1,30 @@
 ###
-# String
+# Represents a string, used in model schemas.
+# @memberOf cormo
 ###
 exports.String = 'string'
 
 ###
-# Double-precision floating-point
+# Represents a double-precision floating-point, used in model schemas.
+# @memberOf cormo
 ###
 exports.Number = 'number'
 
 ###
-# 32bit integer
+# Represents a 32bit integer, used in model schemas.
+# @memberOf cormo
 ###
 exports.Integer = 'integer'
 
 ###
-# two-dimensional point
+# Represents a two-dimensional point, used in model schemas.
+# This type is supported only in MongoDB and MySQL.
+# @memberOf cormo
 ###
 exports.GeoPoint = 'geopoint'
 
 ###
-# Date
+# Represents a date, used in model schemas.
+# @memberOf cormo
 ###
 exports.Date = 'date'
