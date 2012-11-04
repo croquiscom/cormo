@@ -129,7 +129,7 @@ class MySQLAdapter extends AdapterBase
   # Creates or alters tables reflecting schemas
   # @param {Function} callback
   # @param {Error} callback.error
-  # @see DBConnection.applySchemas
+  # @see Connection.applySchemas
   ###
   applySchemas: (callback) ->
     async.forEach Object.keys(@_connection.models), (model, callback) =>
@@ -142,7 +142,7 @@ class MySQLAdapter extends AdapterBase
   # @param {String} model
   # @param {Function} callback
   # @param {Error} callback.error
-  # @see DBModel.drop
+  # @see Model.drop
   ###
   drop: (model, callback) ->
     table = tableize model
@@ -238,7 +238,7 @@ class MySQLAdapter extends AdapterBase
   # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {DBModel} callback.record
+  # @param {Model} callback.record
   # @throws Error('not found')
   ###
   findById: (model, id, options, callback) ->
@@ -263,7 +263,7 @@ class MySQLAdapter extends AdapterBase
   # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {Array<DBModel>} callback.records
+  # @param {Array<Model>} callback.records
   ###
   find: (model, conditions, options, callback) ->
     if options.select

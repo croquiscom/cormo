@@ -1,11 +1,11 @@
-DBConnection = require('../index').DBConnection
+Connection = require('../index').Connection
 async = require 'async'
 
 describe 'mixing several database', ->
   mysql = undefined
   mongodb = undefined
   connectMySQL = (callback) ->
-    mysql = new DBConnection 'mysql', database: 'test'
+    mysql = new Connection 'mysql', database: 'test'
     if mysql.connected
       callback()
     else
@@ -13,7 +13,7 @@ describe 'mixing several database', ->
       mysql.once 'error', (error) ->
         callback error
   connectMongoDB = (callback) ->
-    mongodb = new DBConnection 'mongodb', database: 'test'
+    mongodb = new Connection 'mongodb', database: 'test'
     if mongodb.connected
       callback()
     else

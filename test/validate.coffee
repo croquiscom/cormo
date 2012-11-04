@@ -1,4 +1,4 @@
-DBConnection = require('../index').DBConnection
+Connection = require('../index').Connection
 
 _dbs =
   mysql:
@@ -15,7 +15,7 @@ Object.keys(_dbs).forEach (db) ->
   describe 'validate-' + db, ->
     connection = undefined
     connect = (callback) ->
-      connection = new DBConnection db, _dbs[db]
+      connection = new Connection db, _dbs[db]
       if connection.connected
         callback()
       else

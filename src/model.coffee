@@ -1,20 +1,20 @@
 inflector = require './inflector'
 async = require 'async'
-DBQuery = require './query'
+Query = require './query'
 
 ###
 # Base class for models
 ###
-class DBModel
+class Model
   ###
-  # Returns a new model class extending DBModel
-  # @param {DBConnection} connection
+  # Returns a new model class extending Model
+  # @param {Connection} connection
   # @param {String} name
   # @param {Object} schema
   # @return {Class}
   ###
   @newModel: (connection, name, schema) ->
-    class NewModel extends DBModel
+    class NewModel extends Model
     Object.defineProperty NewModel, '_connection', value: connection
     Object.defineProperty NewModel, '_adapter', value: connection._adapter
     Object.defineProperty NewModel, '_name', value: name
@@ -41,15 +41,15 @@ class DBModel
       # convert javascript built-in class
       type = schema[column].type
       switch type
-        when String then type = DBModel.String
-        when Number then type = DBModel.Number
-        when Date then type = DBModel.Date
+        when String then type = Model.String
+        when Number then type = Model.Number
+        when Date then type = Model.Date
       if typeof type isnt 'string'
         throw new Error 'unknown type : ' + type
       schema[column].type = type.toLowerCase()
 
       # check supports of GeoPoint
-      if type is DBModel.GeoPoint and not adapter.support_geopoint
+      if type is Model.GeoPoint and not adapter.support_geopoint
         throw new Error 'this adapter does not support GeoPoint'
     return
 
@@ -74,7 +74,7 @@ class DBModel
   # Creates a record.
   # 'Model.build(data)' is the same as 'new Model(data)'
   # @param {Object} [data={}]
-  # @return {DBModel}
+  # @return {Model}
   ###
   @build: (data) ->
     return new @ data
@@ -85,7 +85,7 @@ class DBModel
   # @param {Object} [data={}]
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {DBModel} callback.record created record
+  # @param {Model} callback.record created record
   ###
   @create: (data, callback) ->
     if typeof data is 'function'
@@ -107,27 +107,27 @@ class DBModel
       property = schema[column]
       if @[column]?
         switch property.type
-          when DBModel.Number
+          when Model.Number
             value = Number @[column]
             if isNaN value
               errors.push "'#{column}' is not a number"
             else
               @[column] = value
-          when DBModel.Integer
+          when Model.Integer
             value = Number @[column]
             # value>>0 checkes integer and 32bit
             if isNaN(value) or (value>>0) isnt value
               errors.push "'#{column}' is not an integer"
             else
               @[column] = value
-          when DBModel.GeoPoint
+          when Model.GeoPoint
             value = @[column]
             if not ( Array.isArray(value) and value.length is 2 )
               errors.push "'#{column}' is not a geo point"
             else
               value[0] = Number value[0]
               value[1] = Number value[1]
-          when DBModel.Date
+          when Model.Date
             value = @[column]
             value = new Date value
             if isNaN value.getTime()
@@ -204,7 +204,7 @@ class DBModel
   # @param {Boolean} [options.validate=true]
   # @param {Function} [callback]
   # @param {Error} callback.error
-  # @param {DBModel} callback.record this
+  # @param {Model} callback.record this
   ###
   save: (options, callback) ->
     if typeof options is 'function'
@@ -238,14 +238,14 @@ class DBModel
   # @param {RecordID} id
   # @param {Function} [callback]
   # @param {Error} callback.error
-  # @param {DBModel} callback.record
-  # @return {DBQuery}
+  # @param {Model} callback.record
+  # @return {Query}
   # @throws Error('not found')
   ###
   @find: (id, callback) ->
     return if @_waitingForConnection @, @find, arguments
 
-    query = new DBQuery @
+    query = new Query @
     query.find id
     if typeof callback is 'function'
       query.exec (error, records) ->
@@ -260,8 +260,8 @@ class DBModel
   # @param {Object} [condition]
   # @param {Function} [callback]
   # @param {Error} callback.error
-  # @param {Array<DBModel>} callback.records
-  # @return {DBQuery}
+  # @param {Array<Model>} callback.records
+  # @return {Query}
   ###
   @where: (condition, callback) ->
     return if @_waitingForConnection @, @where, arguments
@@ -269,7 +269,7 @@ class DBModel
     if typeof condition is 'function'
       callback = condition
       condition = null
-    query = new DBQuery @
+    query = new Query @
     query.where condition
     if typeof callback is 'function'
       query.exec callback
@@ -280,8 +280,8 @@ class DBModel
   # @param {Object} [columns]
   # @param {Function} [callback]
   # @param {Error} callback.error
-  # @param {Array<DBModel>} callback.records
-  # @return {DBQuery}
+  # @param {Array<Model>} callback.records
+  # @return {Query}
   ###
   @select: (columns, callback) ->
     return if @_waitingForConnection @, @select, arguments
@@ -289,7 +289,7 @@ class DBModel
     if typeof columns is 'function'
       callback = columns
       columns = null
-    query = new DBQuery @
+    query = new Query @
     query.select columns
     if typeof callback is 'function'
       query.exec callback
@@ -301,7 +301,7 @@ class DBModel
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
-  # @return {DBQuery}
+  # @return {Query}
   ###
   @count: (condition, callback) ->
     return if @_waitingForConnection @, @count, arguments
@@ -309,7 +309,7 @@ class DBModel
     if typeof condition is 'function'
       callback = condition
       condition = null
-    query = new DBQuery @
+    query = new Query @
     query.where condition
     if typeof callback is 'function'
       query.count callback
@@ -321,7 +321,7 @@ class DBModel
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
-  # @return {DBQuery}
+  # @return {Query}
   ###
   @delete: (condition, callback) ->
     return if @_waitingForConnection @, @delete, arguments
@@ -329,7 +329,7 @@ class DBModel
     if typeof condition is 'function'
       callback = condition
       condition = null
-    query = new DBQuery @
+    query = new Query @
     query.where condition
     if typeof callback is 'function'
       query.delete callback
@@ -438,7 +438,7 @@ class DBModel
   #
   # A validator must return false(boolean) or error message(string), or throw an Error exception if invalid
   # @param {Function} validator
-  # @param {DBModel} validator.record
+  # @param {Model} validator.record
   ###
   @addValidator: (validator) ->
     @_validators.push validator
@@ -474,7 +474,7 @@ class DBModel
     @_schema[column] = { type: type }
 
 for type, value of require './types'
-  DBModel[type] = value
-  DBModel::[type] = value
+  Model[type] = value
+  Model::[type] = value
 
-module.exports = DBModel
+module.exports = Model

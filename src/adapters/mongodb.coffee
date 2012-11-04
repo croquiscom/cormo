@@ -108,7 +108,7 @@ class MongoDBAdapter extends AdapterBase
   # Ensures indexes
   # @param {Function} callback
   # @param {Error} callback.error
-  # @see DBConnection.applySchemas
+  # @see Connection.applySchemas
   ###
   applySchemas: (callback) ->
     async.forEach Object.keys(@_connection.models), (model, callback) =>
@@ -121,7 +121,7 @@ class MongoDBAdapter extends AdapterBase
   # @param {String} model
   # @param {Function} callback
   # @param {Error} callback.error
-  # @see DBModel.drop
+  # @see Model.drop
   ###
   drop: (model, callback) ->
     name = tableize model
@@ -214,7 +214,7 @@ class MongoDBAdapter extends AdapterBase
   # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {DBModel} callback.record
+  # @param {Model} callback.record
   # @throws Error('not found')
   ###
   findById: (model, id, options, callback) ->
@@ -240,7 +240,7 @@ class MongoDBAdapter extends AdapterBase
   # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {Array<DBModel>} callback.records
+  # @param {Array<Model>} callback.records
   ###
   find: (model, conditions, options, callback) ->
     if options.select

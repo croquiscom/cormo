@@ -1,4 +1,4 @@
-DBConnection = require('../index').DBConnection
+Connection = require('../index').Connection
 
 _dbs =
   mysql:
@@ -10,7 +10,7 @@ Object.keys(_dbs).forEach (db) ->
   describe 'geospatial-' + db, ->
     connection = undefined
     connect = (callback) ->
-      connection = new DBConnection db, _dbs[db]
+      connection = new Connection db, _dbs[db]
       if connection.connected
         callback()
       else
@@ -26,7 +26,7 @@ Object.keys(_dbs).forEach (db) ->
 
         Place = models.Place = connection.model 'Place',
           name: String
-          location: DBConnection.GeoPoint
+          location: Connection.GeoPoint
 
         Place.drop (error) ->
           return done error if error
@@ -55,7 +55,7 @@ Object.keys(_dbs_not).forEach (db) ->
   describe 'geospatial-' + db, ->
     connection = undefined
     connect = (callback) ->
-      connection = new DBConnection db, _dbs_not[db]
+      connection = new Connection db, _dbs_not[db]
       if connection.connected
         callback()
       else
@@ -70,6 +70,6 @@ Object.keys(_dbs_not).forEach (db) ->
       ( ->
         Place = connection.model 'Place',
           name: String
-          location: DBConnection.GeoPoint
+          location: Connection.GeoPoint
       ).should.throw 'this adapter does not support GeoPoint'
       done null

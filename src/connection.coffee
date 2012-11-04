@@ -1,10 +1,10 @@
 EventEmitter = require('events').EventEmitter
-DBModel = require './model'
+Model = require './model'
 
 ###
 # Manages connection to a database
 ###
-class DBConnection extends EventEmitter
+class Connection extends EventEmitter
   ###
   # Creates a connection
   # @param {String} adapater_name
@@ -34,7 +34,7 @@ class DBConnection extends EventEmitter
   # @return {Class}
   ###
   model: (name, schema) ->
-    return @models[name] = DBModel.newModel @, name, schema
+    return @models[name] = Model.newModel @, name, schema
 
   _waitingForConnection: (object, method, args) ->
     return false if @connected
@@ -67,7 +67,7 @@ class DBConnection extends EventEmitter
       callback? null
 
 for type, value of require './types'
-  DBConnection[type] = value
-  DBConnection::[type] = value
+  Connection[type] = value
+  Connection::[type] = value
 
-module.exports = DBConnection
+module.exports = Connection

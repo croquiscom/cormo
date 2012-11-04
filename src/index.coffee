@@ -4,10 +4,10 @@
 ###
 
 ###
-# Exports [[#DBConnection]] class
+# Exports [[#Connection]] class
 # @memberOf cormo
 ###
-exports.DBConnection = require './connection'
+exports.Connection = exports.DBConnection = require './connection'
 
 types = require './types'
 for type of types

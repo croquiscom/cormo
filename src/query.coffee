@@ -1,7 +1,7 @@
 ###
 # Collects conditions to query
 ###
-class DBQuery
+class Query
   ###
   # Creates a query instance
   # @param {Class} model
@@ -16,7 +16,7 @@ class DBQuery
   ###
   # Finds a record by id
   # @param {String} id
-  # @return {DBQuery} this
+  # @return {Query} this
   ###
   find: (id) ->
     @_id = id
@@ -25,7 +25,7 @@ class DBQuery
   ###
   # Finds records near target
   # @param {Object} target
-  # @return {DBQuery} this
+  # @return {Query} this
   ###
   near: (target) ->
     @_options.near = target
@@ -34,7 +34,7 @@ class DBQuery
   ###
   # Finds records by condition
   # @param {Object} condition
-  # @return {DBQuery} this
+  # @return {Query} this
   ###
   where: (condition) ->
     if Array.isArray condition
@@ -46,7 +46,7 @@ class DBQuery
   ###
   # Selects columns for result
   # @param {Object} columns
-  # @return {DBQuery} this
+  # @return {Query} this
   ###
   select: (columns) ->
     @_options.select = null
@@ -59,7 +59,7 @@ class DBQuery
   ###
   # Sets limit of query
   # @param {Number} limit
-  # @return {DBQuery} this
+  # @return {Query} this
   ###
   limit: (limit) ->
     @_options.limit = limit
@@ -69,8 +69,8 @@ class DBQuery
   # Executes the query
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {Array<DBModel>} callback.records
-  # @return {DBQuery} this
+  # @param {Array<Model>} callback.records
+  # @return {Query} this
   ###
   exec: (callback) ->
     if @_id and @_conditions.length is 0
@@ -88,7 +88,7 @@ class DBQuery
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Number} callback.count
-  # @return {DBQuery} this
+  # @return {Query} this
   ###
   count: (callback) ->
     if @_id
@@ -101,7 +101,7 @@ class DBQuery
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Number} callback.count
-  # @return {DBQuery} this
+  # @return {Query} this
   ###
   delete: (callback) ->
     if @_id
@@ -109,4 +109,4 @@ class DBQuery
       delete @_id
     @_adapter.delete @_name, @_conditions, callback
 
-module.exports = DBQuery
+module.exports = Query

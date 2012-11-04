@@ -22,11 +22,11 @@ API can be changed.
 ## Connect to DB
 
 ```coffeescript
-DBConnection = require('cormo').DBConnection
+Connection = require('cormo').Connection
 
-connection = new DBConnection 'mysql', database: 'test'
+connection = new Connection 'mysql', database: 'test'
 
-another = new DBConnection 'mongodb', database: 'test'
+another = new Connection 'mongodb', database: 'test'
 ```
 
 See documents for each adapter([[#AdapterBase]]) for detail options.
@@ -49,7 +49,7 @@ connection.applySchemas (error) ->
   console.log error
 ```
 
-You can use any of cormo.String, DBConnection.String, connection.String, or 'string'
+You can use any of cormo.String, Connection.String, connection.String, or 'string'
 (also native JavaScript Function - String - if exists) to specify a type.
 
 Currently supported types:
@@ -60,7 +60,7 @@ Currently supported types:
 * Date
 * GeoPoint (MySQL, MonogoDB only)
 
-See [[#DBConnection::model]], [[#DBConnection::applySchemas]] for more details.
+See [[#Connection::model]], [[#Connection::applySchemas]] for more details.
 
 ## Create a record
 
@@ -87,7 +87,7 @@ User.create { name: 'John Doe', age: 27 }, (error, user4) ->
   console.log error
 ```
 
-See [[#DBModel::constructor]], [[#DBModel::save]], [[#DBModel.build]], [[#DBModel.create]] for more details.
+See [[#Model::constructor]], [[#Model::save]], [[#Model.build]], [[#Model.create]] for more details.
 
 ## Query
 
@@ -155,7 +155,7 @@ User.where(age: { $lt: 40 }).limit(3).exec (error, users) ->
   console.log users
 ```
 
-See [[#DBModel.find]], [[#DBModel.where]], [[#DBModel.count]], [[#DBModel.delete]], [[#DBQuery]] for more details.
+See [[#Model.find]], [[#Model.where]], [[#Model.count]], [[#Model.delete]], [[#Query]] for more details.
 
 ## Constraints
 
@@ -179,11 +179,11 @@ User.create { name: 'Bill Smith', age: 45, email: 'bill@foo.org' }, (error, user
     # error.message will be 'duplicated email' or 'duplicated'
 ```
 
-See [[#DBConnection::model]] for more details.
+See [[#Connection::model]] for more details.
 
 ## Validations
 
-If you want validations, adds a validator using [[#DBModel.addValidator]].
+If you want validations, adds a validator using [[#Model.addValidator]].
 
 If a record is invalid, throws an error, or returns false or an error string in the validator.
 
@@ -210,7 +210,7 @@ User.create { name: 'John Doe', age: 10, email: 'invalid' }, (error, user) ->
   # error.message will be 'invalid email,too young' or 'too young,invalid email'
 ```
 
-See [[#DBModel.addValidator]] for more details.
+See [[#Model.addValidator]] for more details.
 
 ## Associations
 
@@ -259,7 +259,7 @@ post.save (error) ->
   console.log error
 ```
 
-See [[#DBModel.hasMany]], [[#DBModel.belongsTo]] for more details.
+See [[#Model.hasMany]], [[#Model.belongsTo]] for more details.
 
 ## Geospatial query
 
@@ -268,7 +268,7 @@ Currently, we supports only near query of 2D location in MongoDB and MySQL.
 ```coffeescript
 Place = connection.model 'Place',
   name: String
-  location: DBConnection.GeoPoint
+  location: Connection.GeoPoint
 
 connection.applySchemas()
 
@@ -280,4 +280,4 @@ Place.where().near(location: [-5, 45]).limit(4).exec (error, places) ->
   console.log places
 ```
 
-See [[#DBQuery::near]] for more details.
+See [[#Query::near]] for more details.
