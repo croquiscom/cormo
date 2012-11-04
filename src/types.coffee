@@ -36,5 +36,12 @@ exports.Date = 'date'
 #
 # * String for MongoDB
 # * Integer for MySQL, SQLite3, PostegreSQL
+# @namespace types
 ###
 class RecordID
+
+###
+# A pseudo class represents an integer
+# @namespace types
+###
+class Integer
