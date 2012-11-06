@@ -34,7 +34,7 @@ class Connection extends EventEmitter
   # @return {Class}
   ###
   model: (name, schema) ->
-    return @models[name] = Model.newModel @, name, schema
+    return Model.newModel @, name, schema
 
   _waitingForConnection: (object, method, args) ->
     return false if @connected

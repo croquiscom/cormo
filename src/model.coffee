@@ -15,43 +15,52 @@ class Model
   ###
   @newModel: (connection, name, schema) ->
     class NewModel extends Model
-    Object.defineProperty NewModel, '_connection', value: connection
-    Object.defineProperty NewModel, '_adapter', value: connection._adapter
-    Object.defineProperty NewModel, '_name', value: name
-    Object.defineProperty NewModel, '_schema', value: schema
-    Object.defineProperty NewModel, '_associations', value: {}
-    Object.defineProperty NewModel, '_validators', value: []
-
-    NewModel._normalizeSchema()
-
+    NewModel.connection connection, name
+    for name, property of schema
+      NewModel.column name, property
     return NewModel
 
   ###
-  # Normalizes a schema
-  # (column: String -> column: {type: String})
+  # Sets a connection of this model
+  # @param {Connection} connection
+  # @param {String} [name]
   ###
-  @_normalizeSchema: ->
-    adapter = @_adapter
-    schema = @_schema
-    for column, property of schema
-      # convert simple type to object
-      if typeof property is 'function' or typeof property is 'string'
-        schema[column] = type: property
+  @connection: (connection, name) ->
+    name = @name if not name
+    connection.models[name] = @
 
-      # convert javascript built-in class
-      type = schema[column].type
-      switch type
-        when String then type = Model.String
-        when Number then type = Model.Number
-        when Date then type = Model.Date
-      if typeof type isnt 'string'
-        throw new Error 'unknown type : ' + type
-      schema[column].type = type.toLowerCase()
+    Object.defineProperty @, '_connection', value: connection
+    Object.defineProperty @, '_adapter', value: connection._adapter
+    Object.defineProperty @, '_associations', value: {}
+    Object.defineProperty @, '_validators', value: []
+    Object.defineProperty @, '_name', configurable: true, value: name
+    Object.defineProperty @, '_schema', configurable: true, value: {}
 
-      # check supports of GeoPoint
-      if type is Model.GeoPoint and not adapter.support_geopoint
-        throw new Error 'this adapter does not support GeoPoint'
-    return
+  ###
+  # Adds a column to this model
+  # @param {String} name
+  # @param {String|Object} property
+  ###
+  @column: (name, property) ->
+    # convert simple type to object
+    if typeof property is 'function' or typeof property is 'string'
+      property = type: property
+
+    # convert javascript built-in class
+    type = property.type
+    switch type
+      when String then type = Model.String
+      when Number then type = Model.Number
+      when Date then type = Model.Date
+    if typeof type isnt 'string'
+      throw new Error 'unknown type : ' + type
+    property.type = type.toLowerCase()
+
+    # check supports of GeoPoint
+    if type is Model.GeoPoint and not @_adapter.support_geopoint
+      throw new Error 'this adapter does not support GeoPoint'
+
+    @_schema[name] = property
 
   @_waitingForConnection: (object, method, args) ->
     return true if @_connection._waitingForApplyingSchemas object, method, args

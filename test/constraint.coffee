@@ -29,11 +29,17 @@ Object.keys(_dbs).forEach (db) ->
       connect (error) ->
         return done error if error
 
-        User = models.User = connection.model 'User',
-          name: { type: String, required: true }
-          age: { type: Number, required: true }
-          email: { type: String, unique: true, required: true }
-          facebook_id: { type: String, unique: true }
+        #User = models.User = connection.model 'User',
+        #  name: { type: String, required: true }
+        #  age: { type: Number, required: true }
+        #  email: { type: String, unique: true, required: true }
+        #  facebook_id: { type: String, unique: true }
+        models.User = class User extends Model
+          @connection connection
+          @column 'name', { type: String, required: true }
+          @column 'age', { type: Number, required: true }
+          @column 'email', { type: String, unique: true, required: true }
+          @column 'facebook_id', { type: String, unique: true }
 
         User.drop (error) ->
           return done error if error

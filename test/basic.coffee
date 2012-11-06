@@ -29,9 +29,13 @@ Object.keys(_dbs).forEach (db) ->
       connect (error) ->
         return done error if error
 
-        User = models.User = connection.model 'User',
-          name: String
-          age: Number
+        #User = models.User = connection.model 'User',
+        #  name: String
+        #  age: Number
+        models.User = class User extends Model
+          @connection connection
+          @column 'name', String
+          @column 'age', Number
 
         User.drop (error) ->
           return done error if error
