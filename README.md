@@ -159,6 +159,10 @@ User.where { name: { $contains: 'smi' } }, (error, users) ->
 User.where { age: { $in: [ 10, 20, 30 ] } }, (error, users) ->
   console.log users
 
+ # you can omit the $in keyword (implicit $in)
+User.where { age: [ 10, 20, 30 ] }, (error, users) ->
+  console.log users
+
  # limit records
  # the same as "SELECT * FROM users WHERE age<40 LIMIT 3"
 User.where(age: { $lt: 40 }).limit(3).exec (error, users) ->

@@ -30,7 +30,14 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
       else
         is_objectid = key is 'id' or schema[key].type is 'objectid'
         value = conditions[key]
-        if typeof value is 'object' and (keys = Object.keys value).length is 1
+        if Array.isArray value
+          if is_objectid
+            try
+              value = value.map (v) -> new ObjectID v
+            catch e
+              throw new Error("'#{key}' is not a valid id")
+          value = $in: value
+        else if typeof value is 'object' and (keys = Object.keys value).length is 1
           sub_key = keys[0]
           switch sub_key
             when '$gt' or '$lt' or '$gte' or '$lte'

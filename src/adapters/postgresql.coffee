@@ -45,7 +45,12 @@ _buildWhere = (conditions, params, conjunction='AND') ->
       else
         value = conditions[key]
         op = '='
-        if typeof value is 'object' and (keys = Object.keys value).length is 1
+        if Array.isArray value
+          values = value.map (value) ->
+            params.push value
+            return '$' + params.length
+          return "#{key} IN (#{values.join ','})"
+        else if typeof value is 'object' and (keys = Object.keys value).length is 1
           sub_key = keys[0]
           if sub_key is '$in'
             values = value[sub_key]

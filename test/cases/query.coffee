@@ -124,6 +124,19 @@ module.exports = (models) ->
         users[1].should.have.property 'age', 53
         done null
 
+  it 'implicit $in', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.where age: [ 32, 45, 57 ], (error, users) ->
+        return done error if error
+        users.should.have.length 2
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        users[0].should.have.property 'name', 'Bill Smith'
+        users[0].should.have.property 'age', 45
+        users[1].should.have.property 'name', 'Gina Baker'
+        users[1].should.have.property 'age', 32
+        done null
+
   it 'count none', (done) ->
     models.User.count (error, count) ->
       count.should.equal 0
