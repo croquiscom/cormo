@@ -149,6 +149,11 @@ User.where [ { age: { $gt: 30 } }, { age: { $lte: 45 } } ], (error, users) ->
 User.where { name: { $contains: 'smi' } }, (error, users) ->
   console.log users
 
+ # subset
+ # the same as "SELECT * FROM users WHERE age IN (10,20,30)"
+User.where { age: { $in: [ 10, 20, 30 ] } }, (error, users) ->
+  console.log users
+
  # limit records
  # the same as "SELECT * FROM users WHERE age<40 LIMIT 3"
 User.where(age: { $lt: 40 }).limit(3).exec (error, users) ->

@@ -48,6 +48,12 @@ _buildWhere = (conditions, params, conjunction='AND') ->
         op = '='
         if typeof value is 'object' and (keys = Object.keys value).length is 1
           sub_key = keys[0]
+          if sub_key is '$in'
+            values = value[sub_key]
+            values = values.map (value) ->
+              params.push value
+              return '?'
+            return "#{key} IN (#{values.join ','})"
           switch sub_key
             when '$gt'
               op = '>'

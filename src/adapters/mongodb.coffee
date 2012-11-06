@@ -28,6 +28,7 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
             return _buildWhere schema, conditions[key], '$or'
         return
       else
+        is_objectid = key is 'id' or schema[key].type is 'objectid'
         value = conditions[key]
         if typeof value is 'object' and (keys = Object.keys value).length is 1
           sub_key = keys[0]
@@ -39,17 +40,19 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
               return obj
             when '$contains'
               value = new RegExp value[sub_key], 'i'
-        else if key is 'id'
-          key = '_id'
-          try
-            value = new ObjectID value
-          catch e
-            throw new Error('unknown error')
-        else if schema[key].type is 'objectid'
+            when '$in'
+              if is_objectid
+                try
+                  value[sub_key] = value[sub_key].map (v) -> new ObjectID v
+                catch e
+                  throw new Error("'#{key}' is not a valid id")
+        else if is_objectid
           try
             value = new ObjectID value
           catch e
             throw new Error("'#{key}' is not a valid id")
+        if key is 'id'
+          key = '_id'
         obj = {}
         obj[key] = value
         return obj
