@@ -1,5 +1,6 @@
 EventEmitter = require('events').EventEmitter
 Model = require './model'
+association = require './association'
 
 ###
 # Manages connection to a database
@@ -17,6 +18,7 @@ class Connection extends EventEmitter
   constructor: (adapter_name, settings) ->
     @connected = false
     @models = {}
+    @_pending_associations = []
 
     @_adapter = require(__dirname + '/adapters/' + adapter_name) @
     @_adapter.connect settings, (error) =>
@@ -31,7 +33,7 @@ class Connection extends EventEmitter
   # Creates a model class
   # @param {String} name
   # @param {Object} schema
-  # @return {Class}
+  # @return {Class<Model>}
   ###
   model: (name, schema) ->
     return Model.newModel @, name, schema
@@ -54,6 +56,9 @@ class Connection extends EventEmitter
   # @param {Error} callback.error
   ###
   applySchemas: (callback) ->
+    association.applyAssociations @, @_pending_associations
+    @_pending_associations = []
+
     if @_adapter.applySchemas? and not @_applying_schemas
       @_applying_schemas = true
       callAdapter = =>

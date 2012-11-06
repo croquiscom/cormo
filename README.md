@@ -36,14 +36,16 @@ See documents for each adapter([[#AdapterBase]]) for detail options.
 ```coffeescript
 # this will create two tables - users, posts.
 
+# using model method
 User = connection.model 'User',
-  name: String
-  age: Number
+  name: { type: String }
+  age: { type: Number }
 
-# 'String' is the same as '{ type: String }'
-Post = connection.model 'Post',
-  title: String
-  body: { type: String }
+# using CoffeeScript extends keyword
+class Post extends cormo.Model
+  @connection connection # must be first
+  @column 'title', String # 'String' is the same as '{ type: String }'
+  @column 'body', 'string' # you can also use 'string' to specify a string type
 
 connection.applySchemas (error) ->
   console.log error

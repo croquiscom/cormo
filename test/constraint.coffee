@@ -29,17 +29,23 @@ Object.keys(_dbs).forEach (db) ->
       connect (error) ->
         return done error if error
 
-        #User = models.User = connection.model 'User',
-        #  name: { type: String, required: true }
-        #  age: { type: Number, required: true }
-        #  email: { type: String, unique: true, required: true }
-        #  facebook_id: { type: String, unique: true }
-        models.User = class User extends Model
-          @connection connection
-          @column 'name', { type: String, required: true }
-          @column 'age', { type: Number, required: true }
-          @column 'email', { type: String, unique: true, required: true }
-          @column 'facebook_id', { type: String, unique: true }
+        if Math.floor Math.random() * 2
+          # using CoffeeScript extends keyword
+          class User extends Model
+            @connection connection
+            @column 'name', { type: String, required: true }
+            @column 'age', { type: Number, required: true }
+            @column 'email', { type: String, unique: true, required: true }
+            @column 'facebook_id', { type: String, unique: true }
+        else
+          # using Connection method
+          User = connection.model 'User',
+            name: { type: String, required: true }
+            age: { type: Number, required: true }
+            email: { type: String, unique: true, required: true }
+            facebook_id: { type: String, unique: true }
+
+        models.User = User
 
         User.drop (error) ->
           return done error if error

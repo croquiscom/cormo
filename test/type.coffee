@@ -29,10 +29,21 @@ Object.keys(_dbs).forEach (db) ->
       connect (error) ->
         return done error if error
 
-        Type = models.Type = connection.model 'Type',
-          number: Number
-          int_c: Connection.Integer
-          date: Date
+        if Math.floor Math.random() * 2
+          # using CoffeeScript extends keyword
+          class Type extends Model
+            @connection connection
+            @column 'number', 'number'
+            @column 'int_c', 'integer'
+            @column 'date', 'date'
+        else
+          # using Connection method
+          Type = connection.model 'Type',
+            number: Number
+            int_c: Connection.Integer
+            date: Date
+
+        models.Type = Type
 
         Type.drop (error) ->
           return done error if error

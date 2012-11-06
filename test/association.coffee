@@ -29,19 +29,39 @@ Object.keys(_dbs).forEach (db) ->
       connect (error) ->
         return done error if error
 
-        User = models.User = connection.model 'User',
-          name: String
-          age: Number
+        if Math.floor Math.random() * 2
+          # using CoffeeScript extends keyword
+          class User extends Model
+            @connection connection
+            @column 'name', String
+            @column 'age', Number
+            @hasMany 'posts'
 
-        Post = models.Post = connection.model 'Post',
-          title: String
-          body: String
+          class Post extends Model
+            @connection connection
+            @column 'title', String
+            @column 'body', String
+            @belongsTo 'user'
+            @hasMany 'comments', type: 'Post', foreign_key: 'parent_post_id'
+            @belongsTo 'parent_post', type: 'Post'
+        else
+          # using Connection method
+          User = connection.model 'User',
+            name: String
+            age: Number
 
-        User.hasMany Post
-        Post.belongsTo User
+          Post = connection.model 'Post',
+            title: String
+            body: String
 
-        Post.hasMany Post, as: 'comments', foreign_key: 'parent_post_id'
-        Post.belongsTo Post, as: 'parent_post'
+          User.hasMany Post
+          Post.belongsTo User
+
+          Post.hasMany Post, as: 'comments', foreign_key: 'parent_post_id'
+          Post.belongsTo Post, as: 'parent_post'
+
+        models.User = User
+        models.Post = Post
 
         User.drop (error) ->
           return done error if error

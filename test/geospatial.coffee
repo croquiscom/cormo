@@ -24,9 +24,19 @@ Object.keys(_dbs).forEach (db) ->
       connect (error) ->
         return done error if error
 
-        Place = models.Place = connection.model 'Place',
-          name: String
-          location: Connection.GeoPoint
+        if Math.floor Math.random() * 2
+          # using CoffeeScript extends keyword
+          class Place extends Model
+            @connection connection
+            @column 'name', 'string'
+            @column 'location', 'geopoint'
+        else
+          # using Connection method
+          Place = connection.model 'Place',
+            name: String
+            location: Connection.GeoPoint
+
+        models.Place = Place
 
         Place.drop (error) ->
           return done error if error

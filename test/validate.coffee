@@ -29,10 +29,21 @@ Object.keys(_dbs).forEach (db) ->
       connect (error) ->
         return done error if error
 
-        User = models.User = connection.model 'User',
-          name: String
-          age: Number
-          email: String
+        if Math.floor Math.random() * 2
+          # using CoffeeScript extends keyword
+          class User extends Model
+            @connection connection
+            @column 'name', String
+            @column 'age', Number
+            @column 'email', String
+        else
+          # using Connection method
+          User = connection.model 'User',
+            name: String
+            age: Number
+            email: String
+
+        models.User = User
 
         # checkes age validity
         User.addValidator (record) ->

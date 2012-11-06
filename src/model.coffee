@@ -11,7 +11,7 @@ class Model
   # @param {Connection} connection
   # @param {String} name
   # @param {Object} schema
-  # @return {Class}
+  # @return {Class<Model>}
   ###
   @newModel: (connection, name, schema) ->
     class NewModel extends Model
@@ -342,102 +342,34 @@ class Model
 
   ###
   # Adds a has-many association
-  # @param {Class} target_model
+  # @param {Class<Model>|String} target_model_or_column
   # @param {Object} [options]
+  # @param {String} [options.type]
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
   ###
-  @hasMany: (target_model, options) ->
-    if options?.foreign_key
-      foreign_key = options.foreign_key
-    else if options?.as
-      foreign_key = options.as + '_id'
-    else
-      foreign_key = inflector.foreign_key @_name
-    target_model._addForeignKey foreign_key, @_connection._adapter
-
-    column = options?.as or inflector.tableize(target_model._name)
-    columnCache = '__cache_' + column
-    columnGetter = '__getter_' + column
-
-    @_associations[column] = { type: 'hasMany' }
-
-    Object.defineProperty @prototype, column,
-      get: ->
-        # getter must be created per instance due to __scope
-        if not @.hasOwnProperty columnGetter
-          getter = (reload, callback) ->
-            if typeof reload is 'function'
-              callback = reload
-              reload = false
-            # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
-            # but use getter.__scope for safety
-            self = getter.__scope
-            if (not self[columnCache] or reload) and self.id
-              conditions = {}
-              conditions[foreign_key] = self.id
-              target_model.where conditions, (error, records) ->
-                return callback error if error
-                self[columnCache] = records
-                callback null, records
-            else
-              callback null, self[columnCache] or []
-          getter.build = (data) ->
-            # @ is getter, so use getter.__scope instead
-            self = getter.__scope
-            new_object = new target_model data
-            new_object[foreign_key] = self.id
-            self[columnCache] = [] if not self[columnCache]
-            self[columnCache].push new_object
-            return new_object
-          getter.__scope = @
-          Object.defineProperty @, columnCache, value: null, writable: true
-          Object.defineProperty @, columnGetter, value: getter
-        return @[columnGetter]
+  @hasMany: (target_model_or_column, options) ->
+    @_connection._pending_associations.push
+      type: 'hasMany'
+      this_model: @
+      target_model_or_column: target_model_or_column
+      options: options
 
   ###
   # Adds a belongs-to association
-  # @param {Class} target_model
+  # @param {Class<Model>|String} target_model_or_column
   # @param {Object} [options]
+  # @param {String} [options.type]
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
   ###
-  @belongsTo: (target_model, options) ->
-    if options?.foreign_key
-      foreign_key = options.foreign_key
-    else if options?.as
-      foreign_key = options.as + '_id'
-    else
-      foreign_key = inflector.foreign_key target_model._name
-    @_addForeignKey foreign_key, target_model._adapter
+  @belongsTo: (target_model_or_column, options) ->
+    @_connection._pending_associations.push
+      type: 'belongsTo'
+      this_model: @
+      target_model_or_column: target_model_or_column
+      options: options
 
-    column = options?.as or inflector.underscore(target_model._name)
-    columnCache = '__cache_' + column
-    columnGetter = '__getter_' + column
-
-    Object.defineProperty @prototype, column,
-      get: ->
-        # getter must be created per instance due to __scope
-        if not @.hasOwnProperty columnGetter
-          getter = (reload, callback) ->
-            if typeof reload is 'function'
-              callback = reload
-              reload = false
-            # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
-            # but use getter.__scope for safety
-            self = getter.__scope
-            if (not self[columnCache] or reload) and self[foreign_key]
-              target_model.find self[foreign_key], (error, record) ->
-                return callback error if error
-                self[columnCache] = record
-                callback null, record
-            else
-              callback null, self[columnCache]
-          getter.__scope = @
-          Object.defineProperty @, columnCache, value: null, writable: true
-          Object.defineProperty @, columnGetter, value: getter
-        return @[columnGetter]
-  
   ###
   # Adds a validator
   #

@@ -6,7 +6,7 @@ _ = require 'underscore'
 class Query
   ###
   # Creates a query instance
-  # @param {Class} model
+  # @param {Class<Model>} model
   ###
   constructor: (model) ->
     @_model = model
