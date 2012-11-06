@@ -1,3 +1,5 @@
+_ = require 'underscore'
+
 ###
 # Collects conditions to query
 ###
@@ -15,11 +17,14 @@ class Query
  
   ###
   # Finds a record by id
-  # @param {String} id
+  # @param {RecordID|Array<RecordID>} id
   # @return {Query} this
   ###
   find: (id) ->
-    @_id = id
+    if Array.isArray id
+      @_id = _.uniq id
+    else
+      @_id = id
     return @
 
   ###
@@ -69,19 +74,28 @@ class Query
   # Executes the query
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {Array<Model>} callback.records
+  # @param {Model|Array<Model>} callback.records
   # @return {Query} this
   ###
   exec: (callback) ->
-    if @_id and @_conditions.length is 0
+    if @_id and not Array.isArray(@_id) and @_conditions.length is 0
       @_adapter.findById @_name, @_id, @_options, (error, record) ->
-        return callback error if error
-        callback null, [record]
+        return callback new Error('not found') if error or not record
+        callback null, record
       return
+    expected_count = undefined
     if @_id
-      @_conditions.push id: @_id
-      delete @_id
-    @_adapter.find @_name, @_conditions, @_options, callback
+      if Array.isArray @_id
+        @_conditions.push id: { $in: @_id }
+        expected_count = @_id.length
+      else
+        @_conditions.push id: @_id
+        expected_count = 1
+    @_adapter.find @_name, @_conditions, @_options, (error, records) ->
+      return callback error if error
+      if expected_count?
+        return callback new Error('not found') if records.length isnt expected_count
+      callback null, records
 
   ###
   # Executes the query as a count operation

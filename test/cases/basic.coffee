@@ -1,3 +1,13 @@
+_getInvalidID = (id) ->
+  if typeof id is 'number'
+    # MySQL
+    return -1
+  else if typeof id is 'string'
+    # MongoDB
+    return id.replace /./, '9'
+  else
+    throw new Error 'no support'
+
 module.exports = (models) ->
   it 'create one', (done) ->
     user = new models.User()
@@ -47,15 +57,7 @@ module.exports = (models) ->
   it 'find non-existing record', (done) ->
     models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
-      id = user.id
-      if typeof id is 'number'
-        # MySQL
-        id = -1
-      else if typeof id is 'string'
-        # MongoDB
-        id = id.replace /./, '9'
-      else
-        throw new Error 'no support'
+      id = _getInvalidID user.id
       models.User.find id, (error) ->
         should.exist error
         error.should.be.an.instanceOf Error
@@ -133,3 +135,59 @@ module.exports = (models) ->
           record.should.not.have.property 'name'
           record.should.not.have.property 'age'
           done null
+
+  it 'find records', (done) ->
+    async.parallel [
+      (callback) -> models.User.create { name: 'John Doe', age: 27 }, callback
+      (callback) -> models.User.create { name: 'Bill Smith', age: 45 }, callback
+      (callback) -> models.User.create { name: 'Alice Jackson', age: 27 }, callback
+    ], (error, users) ->
+      return done error if error
+      users.sort (a, b) -> if a.id < b.id then -1 else 1
+      async.waterfall [
+        (callback) -> models.User.find [users[0].id, users[1].id], callback
+        (records, callback) ->
+          records.sort (a, b) -> if a.id < b.id then -1 else 1
+          records[0].should.be.an.instanceOf models.User
+          records[1].should.be.an.instanceOf models.User
+          records[0].should.eql users[0]
+          records[1].should.eql users[1]
+          callback null
+      ], (error) ->
+        return done error if error
+        done null
+
+  it 'find records with non-existing id', (done) ->
+    async.parallel [
+      (callback) -> models.User.create { name: 'John Doe', age: 27 }, callback
+      (callback) -> models.User.create { name: 'Bill Smith', age: 45 }, callback
+      (callback) -> models.User.create { name: 'Alice Jackson', age: 27 }, callback
+    ], (error, users) ->
+      return done error if error
+      users.sort (a, b) -> if a.id < b.id then -1 else 1
+      models.User.find [users[2].id, users[1].id, _getInvalidID(users[0].id)], (error, records) ->
+        should.exist error
+        error.should.be.an.instanceOf Error
+        error.message.should.equal 'not found'
+        done null
+
+  it 'find records duplicate', (done) ->
+    async.parallel [
+      (callback) -> models.User.create { name: 'John Doe', age: 27 }, callback
+      (callback) -> models.User.create { name: 'Bill Smith', age: 45 }, callback
+      (callback) -> models.User.create { name: 'Alice Jackson', age: 27 }, callback
+    ], (error, users) ->
+      return done error if error
+      users.sort (a, b) -> if a.id < b.id then -1 else 1
+      async.waterfall [
+        (callback) -> models.User.find [users[2].id, users[0].id, users[0].id, users[0].id, users[2].id], callback
+        (records, callback) ->
+          records.sort (a, b) -> if a.id < b.id then -1 else 1
+          records[0].should.be.an.instanceOf models.User
+          records[1].should.be.an.instanceOf models.User
+          records[0].should.eql users[0]
+          records[1].should.eql users[2]
+          callback null
+      ], (error) ->
+        return done error if error
+        done null

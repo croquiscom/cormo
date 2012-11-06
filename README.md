@@ -119,6 +119,11 @@ User.where(name: 'John Doe').where(age: 27).exec (error, users) ->
 User.find 1, (error, user) ->
   console.log user
 
+ # find multiple ids
+ # will return error unless records are found for all ids
+User.find [1,2,3], (error, users) ->
+  console.log users
+
  # get count of all records
  # the same as "SELECT COUNT(*) FROM users"
 User.count (error, count) ->

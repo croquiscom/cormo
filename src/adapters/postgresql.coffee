@@ -165,7 +165,7 @@ class PostgreSQLAdapter extends AdapterBase
   # @param {Object} data
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {String} callback.id
+  # @param {RecordID} callback.id
   ###
   create: (model, data, callback) ->
     fields = []
@@ -216,7 +216,7 @@ class PostgreSQLAdapter extends AdapterBase
   ###
   # Finds a record by id
   # @param {String} model
-  # @param {String} id
+  # @param {RecordID} id
   # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error

@@ -235,10 +235,10 @@ class Model
 
   ###
   # Finds a record by id
-  # @param {RecordID} id
+  # @param {RecordID|Array<RecordID>} id
   # @param {Function} [callback]
   # @param {Error} callback.error
-  # @param {Model} callback.record
+  # @param {Model|Array<Model>} callback.record
   # @return {Query}
   # @throws Error('not found')
   ###
@@ -248,11 +248,7 @@ class Model
     query = new Query @
     query.find id
     if typeof callback is 'function'
-      query.exec (error, records) ->
-        error = new Error('not found') if records?.length is 0
-        error = new Error('unknown error') if records?.length > 1
-        return callback error if error
-        callback null, records[0]
+      query.exec callback
     return query
 
   ###

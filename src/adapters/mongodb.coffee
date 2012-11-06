@@ -158,7 +158,7 @@ class MongoDBAdapter extends AdapterBase
   # @param {Object} data
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {String} callback.id
+  # @param {RecordID} callback.id
   ###
   create: (model, data, callback) ->
     return if not @_buildSaveData model, data, callback
@@ -213,7 +213,7 @@ class MongoDBAdapter extends AdapterBase
   ###
   # Finds a record by id
   # @param {String} model
-  # @param {String} id
+  # @param {RecordID} id
   # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error

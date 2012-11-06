@@ -153,7 +153,7 @@ class SQLite3Adapter extends AdapterBase
   # @param {Object} data
   # @param {Function} callback
   # @param {Error} callback.error
-  # @param {String} callback.id
+  # @param {RecordID} callback.id
   ###
   create: (model, data, callback) ->
     schema = @_connection.models[model]._schema
@@ -213,7 +213,7 @@ class SQLite3Adapter extends AdapterBase
   ###
   # Finds a record by id
   # @param {String} model
-  # @param {String} id
+  # @param {RecordID} id
   # @param {Object} options
   # @param {Function} callback
   # @param {Error} callback.error
