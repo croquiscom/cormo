@@ -1,6 +1,3 @@
-should = require 'should'
-async = require 'async'
-
 _compareComment = (a, b) ->
   a.should.have.property 'title', b.title
   a.should.have.property 'body', b.body

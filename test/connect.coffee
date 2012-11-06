@@ -1,5 +1,4 @@
-Connection = require('../index').Connection
-should = require 'should'
+require './common'
 
 _dbs =
   mysql:

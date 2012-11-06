@@ -1,5 +1,3 @@
-should = require 'should'
-
 module.exports = (models) ->
   it 'create one', (done) ->
     user = new models.User()

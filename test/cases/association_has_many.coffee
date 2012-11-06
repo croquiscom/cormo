@@ -1,6 +1,3 @@
-should = require 'should'
-async = require 'async'
-
 _comparePost = (a, b) ->
   a.should.have.property 'user_id', b.user_id
   a.should.have.property 'title', b.title

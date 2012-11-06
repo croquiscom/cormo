@@ -1,6 +1,3 @@
-should = require 'should'
-async = require 'async'
-
 module.exports = (models) ->
   it 'number', (done) ->
     data = [

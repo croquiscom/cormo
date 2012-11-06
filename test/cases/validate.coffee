@@ -1,6 +1,3 @@
-should = require 'should'
-async = require 'async'
-
 module.exports = (models) ->
   it 'valid', (done) ->
     models.User.create { name: 'John Doe', age: 27 }, (error, user) ->

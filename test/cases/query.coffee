@@ -1,6 +1,3 @@
-should = require 'should'
-async = require 'async'
-
 _createUsers = (User, data, callback) ->
   if typeof data is 'function'
     callback = data

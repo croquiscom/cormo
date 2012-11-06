@@ -1,5 +1,4 @@
-Connection = require('../index').Connection
-async = require 'async'
+require './common'
 
 describe 'mixing several database', ->
   mysql = undefined
