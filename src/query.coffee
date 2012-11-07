@@ -86,6 +86,7 @@ class Query
     expected_count = undefined
     if @_id
       if Array.isArray @_id
+        return callback null, [] if @_id.length is 0
         @_conditions.push id: { $in: @_id }
         expected_count = @_id.length
       else
