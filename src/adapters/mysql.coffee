@@ -13,6 +13,7 @@ _typeToSQL = (property) ->
   switch property.type
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE'
+    when types.Boolean then 'BOOLEAN'
     when types.Integer then 'INT'
     when types.GeoPoint then 'POINT'
     when types.Date then 'DATETIME'
@@ -90,8 +91,8 @@ _buildWhere = (conditions, params, conjunction='AND') ->
 # Adapter for MySQL
 ###
 class MySQLAdapter extends AdapterBase
-  support_geopoint: true
   key_type: types.Integer
+  support_geopoint: true
 
   ###
   # Creates a MySQL adapter
@@ -238,6 +239,8 @@ class MySQLAdapter extends AdapterBase
       if property.type is types.GeoPoint
         match = /POINT\((.*) (.*)\)/.exec data[column]
         record[column] = [Number(match[1]),Number(match[2])]
+      else if property.type is types.Boolean
+        record[column] = data[column] isnt 0
       else
         record[column] = data[column]
     return record

@@ -80,9 +80,9 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
 # Adapter for MongoDB
 ###
 class MongoDBAdapter extends AdapterBase
-  support_geopoint: true
   key_type: types.String
   key_type_internal: 'objectid'
+  support_geopoint: true
 
   ###
   # Creates a MongoDB adapter

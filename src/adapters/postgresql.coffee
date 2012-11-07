@@ -13,6 +13,7 @@ _typeToSQL = (property) ->
   switch property.type
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE PRECISION'
+    when types.Boolean then 'BOOLEAN'
     when types.Integer then 'INT'
     when types.Date then 'TIMESTAMP WITHOUT TIME ZONE'
 

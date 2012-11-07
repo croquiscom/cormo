@@ -51,6 +51,7 @@ class Model
     switch type
       when String then type = Model.String
       when Number then type = Model.Number
+      when Boolean then type = Model.Boolean
       when Date then type = Model.Date
     if typeof type isnt 'string'
       throw new Error 'unknown type : ' + type
@@ -122,6 +123,9 @@ class Model
               errors.push "'#{column}' is not a number"
             else
               @[column] = value
+          when Model.Boolean
+            if typeof @[column] isnt 'boolean'
+              errors.push "'#{column}' is not a boolean"
           when Model.Integer
             value = Number @[column]
             # value>>0 checkes integer and 32bit

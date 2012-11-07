@@ -11,6 +11,12 @@ exports.String = 'string'
 exports.Number = 'number'
 
 ###
+# Represents a boolean, used in model schemas.
+# @memberOf cormo
+###
+exports.Boolean = 'boolean'
+
+###
 # Represents a 32bit integer, used in model schemas.
 # @memberOf cormo
 ###

@@ -13,6 +13,7 @@ _typeToSQL = (property) ->
   switch property.type
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE'
+    when types.Boolean then 'TINYINT'
     when types.Integer then 'INT'
     when types.Date then 'REAL'
 
@@ -211,6 +212,8 @@ class SQLite3Adapter extends AdapterBase
       continue if not data[column]?
       if property.type is types.Date
         record[column] = new Date data[column]
+      else if property.type is types.Boolean
+        record[column] = data[column] isnt 0
       else
         record[column] = data[column]
     return record
