@@ -39,7 +39,6 @@ class MySQLAdapter extends SQLAdapterBase
   # Creates a MySQL adapter
   constructor: (connection) ->
     @_connection = connection
-    @_select_all_columns = {}
 
   _query: (sql, data, callback) ->
     #console.log 'MySQLAdapter:', sql
@@ -63,14 +62,6 @@ class MySQLAdapter extends SQLAdapterBase
     callback null
 
   _applySchema: (model, callback) ->
-    columns = ['id']
-    for column, property of @_connection.models[model]._schema
-      if property.type is types.GeoPoint
-        columns.push "ASTEXT(#{column}) as #{column}"
-      else
-        columns.push column
-    @_select_all_columns[model] = columns
-
     @_query "SHOW COLUMNS FROM #{tableize model}", (error, columns) =>
       if error?.code is 'ER_NO_SUCH_TABLE'
         @_createTable model, callback
@@ -172,12 +163,11 @@ class MySQLAdapter extends SQLAdapterBase
     modelClass = @_connection.models[model]
     id = Number data.id
     for column, property of modelClass._schema
-      if data[column]?
+      if (value = data[column])?
         if property.type is types.GeoPoint
-          match = /POINT\((.*) (.*)\)/.exec data[column]
-          data[column] = [Number(match[1]),Number(match[2])]
+          data[column] = [value.x, value.y]
         else if property.type is types.Boolean
-          data[column] = data[column] isnt 0
+          data[column] = value isnt 0
     new modelClass data, id
 
   ##
@@ -193,7 +183,7 @@ class MySQLAdapter extends SQLAdapterBase
     if options.select
       selects = 'id,' + options.select.join ','
     else
-      selects = @_select_all_columns[model].join ','
+      selects = '*'
     sql = "SELECT #{selects} FROM #{tableize model} WHERE id=? LIMIT 1"
     @_query sql, id, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
@@ -216,7 +206,7 @@ class MySQLAdapter extends SQLAdapterBase
     if options.select
       selects = 'id,' + options.select.join ','
     else
-      selects = @_select_all_columns[model].join ','
+      selects = '*'
     if options.near? and field = Object.keys(options.near)[0]
       order_by = "#{field}_distance"
       location = options.near[field]

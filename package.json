@@ -10,7 +10,7 @@
     "croquis-jsdoc": "git://github.com/croquiscom/croquis-jsdoc.git#master",
     "mocha": "",
     "mongodb": "",
-    "mysql": ">=2.0.0-alpha3",
+    "mysql": ">=2.0.0-alpha4",
     "pg": "",
     "sqlite3": "",
     "should": ""
