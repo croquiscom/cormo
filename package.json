@@ -9,7 +9,7 @@
     "coffee-script": "",
     "croquis-jsdoc": "git://github.com/croquiscom/croquis-jsdoc.git#master",
     "mocha": "",
-    "mongodb": "",
+    "mongodb": ">=1.1.11",
     "mysql": ">=2.0.0-alpha4",
     "pg": "",
     "sqlite3": "",

@@ -311,7 +311,7 @@ class MongoDBAdapter extends AdapterBase
   # @param {Error} callback.error
   connect: (settings, callback) ->
     server = new mongodb.Server settings.host or 'localhost', settings.port or 27017, {}
-    db = new mongodb.Db settings.database, server, {}
+    db = new mongodb.Db settings.database, server, safe: true
     db.open (error, client) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       @_client = client
