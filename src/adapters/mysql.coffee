@@ -4,7 +4,7 @@ catch e
   console.log 'Install mysql module to use this adapter'
   process.exit 1
 
-AdapterBase = require './base'
+SQLAdapterBase = require './sql_base'
 types = require '../types'
 tableize = require('../inflector').tableize
 async = require 'async'
@@ -29,67 +29,9 @@ _propertyToSQL = (property) ->
       type += ' UNIQUE'
     return type
 
-_buildWhere = (conditions, params, conjunction='AND') ->
-  if Array.isArray conditions
-    subs = conditions.map (condition) -> _buildWhere condition, params
-  else if typeof conditions is 'object'
-    keys = Object.keys conditions
-    if keys.length is 0
-      return ''
-    if keys.length is 1
-      key = keys[0]
-      if key.substr(0, 1) is '$'
-        switch key
-          when '$and'
-            return _buildWhere conditions[key], params, 'AND'
-          when '$or'
-            return _buildWhere conditions[key], params, 'OR'
-      else
-        value = conditions[key]
-        op = '='
-        if Array.isArray value
-          values = value.map (value) ->
-            params.push value
-            return '?'
-          return "#{key} IN (#{values.join ','})"
-        else if typeof value is 'object' and (keys = Object.keys value).length is 1
-          sub_key = keys[0]
-          if sub_key is '$in'
-            values = value[sub_key]
-            values = values.map (value) ->
-              params.push value
-              return '?'
-            return "#{key} IN (#{values.join ','})"
-          switch sub_key
-            when '$gt'
-              op = '>'
-              value = value[sub_key]
-            when '$lt'
-              op = '<'
-              value = value[sub_key]
-            when '$gte'
-              op = '>='
-              value = value[sub_key]
-            when '$lte'
-              op = '<='
-              value = value[sub_key]
-            when '$contains'
-              op = ' LIKE '
-              value = '%' + value[sub_key] + '%'
-        params.push value
-        return key + op + '?'
-    else
-      subs = keys.map (key) ->
-        obj = {}
-        obj[key] = conditions[key]
-        _buildWhere obj, params
-  else
-    return ''
-  return '(' + subs.join(' ' + conjunction + ' ') + ')'
-
 ##
 # Adapter for MySQL
-class MySQLAdapter extends AdapterBase
+class MySQLAdapter extends SQLAdapterBase
   key_type: types.Integer
   support_geopoint: true
 
@@ -171,6 +113,30 @@ class MySQLAdapter extends AdapterBase
       error = MySQLAdapter.wrapError 'unknown error', error
     callback error
 
+  _buildUpdateSet: (model, data, values, insert) ->
+    schema = @_connection.models[model]._schema
+    values = []
+    fields = []
+    places = []
+    Object.keys(data).forEach (field) ->
+      return if field is 'id'
+      if schema[field].type is types.GeoPoint
+        values.push data[field][0]
+        values.push data[field][1]
+        if insert
+          fields.push field
+          places.push 'POINT(?,?)'
+        else
+          fields.push field + '=POINT(?,?)'
+      else
+        values.push data[field]
+        if insert
+          fields.push field
+          places.push '?'
+        else
+          fields.push field + '=?'
+    [ values, fields.join(','), places.join(',') ]
+
   ##
   # Creates a record
   # @param {String} model
@@ -179,19 +145,8 @@ class MySQLAdapter extends AdapterBase
   # @param {Error} callback.error
   # @param {RecordID} callback.id
   create: (model, data, callback) ->
-    schema = @_connection.models[model]._schema
-    fields = []
-    values = []
-    Object.keys(data).forEach (field) ->
-      return if field is 'id'
-      if schema[field].type is types.GeoPoint
-        fields.push field + '=POINT(?,?)'
-        values.push data[field][0]
-        values.push data[field][1]
-      else
-        fields.push field + '=?'
-        values.push data[field]
-    sql = "INSERT INTO #{tableize model} SET #{fields.join ','}"
+    [ values, fields, places ] = @_buildUpdateSet model, data, values, true
+    sql = "INSERT INTO #{tableize model} (#{fields}) VALUES (#{places})"
     @_query sql, values, (error, result) ->
       return _processSaveError error, callback if error
       if result?.insertId
@@ -206,20 +161,9 @@ class MySQLAdapter extends AdapterBase
   # @param {Function} callback
   # @param {Error} callback.error
   update: (model, data, callback) ->
-    schema = @_connection.models[model]._schema
-    fields = []
-    values = []
-    Object.keys(data).forEach (field) ->
-      return if field is 'id'
-      if schema[field].type is types.GeoPoint
-        fields.push field + '=POINT(?,?)'
-        values.push data[field][0]
-        values.push data[field][1]
-      else
-        fields.push field + '=?'
-        values.push data[field]
-    sql = "UPDATE #{tableize model} SET #{fields.join ','} WHERE id=?"
+    [ values, fields ] = @_buildUpdateSet model, data, values
     values.push data.id
+    sql = "UPDATE #{tableize model} SET #{fields} WHERE id=?"
     @_query sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null
@@ -280,7 +224,7 @@ class MySQLAdapter extends AdapterBase
     params = []
     sql = "SELECT #{selects} FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + _buildWhere conditions, params
+      sql += ' WHERE ' + @_buildWhere conditions, params
     if order_by
       sql += ' ORDER BY ' + order_by
     if options?.limit?
@@ -302,7 +246,7 @@ class MySQLAdapter extends AdapterBase
     params = []
     sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + _buildWhere conditions, params
+      sql += ' WHERE ' + @_buildWhere conditions, params
     #console.log sql, params
     @_query sql, params, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
@@ -320,7 +264,7 @@ class MySQLAdapter extends AdapterBase
     params = []
     sql = "DELETE FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + _buildWhere conditions, params
+      sql += ' WHERE ' + @_buildWhere conditions, params
     #console.log sql, params
     @_query sql, params, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error or not result?

@@ -4,7 +4,7 @@ catch e
   console.log 'Install pg module to use this adapter'
   process.exit 1
 
-AdapterBase = require './base'
+SQLAdapterBase = require './sql_base'
 types = require '../types'
 tableize = require('../inflector').tableize
 async = require 'async'
@@ -28,68 +28,12 @@ _propertyToSQL = (property) ->
       type += ' UNIQUE'
     return type
 
-_buildWhere = (conditions, params, conjunction='AND') ->
-  if Array.isArray conditions
-    subs = conditions.map (condition) -> _buildWhere condition, params
-  else if typeof conditions is 'object'
-    keys = Object.keys conditions
-    if keys.length is 0
-      return ''
-    if keys.length is 1
-      key = keys[0]
-      if key.substr(0, 1) is '$'
-        switch key
-          when '$and'
-            return _buildWhere conditions[key], params, 'AND'
-          when '$or'
-            return _buildWhere conditions[key], params, 'OR'
-      else
-        value = conditions[key]
-        op = '='
-        if Array.isArray value
-          values = value.map (value) ->
-            params.push value
-            return '$' + params.length
-          return "#{key} IN (#{values.join ','})"
-        else if typeof value is 'object' and (keys = Object.keys value).length is 1
-          sub_key = keys[0]
-          if sub_key is '$in'
-            values = value[sub_key]
-            values = values.map (value) ->
-              params.push value
-              return '$' + params.length
-            return "#{key} IN (#{values.join ','})"
-          switch sub_key
-            when '$gt'
-              op = '>'
-              value = value[sub_key]
-            when '$lt'
-              op = '<'
-              value = value[sub_key]
-            when '$gte'
-              op = '>='
-              value = value[sub_key]
-            when '$lte'
-              op = '<='
-              value = value[sub_key]
-            when '$contains'
-              op = ' ILIKE '
-              value = '%' + value[sub_key] + '%'
-        params.push value
-        return key + op + '$' + params.length
-    else
-      subs = keys.map (key) ->
-        obj = {}
-        obj[key] = conditions[key]
-        _buildWhere obj, params
-  else
-    return ''
-  return '(' + subs.join(' ' + conjunction + ' ') + ')'
-
 ##
 # Adapter for PostgreSQL
-class PostgreSQLAdapter extends AdapterBase
+class PostgreSQLAdapter extends SQLAdapterBase
   key_type: types.Integer
+  _param_place_holder: (pos) -> '$' + pos
+  _contains_op: 'ILIKE'
 
   ##
   # Creates a PostgreSQL adapter
@@ -161,6 +105,20 @@ class PostgreSQLAdapter extends AdapterBase
       error = PostgreSQLAdapter.wrapError 'unknown error', error
     callback error
 
+  _buildUpdateSet: (model, data, values, insert) ->
+    values = []
+    fields = []
+    places = []
+    Object.keys(data).forEach (field) ->
+      return if field is 'id'
+      values.push data[field]
+      if insert
+        fields.push field
+        places.push '$' + values.length
+      else
+        fields.push field + '=$' + values.length
+    [ values, fields.join(','), places.join(',') ]
+
   ##
   # Creates a record
   # @param {String} model
@@ -169,14 +127,8 @@ class PostgreSQLAdapter extends AdapterBase
   # @param {Error} callback.error
   # @param {RecordID} callback.id
   create: (model, data, callback) ->
-    fields = []
-    places = []
-    values = []
-    Object.keys(data).forEach (field) ->
-      fields.push field
-      values.push data[field]
-      places.push '$' + values.length
-    sql = "INSERT INTO #{tableize model} (#{fields.join ','}) VALUES (#{places.join ','}) RETURNING id"
+    [ values, fields, places ] = @_buildUpdateSet model, data, values, true
+    sql = "INSERT INTO #{tableize model} (#{fields}) VALUES (#{places}) RETURNING id"
     @_query sql, values, (error, result) ->
       rows = result?.rows
       return _processSaveError model, error, callback if error
@@ -192,14 +144,9 @@ class PostgreSQLAdapter extends AdapterBase
   # @param {Function} callback
   # @param {Error} callback.error
   update: (model, data, callback) ->
-    fields = []
-    values = []
-    Object.keys(data).forEach (field) ->
-      return if field is 'id'
-      values.push data[field]
-      fields.push field + '=$' + values.length
+    [ values, fields ] = @_buildUpdateSet model, data, values
     values.push data.id
-    sql = "UPDATE #{tableize model} SET #{fields.join ','} WHERE id=$#{values.length}"
+    sql = "UPDATE #{tableize model} SET #{fields} WHERE id=$#{values.length}"
     @_query sql, values, (error) ->
       return _processSaveError model, error, callback if error
       callback null
@@ -250,7 +197,7 @@ class PostgreSQLAdapter extends AdapterBase
     params = []
     sql = "SELECT #{selects} FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + _buildWhere conditions, params
+      sql += ' WHERE ' + @_buildWhere conditions, params
     if options?.limit?
       sql += ' LIMIT ' + options.limit
     #console.log sql, params
@@ -270,7 +217,7 @@ class PostgreSQLAdapter extends AdapterBase
     params = []
     sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + _buildWhere conditions, params
+      sql += ' WHERE ' + @_buildWhere conditions, params
     #console.log sql, params
     @_query sql, params, (error, result) =>
       rows = result?.rows
@@ -289,7 +236,7 @@ class PostgreSQLAdapter extends AdapterBase
     params = []
     sql = "DELETE FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + _buildWhere conditions, params
+      sql += ' WHERE ' + @_buildWhere conditions, params
     #console.log sql, params
     @_query sql, params, (error, result) ->
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error or not result?
