@@ -206,17 +206,14 @@ class SQLite3Adapter extends AdapterBase
 
   _convertToModelInstance: (model, data) ->
     modelClass = @_connection.models[model]
-    record = new modelClass()
-    Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: Number(data.id)
+    id = Number data.id
     for column, property of modelClass._schema
-      continue if not data[column]?
-      if property.type is types.Date
-        record[column] = new Date data[column]
-      else if property.type is types.Boolean
-        record[column] = data[column] isnt 0
-      else
-        record[column] = data[column]
-    return record
+      if data[column]?
+        if property.type is types.Date
+          data[column] = new Date data[column]
+        else if property.type is types.Boolean
+          data[column] = data[column] isnt 0
+    new modelClass data, id
 
   ###
   # Finds a record by id

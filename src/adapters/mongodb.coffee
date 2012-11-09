@@ -207,15 +207,12 @@ class MongoDBAdapter extends AdapterBase
 
   _convertToModelInstance: (model, data) ->
     modelClass = @_connection.models[model]
-    record = new modelClass()
-    Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: data._id.toString()
+    id = data._id.toString()
     for column, property of modelClass._schema
-      continue if not data[column]?
-      if property.type is 'objectid'
-        record[column] = data[column].toString()
-      else
-        record[column] = data[column]
-    return record
+      if data[column]?
+        if property.type is 'objectid'
+          data[column] = data[column].toString()
+    new modelClass data, id
 
   ###
   # Finds a record by id

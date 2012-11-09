@@ -228,6 +228,44 @@ User.create { name: 'John Doe', age: 10, email: 'invalid' }, (error, user) ->
 
 See [[#Model.addValidator]] for more details.
 
+## Callbacks
+
+CORMO supports following callbacks:
+
+* afterInitialize
+* afterFind
+* beforeValidate
+* afterValidate
+* beforeSave
+* afterSave
+* beforeCreate
+* afterCreate
+* beforeUpdate
+* afterUpdate
+* beforeDestroy
+* afterDestroy
+
+```coffeescript
+# using method name
+User.afterInitialize 'onAfterInitialie'
+User::onAfterInitialie = ->
+  console.log 'initialized'
+
+# using anonymous function
+User.afterCreate ->
+  console.log 'created'
+
+# while defining a model
+class Post extends cormo.Model
+  @connection connection # must be first
+  @column 'title', String # 'String' is the same as '{ type: String }'
+  @column 'body', 'string' # you can also use 'string' to specify a string type
+  @afterSave 'onAfterSave'
+
+  onAfterSave: ->
+    console.log 'saved'
+```
+
 ## Associations
 
 ```coffeescript

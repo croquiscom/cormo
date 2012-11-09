@@ -102,6 +102,12 @@ module.exports = (models) ->
             error.message.should.equal 'not found'
             done null
 
+  it 'destroy a new record', (done) ->
+    user = models.User.build name: 'John Doe', age: 27
+    user.destroy (error) ->
+      return done error if error
+      done null
+
   it 'try to create with extra data', (done) ->
     user = new models.User { id: 1, name: 'John Doe', age: 27, extra: 'extra' }
     user.should.not.have.property 'id'

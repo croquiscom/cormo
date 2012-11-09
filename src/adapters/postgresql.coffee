@@ -212,12 +212,8 @@ class PostgreSQLAdapter extends AdapterBase
 
   _convertToModelInstance: (model, data) ->
     modelClass = @_connection.models[model]
-    record = new modelClass()
-    Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: Number(data.id)
-    for column, property of modelClass._schema
-      continue if not data[column]?
-      record[column] = data[column]
-    return record
+    id = Number data.id
+    new modelClass data, id
 
   ###
   # Finds a record by id
