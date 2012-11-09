@@ -171,7 +171,7 @@ User.where(age: { $lt: 40 }).limit(3).exec (error, users) ->
   console.log users
 ```
 
-See [[#Model.find]], [[#Model.where]], [[#Model.count]], [[#Model.delete]], [[#Query]] for more details.
+See [[#ModelQuery.find]], [[#ModelQuery.where]], [[#ModelQuery.count]], [[#ModelQuery.delete]], [[#Query]] for more details.
 
 ## Constraints
 

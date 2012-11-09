@@ -1,9 +1,11 @@
 inflector = require './inflector'
 async = require 'async'
-Query = require './query'
+_ = require 'underscore'
 
 ##
 # Base class for models
+# @uses ModelQuery
+# @uses ModelCallback
 class Model
   ##
   # Returns a new model class extending Model
@@ -263,99 +265,6 @@ class Model
     return
 
   ##
-  # Finds a record by id
-  # @param {RecordID|Array<RecordID>} id
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Model|Array<Model>} callback.record
-  # @return {Query}
-  # @throws Error('not found')
-  @find: (id, callback) ->
-    return if @_waitingForConnection @, @find, arguments
-
-    query = new Query @
-    query.find id
-    if typeof callback is 'function'
-      query.exec callback
-    return query
-
-  ##
-  # Finds records by conditions
-  # @param {Object} [condition]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Array<Model>} callback.records
-  # @return {Query}
-  @where: (condition, callback) ->
-    return if @_waitingForConnection @, @where, arguments
-
-    if typeof condition is 'function'
-      callback = condition
-      condition = null
-    query = new Query @
-    query.where condition
-    if typeof callback is 'function'
-      query.exec callback
-    return query
-
-  ##
-  # Selects columns for result
-  # @param {Object} [columns]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Array<Model>} callback.records
-  # @return {Query}
-  @select: (columns, callback) ->
-    return if @_waitingForConnection @, @select, arguments
-
-    if typeof columns is 'function'
-      callback = columns
-      columns = null
-    query = new Query @
-    query.select columns
-    if typeof callback is 'function'
-      query.exec callback
-    return query
-
-  ##
-  # Counts records by conditions
-  # @param {Object} [condition]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Number} callback.count
-  # @return {Query}
-  @count: (condition, callback) ->
-    return if @_waitingForConnection @, @count, arguments
-
-    if typeof condition is 'function'
-      callback = condition
-      condition = null
-    query = new Query @
-    query.where condition
-    if typeof callback is 'function'
-      query.count callback
-    return query
-
-  ##
-  # Deletes records by conditions
-  # @param {Object} [condition]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Number} callback.count
-  # @return {Query}
-  @delete: (condition, callback) ->
-    return if @_waitingForConnection @, @delete, arguments
-
-    if typeof condition is 'function'
-      callback = condition
-      condition = null
-    query = new Query @
-    query.where condition
-    if typeof callback is 'function'
-      query.delete callback
-    return query
-
-  ##
   # Adds a has-many association
   # @param {Class<Model>|String} target_model_or_column
   # @param {Object} [options]
@@ -420,99 +329,12 @@ class Model
 
     @_schema[column] = { type: type }
 
-  ##
-  # Adds a callback of after initializing
-  # @param {Function|String} method
-  @afterInitialize: (method) ->
-    @addCallback 'after', 'initialize', method
-
-  ##
-  # Adds a callback of after finding
-  # @param {Function|String} method
-  @afterFind: (method) ->
-    @addCallback 'after', 'find', method
-
-  ##
-  # Adds a callback of before saving
-  # @param {Function|String} method
-  @beforeSave: (method) ->
-    @addCallback 'before', 'save', method
-
-  ##
-  # Adds a callback of after saving
-  # @param {Function|String} method
-  @afterSave: (method) ->
-    @addCallback 'after', 'save', method
-
-  ##
-  # Adds a callback of before creating
-  # @param {Function|String} method
-  @beforeCreate: (method) ->
-    @addCallback 'before', 'create', method
-
-  ##
-  # Adds a callback of after creating
-  # @param {Function|String} method
-  @afterCreate: (method) ->
-    @addCallback 'after', 'create', method
-
-  ##
-  # Adds a callback of before updating
-  # @param {Function|String} method
-  @beforeUpdate: (method) ->
-    @addCallback 'before', 'update', method
-
-  ##
-  # Adds a callback of after updating
-  # @param {Function|String} method
-  @afterUpdate: (method) ->
-    @addCallback 'after', 'update', method
-
-  ##
-  # Adds a callback of before destroying
-  # @param {Function|String} method
-  @beforeDestroy: (method) ->
-    @addCallback 'before', 'destroy', method
-
-  ##
-  # Adds a callback of after destroying
-  # @param {Function|String} method
-  @afterDestroy: (method) ->
-    @addCallback 'after', 'destroy', method
-
-  ##
-  # Adds a callback of before validating
-  # @param {Function|String} method
-  @beforeValidate: (method) ->
-    @addCallback 'before', 'validate', method
-
-  ##
-  # Adds a callback of after validating
-  # @param {Function|String} method
-  @afterValidate: (method) ->
-    @addCallback 'after', 'validate', method
-
-  ##
-  # Adds a callback
-  # @param {String} type
-  # @param {String} name
-  # @param {Function|String} method
-  @addCallback: (type, name, method) ->
-    return if not (type is 'before' or type is 'after') or not name
-    callbacks_map = @_callbacks_map ||= {}
-    callbacks = callbacks_map[name] ||= []
-    callbacks.push type: type, method: method
-
-  _runCallbacks: (name, type) ->
-    callbacks = @constructor._callbacks_map?[name]
-    callbacks = callbacks?.filter (callback) -> callback.type is type
-    callbacks?.forEach (callback) =>
-      method = callback.method
-      if typeof method is 'string'
-        throw new Error("The method '#{method}' doesn't exist") unless @[method]
-        method = @[method]
-      throw new Error("Cannot execute method") if typeof method isnt 'function'
-      method.call @
+ModelQuery = require './model/query'
+_.extend Model, ModelQuery
+_.extend Model::, ModelQuery::
+ModelCallback = require './model/callback'
+_.extend Model, ModelCallback
+_.extend Model::, ModelCallback::
 
 for type, value of require './types'
   Model[type] = value
