@@ -78,6 +78,7 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
 
 ##
 # Adapter for MongoDB
+# @namespace adapter
 class MongoDBAdapter extends AdapterBase
   key_type: types.String
   key_type_internal: 'objectid'

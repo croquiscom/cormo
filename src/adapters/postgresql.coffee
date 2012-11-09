@@ -30,6 +30,7 @@ _propertyToSQL = (property) ->
 
 ##
 # Adapter for PostgreSQL
+# @namespace adapter
 class PostgreSQLAdapter extends SQLAdapterBase
   key_type: types.Integer
   _param_place_holder: (pos) -> '$' + pos

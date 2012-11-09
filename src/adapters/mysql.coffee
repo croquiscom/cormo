@@ -31,6 +31,7 @@ _propertyToSQL = (property) ->
 
 ##
 # Adapter for MySQL
+# @namespace adapter
 class MySQLAdapter extends SQLAdapterBase
   key_type: types.Integer
   support_geopoint: true

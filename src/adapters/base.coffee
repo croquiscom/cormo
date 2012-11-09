@@ -1,5 +1,6 @@
 ##
 # Base class for adapters
+# @namespace adapter
 class AdapterBase
   ##
   # Wraps adapter specific errors

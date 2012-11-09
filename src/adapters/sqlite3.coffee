@@ -30,6 +30,7 @@ _propertyToSQL = (property) ->
 
 ##
 # Adapter for SQLite3
+# @namespace adapter
 class SQLite3Adapter extends SQLAdapterBase
   key_type: types.Integer
 

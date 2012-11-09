@@ -2,6 +2,7 @@ AdapterBase = require './base'
 
 ##
 # Base class for SQL adapters
+# @namespace adapter
 class SQLAdapterBase extends AdapterBase
   _param_place_holder: (pos) -> '?'
   _contains_op: 'LIKE'
