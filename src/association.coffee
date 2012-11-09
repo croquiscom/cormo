@@ -1,11 +1,10 @@
-###
+##
 # Makes association between two models
 # @module association
-###
 
 inflector = require './inflector'
 
-###
+##
 # Adds a has-many association
 # @param {Class<Model>} this_model
 # @param {Class<Model>} target_model
@@ -13,7 +12,6 @@ inflector = require './inflector'
 # @param {String} [options.as]
 # @param {String} [options.foreign_key]
 # @memberOf association
-###
 exports.hasMany = (this_model, target_model, options) ->
   if options?.foreign_key
     foreign_key = options.foreign_key
@@ -62,7 +60,7 @@ exports.hasMany = (this_model, target_model, options) ->
         Object.defineProperty @, columnGetter, value: getter
       return @[columnGetter]
 
-###
+##
 # Adds a belongs-to association
 # @param {Class<Model>} this_model
 # @param {Class<Model>} target_model
@@ -70,7 +68,6 @@ exports.hasMany = (this_model, target_model, options) ->
 # @param {String} [options.as]
 # @param {String} [options.foreign_key]
 # @memberOf association
-###
 exports.belongsTo = (this_model, target_model, options) ->
   if options?.foreign_key
     foreign_key = options.foreign_key
@@ -107,13 +104,12 @@ exports.belongsTo = (this_model, target_model, options) ->
         Object.defineProperty @, columnGetter, value: getter
       return @[columnGetter]
 
-###
+##
 # Applies pending associations
 # @param {Connection} connection
 # @param {Array<Object>} associations
 # @param {String} associations.type 'hasMany' or 'belongsTo'
 # @memberOf association
-###
 exports.applyAssociations = (connection, associations) ->
   associations.forEach (item) ->
     this_model = item.this_model

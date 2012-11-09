@@ -86,15 +86,13 @@ _buildWhere = (conditions, params, conjunction='AND') ->
     return ''
   return '(' + subs.join(' ' + conjunction + ' ') + ')'
 
-###
+##
 # Adapter for SQLite3
-###
 class SQLite3Adapter extends AdapterBase
   key_type: types.Integer
 
-  ###
+  ##
   # Creates a SQLite3 adapter
-  ###
   constructor: (connection) ->
     @_connection = connection
 
@@ -119,25 +117,23 @@ class SQLite3Adapter extends AdapterBase
     # TODO check table existence
     @_createTable model, callback
 
-  ###
+  ##
   # Creates or alters tables reflecting schemas
   # @param {Function} callback
   # @param {Error} callback.error
   # @see Connection.applySchemas
-  ###
   applySchemas: (callback) ->
     async.forEach Object.keys(@_connection.models), (model, callback) =>
         @_applySchema model, callback
       , (error) ->
         callback error
 
-  ###
+  ##
   # Drops a model from the database
   # @param {String} model
   # @param {Function} callback
   # @param {Error} callback.error
   # @see Model.drop
-  ###
   drop: (model, callback) ->
     table = tableize model
     @_query 'run', "DROP TABLE IF EXISTS #{table}", (error) ->
@@ -153,14 +149,13 @@ class SQLite3Adapter extends AdapterBase
       error = SQLite3Adapter.wrapError 'unknown error', error
     callback error
 
-  ###
+  ##
   # Creates a record
   # @param {String} model
   # @param {Object} data
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {RecordID} callback.id
-  ###
   create: (model, data, callback) ->
     schema = @_connection.models[model]._schema
     fields = []
@@ -179,13 +174,12 @@ class SQLite3Adapter extends AdapterBase
       return _processSaveError error, callback if error
       callback null, @lastID
 
-  ###
+  ##
   # Updates a record
   # @param {String} model
   # @param {Object} data
   # @param {Function} callback
   # @param {Error} callback.error
-  ###
   update: (model, data, callback) ->
     schema = @_connection.models[model]._schema
     fields = []
@@ -215,7 +209,7 @@ class SQLite3Adapter extends AdapterBase
           data[column] = data[column] isnt 0
     new modelClass data, id
 
-  ###
+  ##
   # Finds a record by id
   # @param {String} model
   # @param {RecordID} id
@@ -224,7 +218,6 @@ class SQLite3Adapter extends AdapterBase
   # @param {Error} callback.error
   # @param {Model} callback.record
   # @throws Error('not found')
-  ###
   findById: (model, id, options, callback) ->
     if options.select
       selects = 'id,' + options.select.join ','
@@ -240,7 +233,7 @@ class SQLite3Adapter extends AdapterBase
       else
         callback new Error 'not found'
 
-  ###
+  ##
   # Finds records
   # @param {String} model
   # @param {Object} conditions
@@ -248,7 +241,6 @@ class SQLite3Adapter extends AdapterBase
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Array<Model>} callback.records
-  ###
   find: (model, conditions, options, callback) ->
     if options.select
       selects = 'id,' + options.select.join ','
@@ -265,14 +257,13 @@ class SQLite3Adapter extends AdapterBase
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       callback null, result.map (record) => @_convertToModelInstance model, record
 
-  ###
+  ##
   # Counts records
   # @param {String} model
   # @param {Object} conditions
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Number} callback.count
-  ###
   count: (model, conditions, callback) ->
     params = []
     sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
@@ -284,14 +275,13 @@ class SQLite3Adapter extends AdapterBase
       return callback error 'unknown error' if result?.length isnt 1
       callback null, Number(result[0].count)
 
-  ###
+  ##
   # Deletes records from the database
   # @param {String} model
   # @param {Object} conditions
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Number} callback.count
-  ###
   delete: (model, conditions, callback) ->
     params = []
     sql = "DELETE FROM #{tableize model}"
@@ -303,13 +293,12 @@ class SQLite3Adapter extends AdapterBase
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       callback null, @changes
 
-  ###
+  ##
   # Connects to the database
   # @param {Object} settings
   # @param {String} settings.database
   # @param {Function} callback
   # @param {Error} callback.error
-  ###
   connect: (settings, callback) ->
     client = new sqlite3.Database settings.database, (error) =>
       return callback SQLite3Adapter.wrapError 'failed to open', error if error

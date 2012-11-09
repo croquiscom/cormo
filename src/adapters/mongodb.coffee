@@ -76,17 +76,15 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
   obj[conjunction] = subs
   return obj
 
-###
+##
 # Adapter for MongoDB
-###
 class MongoDBAdapter extends AdapterBase
   key_type: types.String
   key_type_internal: 'objectid'
   support_geopoint: true
 
-  ###
+  ##
   # Creates a MongoDB adapter
-  ###
   constructor: (connection) ->
     @_connection = connection
     @_collections = {}
@@ -114,25 +112,23 @@ class MongoDBAdapter extends AdapterBase
       , (error) ->
         callback error
 
-  ###
+  ##
   # Ensures indexes
   # @param {Function} callback
   # @param {Error} callback.error
   # @see Connection.applySchemas
-  ###
   applySchemas: (callback) ->
     async.forEach Object.keys(@_connection.models), (model, callback) =>
         @_applySchema model, callback
       , (error) ->
         callback error
 
-  ###
+  ##
   # Drops a model from the database
   # @param {String} model
   # @param {Function} callback
   # @param {Error} callback.error
   # @see Model.drop
-  ###
   drop: (model, callback) ->
     name = tableize model
     delete @_collections[name]
@@ -159,14 +155,13 @@ class MongoDBAdapter extends AdapterBase
 
     return true
 
-  ###
+  ##
   # Creates a record
   # @param {String} model
   # @param {Object} data
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {RecordID} callback.id
-  ###
   create: (model, data, callback) ->
     return if not @_buildSaveData model, data, callback
 
@@ -182,13 +177,12 @@ class MongoDBAdapter extends AdapterBase
       else
         callback new Error 'unexpected result'
 
-  ###
+  ##
   # Updates a record
   # @param {String} model
   # @param {Object} data
   # @param {Function} callback
   # @param {Error} callback.error
-  ###
   update: (model, data, callback) ->
     try
       id = new ObjectID data.id
@@ -214,7 +208,7 @@ class MongoDBAdapter extends AdapterBase
           data[column] = data[column].toString()
     new modelClass data, id
 
-  ###
+  ##
   # Finds a record by id
   # @param {String} model
   # @param {RecordID} id
@@ -223,7 +217,6 @@ class MongoDBAdapter extends AdapterBase
   # @param {Error} callback.error
   # @param {Model} callback.record
   # @throws Error('not found')
-  ###
   findById: (model, id, options, callback) ->
     if options.select
       fields = {}
@@ -240,7 +233,7 @@ class MongoDBAdapter extends AdapterBase
       return callback new Error('not found') if not result
       callback null, @_convertToModelInstance model, result
 
-  ###
+  ##
   # Finds records
   # @param {String} model
   # @param {Object} conditions
@@ -248,7 +241,6 @@ class MongoDBAdapter extends AdapterBase
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Array<Model>} callback.records
-  ###
   find: (model, conditions, options, callback) ->
     if options.select
       fields = {}
@@ -275,14 +267,13 @@ class MongoDBAdapter extends AdapterBase
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
         callback null, result.map (record) => @_convertToModelInstance model, record
 
-  ###
+  ##
   # Counts records
   # @param {String} model
   # @param {Object} conditions
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Number} callback.count
-  ###
   count: (model, conditions, callback) ->
     try
       conditions = _buildWhere @_connection.models[model]._schema, conditions
@@ -293,14 +284,13 @@ class MongoDBAdapter extends AdapterBase
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null, count
 
-  ###
+  ##
   # Deletes records from the database
   # @param {String} model
   # @param {Object} conditions
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Number} callback.count
-  ###
   delete: (model, conditions, callback) ->
     try
       conditions = _buildWhere @_connection.models[model]._schema, conditions
@@ -311,7 +301,7 @@ class MongoDBAdapter extends AdapterBase
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null, count
 
-  ###
+  ##
   # Connects to the database
   # @param {Object} settings
   # @param {String} [settings.host='localhost']
@@ -319,7 +309,6 @@ class MongoDBAdapter extends AdapterBase
   # @param {String} settings.database
   # @param {Function} callback
   # @param {Error} callback.error
-  ###
   connect: (settings, callback) ->
     server = new mongodb.Server settings.host or 'localhost', settings.port or 27017, {}
     db = new mongodb.Db settings.database, server, {}

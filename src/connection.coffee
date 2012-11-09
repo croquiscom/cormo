@@ -2,11 +2,10 @@ EventEmitter = require('events').EventEmitter
 Model = require './model'
 association = require './association'
 
-###
+##
 # Manages connection to a database
-###
 class Connection extends EventEmitter
-  ###
+  ##
   # Creates a connection
   # @param {String} adapater_name
   # @param {Object} settings adapter specific settings
@@ -14,7 +13,6 @@ class Connection extends EventEmitter
   # @see MongoDBAdapter::connect
   # @see PostgreSQLAdapter::connect
   # @see SQLite3Adapter::connect
-  ###
   constructor: (adapter_name, settings) ->
     @connected = false
     @models = {}
@@ -29,12 +27,11 @@ class Connection extends EventEmitter
       @connected = true
       @emit 'connected'
 
-  ###
+  ##
   # Creates a model class
   # @param {String} name
   # @param {Object} schema
   # @return {Class<Model>}
-  ###
   model: (name, schema) ->
     return Model.newModel @, name, schema
 
@@ -50,11 +47,10 @@ class Connection extends EventEmitter
       method.apply object, args
     return true
 
-  ###
+  ##
   # Applies schemas
   # @param {Function} [callback]
   # @param {Error} callback.error
-  ###
   applySchemas: (callback) ->
     association.applyAssociations @, @_pending_associations
     @_pending_associations = []

@@ -2,17 +2,15 @@ inflector = require './inflector'
 async = require 'async'
 Query = require './query'
 
-###
+##
 # Base class for models
-###
 class Model
-  ###
+  ##
   # Returns a new model class extending Model
   # @param {Connection} connection
   # @param {String} name
   # @param {Object} schema
   # @return {Class<Model>}
-  ###
   @newModel: (connection, name, schema) ->
     class NewModel extends Model
     NewModel.connection connection, name
@@ -20,11 +18,10 @@ class Model
       NewModel.column name, property
     return NewModel
 
-  ###
+  ##
   # Sets a connection of this model
   # @param {Connection} connection
   # @param {String} [name]
-  ###
   @connection: (connection, name) ->
     name = @name if not name
     connection.models[name] = @
@@ -36,11 +33,10 @@ class Model
     Object.defineProperty @, '_name', configurable: true, value: name
     Object.defineProperty @, '_schema', configurable: true, value: {}
 
-  ###
+  ##
   # Adds a column to this model
   # @param {String} name
   # @param {String|Object} property
-  ###
   @column: (name, property) ->
     # convert simple type to object
     if typeof property is 'function' or typeof property is 'string'
@@ -67,10 +63,9 @@ class Model
     return true if @_connection._waitingForApplyingSchemas object, method, args
     return @_connection._waitingForConnection object, method, args
 
-  ###
+  ##
   # Creates a record
   # @param {Object} [data={}]
-  ###
   constructor: (data) ->
     data = data or {}
     id = arguments[1]
@@ -85,35 +80,32 @@ class Model
       @_runCallbacks 'find', 'after'
     @_runCallbacks 'initialize', 'after'
 
-  ###
+  ##
   # Creates a record.
   # 'Model.build(data)' is the same as 'new Model(data)'
   # @param {Object} [data={}]
   # @return {Model}
-  ###
   @build: (data) ->
     return new @ data
 
-  ###
+  ##
   # Creates a record and saves it to the database
   # 'Model.create(data, callback)' is the same as 'Model.build(data).save(callback)'
   # @param {Object} [data={}]
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Model} callback.record created record
-  ###
   @create: (data, callback) ->
     if typeof data is 'function'
       callback = data
       data = {}
     @build(data).save callback
 
-  ###
+  ##
   # Validates data
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @return {Boolean}
-  ###
   validate: (callback) ->
     @_runCallbacks 'validate', 'before'
 
@@ -220,14 +212,13 @@ class Model
       return callback error, @ if error
       callback null, @
 
-  ###
+  ##
   # Saves data to the database
   # @param {Object} [options]
   # @param {Boolean} [options.validate=true]
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Model} callback.record this
-  ###
   save: (options, callback) ->
     if typeof options is 'function'
       callback = options
@@ -255,11 +246,10 @@ class Model
         @_runCallbacks 'save', 'after'
         callback error, record
 
-  ###
+  ##
   # Destroys this record (remove from the database)
   # @param {Function} callback
   # @param {Error} callback.error
-  ###
   destroy: (callback) ->
     callback = (->) if typeof callback isnt 'function'
     @_runCallbacks 'destroy', 'before'
@@ -272,7 +262,7 @@ class Model
       callback null
     return
 
-  ###
+  ##
   # Finds a record by id
   # @param {RecordID|Array<RecordID>} id
   # @param {Function} [callback]
@@ -280,7 +270,6 @@ class Model
   # @param {Model|Array<Model>} callback.record
   # @return {Query}
   # @throws Error('not found')
-  ###
   @find: (id, callback) ->
     return if @_waitingForConnection @, @find, arguments
 
@@ -290,14 +279,13 @@ class Model
       query.exec callback
     return query
 
-  ###
+  ##
   # Finds records by conditions
   # @param {Object} [condition]
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Array<Model>} callback.records
   # @return {Query}
-  ###
   @where: (condition, callback) ->
     return if @_waitingForConnection @, @where, arguments
 
@@ -310,14 +298,13 @@ class Model
       query.exec callback
     return query
 
-  ###
+  ##
   # Selects columns for result
   # @param {Object} [columns]
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Array<Model>} callback.records
   # @return {Query}
-  ###
   @select: (columns, callback) ->
     return if @_waitingForConnection @, @select, arguments
 
@@ -330,14 +317,13 @@ class Model
       query.exec callback
     return query
 
-  ###
+  ##
   # Counts records by conditions
   # @param {Object} [condition]
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
   # @return {Query}
-  ###
   @count: (condition, callback) ->
     return if @_waitingForConnection @, @count, arguments
 
@@ -350,14 +336,13 @@ class Model
       query.count callback
     return query
 
-  ###
+  ##
   # Deletes records by conditions
   # @param {Object} [condition]
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
   # @return {Query}
-  ###
   @delete: (condition, callback) ->
     return if @_waitingForConnection @, @delete, arguments
 
@@ -370,14 +355,13 @@ class Model
       query.delete callback
     return query
 
-  ###
+  ##
   # Adds a has-many association
   # @param {Class<Model>|String} target_model_or_column
   # @param {Object} [options]
   # @param {String} [options.type]
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
-  ###
   @hasMany: (target_model_or_column, options) ->
     @_connection._pending_associations.push
       type: 'hasMany'
@@ -385,14 +369,13 @@ class Model
       target_model_or_column: target_model_or_column
       options: options
 
-  ###
+  ##
   # Adds a belongs-to association
   # @param {Class<Model>|String} target_model_or_column
   # @param {Object} [options]
   # @param {String} [options.type]
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
-  ###
   @belongsTo: (target_model_or_column, options) ->
     @_connection._pending_associations.push
       type: 'belongsTo'
@@ -400,31 +383,28 @@ class Model
       target_model_or_column: target_model_or_column
       options: options
 
-  ###
+  ##
   # Adds a validator
   #
   # A validator must return false(boolean) or error message(string), or throw an Error exception if invalid
   # @param {Function} validator
   # @param {Model} validator.record
-  ###
   @addValidator: (validator) ->
     @_validators.push validator
 
-  ###
+  ##
   # Drops this model from the database
   # @param {Function} callback
   # @param {Error} callback.error
-  ###
   @drop: (callback) ->
     return if @_waitingForConnection @, @drop, arguments
 
     @_adapter.drop @_name, callback
 
-  ###
+  ##
   # Deletes all records from the database
   # @param {Function} callback
   # @param {Error} callback.error
-  ###
   @deleteAll: (callback) ->
     callback = (->) if typeof callback isnt 'function'
     @delete callback
@@ -440,96 +420,83 @@ class Model
 
     @_schema[column] = { type: type }
 
-  ###
+  ##
   # Adds a callback of after initializing
   # @param {Function|String} method
-  ###
   @afterInitialize: (method) ->
     @addCallback 'after', 'initialize', method
 
-  ###
+  ##
   # Adds a callback of after finding
   # @param {Function|String} method
-  ###
   @afterFind: (method) ->
     @addCallback 'after', 'find', method
 
-  ###
+  ##
   # Adds a callback of before saving
   # @param {Function|String} method
-  ###
   @beforeSave: (method) ->
     @addCallback 'before', 'save', method
 
-  ###
+  ##
   # Adds a callback of after saving
   # @param {Function|String} method
-  ###
   @afterSave: (method) ->
     @addCallback 'after', 'save', method
 
-  ###
+  ##
   # Adds a callback of before creating
   # @param {Function|String} method
-  ###
   @beforeCreate: (method) ->
     @addCallback 'before', 'create', method
 
-  ###
+  ##
   # Adds a callback of after creating
   # @param {Function|String} method
-  ###
   @afterCreate: (method) ->
     @addCallback 'after', 'create', method
 
-  ###
+  ##
   # Adds a callback of before updating
   # @param {Function|String} method
-  ###
   @beforeUpdate: (method) ->
     @addCallback 'before', 'update', method
 
-  ###
+  ##
   # Adds a callback of after updating
   # @param {Function|String} method
-  ###
   @afterUpdate: (method) ->
     @addCallback 'after', 'update', method
 
-  ###
+  ##
   # Adds a callback of before destroying
   # @param {Function|String} method
-  ###
   @beforeDestroy: (method) ->
     @addCallback 'before', 'destroy', method
 
-  ###
+  ##
   # Adds a callback of after destroying
   # @param {Function|String} method
-  ###
   @afterDestroy: (method) ->
     @addCallback 'after', 'destroy', method
 
-  ###
+  ##
   # Adds a callback of before validating
   # @param {Function|String} method
-  ###
   @beforeValidate: (method) ->
     @addCallback 'before', 'validate', method
 
-  ###
+  ##
   # Adds a callback of after validating
   # @param {Function|String} method
-  ###
   @afterValidate: (method) ->
     @addCallback 'after', 'validate', method
 
-  ###
+  ##
   # Adds a callback
   # @param {String} type
   # @param {String} name
   # @param {Function|String} method
-  ###
   @addCallback: (type, name, method) ->
     return if not (type is 'before' or type is 'after') or not name
     callbacks_map = @_callbacks_map ||= {}

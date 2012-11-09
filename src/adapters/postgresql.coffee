@@ -86,15 +86,13 @@ _buildWhere = (conditions, params, conjunction='AND') ->
     return ''
   return '(' + subs.join(' ' + conjunction + ' ') + ')'
 
-###
+##
 # Adapter for PostgreSQL
-###
 class PostgreSQLAdapter extends AdapterBase
   key_type: types.Integer
 
-  ###
+  ##
   # Creates a PostgreSQL adapter
-  ###
   constructor: (connection) ->
     @_connection = connection
 
@@ -129,25 +127,23 @@ class PostgreSQLAdapter extends AdapterBase
       else
         @_alterTable model, columns, callback
 
-  ###
+  ##
   # Creates or alters tables reflecting schemas
   # @param {Function} callback
   # @param {Error} callback.error
   # @see Connection.applySchemas
-  ###
   applySchemas: (callback) ->
     async.forEach Object.keys(@_connection.models), (model, callback) =>
         @_applySchema model, callback
       , (error) ->
         callback error
 
-  ###
+  ##
   # Drops a model from the database
   # @param {String} model
   # @param {Function} callback
   # @param {Error} callback.error
   # @see Model.drop
-  ###
   drop: (model, callback) ->
     table = tableize model
     @_query "DROP TABLE IF EXISTS #{table}", (error) ->
@@ -165,14 +161,13 @@ class PostgreSQLAdapter extends AdapterBase
       error = PostgreSQLAdapter.wrapError 'unknown error', error
     callback error
 
-  ###
+  ##
   # Creates a record
   # @param {String} model
   # @param {Object} data
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {RecordID} callback.id
-  ###
   create: (model, data, callback) ->
     fields = []
     places = []
@@ -190,13 +185,12 @@ class PostgreSQLAdapter extends AdapterBase
       else
         callback new Error 'unexpected rows'
 
-  ###
+  ##
   # Updates a record
   # @param {String} model
   # @param {Object} data
   # @param {Function} callback
   # @param {Error} callback.error
-  ###
   update: (model, data, callback) ->
     fields = []
     values = []
@@ -215,7 +209,7 @@ class PostgreSQLAdapter extends AdapterBase
     id = Number data.id
     new modelClass data, id
 
-  ###
+  ##
   # Finds a record by id
   # @param {String} model
   # @param {RecordID} id
@@ -224,7 +218,6 @@ class PostgreSQLAdapter extends AdapterBase
   # @param {Error} callback.error
   # @param {Model} callback.record
   # @throws Error('not found')
-  ###
   findById: (model, id, options, callback) ->
     if options.select
       selects = 'id,' + options.select.join ','
@@ -241,7 +234,7 @@ class PostgreSQLAdapter extends AdapterBase
       else
         callback new Error 'not found'
 
-  ###
+  ##
   # Finds records
   # @param {String} model
   # @param {Object} conditions
@@ -249,7 +242,6 @@ class PostgreSQLAdapter extends AdapterBase
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Array<Model>} callback.records
-  ###
   find: (model, conditions, options, callback) ->
     if options.select
       selects = 'id,' + options.select.join ','
@@ -267,14 +259,13 @@ class PostgreSQLAdapter extends AdapterBase
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       callback null, rows.map (record) => @_convertToModelInstance model, record
 
-  ###
+  ##
   # Counts records
   # @param {String} model
   # @param {Object} conditions
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Number} callback.count
-  ###
   count: (model, conditions, callback) ->
     params = []
     sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
@@ -287,14 +278,13 @@ class PostgreSQLAdapter extends AdapterBase
       return callback error 'unknown error' if rows?.length isnt 1
       callback null, Number(rows[0].count)
 
-  ###
+  ##
   # Deletes records from the database
   # @param {String} model
   # @param {Object} conditions
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Number} callback.count
-  ###
   delete: (model, conditions, callback) ->
     params = []
     sql = "DELETE FROM #{tableize model}"
@@ -305,7 +295,7 @@ class PostgreSQLAdapter extends AdapterBase
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error or not result?
       callback null, result.rowCount
 
-  ###
+  ##
   # Connects to the database
   # @param {Object} settings
   # @param {String} [settings.host]
@@ -315,7 +305,6 @@ class PostgreSQLAdapter extends AdapterBase
   # @param {String} settings.database
   # @param {Function} callback
   # @param {Error} callback.error
-  ###
   connect: (settings, callback) ->
     # connect
     pg.connect
