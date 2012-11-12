@@ -92,6 +92,17 @@ class MySQLAdapter extends SQLAdapterBase
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
 
+  _getModelID: (data) ->
+    Number data.id
+
+  valueToModel: (value, column, property) ->
+    if value?
+      if property.type is types.GeoPoint
+        return [value.x, value.y]
+      else if property.type is types.Boolean
+        return value isnt 0
+    return value
+
   _processSaveError = (error, callback) ->
     if error.code is 'ER_NO_SUCH_TABLE'
       error = new Error('table does not exist')
@@ -159,17 +170,6 @@ class MySQLAdapter extends SQLAdapterBase
     @_query sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null
-
-  _convertToModelInstance: (model, data) ->
-    modelClass = @_connection.models[model]
-    id = Number data.id
-    for column, property of modelClass._schema
-      if (value = data[column])?
-        if property.type is types.GeoPoint
-          data[column] = [value.x, value.y]
-        else if property.type is types.Boolean
-          data[column] = value isnt 0
-    new modelClass data, id
 
   ##
   # Finds a record by id

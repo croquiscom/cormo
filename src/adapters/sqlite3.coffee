@@ -83,6 +83,17 @@ class SQLite3Adapter extends SQLAdapterBase
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       callback null
 
+  _getModelID: (data) ->
+    Number data.id
+
+  valueToModel: (value, column, property) ->
+    if value?
+      if property.type is types.Date
+        return new Date value
+      else if property.type is types.Boolean
+        return value isnt 0
+    return value
+
   _processSaveError = (error, callback) ->
     if /no such table/.test error.message
       error = new Error('table does not exist')
@@ -137,17 +148,6 @@ class SQLite3Adapter extends SQLAdapterBase
     @_query 'run', sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null
-
-  _convertToModelInstance: (model, data) ->
-    modelClass = @_connection.models[model]
-    id = Number data.id
-    for column, property of modelClass._schema
-      if data[column]?
-        if property.type is types.Date
-          data[column] = new Date data[column]
-        else if property.type is types.Boolean
-          data[column] = data[column] isnt 0
-    new modelClass data, id
 
   ##
   # Finds a record by id

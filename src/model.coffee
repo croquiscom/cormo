@@ -69,12 +69,18 @@ class Model
   # Creates a record
   # @param {Object} [data={}]
   constructor: (data) ->
-    data = data or {}
+    # if id exists, this is called from adapter with database record data
     id = arguments[1]
-    schema = @constructor._schema
-    Object.keys(schema).forEach (column) =>
-      if data[column]?
-        @[column] = data[column]
+
+    data = data or {}
+    ctor = @constructor
+    schema = ctor._schema
+    adapter = ctor._adapter
+    for column, property of schema
+      value = data[column]
+      if value?
+        value = adapter.valueToModel value, column, property if id?
+        @[column] = value
 
     Object.defineProperty @, 'id', configurable: not id?, enumerable: true, writable: false, value: id
 
@@ -172,22 +178,27 @@ class Model
 
   _buildSaveData: ->
     data = {}
-    schema = @constructor._schema
+    ctor = @constructor
+    schema = ctor._schema
+    adapter = ctor._adapter
     Object.keys(schema).forEach (column) =>
-      if @[column]?
-        data[column] = @[column]
-      else
-        data[column] = null
+      value = adapter.valueToDB @[column], column, schema[column]
+      data[column] = value if value isnt undefined
+    if @id?
+      data.id = adapter.idToDB @id
     return data
 
   _create: (callback) ->
     return if @constructor._waitingForConnection @, @_create, arguments
 
-    ctor = @constructor
-    data = @_buildSaveData()
+    try
+      data = @_buildSaveData()
+    catch e
+      return callback e, @
     if Object.keys(data).length is 0
       return callback new Error 'empty data', @
 
+    ctor = @constructor
     ctor._adapter.create ctor._name, data, (error, id) =>
       return callback error, @ if error
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
@@ -206,10 +217,12 @@ class Model
   _update: (callback) ->
     return if @constructor._waitingForConnection @, @_update, arguments
 
-    ctor = @constructor
-    data = @_buildSaveData()
-    data.id = @id
+    try
+      data = @_buildSaveData()
+    catch e
+      return callback e, @
 
+    ctor = @constructor
     ctor._adapter.update ctor._name, data, (error) =>
       return callback error, @ if error
       callback null, @

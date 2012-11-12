@@ -95,6 +95,9 @@ class PostgreSQLAdapter extends SQLAdapterBase
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       callback null
 
+  _getModelID: (data) ->
+    Number data.id
+
   _processSaveError = (model, error, callback) ->
     if error.code is '42P01'
       error = new Error('table does not exist')
@@ -151,11 +154,6 @@ class PostgreSQLAdapter extends SQLAdapterBase
     @_query sql, values, (error) ->
       return _processSaveError model, error, callback if error
       callback null
-
-  _convertToModelInstance: (model, data) ->
-    modelClass = @_connection.models[model]
-    id = Number data.id
-    new modelClass data, id
 
   ##
   # Finds a record by id

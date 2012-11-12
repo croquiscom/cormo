@@ -139,22 +139,30 @@ class MongoDBAdapter extends AdapterBase
         return callback MongoDBAdapter.wrapError 'unknown error', error
       callback null
 
-  _buildSaveData: (model, data, callback) ->
-    schema = @_connection.models[model]._schema
+  idToDB: (value) ->
+    try
+      return new ObjectID value
+    catch e
+      callback new Error("'id' is not a valid ID")
 
-    Object.keys(data).forEach (field) ->
-      # remove null field before save
-      if not data[field]?
-        delete data[field]
-      # convert id type
-      else if schema[field].type is 'objectid'
-        try
-          data[field] = new ObjectID data[field]
-        catch e
-          callback new Error("'#{field}' is not a ID")
-          return false
+  valueToDB: (value, column, property) ->
+    return if not value?
+    # convert id type
+    if column is 'id' or property.type is 'objectid'
+      try
+        return new ObjectID value
+      catch e
+        callback new Error("'#{column}' is not a valid ID")
+    return value
 
-    return true
+  _getModelID: (data) ->
+    data._id.toString()
+
+  valueToModel: (value, column, property) ->
+    if value?
+      if property.type is 'objectid'
+        return value.toString()
+    return value
 
   ##
   # Creates a record
@@ -164,8 +172,6 @@ class MongoDBAdapter extends AdapterBase
   # @param {Error} callback.error
   # @param {RecordID} callback.id
   create: (model, data, callback) ->
-    return if not @_buildSaveData model, data, callback
-
     @_collection(model).insert data, safe: true, (error, result) ->
       if error?.code is 11000
         key = error.err.match /index: [\w-.]+\$(\w+)_1/
@@ -185,29 +191,14 @@ class MongoDBAdapter extends AdapterBase
   # @param {Function} callback
   # @param {Error} callback.error
   update: (model, data, callback) ->
-    try
-      id = new ObjectID data.id
-      delete data.id
-    catch e
-      return callback new Error('unknown error')
-
-    return if not @_buildSaveData model, data, callback
-
+    id = data.id
+    delete data.id
     @_collection(model).update { _id: id }, data, safe: true, (error) ->
       if error?.code is 11001
         key = error.err.match /index: [\w-.]+\$(\w+)_1/
         return callback new Error('duplicated ' + key?[1])
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null
-
-  _convertToModelInstance: (model, data) ->
-    modelClass = @_connection.models[model]
-    id = data._id.toString()
-    for column, property of modelClass._schema
-      if data[column]?
-        if property.type is 'objectid'
-          data[column] = data[column].toString()
-    new modelClass data, id
 
   ##
   # Finds a record by id
