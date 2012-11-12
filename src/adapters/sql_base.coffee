@@ -29,7 +29,7 @@ class SQLAdapterBase extends AdapterBase
             values = value.map (value) =>
               params.push value
               return @_param_place_holder params.length
-            return "#{key} IN (#{values.join ','})"
+            return "#{key.replace '.', '_'} IN (#{values.join ','})"
           else if typeof value is 'object' and (keys = Object.keys value).length is 1
             sub_key = keys[0]
             if sub_key is '$in'
@@ -37,7 +37,7 @@ class SQLAdapterBase extends AdapterBase
               values = values.map (value) =>
                 params.push value
                 return @_param_place_holder params.length
-              return "#{key} IN (#{values.join ','})"
+              return "#{key.replace '.', '_'} IN (#{values.join ','})"
             switch sub_key
               when '$gt'
                 op = '>'
@@ -55,7 +55,7 @@ class SQLAdapterBase extends AdapterBase
                 op = ' ' + @_contains_op + ' '
                 value = '%' + value[sub_key] + '%'
           params.push value
-          return key + op + @_param_place_holder params.length
+          return key.replace('.', '_') + op + @_param_place_holder params.length
       else
         subs = keys.map (key) =>
           obj = {}

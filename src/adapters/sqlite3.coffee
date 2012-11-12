@@ -50,7 +50,7 @@ class SQLite3Adapter extends SQLAdapterBase
     for column, property of @_connection.models[model]._schema
       column_sql = _propertyToSQL property
       if column_sql
-        sql.push column + ' ' + column_sql
+        sql.push property.dbname + ' ' + column_sql
     sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
     @_query 'run', sql, (error, result) ->
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
@@ -108,17 +108,17 @@ class SQLite3Adapter extends SQLAdapterBase
     values = []
     fields = []
     places = []
-    Object.keys(data).forEach (field) ->
-      return if field is 'id'
-      if schema[field].type is types.Date
-        values.push data[field]?.getTime()
+    for column, property of schema
+      dbname = property.dbname
+      if property.type is types.Date
+        values.push data[dbname]?.getTime()
       else
-        values.push data[field]
+        values.push data[dbname]
       if insert
-        fields.push field
+        fields.push dbname
         places.push '?'
       else
-        fields.push field + '=?'
+        fields.push dbname + '=?'
     [ values, fields.join(','), places.join(',') ]
 
   ##

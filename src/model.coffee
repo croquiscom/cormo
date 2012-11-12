@@ -1,6 +1,28 @@
 inflector = require './inflector'
 async = require 'async'
 _ = require 'underscore'
+ 
+_getRef = (obj, parts) ->
+  return [obj, parts[0]] if parts.length is 1
+
+  parts = parts[..]
+  last = parts.pop()
+  for part in parts
+    obj = obj[part] ||= {}
+  [obj, last]
+
+_getValue = (obj, parts) ->
+  return obj[parts[0]] if parts.length is 1
+
+  for part in parts
+    obj = obj[part]
+    break if not obj
+  return obj
+
+_setValue = (obj, parts, value) ->
+  [obj, last] = _getRef obj, parts
+  obj[last] = value
+  return
 
 ##
 # Base class for models
@@ -40,6 +62,12 @@ class Model
   # @param {String} name
   # @param {String|Object} property
   @column: (name, property) ->
+    # nested type
+    if typeof property is 'object' and (not property.type or property.type.type)
+      for subtype, subproperty of property
+        @column name+'.'+subtype, subproperty
+      return
+
     # convert simple type to object
     if typeof property is 'function' or typeof property is 'string'
       property = type: property
@@ -59,6 +87,9 @@ class Model
     if type is Model.GeoPoint and not @_adapter.support_geopoint
       throw new Error 'this adapter does not support GeoPoint'
 
+    property.parts = name.split '.'
+    property.dbname = name.replace '.', '_' if not @_adapter.support_nested
+
     @_schema[name] = property
 
   @_waitingForConnection: (object, method, args) ->
@@ -69,23 +100,35 @@ class Model
   # Creates a record
   # @param {Object} [data={}]
   constructor: (data) ->
-    # if id exists, this is called from adapter with database record data
-    id = arguments[1]
-
     data = data or {}
     ctor = @constructor
     schema = ctor._schema
     adapter = ctor._adapter
-    for column, property of schema
-      value = data[column]
-      if value?
-        value = adapter.valueToModel value, column, property if id?
-        @[column] = value
 
-    Object.defineProperty @, 'id', configurable: not id?, enumerable: true, writable: false, value: id
+    if id = arguments[1]
+      # if id exists, this is called from adapter with database record data
+      for column, property of schema
+        parts = property.parts
+        if adapter.support_nested
+          value = _getValue data, parts
+        else
+          value = data[property.dbname]
+        if value?
+          value = adapter.valueToModel value, column, property
+          _setValue @, parts, value
 
-    if id?
+      Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
+
       @_runCallbacks 'find', 'after'
+    else
+      for column, property of schema
+        parts = property.parts
+        value = _getValue data, parts
+        if value?
+          _setValue @, parts, value
+
+      Object.defineProperty @, 'id', configurable: true, enumerable: true, writable: false, value: undefined
+
     @_runCallbacks 'initialize', 'after'
 
   ##
@@ -120,40 +163,39 @@ class Model
     errors = []
 
     schema = @constructor._schema
-    Object.keys(schema).forEach (column) =>
-      property = schema[column]
-      if @[column]?
+    for column, property of schema
+      [obj, last] = _getRef @, property.parts
+      value = obj[last]
+      if value?
         switch property.type
           when Model.Number
-            value = Number @[column]
+            value = Number value
             if isNaN value
               errors.push "'#{column}' is not a number"
             else
-              @[column] = value
+              obj[last] = value
           when Model.Boolean
-            if typeof @[column] isnt 'boolean'
+            if typeof value isnt 'boolean'
               errors.push "'#{column}' is not a boolean"
           when Model.Integer
-            value = Number @[column]
+            value = Number value
             # value>>0 checkes integer and 32bit
             if isNaN(value) or (value>>0) isnt value
               errors.push "'#{column}' is not an integer"
             else
-              @[column] = value
+              obj[last] = value
           when Model.GeoPoint
-            value = @[column]
             if not ( Array.isArray(value) and value.length is 2 )
               errors.push "'#{column}' is not a geo point"
             else
               value[0] = Number value[0]
               value[1] = Number value[1]
           when Model.Date
-            value = @[column]
             value = new Date value
             if isNaN value.getTime()
               errors.push "'#{column}' is not a date"
             else
-              @[column] = value
+              obj[last] = value
       else
         if property.required
           errors.push "'#{column}' is required"
@@ -181,9 +223,15 @@ class Model
     ctor = @constructor
     schema = ctor._schema
     adapter = ctor._adapter
-    Object.keys(schema).forEach (column) =>
-      value = adapter.valueToDB @[column], column, schema[column]
-      data[column] = value if value isnt undefined
+    for column, property of schema
+      parts = property.parts
+      value = _getValue @, parts
+      value = adapter.valueToDB value, column, property
+      if value isnt undefined
+        if adapter.support_nested
+          _setValue data, parts, value
+        else
+          data[property.dbname] = value
     if @id?
       data.id = adapter.idToDB @id
     return data
@@ -340,7 +388,7 @@ class Model
     else
       type = target_adapter.key_type
 
-    @_schema[column] = { type: type }
+    @column column, type
 
 ModelQuery = require './model/query'
 _.extend Model, ModelQuery
