@@ -37,6 +37,11 @@ exports.Date = 'date'
 exports.Object = 'object'
 
 ##
+# Represents a record id, used in model schemas.
+# @memberOf cormo
+exports.RecordID = 'recordid'
+
+##
 # A pseudo class represents a record's unique identifier.
 #
 # Its real type differs by adapters.

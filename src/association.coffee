@@ -3,6 +3,7 @@
 # @module association
 
 inflector = require './inflector'
+types = require './types'
 
 ##
 # Adds a has-many association
@@ -19,7 +20,7 @@ exports.hasMany = (this_model, target_model, options) ->
     foreign_key = options.as + '_id'
   else
     foreign_key = inflector.foreign_key this_model._name
-  target_model._addForeignKey foreign_key, this_model._connection._adapter
+  target_model.column foreign_key, type: types.RecordID, connection: this_model._connection
 
   column = options?.as or inflector.tableize(target_model._name)
   columnCache = '__cache_' + column
@@ -75,7 +76,7 @@ exports.belongsTo = (this_model, target_model, options) ->
     foreign_key = options.as + '_id'
   else
     foreign_key = inflector.foreign_key target_model._name
-  this_model._addForeignKey foreign_key, target_model._adapter
+  this_model.column foreign_key, type: types.RecordID, connection: target_model._connection
 
   column = options?.as or inflector.underscore(target_model._name)
   columnCache = '__cache_' + column

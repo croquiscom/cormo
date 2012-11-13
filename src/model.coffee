@@ -68,6 +68,8 @@ class Model
         @column name+'.'+subtype, subproperty
       return
 
+    return if @_schema.hasOwnProperty name
+
     # convert simple type to object
     if typeof property is 'function' or typeof property is 'string'
       property = type: property
@@ -82,12 +84,20 @@ class Model
       when Object then type = Model.Object
     if typeof type isnt 'string'
       throw new Error 'unknown type : ' + type
-    property.type = type.toLowerCase()
+    type = type.toLowerCase()
 
     # check supports of GeoPoint
     if type is Model.GeoPoint and not @_adapter.support_geopoint
       throw new Error 'this adapter does not support GeoPoint'
 
+    if type is Model.RecordID
+      target_connection = property.connection or @_connection
+      if @_connection is target_connection and target_connection._adapter.key_type_internal
+        type = target_connection._adapter.key_type_internal
+      else
+        type = target_connection._adapter.key_type
+
+    property.type = type
     property.parts = name.split '.'
     property.dbname = name.replace '.', '_' if not @_adapter.support_nested
 
@@ -387,16 +397,6 @@ class Model
     callback = (->) if typeof callback isnt 'function'
     @delete callback
     return
-
-  @_addForeignKey: (column, target_adapter) ->
-    return if @_schema.hasOwnProperty column
-
-    if @_adapter is target_adapter and target_adapter.key_type_internal
-      type = target_adapter.key_type_internal
-    else
-      type = target_adapter.key_type
-
-    @column column, type
 
 ModelQuery = require './model/query'
 _.extend Model, ModelQuery
