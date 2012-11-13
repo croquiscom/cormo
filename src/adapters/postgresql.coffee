@@ -16,6 +16,7 @@ _typeToSQL = (property) ->
     when types.Boolean then 'BOOLEAN'
     when types.Integer then 'INT'
     when types.Date then 'TIMESTAMP WITHOUT TIME ZONE'
+    when types.Object then 'VARCHAR(255)'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property

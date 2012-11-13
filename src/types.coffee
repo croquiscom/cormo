@@ -30,6 +30,13 @@ exports.GeoPoint = 'geopoint'
 exports.Date = 'date'
 
 ##
+# Represents a general object, used in model schemas.
+# A value of this type will be converted to a JSON string
+# if the adapter does not support a general object.
+# @memberOf cormo
+exports.Object = 'object'
+
+##
 # A pseudo class represents a record's unique identifier.
 #
 # Its real type differs by adapters.

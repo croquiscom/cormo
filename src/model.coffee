@@ -79,6 +79,7 @@ class Model
       when Number then type = Model.Number
       when Boolean then type = Model.Boolean
       when Date then type = Model.Date
+      when Object then type = Model.Object
     if typeof type isnt 'string'
       throw new Error 'unknown type : ' + type
     property.type = type.toLowerCase()
@@ -114,7 +115,10 @@ class Model
         else
           value = data[property.dbname]
         if value?
-          value = adapter.valueToModel value, column, property
+          if property.type is Model.Object and not adapter.support_object
+            value = JSON.parse value
+          else
+            value = adapter.valueToModel value, column, property
           _setValue @, parts, value
 
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
@@ -226,7 +230,10 @@ class Model
     for column, property of schema
       parts = property.parts
       value = _getValue @, parts
-      value = adapter.valueToDB value, column, property
+      if property.type is Model.Object and not adapter.support_object
+        value = JSON.stringify value
+      else
+        value = adapter.valueToDB value, column, property
       if value isnt undefined
         if adapter.support_nested
           _setValue data, parts, value

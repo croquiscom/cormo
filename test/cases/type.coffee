@@ -91,3 +91,28 @@ module.exports = (models) ->
             callback null
       , (error) ->
         done error
+
+  it 'object', (done) ->
+    data = [
+      [ '30', '30' ]
+      [ 30, 30 ]
+      [ true, true ]
+      [ false, false ]
+      [ {a: 5, b: ['oh']}, {a: 5, b: ['oh']} ]
+    ]
+    async.forEach data, (item, callback) ->
+        models.Type.create { object: item[0] }, (error, type) ->
+          return callback error if error
+          if typeof item[1] is 'object'
+            type.object.should.be.eql item[1]
+          else
+            type.object.should.be.equal item[1]
+          models.Type.find type.id, (error, type) ->
+            return callback error if error
+            if typeof item[1] is 'object'
+              type.object.should.be.eql item[1]
+            else
+              type.object.should.be.equal item[1]
+            callback null
+      , (error) ->
+        done error

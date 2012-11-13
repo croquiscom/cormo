@@ -16,6 +16,7 @@ _typeToSQL = (property) ->
     when types.Boolean then 'TINYINT'
     when types.Integer then 'INT'
     when types.Date then 'REAL'
+    when types.Object then 'VARCHAR(255)'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property

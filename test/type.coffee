@@ -37,6 +37,7 @@ Object.keys(_dbs).forEach (db) ->
             @column 'int_c', 'integer'
             @column 'date', 'date'
             @column 'boolean', 'boolean'
+            @column 'object', 'object'
         else
           # using Connection method
           Type = connection.model 'Type',
@@ -44,6 +45,7 @@ Object.keys(_dbs).forEach (db) ->
             int_c: Connection.Integer
             date: Date
             boolean: Boolean
+            object: Object
 
         models.Type = Type
 
