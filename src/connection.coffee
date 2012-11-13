@@ -51,6 +51,7 @@ class Connection extends EventEmitter
   # Applies schemas
   # @param {Function} [callback]
   # @param {Error} callback.error
+  # @see AdapterBase::applySchemas
   applySchemas: (callback) ->
     association.applyAssociations @, @_pending_associations
     @_pending_associations = []

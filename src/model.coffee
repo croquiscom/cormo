@@ -366,6 +366,7 @@ class Model
   # Drops this model from the database
   # @param {Function} callback
   # @param {Error} callback.error
+  # @see AdapterBase::drop
   @drop: (callback) ->
     return if @_waitingForConnection @, @drop, arguments
 

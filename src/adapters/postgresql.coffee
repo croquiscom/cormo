@@ -72,23 +72,14 @@ class PostgreSQLAdapter extends SQLAdapterBase
       else
         @_alterTable model, columns, callback
 
-  ##
-  # Creates or alters tables reflecting schemas
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @see Connection.applySchemas
+  ## @override AdapterBase::applySchemas
   applySchemas: (callback) ->
     async.forEach Object.keys(@_connection.models), (model, callback) =>
         @_applySchema model, callback
       , (error) ->
         callback error
 
-  ##
-  # Drops a model from the database
-  # @param {String} model
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @see Model.drop
+  ## @override AdapterBase::drop
   drop: (model, callback) ->
     table = tableize model
     @_query "DROP TABLE IF EXISTS #{table}", (error) ->
@@ -124,13 +115,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
         fields.push dbname + '=$' + values.length
     [ values, fields.join(','), places.join(',') ]
 
-  ##
-  # Creates a record
-  # @param {String} model
-  # @param {Object} data
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {RecordID} callback.id
+  ## @override AdapterBase::create
   create: (model, data, callback) ->
     [ values, fields, places ] = @_buildUpdateSet model, data, values, true
     sql = "INSERT INTO #{tableize model} (#{fields}) VALUES (#{places}) RETURNING id"
@@ -142,12 +127,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       else
         callback new Error 'unexpected rows'
 
-  ##
-  # Updates a record
-  # @param {String} model
-  # @param {Object} data
-  # @param {Function} callback
-  # @param {Error} callback.error
+  ## @override AdapterBase::update
   update: (model, data, callback) ->
     [ values, fields ] = @_buildUpdateSet model, data, values
     values.push data.id
@@ -156,15 +136,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       return _processSaveError model, error, callback if error
       callback null
 
-  ##
-  # Finds a record by id
-  # @param {String} model
-  # @param {RecordID} id
-  # @param {Object} options
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Model} callback.record
-  # @throws Error('not found')
+  ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
     if options.select
       selects = 'id,' + options.select.join ','
@@ -181,14 +153,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       else
         callback new Error 'not found'
 
-  ##
-  # Finds records
-  # @param {String} model
-  # @param {Object} conditions
-  # @param {Object} options
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Array<Model>} callback.records
+  ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->
     if options.select
       selects = 'id,' + options.select.join ','
@@ -206,13 +171,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       callback null, rows.map (record) => @_convertToModelInstance model, record
 
-  ##
-  # Counts records
-  # @param {String} model
-  # @param {Object} conditions
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Number} callback.count
+  ## @override AdapterBase::count
   count: (model, conditions, callback) ->
     params = []
     sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
@@ -225,13 +184,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       return callback error 'unknown error' if rows?.length isnt 1
       callback null, Number(rows[0].count)
 
-  ##
-  # Deletes records from the database
-  # @param {String} model
-  # @param {Object} conditions
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Number} callback.count
+  ## @override AdapterBase::delete
   delete: (model, conditions, callback) ->
     params = []
     sql = "DELETE FROM #{tableize model}"

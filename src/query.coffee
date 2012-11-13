@@ -69,6 +69,8 @@ class Query
   # @param {Error} callback.error
   # @param {Model|Array<Model>} callback.records
   # @return {Query} this
+  # @see AdapterBase::findById
+  # @see AdapterBase::find
   exec: (callback) ->
     if @_id and not Array.isArray(@_id) and @_conditions.length is 0
       @_adapter.findById @_name, @_id, @_options, (error, record) ->
@@ -96,6 +98,7 @@ class Query
   # @param {Error} callback.error
   # @param {Number} callback.count
   # @return {Query} this
+  # @see AdapterBase::count
   count: (callback) ->
     if @_id
       @_conditions.push id: @_id
@@ -108,6 +111,7 @@ class Query
   # @param {Error} callback.error
   # @param {Number} callback.count
   # @return {Query} this
+  # @see AdapterBase::delete
   delete: (callback) ->
     if @_id
       @_conditions.push id: @_id

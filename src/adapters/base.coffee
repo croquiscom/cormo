@@ -11,6 +11,24 @@ class AdapterBase
     error.cause = cause
     return error
 
+  ##
+  # Applies schemas.
+  # Creates tables, alter tables, create indexes, or etc. depending adapters
+  # @abstract
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @see Connection::applySchemas
+  applySchemas: (callback) -> callback new Error 'not implemented'
+
+  ##
+  # Drops a model from the database
+  # @abstract
+  # @param {String} model
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @see Model.drop
+  drop: (model, callback) -> callback new Error 'not implemented'
+
   idToDB: (value) ->
     value
 
@@ -26,5 +44,71 @@ class AdapterBase
   _convertToModelInstance: (model, data) ->
     modelClass = @_connection.models[model]
     new modelClass data, @_getModelID data
+
+  ##
+  # Creates a record
+  # @abstract
+  # @param {String} model
+  # @param {Object} data
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {RecordID} callback.id
+  create: (model, data, callback) -> callback new Error 'not implemented'
+
+  ##
+  # Updates a record
+  # @abstract
+  # @param {String} model
+  # @param {Object} data
+  # @param {Function} callback
+  # @param {Error} callback.error
+  update: (model, data, callback) -> callback new Error 'not implemented'
+
+  ##
+  # Finds a record by id
+  # @abstract
+  # @param {String} model
+  # @param {RecordID} id
+  # @param {Object} options
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Model} callback.record
+  # @throws Error('not found')
+  # @see Query::exec
+  findById: (model, id, options, callback) -> callback new Error 'not implemented'
+
+  ##
+  # Finds records
+  # @abstract
+  # @param {String} model
+  # @param {Object} conditions
+  # @param {Object} options
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Array<Model>} callback.records
+  # @see Query::exec
+  find: (model, conditions, options, callback) -> callback new Error 'not implemented'
+
+  ##
+  # Counts records
+  # @abstract
+  # @param {String} model
+  # @param {Object} conditions
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  # @see Query::count
+  count: (model, conditions, callback) -> callback new Error 'not implemented'
+
+  ##
+  # Deletes records from the database
+  # @abstract
+  # @param {String} model
+  # @param {Object} conditions
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  # @see Query::delete
+  delete: (model, conditions, callback) -> callback new Error 'not implemented'
 
 module.exports = AdapterBase

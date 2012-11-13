@@ -114,23 +114,14 @@ class MongoDBAdapter extends AdapterBase
       , (error) ->
         callback error
 
-  ##
-  # Ensures indexes
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @see Connection.applySchemas
+  ## @override AdapterBase::applySchemas
   applySchemas: (callback) ->
     async.forEach Object.keys(@_connection.models), (model, callback) =>
         @_applySchema model, callback
       , (error) ->
         callback error
 
-  ##
-  # Drops a model from the database
-  # @param {String} model
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @see Model.drop
+  ## @override AdapterBase::drop
   drop: (model, callback) ->
     name = tableize model
     delete @_collections[name]
@@ -165,13 +156,7 @@ class MongoDBAdapter extends AdapterBase
         return value.toString()
     return value
 
-  ##
-  # Creates a record
-  # @param {String} model
-  # @param {Object} data
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {RecordID} callback.id
+  ## @override AdapterBase::create
   create: (model, data, callback) ->
     @_collection(model).insert data, safe: true, (error, result) ->
       if error?.code is 11000
@@ -185,12 +170,7 @@ class MongoDBAdapter extends AdapterBase
       else
         callback new Error 'unexpected result'
 
-  ##
-  # Updates a record
-  # @param {String} model
-  # @param {Object} data
-  # @param {Function} callback
-  # @param {Error} callback.error
+  ## @override AdapterBase::update
   update: (model, data, callback) ->
     id = data.id
     delete data.id
@@ -201,15 +181,7 @@ class MongoDBAdapter extends AdapterBase
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null
 
-  ##
-  # Finds a record by id
-  # @param {String} model
-  # @param {RecordID} id
-  # @param {Object} options
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Model} callback.record
-  # @throws Error('not found')
+  ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
     if options.select
       fields = {}
@@ -226,14 +198,7 @@ class MongoDBAdapter extends AdapterBase
       return callback new Error('not found') if not result
       callback null, @_convertToModelInstance model, result
 
-  ##
-  # Finds records
-  # @param {String} model
-  # @param {Object} conditions
-  # @param {Object} options
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Array<Model>} callback.records
+  ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->
     if options.select
       fields = {}
@@ -260,13 +225,7 @@ class MongoDBAdapter extends AdapterBase
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
         callback null, result.map (record) => @_convertToModelInstance model, record
 
-  ##
-  # Counts records
-  # @param {String} model
-  # @param {Object} conditions
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Number} callback.count
+  ## @override AdapterBase::count
   count: (model, conditions, callback) ->
     try
       conditions = _buildWhere @_connection.models[model]._schema, conditions
@@ -277,13 +236,7 @@ class MongoDBAdapter extends AdapterBase
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null, count
 
-  ##
-  # Deletes records from the database
-  # @param {String} model
-  # @param {Object} conditions
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Number} callback.count
+  ## @override AdapterBase::delete
   delete: (model, conditions, callback) ->
     try
       conditions = _buildWhere @_connection.models[model]._schema, conditions
