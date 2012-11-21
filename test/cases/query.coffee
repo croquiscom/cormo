@@ -1,3 +1,8 @@
+_compareUser = (user, expected) ->
+  user.should.have.keys 'id', 'name', 'age'
+  user.name.should.equal expected.name
+  user.age.should.equal expected.age
+
 _createUsers = (User, data, callback) ->
   if typeof data is 'function'
     callback = data
@@ -6,7 +11,7 @@ _createUsers = (User, data, callback) ->
       { name: 'Bill Smith', age: 45 }
       { name: 'Alice Jackson', age: 27 }
       { name: 'Gina Baker', age: 32 }
-      { name: 'Daniel Smith', age: 53 }
+      { name: 'Daniel Smith', age: 8 }
     ]
   data.sort -> 0.5 - Math.random() # random sort
   async.map data, (item, callback) ->
@@ -21,10 +26,8 @@ module.exports = (models) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
-        users[0].should.have.property 'name', 'Alice Jackson'
-        users[0].should.have.property 'age', 27
-        users[1].should.have.property 'name', 'John Doe'
-        users[1].should.have.property 'age', 27
+        _compareUser users[0], name: 'Alice Jackson', age: 27
+        _compareUser users[1], name: 'John Doe', age: 27
         done null
 
   it 'where chain', (done) ->
@@ -33,8 +36,7 @@ module.exports = (models) ->
       models.User.where(age: 27).where(name: 'Alice Jackson').exec (error, users) ->
         return done error if error
         users.should.have.length 1
-        users[0].should.have.property 'name', 'Alice Jackson'
-        users[0].should.have.property 'age', 27
+        _compareUser users[0], name: 'Alice Jackson', age: 27
         done null
 
   it 'id', (done) ->
@@ -44,8 +46,7 @@ module.exports = (models) ->
       models.User.where { id: target.id }, (error, users) ->
         return done error if error
         users.should.have.length 1
-        users[0].should.have.property 'name', target.name
-        users[0].should.have.property 'age', target.age
+        _compareUser users[0], target
         done null
 
   it 'implicit and', (done) ->
@@ -54,8 +55,7 @@ module.exports = (models) ->
       models.User.where age: 27, name: 'Alice Jackson', (error, users) ->
         return done error if error
         users.should.have.length 1
-        users[0].should.have.property 'name', 'Alice Jackson'
-        users[0].should.have.property 'age', 27
+        _compareUser users[0], name: 'Alice Jackson', age: 27
         done null
 
   it '$or', (done) ->
@@ -65,10 +65,8 @@ module.exports = (models) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
-        users[0].should.have.property 'name', 'Gina Baker'
-        users[0].should.have.property 'age', 32
-        users[1].should.have.property 'name', 'John Doe'
-        users[1].should.have.property 'age', 27
+        _compareUser users[0], name: 'Gina Baker', age: 32
+        _compareUser users[1], name: 'John Doe', age: 27
         done null
 
   it 'comparison', (done) ->
@@ -78,10 +76,8 @@ module.exports = (models) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
-        users[0].should.have.property 'name', 'Bill Smith'
-        users[0].should.have.property 'age', 45
-        users[1].should.have.property 'name', 'Gina Baker'
-        users[1].should.have.property 'age', 32
+        _compareUser users[0], name: 'Bill Smith', age: 45
+        _compareUser users[1], name: 'Gina Baker', age: 32
         done null
 
   it 'contains', (done) ->
@@ -91,10 +87,8 @@ module.exports = (models) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
-        users[0].should.have.property 'name', 'Bill Smith'
-        users[0].should.have.property 'age', 45
-        users[1].should.have.property 'name', 'Daniel Smith'
-        users[1].should.have.property 'age', 53
+        _compareUser users[0], name: 'Bill Smith', age: 45
+        _compareUser users[1], name: 'Daniel Smith', age: 8
         done null
 
   it '$in', (done) ->
@@ -104,10 +98,8 @@ module.exports = (models) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
-        users[0].should.have.property 'name', 'Bill Smith'
-        users[0].should.have.property 'age', 45
-        users[1].should.have.property 'name', 'Gina Baker'
-        users[1].should.have.property 'age', 32
+        _compareUser users[0], name: 'Bill Smith', age: 45
+        _compareUser users[1], name: 'Gina Baker', age: 32
         done null
 
   it '$in for id', (done) ->
@@ -118,10 +110,8 @@ module.exports = (models) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
-        users[0].should.have.property 'name', 'Alice Jackson'
-        users[0].should.have.property 'age', 27
-        users[1].should.have.property 'name', 'Daniel Smith'
-        users[1].should.have.property 'age', 53
+        _compareUser users[0], name: 'Alice Jackson', age: 27
+        _compareUser users[1], name: 'Daniel Smith', age: 8
         done null
 
   it 'implicit $in', (done) ->
@@ -131,10 +121,8 @@ module.exports = (models) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
-        users[0].should.have.property 'name', 'Bill Smith'
-        users[0].should.have.property 'age', 45
-        users[1].should.have.property 'name', 'Gina Baker'
-        users[1].should.have.property 'age', 32
+        _compareUser users[0], name: 'Bill Smith', age: 45
+        _compareUser users[1], name: 'Gina Baker', age: 32
         done null
 
   it 'count none', (done) ->
@@ -175,12 +163,9 @@ module.exports = (models) ->
           return done error if error
           users.should.have.length 3
           users.sort (a, b) -> if a.name < b.name then -1 else 1
-          users[0].should.have.property 'name', 'Bill Smith'
-          users[0].should.have.property 'age', 45
-          users[1].should.have.property 'name', 'Daniel Smith'
-          users[1].should.have.property 'age', 53
-          users[2].should.have.property 'name', 'Gina Baker'
-          users[2].should.have.property 'age', 32
+          _compareUser users[0], name: 'Bill Smith', age: 45
+          _compareUser users[1], name: 'Daniel Smith', age: 8
+          _compareUser users[2], name: 'Gina Baker', age: 32
           done null
 
   it 'limit', (done) ->
@@ -200,7 +185,7 @@ module.exports = (models) ->
         (callback) ->
           models.User.where(age: { $lt: 40 }).exec (error, users) ->
             return callback error if error
-            users.should.have.length 3
+            users.should.have.length 4
             callback null
         (callback) ->
           models.User.where(age: { $lt: 40 }).limit(1).exec (error, users) ->
@@ -208,12 +193,13 @@ module.exports = (models) ->
             users.should.have.length 1
             users[0].should.have.property 'name'
             if users[0].name is 'Alice Jackson'
-              users[0].should.have.property 'age', 27
+              _compareUser users[0], name: 'Alice Jackson', age: 27
             else if users[0].name is 'John Doe'
-              users[0].should.have.property 'age', 27
+              _compareUser users[0], name: 'John Doe', age: 27
+            else if users[0].name is 'Gina Baker'
+              _compareUser users[0], name: 'Gina Baker', age: 32
             else
-              users[0].should.have.property 'name', 'Gina Baker'
-              users[0].should.have.property 'age', 32
+              _compareUser users[0], name: 'Daniel Smith', age: 8
             callback null
       ], (error) ->
         done error
