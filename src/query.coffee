@@ -11,7 +11,8 @@ class Query
     @_name = model._name
     @_adapter = model._connection._adapter
     @_conditions = []
-    @_options = {}
+    @_options =
+      orders: []
  
   ##
   # Finds a record by id
@@ -45,7 +46,7 @@ class Query
 
   ##
   # Selects columns for result
-  # @param {Object} columns
+  # @param {String} columns
   # @return {Query} this
   select: (columns) ->
     @_options.select = null
@@ -53,6 +54,22 @@ class Query
     if typeof columns is 'string'
       columns = columns.split(/\s+/).filter (column) -> schema_columns.indexOf(column) >= 0
       @_options.select = columns
+    return @
+
+  ##
+  # Specifies orders of result
+  # @param {String} orders
+  # @return {Query} this
+  order: (orders) ->
+    schema_columns = Object.keys @_model._schema
+    if typeof orders is 'string'
+      orders.split(/\s+/).forEach (order) =>
+        asc = true
+        if order[0] is '-'
+          asc = false
+          order = order[1..]
+        if schema_columns.indexOf(order) >= 0
+          @_options.orders.push if asc then order else '-'+order
     return @
 
   ##

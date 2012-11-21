@@ -108,6 +108,11 @@ User.where(age: 27).exec (error, users) ->
 User.select 'name age', (error, users) ->
   console.log users
 
+# sort result
+# the same as "SELECT * FROM users ORDER BY age ASC, name DESC"
+User.order 'age -name', (error, users) ->
+  console.log users
+
 # two condition
 # the same as "SELECT * FROM users WHERE name='John Doe' AND age=27"
 User.where name: 'John Doe', age: 27, (error, users) ->
@@ -171,7 +176,7 @@ User.where(age: { $lt: 40 }).limit(3).exec (error, users) ->
   console.log users
 ```
 
-See [[#ModelQuery.find]], [[#ModelQuery.where]], [[#ModelQuery.count]], [[#ModelQuery.delete]], [[#Query]] for more details.
+See [[#ModelQuery]], [[#Query]] for more details.
 
 ## Constraints
 

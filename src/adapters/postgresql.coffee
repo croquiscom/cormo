@@ -166,6 +166,13 @@ class PostgreSQLAdapter extends SQLAdapterBase
       sql += ' WHERE ' + @_buildWhere conditions, params
     if options?.limit?
       sql += ' LIMIT ' + options.limit
+    if options?.orders.length > 0
+      orders = options.orders.map (order) ->
+        if order[0] is '-'
+          return order[1..] + ' DESC'
+        else
+          return order + ' ASC'
+      sql += ' ORDER BY ' + orders.join ','
     #console.log sql, params
     @_query sql, params, (error, result) =>
       rows = result?.rows

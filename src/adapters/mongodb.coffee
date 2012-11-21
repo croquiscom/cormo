@@ -215,11 +215,20 @@ class MongoDBAdapter extends AdapterBase
         conditions = { $and : [  conditions, obj ] }
       else
         conditions = obj
+    if options.orders.length > 0
+      orders = {}
+      options.orders.forEach (order) ->
+        if order[0] is '-'
+          orders[order[1..]] = -1
+        else
+          orders[order] = 1
     #console.log JSON.stringify conditions
     options =
       limit: options.limit
     if fields
       options.fields = fields
+    if orders
+      options.sort = orders
     @_collection(model).find conditions, options, (error, cursor) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
       cursor.toArray (error, result) =>

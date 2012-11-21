@@ -182,8 +182,15 @@ class MySQLAdapter extends SQLAdapterBase
     sql = "SELECT #{selects} FROM #{tableize model}"
     if conditions.length > 0
       sql += ' WHERE ' + @_buildWhere conditions, params
-    if order_by
-      sql += ' ORDER BY ' + order_by
+    if options?.orders.length > 0 or order_by
+      orders = options.orders.map (order) ->
+        if order[0] is '-'
+          return order[1..] + ' DESC'
+        else
+          return order + ' ASC'
+      if order_by
+        orders.push order_by
+      sql += ' ORDER BY ' + orders.join ','
     if options?.limit?
       sql += ' LIMIT ' + options.limit
     #console.log sql, params

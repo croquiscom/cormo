@@ -225,3 +225,74 @@ module.exports = (models) ->
             callback null
       ], (error) ->
         done error
+
+  it 'order (string)', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.order 'name', (error, users) ->
+        return done error if error
+        users.should.have.length 5
+        _compareUser users[0], name: 'Alice Jackson', age: 27
+        _compareUser users[1], name: 'Bill Smith', age: 45
+        _compareUser users[2], name: 'Daniel Smith', age: 8
+        _compareUser users[3], name: 'Gina Baker', age: 32
+        _compareUser users[4], name: 'John Doe', age: 27
+        models.User.order '-name', (error, users) ->
+          return done error if error
+          users.should.have.length 5
+          _compareUser users[0], name: 'John Doe', age: 27
+          _compareUser users[1], name: 'Gina Baker', age: 32
+          _compareUser users[2], name: 'Daniel Smith', age: 8
+          _compareUser users[3], name: 'Bill Smith', age: 45
+          _compareUser users[4], name: 'Alice Jackson', age: 27
+          done null
+
+  it 'order (number)', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.order 'age', (error, users) ->
+        return done error if error
+        users.should.have.length 5
+        _compareUser users[0], name: 'Daniel Smith', age: 8
+        if users[1].name is 'Alice Jackson'
+          _compareUser users[1], name: 'Alice Jackson', age: 27
+          _compareUser users[2], name: 'John Doe', age: 27
+        else
+          _compareUser users[1], name: 'John Doe', age: 27
+          _compareUser users[2], name: 'Alice Jackson', age: 27
+        _compareUser users[3], name: 'Gina Baker', age: 32
+        _compareUser users[4], name: 'Bill Smith', age: 45
+        models.User.order '-age', (error, users) ->
+          return done error if error
+          users.should.have.length 5
+          _compareUser users[0], name: 'Bill Smith', age: 45
+          _compareUser users[1], name: 'Gina Baker', age: 32
+          if users[2].name is 'Alice Jackson'
+            _compareUser users[2], name: 'Alice Jackson', age: 27
+            _compareUser users[3], name: 'John Doe', age: 27
+          else
+            _compareUser users[2], name: 'John Doe', age: 27
+            _compareUser users[3], name: 'Alice Jackson', age: 27
+          _compareUser users[4], name: 'Daniel Smith', age: 8
+          done null
+
+  it 'order (complex)', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.order 'age name', (error, users) ->
+        return done error if error
+        users.should.have.length 5
+        _compareUser users[0], name: 'Daniel Smith', age: 8
+        _compareUser users[1], name: 'Alice Jackson', age: 27
+        _compareUser users[2], name: 'John Doe', age: 27
+        _compareUser users[3], name: 'Gina Baker', age: 32
+        _compareUser users[4], name: 'Bill Smith', age: 45
+        models.User.order 'age -name', (error, users) ->
+          return done error if error
+          users.should.have.length 5
+          _compareUser users[0], name: 'Daniel Smith', age: 8
+          _compareUser users[1], name: 'John Doe', age: 27
+          _compareUser users[2], name: 'Alice Jackson', age: 27
+          _compareUser users[3], name: 'Gina Baker', age: 32
+          _compareUser users[4], name: 'Bill Smith', age: 45
+          done null

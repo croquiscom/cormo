@@ -42,7 +42,7 @@ class ModelQuery
 
   ##
   # Selects columns for result
-  # @param {Object} [columns]
+  # @param {String} [columns]
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Array<Model>} callback.records
@@ -55,6 +55,25 @@ class ModelQuery
       columns = null
     query = new Query @
     query.select columns
+    if typeof callback is 'function'
+      query.exec callback
+    return query
+
+  ##
+  # Specifies orders of result
+  # @param {String} [orders]
+  # @param {Function} [callback]
+  # @param {Error} callback.error
+  # @param {Array<Model>} callback.records
+  # @return {Query}
+  @order: (orders, callback) ->
+    return if @_waitingForConnection @, @where, arguments
+
+    if typeof orders is 'function'
+      callback = orders
+      orders = null
+    query = new Query @
+    query.order orders
     if typeof callback is 'function'
       query.exec callback
     return query
