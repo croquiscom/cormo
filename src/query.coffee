@@ -1,5 +1,7 @@
 _ = require 'underscore'
 
+_bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
+
 ##
 # Collects conditions to query
 class Query
@@ -90,7 +92,7 @@ class Query
   # @see AdapterBase::find
   exec: (callback) ->
     if @_id and not Array.isArray(@_id) and @_conditions.length is 0
-      @_adapter.findById @_name, @_id, @_options, (error, record) ->
+      @_adapter.findById @_name, @_id, @_options, _bindDomain (error, record) ->
         return callback new Error('not found') if error or not record
         callback null, record
       return
@@ -103,7 +105,7 @@ class Query
       else
         @_conditions.push id: @_id
         expected_count = 1
-    @_adapter.find @_name, @_conditions, @_options, (error, records) ->
+    @_adapter.find @_name, @_conditions, @_options, _bindDomain (error, records) ->
       return callback error if error
       if expected_count?
         return callback new Error('not found') if records.length isnt expected_count
@@ -120,7 +122,7 @@ class Query
     if @_id
       @_conditions.push id: @_id
       delete @_id
-    @_adapter.count @_name, @_conditions, callback
+    @_adapter.count @_name, @_conditions, _bindDomain callback
 
   ##
   # Executes the query as a delete operation
@@ -133,6 +135,6 @@ class Query
     if @_id
       @_conditions.push id: @_id
       delete @_id
-    @_adapter.delete @_name, @_conditions, callback
+    @_adapter.delete @_name, @_conditions, _bindDomain callback
 
 module.exports = Query

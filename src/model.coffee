@@ -1,6 +1,8 @@
 inflector = require './inflector'
 async = require 'async'
 _ = require 'underscore'
+
+_bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
  
 _getRef = (obj, parts) ->
   return [obj, parts[0]] if parts.length is 1
@@ -264,7 +266,7 @@ class Model
       return callback new Error 'empty data', @
 
     ctor = @constructor
-    ctor._adapter.create ctor._name, data, (error, id) =>
+    ctor._adapter.create ctor._name, data, _bindDomain (error, id) =>
       return callback error, @ if error
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
       # save sub objects of each association
@@ -288,7 +290,7 @@ class Model
       return callback e, @
 
     ctor = @constructor
-    ctor._adapter.update ctor._name, data, (error) =>
+    ctor._adapter.update ctor._name, data, _bindDomain (error) =>
       return callback error, @ if error
       callback null, @
 
@@ -387,7 +389,7 @@ class Model
   @drop: (callback) ->
     return if @_waitingForConnection @, @drop, arguments
 
-    @_adapter.drop @_name, callback
+    @_adapter.drop @_name, _bindDomain callback
 
   ##
   # Deletes all records from the database

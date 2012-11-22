@@ -2,6 +2,8 @@ EventEmitter = require('events').EventEmitter
 Model = require './model'
 association = require './association'
 
+_bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
+
 ##
 # Manages connection to a database
 class Connection extends EventEmitter
@@ -19,7 +21,7 @@ class Connection extends EventEmitter
     @_pending_associations = []
 
     @_adapter = require(__dirname + '/adapters/' + adapter_name) @
-    @_adapter.connect settings, (error) =>
+    @_adapter.connect settings, _bindDomain (error) =>
       if error
         @_adapter = null
         @emit 'error', error
@@ -59,7 +61,7 @@ class Connection extends EventEmitter
     if @_adapter.applySchemas? and not @_applying_schemas
       @_applying_schemas = true
       callAdapter = =>
-        @_adapter.applySchemas (error) =>
+        @_adapter.applySchemas _bindDomain (error) =>
           @_applying_schemas = false
           @emit 'schemas_applied'
           callback? error
