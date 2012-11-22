@@ -23,8 +23,10 @@ class Query
   find: (id) ->
     if Array.isArray id
       @_id = _.uniq id
+      @_find_single_id = false
     else
       @_id = id
+      @_find_single_id = true
     return @
 
   ##
@@ -91,7 +93,7 @@ class Query
   # @see AdapterBase::findById
   # @see AdapterBase::find
   exec: (callback) ->
-    if @_id and not Array.isArray(@_id) and @_conditions.length is 0
+    if @_find_single_id and @_conditions.length is 0
       @_adapter.findById @_name, @_id, @_options, _bindDomain (error, record) ->
         return callback new Error('not found') if error or not record
         callback null, record
