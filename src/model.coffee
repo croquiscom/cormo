@@ -30,6 +30,7 @@ _setValue = (obj, parts, value) ->
 # Base class for models
 # @uses ModelQuery
 # @uses ModelCallback
+# @uses ModelTimestamp
 class Model
   ##
   # Returns a new model class extending Model
@@ -402,12 +403,13 @@ class Model
     @delete callback
     return
 
-ModelQuery = require './model/query'
-_.extend Model, ModelQuery
-_.extend Model::, ModelQuery::
-ModelCallback = require './model/callback'
-_.extend Model, ModelCallback
-_.extend Model::, ModelCallback::
+_use = (file) ->
+  MixClass = require "./model/#{file}"
+  _.extend Model, MixClass
+  _.extend Model::, MixClass::
+_use 'query'
+_use 'callback'
+_use 'timestamp'
 
 for type, value of require './types'
   Model[type] = value

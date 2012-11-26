@@ -340,3 +340,11 @@ Place.where().near(location: [-5, 45]).limit(4).exec (error, places) ->
 ```
 
 See [[#Query::near]] for more details.
+
+## Other features
+
+Use [[#ModelTimestamp.timestamps]] to add created_at and updated_at to the table.
+
+```coffeescript
+User.timestamps()
+```
