@@ -266,7 +266,7 @@ class Model
       return callback new Error 'empty data', @
 
     ctor = @constructor
-    @_connection.log ctor._name, 'create', data
+    ctor._connection.log ctor._name, 'create', data
     ctor._adapter.create ctor._name, data, _bindDomain (error, id) =>
       return callback error, @ if error
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
@@ -291,7 +291,7 @@ class Model
       return callback e, @
 
     ctor = @constructor
-    @_connection.log ctor._name, 'update', data
+    ctor._connection.log ctor._name, 'update', data
     ctor._adapter.update ctor._name, data, _bindDomain (error) =>
       return callback error, @ if error
       callback null, @
