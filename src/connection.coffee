@@ -70,6 +70,13 @@ class Connection extends EventEmitter
     else
       callback? null
 
+  ##
+  # Logs
+  # @param {String} model
+  # @param {String} type
+  # @param {Object} data
+  log: (model, type, data) ->
+
 for type, value of require './types'
   Connection[type] = value
   Connection::[type] = value

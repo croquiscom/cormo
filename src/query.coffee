@@ -11,6 +11,7 @@ class Query
   constructor: (model) ->
     @_model = model
     @_name = model._name
+    @_connection = model._connection
     @_adapter = model._connection._adapter
     @_conditions = []
     @_options =
@@ -94,6 +95,7 @@ class Query
   # @see AdapterBase::find
   exec: (callback) ->
     if @_find_single_id and @_conditions.length is 0
+      @_connection.log @_name, 'find by id', id: @_id, options: @_options
       @_adapter.findById @_name, @_id, @_options, _bindDomain (error, record) ->
         return callback new Error('not found') if error or not record
         callback null, record
@@ -107,6 +109,7 @@ class Query
       else
         @_conditions.push id: @_id
         expected_count = 1
+    @_connection.log @_name, 'find', conditions: @_conditions, options: @_options
     @_adapter.find @_name, @_conditions, @_options, _bindDomain (error, records) ->
       return callback error if error
       if expected_count?
@@ -124,6 +127,7 @@ class Query
     if @_id
       @_conditions.push id: @_id
       delete @_id
+    @_connection.log @_name, 'count', conditions: @_conditions
     @_adapter.count @_name, @_conditions, _bindDomain callback
 
   ##
@@ -137,6 +141,7 @@ class Query
     if @_id
       @_conditions.push id: @_id
       delete @_id
+    @_connection.log @_name, 'delete', conditions: @_conditions
     @_adapter.delete @_name, @_conditions, _bindDomain callback
 
 module.exports = Query
