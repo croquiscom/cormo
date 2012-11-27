@@ -1,0 +1,9 @@
+node_modules
+lib-cov
+cov.html
+.DS_Store
+test.sqlite3
+doc
+src
+test
+Cakefile
