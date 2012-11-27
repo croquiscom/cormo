@@ -33,6 +33,6 @@ task 'test:cov', 'Gets tests coverage', (options) ->
     cov_html.end()
 
 task 'doc', 'Make documents', ->
-  command = './node_modules/.bin/croquis-jsdoc'
+  command = './node_modules/.bin/crojsdoc'
   args = ['-q','--title','CORMO','--external-types','src/doc_types.json','src']
   spawn command, args, stdio: 'inherit'

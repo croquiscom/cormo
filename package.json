@@ -1,6 +1,23 @@
 {
   "name": "cormo",
-  "version": "0.1.0",
+  "description": "ORM framework for Node.js",
+  "version": "0.2.0",
+  "keywords": [
+    "orm",
+    "mongodb",
+    "mysql",
+    "sqlite3",
+    "postgresql"
+  ],
+  "homepage": "https://croquiscom.github.com/cormo",
+  "bugs": {
+    "url": "https://github.com/croquiscom/cormo/issues"
+  },
+  "author": "Sangmin Yoon <sangmin.yoon@croquis.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/croquiscom/cormo.git"
+  },
   "dependencies": {
     "async": "",
     "inflect": "",
@@ -8,7 +25,7 @@
   },
   "devDependencies": {
     "coffee-script": "",
-    "croquis-jsdoc": "git://github.com/croquiscom/croquis-jsdoc.git#master",
+    "crojsdoc": "",
     "mocha": "",
     "mongodb": ">=1.1.11",
     "mysql": ">=2.0.0-alpha4",
