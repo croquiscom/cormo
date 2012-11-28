@@ -4,6 +4,19 @@ Query = require '../query'
 # Model query
 # @namespace model
 class ModelQuery
+  @_createQueryAndRun: (criteria, data, operation, callback) ->
+    query = new Query @
+    query[criteria] data
+    if typeof callback is 'function'
+      query[operation] callback
+    query
+
+  @_createOptionalQueryAndRun: (criteria, data, operation, callback) ->
+    if typeof data is 'function'
+      @_createQueryAndRun criteria, null, operation, data
+    else
+      @_createQueryAndRun criteria, data, operation, callback
+
   ##
   # Finds a record by id
   # @param {RecordID|Array<RecordID>} id
@@ -13,13 +26,7 @@ class ModelQuery
   # @return {Query}
   # @throws Error('not found')
   @find: (id, callback) ->
-    return if @_waitingForConnection @, @find, arguments
-
-    query = new Query @
-    query.find id
-    if typeof callback is 'function'
-      query.exec callback
-    return query
+    @_createQueryAndRun 'find', id, 'exec', callback
 
   ##
   # Finds records by ids while preserving order.
@@ -30,13 +37,7 @@ class ModelQuery
   # @return {Query}
   # @throws Error('not found')
   @findPreserve: (ids, callback) ->
-    return if @_waitingForConnection @, @find, arguments
-
-    query = new Query @
-    query.findPreserve ids
-    if typeof callback is 'function'
-      query.exec callback
-    return query
+    @_createQueryAndRun 'findPreserve', ids, 'exec', callback
 
   ##
   # Finds records by conditions
@@ -46,16 +47,7 @@ class ModelQuery
   # @param {Array<Model>} callback.records
   # @return {Query}
   @where: (condition, callback) ->
-    return if @_waitingForConnection @, @where, arguments
-
-    if typeof condition is 'function'
-      callback = condition
-      condition = null
-    query = new Query @
-    query.where condition
-    if typeof callback is 'function'
-      query.exec callback
-    return query
+    @_createOptionalQueryAndRun 'where', condition, 'exec', callback
 
   ##
   # Selects columns for result
@@ -65,16 +57,7 @@ class ModelQuery
   # @param {Array<Model>} callback.records
   # @return {Query}
   @select: (columns, callback) ->
-    return if @_waitingForConnection @, @select, arguments
-
-    if typeof columns is 'function'
-      callback = columns
-      columns = null
-    query = new Query @
-    query.select columns
-    if typeof callback is 'function'
-      query.exec callback
-    return query
+    @_createOptionalQueryAndRun 'select', columns, 'exec', callback
 
   ##
   # Specifies orders of result
@@ -84,16 +67,7 @@ class ModelQuery
   # @param {Array<Model>} callback.records
   # @return {Query}
   @order: (orders, callback) ->
-    return if @_waitingForConnection @, @where, arguments
-
-    if typeof orders is 'function'
-      callback = orders
-      orders = null
-    query = new Query @
-    query.order orders
-    if typeof callback is 'function'
-      query.exec callback
-    return query
+    @_createOptionalQueryAndRun 'order', orders, 'exec', callback
 
   ##
   # Counts records by conditions
@@ -103,16 +77,7 @@ class ModelQuery
   # @param {Number} callback.count
   # @return {Query}
   @count: (condition, callback) ->
-    return if @_waitingForConnection @, @count, arguments
-
-    if typeof condition is 'function'
-      callback = condition
-      condition = null
-    query = new Query @
-    query.where condition
-    if typeof callback is 'function'
-      query.count callback
-    return query
+    @_createOptionalQueryAndRun 'where', condition, 'count', callback
 
   ##
   # Deletes records by conditions
@@ -122,15 +87,6 @@ class ModelQuery
   # @param {Number} callback.count
   # @return {Query}
   @delete: (condition, callback) ->
-    return if @_waitingForConnection @, @delete, arguments
-
-    if typeof condition is 'function'
-      callback = condition
-      condition = null
-    query = new Query @
-    query.where condition
-    if typeof callback is 'function'
-      query.delete callback
-    return query
+    @_createOptionalQueryAndRun 'where', condition, 'delete', callback
 
 module.exports = ModelQuery
