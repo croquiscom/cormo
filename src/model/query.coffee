@@ -80,6 +80,25 @@ class ModelQuery
     @_createOptionalQueryAndRun 'where', condition, 'count', callback
 
   ##
+  # Updates some fields of records that match conditions
+  # @param {Object} updates
+  # @param {Object} [condition]
+  # @param {Function} [callback]
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  # @return {Query}
+  @update: (updates, condition, callback) ->
+    if typeof condition is 'function'
+      callback = condition
+      condition = null
+
+    query = new Query @
+    query.where condition
+    if typeof callback is 'function'
+      query.update updates, callback
+    query
+
+  ##
   # Deletes records by conditions
   # @param {Object} [condition]
   # @param {Function} [callback]

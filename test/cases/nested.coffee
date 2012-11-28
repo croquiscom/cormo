@@ -109,3 +109,45 @@ module.exports = (models) ->
         users[1].name.last.should.eql 'Smith'
         callback null
     ], done
+
+  it 'update', (done) ->
+    User = models.User
+
+    User.column 'name'
+      first: String
+      last: String
+
+    async.waterfall [
+      (callback) -> models.connection.applySchemas callback
+      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
+      (user, callback) ->
+        User.find(user.id).update name: first: 'Bill', (error, count) ->
+          return callback error if error
+          count.should.be.equal 1
+          callback null, user.id
+      (id, callback) -> User.find id, callback
+      (user, callback) ->
+        user.should.have.keys 'id', 'name'
+        user.name.should.have.keys 'first', 'last'
+        user.name.first.should.eql 'Bill'
+        user.name.last.should.eql 'Doe'
+        callback null
+    ], done
+
+  it 'constraint on update', (done) ->
+    User = models.User
+
+    User.column 'name'
+      first: { type: String, required: true }
+      middle: String
+      last: { type: String, required: true }
+
+    async.waterfall [
+      (callback) -> models.connection.applySchemas callback
+      (callback) -> User.create { name: first: 'John', middle: 'F.', last: 'Doe' }, callback
+      (user, callback) ->
+        User.find(user.id).update name: last: null, (error) ->
+          error.should.exist
+          error.should.have.property 'message', "'name.last' is required"
+          callback null
+    ], done

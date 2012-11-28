@@ -23,4 +23,4 @@ module.exports = (models) ->
           # updated_at is changed to the current date
           user.updated_at.should.be.approximately now, 10
           done null
-      , 200
+      , 50

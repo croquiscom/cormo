@@ -8,6 +8,7 @@ SQLAdapterBase = require './sql_base'
 types = require '../types'
 tableize = require('../inflector').tableize
 async = require 'async'
+_ = require 'underscore'
 
 _typeToSQL = (property) ->
   switch property.type
@@ -95,27 +96,39 @@ class SQLite3Adapter extends SQLAdapterBase
       error = SQLite3Adapter.wrapError 'unknown error', error
     callback error
 
-  _buildUpdateSet: (model, data, insert) ->
+  _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
+    dbname = property.dbname
+    if property.type is types.Date
+      values.push data[dbname]?.getTime()
+    else
+      values.push data[dbname]
+    if insert
+      fields.push dbname
+      places.push '?'
+    else
+      fields.push dbname + '=?'
+
+  _buildUpdateSet: (model, data, values, insert) ->
     schema = @_connection.models[model]._schema
-    values = []
     fields = []
     places = []
     for column, property of schema
-      dbname = property.dbname
-      if property.type is types.Date
-        values.push data[dbname]?.getTime()
-      else
-        values.push data[dbname]
-      if insert
-        fields.push dbname
-        places.push '?'
-      else
-        fields.push dbname + '=?'
-    [ values, fields.join(','), places.join(',') ]
+      @_buildUpdateSetOfColumn property, data, values, fields, places, insert
+    [ fields.join(','), places.join(',') ]
+
+  _buildPartialUpdateSet: (model, data, values) ->
+    schema = @_connection.models[model]._schema
+    fields = []
+    places = []
+    for column, value of data
+      property = _.find schema, (item) -> return item.dbname is column
+      @_buildUpdateSetOfColumn property, data, values, fields, places
+    [ fields.join(','), places.join(',') ]
 
   ## @override AdapterBase::create
   create: (model, data, callback) ->
-    [ values, fields, places ] = @_buildUpdateSet model, data, true
+    values = []
+    [ fields, places ] = @_buildUpdateSet model, data, values, true
     sql = "INSERT INTO #{tableize model} (#{fields}) VALUES (#{places})"
     @_query 'run', sql, values, (error) ->
       return _processSaveError error, callback if error
@@ -129,12 +142,24 @@ class SQLite3Adapter extends SQLAdapterBase
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->
-    [ values, fields ] = @_buildUpdateSet model, data
+    values = []
+    [ fields ] = @_buildUpdateSet model, data, values
     values.push data.id
     sql = "UPDATE #{tableize model} SET #{fields} WHERE id=?"
     @_query 'run', sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null
+
+  ## @override AdapterBase::updatePartial
+  updatePartial: (model, data, conditions, options, callback) ->
+    values = []
+    [ fields ] = @_buildPartialUpdateSet model, data, values
+    sql = "UPDATE #{tableize model} SET #{fields}"
+    if conditions.length > 0
+      sql += ' WHERE ' + @_buildWhere conditions, values
+    @_query 'run', sql, values, (error) ->
+      return _processSaveError error, callback if error
+      callback null, @changes
 
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->

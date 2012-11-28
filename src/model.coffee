@@ -190,6 +190,45 @@ class Model
         records.forEach (record) -> record._runCallbacks 'save', 'after'
         callback error, records
 
+  @_validateColumn: (data, column, property) ->
+    [obj, last] = _getRef data, property.parts
+    value = obj[last]
+    if value?
+      switch property.type
+        when Model.Number
+          value = Number value
+          if isNaN value
+            return "'#{column}' is not a number"
+          else
+            obj[last] = value
+        when Model.Boolean
+          if typeof value isnt 'boolean'
+            return "'#{column}' is not a boolean"
+        when Model.Integer
+          value = Number value
+          # value>>0 checkes integer and 32bit
+          if isNaN(value) or (value>>0) isnt value
+            return "'#{column}' is not an integer"
+          else
+            obj[last] = value
+        when Model.GeoPoint
+          if not ( Array.isArray(value) and value.length is 2 )
+            return "'#{column}' is not a geo point"
+          else
+            value[0] = Number value[0]
+            value[1] = Number value[1]
+        when Model.Date
+          value = new Date value
+          if isNaN value.getTime()
+            return "'#{column}' is not a date"
+          else
+            obj[last] = value
+    else
+      if property.required
+        return "'#{column}' is required"
+
+    return
+
   ##
   # Validates data
   # @param {Function} [callback]
@@ -200,43 +239,11 @@ class Model
 
     errors = []
 
-    schema = @constructor._schema
+    ctor = @constructor
+    schema = ctor._schema
     for column, property of schema
-      [obj, last] = _getRef @, property.parts
-      value = obj[last]
-      if value?
-        switch property.type
-          when Model.Number
-            value = Number value
-            if isNaN value
-              errors.push "'#{column}' is not a number"
-            else
-              obj[last] = value
-          when Model.Boolean
-            if typeof value isnt 'boolean'
-              errors.push "'#{column}' is not a boolean"
-          when Model.Integer
-            value = Number value
-            # value>>0 checkes integer and 32bit
-            if isNaN(value) or (value>>0) isnt value
-              errors.push "'#{column}' is not an integer"
-            else
-              obj[last] = value
-          when Model.GeoPoint
-            if not ( Array.isArray(value) and value.length is 2 )
-              errors.push "'#{column}' is not a geo point"
-            else
-              value[0] = Number value[0]
-              value[1] = Number value[1]
-          when Model.Date
-            value = new Date value
-            if isNaN value.getTime()
-              errors.push "'#{column}' is not a date"
-            else
-              obj[last] = value
-      else
-        if property.required
-          errors.push "'#{column}' is required"
+      if error = ctor._validateColumn @, column, property
+        errors.push error
 
     @constructor._validators.forEach (validator) =>
       try
@@ -256,25 +263,28 @@ class Model
       callback? null
       return true
 
+  @_buildSaveDataColumn: (data, model, column, property, allow_null) ->
+    adapter = @_adapter
+    parts = property.parts
+    value = _getValue model, parts
+    if property.type is Model.Object and not adapter.support_object
+      value = JSON.stringify value
+    else
+      value = adapter.valueToDB value, column, property
+    if allow_null or value isnt undefined
+      if adapter.support_nested
+        _setValue data, parts, value
+      else
+        data[property.dbname] = value
+
   _buildSaveData: ->
     data = {}
     ctor = @constructor
     schema = ctor._schema
-    adapter = ctor._adapter
     for column, property of schema
-      parts = property.parts
-      value = _getValue @, parts
-      if property.type is Model.Object and not adapter.support_object
-        value = JSON.stringify value
-      else
-        value = adapter.valueToDB value, column, property
-      if value isnt undefined
-        if adapter.support_nested
-          _setValue data, parts, value
-        else
-          data[property.dbname] = value
+      ctor._buildSaveDataColumn data, @, column, property
     if @id?
-      data.id = adapter.idToDB @id
+      data.id = ctor._adapter.idToDB @id
     return data
 
   _create: (callback) ->
@@ -284,8 +294,6 @@ class Model
       data = @_buildSaveData()
     catch e
       return callback e, @
-    if Object.keys(data).length is 0
-      return callback new Error 'empty data', @
 
     ctor = @constructor
     ctor._connection.log ctor._name, 'create', data
@@ -311,8 +319,6 @@ class Model
     data_array = records.map (record) ->
       try
         data = record._buildSaveData()
-        if Object.keys(data).length is 0
-          error = new Error 'empty data'
       catch e
         error = e
       return data

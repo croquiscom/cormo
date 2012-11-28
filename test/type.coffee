@@ -64,3 +64,4 @@ Object.keys(_dbs).forEach (db) ->
       models.Type.drop done
 
     require('./cases/type')(models)
+    require('./cases/type_update')(models)

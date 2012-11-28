@@ -8,6 +8,7 @@ SQLAdapterBase = require './sql_base'
 types = require '../types'
 tableize = require('../inflector').tableize
 async = require 'async'
+_ = require 'underscore'
 
 _typeToSQL = (property) ->
   switch property.type
@@ -108,33 +109,45 @@ class MySQLAdapter extends SQLAdapterBase
       error = MySQLAdapter.wrapError 'unknown error', error
     callback error
 
-  _buildUpdateSet: (model, data, insert) ->
+  _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
+    dbname = property.dbname
+    if property.type is types.GeoPoint
+      values.push data[dbname][0]
+      values.push data[dbname][1]
+      if insert
+        fields.push dbname
+        places.push 'POINT(?,?)'
+      else
+        fields.push dbname + '=POINT(?,?)'
+    else
+      values.push data[dbname]
+      if insert
+        fields.push dbname
+        places.push '?'
+      else
+        fields.push dbname + '=?'
+
+  _buildUpdateSet: (model, data, values, insert) ->
     schema = @_connection.models[model]._schema
-    values = []
     fields = []
     places = []
     for column, property of schema
-      dbname = property.dbname
-      if property.type is types.GeoPoint
-        values.push data[dbname][0]
-        values.push data[dbname][1]
-        if insert
-          fields.push dbname
-          places.push 'POINT(?,?)'
-        else
-          fields.push dbname + '=POINT(?,?)'
-      else
-        values.push data[dbname]
-        if insert
-          fields.push dbname
-          places.push '?'
-        else
-          fields.push dbname + '=?'
-    [ values, fields.join(','), places.join(',') ]
+      @_buildUpdateSetOfColumn property, data, values, fields, places, insert
+    [ fields.join(','), places.join(',') ]
+
+  _buildPartialUpdateSet: (model, data, values) ->
+    schema = @_connection.models[model]._schema
+    fields = []
+    places = []
+    for column, value of data
+      property = _.find schema, (item) -> return item.dbname is column
+      @_buildUpdateSetOfColumn property, data, values, fields, places
+    [ fields.join(','), places.join(',') ]
 
   ## @override AdapterBase::create
   create: (model, data, callback) ->
-    [ values, fields, places ] = @_buildUpdateSet model, data, true
+    values = []
+    [ fields, places ] = @_buildUpdateSet model, data, values, true
     sql = "INSERT INTO #{tableize model} (#{fields}) VALUES (#{places})"
     @_query sql, values, (error, result) ->
       return _processSaveError error, callback if error
@@ -149,8 +162,7 @@ class MySQLAdapter extends SQLAdapterBase
     fields = undefined
     places = []
     data.forEach (item) =>
-      [ values_sub, fields, places_sub ] = @_buildUpdateSet model, item, true
-      values.push.apply values, values_sub
+      [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
       places.push '(' + places_sub + ')'
     sql = "INSERT INTO #{tableize model} (#{fields}) VALUES #{places.join ','}"
     @_query sql, values, (error, result) ->
@@ -162,12 +174,25 @@ class MySQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->
-    [ values, fields ] = @_buildUpdateSet model, data
+    values = []
+    [ fields ] = @_buildUpdateSet model, data, values
     values.push data.id
     sql = "UPDATE #{tableize model} SET #{fields} WHERE id=?"
     @_query sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null
+
+  ## @override AdapterBase::updatePartial
+  updatePartial: (model, data, conditions, options, callback) ->
+    values = []
+    [ fields ] = @_buildPartialUpdateSet model, data, values
+    sql = "UPDATE #{tableize model} SET #{fields}"
+    if conditions.length > 0
+      sql += ' WHERE ' + @_buildWhere conditions, values
+    @_query sql, values, (error, result) ->
+      return _processSaveError error, callback if error
+      return callback MySQLAdapter.wrapError 'unknown error' if not result?
+      callback null, result.affectedRows
 
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->

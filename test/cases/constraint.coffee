@@ -23,11 +23,20 @@ module.exports = (models) ->
         user.should.have.property 'email', 'bill@foo.org'
         done null
 
-  it 'check uniqueness on update', (done) ->
+  it 'check uniqueness on update by Model::save', (done) ->
     _createUsers models.User, (error, users) ->
       return done error if error
       users[0].email = 'bill@foo.org'
       users[0].save (error) ->
+        should.exist error
+        # 'duplicated email' or 'duplicated'
+        error.message.should.match /^duplicated( email)?$/
+        done null
+
+  it 'check uniqueness on update by Model.update', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.find(users[0].id).update email: 'bill@foo.org', (error) ->
         should.exist error
         # 'duplicated email' or 'duplicated'
         error.message.should.match /^duplicated( email)?$/
@@ -60,4 +69,21 @@ module.exports = (models) ->
       return done error if error
       models.User.create { name: 'test', age: 10, email: 'test2@example.com' }, (error, user) ->
         return done error if error
+        done null
+
+  it 'required on update by Model::save', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      users[0].name = null
+      users[0].save (error) ->
+        should.exist error
+        error.message.should.equal "'name' is required"
+        done null
+
+  it 'required on update by Model.update', (done) ->
+    _createUsers models.User, (error, users) ->
+      return done error if error
+      models.User.find(users[0].id).update name: null, (error) ->
+        should.exist error
+        error.message.should.equal "'name' is required"
         done null

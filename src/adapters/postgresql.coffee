@@ -8,6 +8,7 @@ SQLAdapterBase = require './sql_base'
 types = require '../types'
 tableize = require('../inflector').tableize
 async = require 'async'
+_ = require 'underscore'
 
 _typeToSQL = (property) ->
   switch property.type
@@ -101,18 +102,30 @@ class PostgreSQLAdapter extends SQLAdapterBase
       error = PostgreSQLAdapter.wrapError 'unknown error', error
     callback error
 
+  _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
+    dbname = property.dbname
+    values.push data[dbname]
+    if insert
+      fields.push dbname
+      places.push '$' + values.length
+    else
+      fields.push dbname + '=$' + values.length
+
   _buildUpdateSet: (model, data, values, insert) ->
     schema = @_connection.models[model]._schema
     fields = []
     places = []
     for column, property of schema
-      dbname = property.dbname
-      values.push data[dbname]
-      if insert
-        fields.push dbname
-        places.push '$' + values.length
-      else
-        fields.push dbname + '=$' + values.length
+      @_buildUpdateSetOfColumn property, data, values, fields, places, insert
+    [ fields.join(','), places.join(',') ]
+
+  _buildPartialUpdateSet: (model, data, values) ->
+    schema = @_connection.models[model]._schema
+    fields = []
+    places = []
+    for column, value of data
+      property = _.find schema, (item) -> return item.dbname is column
+      @_buildUpdateSetOfColumn property, data, values, fields, places
     [ fields.join(','), places.join(',') ]
 
   ## @override AdapterBase::create
@@ -154,6 +167,17 @@ class PostgreSQLAdapter extends SQLAdapterBase
     @_query sql, values, (error) ->
       return _processSaveError model, error, callback if error
       callback null
+
+  ## @override AdapterBase::updatePartial
+  updatePartial: (model, data, conditions, options, callback) ->
+    values = []
+    [ fields ] = @_buildPartialUpdateSet model, data, values
+    sql = "UPDATE #{tableize model} SET #{fields}"
+    if conditions.length > 0
+      sql += ' WHERE ' + @_buildWhere conditions, values
+    @_query sql, values, (error, result) ->
+      return _processSaveError model, error, callback if error
+      callback null, result.rowCount
 
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->

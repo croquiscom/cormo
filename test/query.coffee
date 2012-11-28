@@ -58,3 +58,4 @@ Object.keys(_dbs).forEach (db) ->
       models.User.drop done
 
     require('./cases/query')(models)
+    require('./cases/query_update')(models)

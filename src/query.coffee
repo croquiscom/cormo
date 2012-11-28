@@ -149,6 +149,41 @@ class Query
     @_connection.log @_name, 'count', conditions: @_conditions
     @_adapter.count @_name, @_conditions, _bindDomain callback
 
+  _validateAndBuildSaveData: (errors, data, updates, path, object) ->
+    model = @_model
+    schema = model._schema
+    for column of object
+      property = schema[path+column]
+      if property
+        if error = model._validateColumn updates, path+column, property
+          errors.push error
+        model._buildSaveDataColumn data, updates, path+column, property, true
+      else if typeof object[column] is 'object'
+        @_validateAndBuildSaveData errors, data, updates, path + column + '.', object[column]
+
+  ##
+  # Executes the query as a update operation
+  # @param {Object} updates
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Number} callback.count
+  # @return {Query} this
+  # @see AdapterBase::count
+  update: (updates, callback) ->
+    return if @_model._waitingForConnection @, @update, arguments
+
+    errors = []
+    data = {}
+    @_validateAndBuildSaveData errors, data, updates, '', updates
+    if errors.length > 0
+      return callback new Error errors.join ','
+
+    if @_id
+      @_conditions.push id: @_id
+      delete @_id
+    @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
+    @_adapter.updatePartial @_name, data, @_conditions, @_options, _bindDomain callback
+
   ##
   # Executes the query as a delete operation
   # @param {Function} callback

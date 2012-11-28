@@ -84,6 +84,17 @@ class AdapterBase
   update: (model, data, callback) -> callback new Error 'not implemented'
 
   ##
+  # Updates some fields of records that match conditions
+  # @abstract
+  # @param {String} model
+  # @param {Object} data
+  # @param {Object} conditions
+  # @param {Object} options
+  # @param {Function} callback
+  # @param {Error} callback.error
+  updatePartial: (model, data, conditions, options, callback) -> callback new Error 'not implemented'
+
+  ##
   # Finds a record by id
   # @abstract
   # @param {String} model
