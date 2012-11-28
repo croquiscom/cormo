@@ -17,9 +17,7 @@ _createPlaces = (Place, data, callback) ->
       { name: 'Tiananmen Square', location: [116.397667,39.906017] }
     ]
   data.sort -> 0.5 - Math.random() # random sort
-  async.map data, (item, callback) ->
-      Place.create item, callback
-    , callback
+  Place.createBulk data, callback
 
 module.exports = (models) ->
   it 'valid geopoint', (done) ->

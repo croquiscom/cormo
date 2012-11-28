@@ -19,10 +19,10 @@ module.exports = (models) ->
   it 'callbacks for finding a record', (done) ->
     User = models.User
 
-    async.parallel [
-      (callback) -> User.create { name: 'John Doe', age: 27 }, callback
-      (callback) -> User.create { name: 'Bill Smith', age: 45 }, callback
-      (callback) -> User.create { name: 'Alice Jackson', age: 27 }, callback
+    User.createBulk [
+      { name: 'John Doe', age: 27 }
+      { name: 'Bill Smith', age: 45 }
+      { name: 'Alice Jackson', age: 27 }
     ], (error, users) ->
       User.afterFind 'after_find1'
       User::after_find1 = -> logs.push 'after_find1 : ' + @name
@@ -39,10 +39,10 @@ module.exports = (models) ->
   it 'callbacks for finding records', (done) ->
     User = models.User
 
-    async.parallel [
-      (callback) -> User.create { name: 'John Doe', age: 27 }, callback
-      (callback) -> User.create { name: 'Bill Smith', age: 45 }, callback
-      (callback) -> User.create { name: 'Alice Jackson', age: 27 }, callback
+    User.createBulk [
+      { name: 'John Doe', age: 27 }
+      { name: 'Bill Smith', age: 45 }
+      { name: 'Alice Jackson', age: 27 }
     ], (error, users) ->
       User.afterFind 'after_find1'
       User::after_find1 = -> logs.push 'after_find1 : ' + @name

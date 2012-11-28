@@ -170,6 +170,27 @@ class Model
     @build(data).save callback
 
   ##
+  # Creates multiple records and saves them to the database.
+  # @param {Array<Object>} data
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Array<Model>} callback.records created records
+  @createBulk: (data, callback) ->
+    return callback new Error 'data is not an array' if not Array.isArray data
+
+    records = data.map (item) => @build item
+    async.forEach records, (record, callback) ->
+      record.validate callback
+    , (error) =>
+      return callback error if error
+      records.forEach (record) -> record._runCallbacks 'save', 'before'
+      records.forEach (record) -> record._runCallbacks 'create', 'before'
+      @_createBulk records, (error, records) ->
+        records.forEach (record) -> record._runCallbacks 'create', 'after'
+        records.forEach (record) -> record._runCallbacks 'save', 'after'
+        callback error, records
+
+  ##
   # Validates data
   # @param {Function} [callback]
   # @param {Error} callback.error
@@ -282,6 +303,27 @@ class Model
               callback error
         , (error) =>
           callback null, @
+
+  @_createBulk: (records, callback) ->
+    return if @_waitingForConnection @, @_createBulk, arguments
+
+    error = undefined
+    data_array = records.map (record) ->
+      try
+        data = record._buildSaveData()
+        if Object.keys(data).length is 0
+          error = new Error 'empty data'
+      catch e
+        error = e
+      return data
+    return callback error, records if error
+
+    @_connection.log @_name, 'createBulk', data_array
+    @_adapter.createBulk @_name, data_array, _bindDomain (error, ids) ->
+      return callback error, records if error
+      records.forEach (record, i) ->
+        Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: ids[i]
+      callback null, records
 
   _update: (callback) ->
     return if @constructor._waitingForConnection @, @_update, arguments

@@ -103,7 +103,6 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   _buildUpdateSet: (model, data, values, insert) ->
     schema = @_connection.models[model]._schema
-    values = []
     fields = []
     places = []
     for column, property of schema
@@ -114,11 +113,12 @@ class PostgreSQLAdapter extends SQLAdapterBase
         places.push '$' + values.length
       else
         fields.push dbname + '=$' + values.length
-    [ values, fields.join(','), places.join(',') ]
+    [ fields.join(','), places.join(',') ]
 
   ## @override AdapterBase::create
   create: (model, data, callback) ->
-    [ values, fields, places ] = @_buildUpdateSet model, data, values, true
+    values = []
+    [ fields, places ] = @_buildUpdateSet model, data, values, true
     sql = "INSERT INTO #{tableize model} (#{fields}) VALUES (#{places}) RETURNING id"
     @_query sql, values, (error, result) ->
       rows = result?.rows
@@ -128,9 +128,27 @@ class PostgreSQLAdapter extends SQLAdapterBase
       else
         callback new Error 'unexpected rows'
 
+  ## @override AdapterBase::createBulk
+  createBulk: (model, data, callback) ->
+    values = []
+    fields = undefined
+    places = []
+    data.forEach (item) =>
+      [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
+      places.push '(' + places_sub + ')'
+    sql = "INSERT INTO #{tableize model} (#{fields}) VALUES #{places.join ','} RETURNING id"
+    @_query sql, values, (error, result) ->
+      return _processSaveError model, error, callback if error
+      ids = result?.rows.map (row) -> row.id
+      if ids.length is data.length
+        callback null, ids
+      else
+        callback new Error 'unexpected rows'
+
   ## @override AdapterBase::update
   update: (model, data, callback) ->
-    [ values, fields ] = @_buildUpdateSet model, data, values
+    values = []
+    [ fields ] = @_buildUpdateSet model, data, values
     values.push data.id
     sql = "UPDATE #{tableize model} SET #{fields} WHERE id=$#{values.length}"
     @_query sql, values, (error) ->

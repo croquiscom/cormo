@@ -171,6 +171,24 @@ class MongoDBAdapter extends AdapterBase
       else
         callback new Error 'unexpected result'
 
+  ## @override AdapterBase::create
+  createBulk: (model, data, callback) ->
+    @_collection(model).insert data, safe: true, (error, result) ->
+      if error?.code is 11000
+        key = error.err.match /index: [\w-.]+\$(\w+)_1/
+        return callback new Error('duplicated ' + key?[1])
+      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      error = undefined
+      ids = result.map (doc) ->
+        id = doc._id.toString()
+        if id
+          delete data._id
+        else
+          error = new Error 'unexpected result'
+        return id
+      return callback error if error
+      callback null, ids
+
   ## @override AdapterBase::update
   update: (model, data, callback) ->
     id = data.id

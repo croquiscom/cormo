@@ -108,7 +108,7 @@ class MySQLAdapter extends SQLAdapterBase
       error = MySQLAdapter.wrapError 'unknown error', error
     callback error
 
-  _buildUpdateSet: (model, data, values, insert) ->
+  _buildUpdateSet: (model, data, insert) ->
     schema = @_connection.models[model]._schema
     values = []
     fields = []
@@ -134,18 +134,35 @@ class MySQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::create
   create: (model, data, callback) ->
-    [ values, fields, places ] = @_buildUpdateSet model, data, values, true
+    [ values, fields, places ] = @_buildUpdateSet model, data, true
     sql = "INSERT INTO #{tableize model} (#{fields}) VALUES (#{places})"
     @_query sql, values, (error, result) ->
       return _processSaveError error, callback if error
-      if result?.insertId
-        callback null, result.insertId
+      if id = result?.insertId
+        callback null, id
+      else
+        callback new Error 'unexpected result'
+
+  ## @override AdapterBase::createBulk
+  createBulk: (model, data, callback) ->
+    values = []
+    fields = undefined
+    places = []
+    data.forEach (item) =>
+      [ values_sub, fields, places_sub ] = @_buildUpdateSet model, item, true
+      values.push.apply values, values_sub
+      places.push '(' + places_sub + ')'
+    sql = "INSERT INTO #{tableize model} (#{fields}) VALUES #{places.join ','}"
+    @_query sql, values, (error, result) ->
+      return _processSaveError error, callback if error
+      if id = result?.insertId
+        callback null, data.map (item, i) -> id + i
       else
         callback new Error 'unexpected result'
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->
-    [ values, fields ] = @_buildUpdateSet model, data, values
+    [ values, fields ] = @_buildUpdateSet model, data
     values.push data.id
     sql = "UPDATE #{tableize model} SET #{fields} WHERE id=?"
     @_query sql, values, (error) ->

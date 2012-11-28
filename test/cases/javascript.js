@@ -10,9 +10,7 @@ _createUsers = function (User, data, callback) {
     ];
   }
   data.sort(function () { return 0.5 - Math.random(); }); // random sort
-  async.map(data, function (item, callback) {
-      User.create(item, callback);
-    }, callback);
+  User.createBulk(data, callback);
 };
 
 module.exports = function (models) {

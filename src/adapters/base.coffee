@@ -1,3 +1,7 @@
+async = require 'async'
+
+_bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
+
 ##
 # Base class for adapters
 # @namespace adapter
@@ -54,6 +58,21 @@ class AdapterBase
   # @param {Error} callback.error
   # @param {RecordID} callback.id
   create: (model, data, callback) -> callback new Error 'not implemented'
+
+  ##
+  # Creates records
+  # @abstract
+  # @param {String} model
+  # @param {Array<Object>} data
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Array<RecordID>} callback.ids
+  createBulk: (model, data, callback) -> callback new Error 'not implemented'
+
+  _createBulkDefault: (model, data, callback) ->
+    async.map data, (item, callback) =>
+      @create model, item, _bindDomain callback
+    , callback
 
   ##
   # Updates a record

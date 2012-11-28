@@ -95,7 +95,7 @@ class SQLite3Adapter extends SQLAdapterBase
       error = SQLite3Adapter.wrapError 'unknown error', error
     callback error
 
-  _buildUpdateSet: (model, data, values, insert) ->
+  _buildUpdateSet: (model, data, insert) ->
     schema = @_connection.models[model]._schema
     values = []
     fields = []
@@ -115,15 +115,21 @@ class SQLite3Adapter extends SQLAdapterBase
 
   ## @override AdapterBase::create
   create: (model, data, callback) ->
-    [ values, fields, places ] = @_buildUpdateSet model, data, values, true
+    [ values, fields, places ] = @_buildUpdateSet model, data, true
     sql = "INSERT INTO #{tableize model} (#{fields}) VALUES (#{places})"
     @_query 'run', sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null, @lastID
 
+  ## @override AdapterBase::createBulk
+  createBulk: (model, data, callback) ->
+    # bulk insert supported on 3.7.11,
+    # but sqlite3 module 2.1.5 has 3.7.8
+    @_createBulkDefault model, data, callback
+
   ## @override AdapterBase::update
   update: (model, data, callback) ->
-    [ values, fields ] = @_buildUpdateSet model, data, values
+    [ values, fields ] = @_buildUpdateSet model, data
     values.push data.id
     sql = "UPDATE #{tableize model} SET #{fields} WHERE id=?"
     @_query 'run', sql, values, (error) ->

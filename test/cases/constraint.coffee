@@ -7,9 +7,7 @@ _createUsers = (User, data, callback) ->
       { name: 'Alice Jackson', age: 27, email: 'ceo@wonderful.com', facebook_id: '3' }
       { name: 'Gina Baker', age: 32, email: 'gina@example.com', facebook_id: '4' }
     ]
-  async.map data, (item, callback) ->
-      User.create item, callback
-    , callback
+  User.createBulk data, callback
 
 module.exports = (models) ->
   it 'unique', (done) ->

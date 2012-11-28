@@ -33,13 +33,15 @@ module.exports = (models) ->
     user = new models.User name: 'John Doe', age: 27
     user.save (error) ->
       return done error if error
-      user.should.have.property 'id'
+      user.should.have.keys 'id', 'name', 'age'
       done null
 
   it 'create method', (done) ->
     models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
-      user.should.have.property 'id'
+      user.should.be.an.instanceOf models.User
+      user.should.have.keys 'id', 'name', 'age'
+      should.exist user.id
       done null
 
   it 'find a record', (done) ->
@@ -206,3 +208,24 @@ module.exports = (models) ->
       ], (error) ->
         return done error if error
         done null
+
+  it 'createBulk', (done) ->
+    data = [
+      { name: 'John Doe', age: 27 }
+      { name: 'Bill Smith', age: 45 }
+      { name: 'Alice Jackson', age: 27 }
+    ]
+    models.User.createBulk data, (error, users) ->
+      return done error if error
+      should.exist users
+      users.should.be.an.instanceOf Array
+      users.should.have.length 3
+      async.forEach users, (user, callback) ->
+        user.should.be.an.instanceOf models.User
+        user.should.have.keys 'id', 'name', 'age'
+        should.exist user.id
+        models.User.find user.id, (error, record) ->
+          return callback error if error
+          user.should.eql record
+          callback error
+      , done

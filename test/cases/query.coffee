@@ -14,9 +14,7 @@ _createUsers = (User, data, callback) ->
       { name: 'Daniel Smith', age: 8 }
     ]
   data.sort -> 0.5 - Math.random() # random sort
-  async.map data, (item, callback) ->
-      User.create item, callback
-    , callback
+  User.createBulk data, callback
 
 module.exports = (models) ->
   it 'simple where', (done) ->
