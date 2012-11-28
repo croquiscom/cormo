@@ -29,6 +29,16 @@ class Query
       @_id = id
       @_find_single_id = true
     return @
+ 
+  ##
+  # Finds records by ids while preserving order.
+  # @param {Array<RecordID>} ids
+  # @return {Query} this
+  findPreserve: (ids) ->
+    @_id = _.uniq ids
+    @_find_single_id = false
+    @_preserve_order_ids = ids
+    return @
 
   ##
   # Finds records near target
@@ -110,11 +120,16 @@ class Query
         @_conditions.push id: @_id
         expected_count = 1
     @_connection.log @_name, 'find', conditions: @_conditions, options: @_options
-    @_adapter.find @_name, @_conditions, @_options, _bindDomain (error, records) ->
+    @_adapter.find @_name, @_conditions, @_options, _bindDomain (error, records) =>
       return callback error if error
       if expected_count?
         return callback new Error('not found') if records.length isnt expected_count
-      callback null, records
+      if @_preserve_order_ids
+        callback null, @_preserve_order_ids.map (id) ->
+          for record in records
+            return record if record.id is id
+      else
+        callback null, records
 
   ##
   # Executes the query as a count operation

@@ -209,6 +209,27 @@ module.exports = (models) ->
         return done error if error
         done null
 
+  it 'find while preserving order', (done) ->
+    async.parallel [
+      (callback) -> models.User.create { name: 'John Doe', age: 27 }, callback
+      (callback) -> models.User.create { name: 'Bill Smith', age: 45 }, callback
+      (callback) -> models.User.create { name: 'Alice Jackson', age: 27 }, callback
+    ], (error, users) ->
+      return done error if error
+      async.waterfall [
+        (callback) -> models.User.findPreserve [users[2].id, users[0].id, users[0].id, users[0].id, users[2].id], callback
+        (records, callback) ->
+          records.should.have.length 5
+          records[0].should.eql users[2]
+          records[1].should.eql users[0]
+          records[2].should.eql users[0]
+          records[3].should.eql users[0]
+          records[4].should.eql users[2]
+          callback null
+      ], (error) ->
+        return done error if error
+        done null
+
   it 'createBulk', (done) ->
     data = [
       { name: 'John Doe', age: 27 }

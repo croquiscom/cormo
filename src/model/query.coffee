@@ -22,6 +22,23 @@ class ModelQuery
     return query
 
   ##
+  # Finds records by ids while preserving order.
+  # @param {Array<RecordID>} ids
+  # @param {Function} [callback]
+  # @param {Error} callback.error
+  # @param {Array<Model>} callback.records
+  # @return {Query}
+  # @throws Error('not found')
+  @findPreserve: (ids, callback) ->
+    return if @_waitingForConnection @, @find, arguments
+
+    query = new Query @
+    query.findPreserve ids
+    if typeof callback is 'function'
+      query.exec callback
+    return query
+
+  ##
   # Finds records by conditions
   # @param {Object} [condition]
   # @param {Function} [callback]
