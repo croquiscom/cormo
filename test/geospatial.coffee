@@ -34,7 +34,7 @@ Object.keys(_dbs).forEach (db) ->
           # using Connection method
           Place = connection.model 'Place',
             name: String
-            location: Connection.GeoPoint
+            location: cormo.types.GeoPoint
 
         models.Place = Place
 
@@ -80,6 +80,6 @@ Object.keys(_dbs_not).forEach (db) ->
       ( ->
         Place = connection.model 'Place',
           name: String
-          location: Connection.GeoPoint
+          location: cormo.types.GeoPoint
       ).should.throw 'this adapter does not support GeoPoint'
       done null

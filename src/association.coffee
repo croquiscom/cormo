@@ -1,6 +1,7 @@
 ##
 # Makes association between two models
 # @module association
+# @namespace cormo
 
 inflector = require './inflector'
 types = require './types'

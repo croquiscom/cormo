@@ -42,7 +42,7 @@ Object.keys(_dbs).forEach (db) ->
           # using Connection method
           Type = connection.model 'Type',
             number: Number
-            int_c: Connection.Integer
+            int_c: cormo.types.Integer
             date: Date
             boolean: Boolean
             object: Object

@@ -1,6 +1,7 @@
 ##
 # Inflectors
 # @module inflector
+# @namespace cormo
 
 inflect = require 'inflect'
 

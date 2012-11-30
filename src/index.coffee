@@ -12,6 +12,8 @@ exports.Connection = require './connection'
 # @memberOf cormo
 exports.Model = require './model'
 
-types = require './types'
-for type of types
-  exports[type] = types[type]
+##
+# Exports [[#types]] module
+# @memberOf cormo
+
+exports.types = require './types'

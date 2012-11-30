@@ -51,8 +51,8 @@ connection.applySchemas (error) ->
   console.log error
 ```
 
-You can use any of cormo.String, Connection.String, connection.String, or 'string'
-(also native JavaScript Function - String - if exists) to specify a type.
+You can use any of cormo.types.String, 'string', or String
+(native JavaScript Function, if exists) to specify a type.
 
 Currently supported types:
 
@@ -341,7 +341,7 @@ Currently, we supports only near query of 2D location in MongoDB and MySQL.
 ```coffeescript
 Place = connection.model 'Place',
   name: String
-  location: Connection.GeoPoint
+  location: cormo.types.GeoPoint
 
 connection.applySchemas()
 

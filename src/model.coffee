@@ -1,6 +1,7 @@
 inflector = require './inflector'
 async = require 'async'
 _ = require 'underscore'
+types = require './types'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
  
@@ -80,20 +81,20 @@ class Model
     # convert javascript built-in class
     type = property.type
     switch type
-      when String then type = Model.String
-      when Number then type = Model.Number
-      when Boolean then type = Model.Boolean
-      when Date then type = Model.Date
-      when Object then type = Model.Object
+      when String then type = types.String
+      when Number then type = types.Number
+      when Boolean then type = types.Boolean
+      when Date then type = types.Date
+      when Object then type = types.Object
     if typeof type isnt 'string'
       throw new Error 'unknown type : ' + type
     type = type.toLowerCase()
 
     # check supports of GeoPoint
-    if type is Model.GeoPoint and not @_adapter.support_geopoint
+    if type is types.GeoPoint and not @_adapter.support_geopoint
       throw new Error 'this adapter does not support GeoPoint'
 
-    if type is Model.RecordID
+    if type is types.RecordID
       target_connection = property.connection or @_connection
       if @_connection is target_connection and target_connection._adapter.key_type_internal
         type = target_connection._adapter.key_type_internal
@@ -128,7 +129,7 @@ class Model
         else
           value = data[property.dbname]
         if value?
-          if property.type is Model.Object and not adapter.support_object
+          if property.type is types.Object and not adapter.support_object
             value = JSON.parse value
           else
             value = adapter.valueToModel value, column, property
@@ -195,29 +196,29 @@ class Model
     value = obj[last]
     if value?
       switch property.type
-        when Model.Number
+        when types.Number
           value = Number value
           if isNaN value
             return "'#{column}' is not a number"
           else
             obj[last] = value
-        when Model.Boolean
+        when types.Boolean
           if typeof value isnt 'boolean'
             return "'#{column}' is not a boolean"
-        when Model.Integer
+        when types.Integer
           value = Number value
           # value>>0 checkes integer and 32bit
           if isNaN(value) or (value>>0) isnt value
             return "'#{column}' is not an integer"
           else
             obj[last] = value
-        when Model.GeoPoint
+        when types.GeoPoint
           if not ( Array.isArray(value) and value.length is 2 )
             return "'#{column}' is not a geo point"
           else
             value[0] = Number value[0]
             value[1] = Number value[1]
-        when Model.Date
+        when types.Date
           value = new Date value
           if isNaN value.getTime()
             return "'#{column}' is not a date"
@@ -267,7 +268,7 @@ class Model
     adapter = @_adapter
     parts = property.parts
     value = _getValue model, parts
-    if property.type is Model.Object and not adapter.support_object
+    if property.type is types.Object and not adapter.support_object
       value = JSON.stringify value
     else
       value = adapter.valueToDB value, column, property
@@ -458,9 +459,5 @@ _use = (file) ->
 _use 'query'
 _use 'callback'
 _use 'timestamp'
-
-for type, value of require './types'
-  Model[type] = value
-  Model::[type] = value
 
 module.exports = Model
