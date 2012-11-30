@@ -85,7 +85,7 @@ user3.save (error) ->
   console.log error
 
 # create is the same as build and save
-User.create { name: 'John Doe', age: 27 }, (error, user4) ->
+User.create { name: 'John Doe', age: 27 }, (error, user) ->
   console.log error
 ```
 
@@ -131,6 +131,11 @@ User.find 1, (error, user) ->
 User.find [1,2,3], (error, users) ->
   console.log users
 
+# find multiple ids with same order
+User.findPreserve [2,1,2,3], (error, users) ->
+  # users[0].id is 2 and users[1].id is 1 and users[2].id is 2 and users[3].id is 3
+  console.log users
+
 # get count of all records
 # the same as "SELECT COUNT(*) FROM users"
 User.count (error, count) ->
@@ -139,6 +144,15 @@ User.count (error, count) ->
 # get count of matched records
 # the same as "SELECT COUNT(*) FROM users WHERE age=27"
 User.count age: 27, (error, count) ->
+  console.log count
+
+# update records that match conditions
+# the same as "UPDATE users SET age=10 WHERE age=27"
+User.update { age: 10 }, age: 27, (error, count) ->
+  console.log count
+
+# using query chain
+User.where(age: 27).update age:10, (error, count) ->
   console.log count
 
 # delete records that match conditions
@@ -347,4 +361,11 @@ Use [[#ModelTimestamp.timestamps]] to add created_at and updated_at to the table
 
 ```coffeescript
 User.timestamps()
+```
+
+Use [[#Model.createBulk]] to create many records at once.
+
+```coffeescript
+User.createBulk [ { name: 'John Doe', age: 27 }, { name: 'Bill Smith', age: 45 } ], (error, users) ->
+  console.log users
 ```
