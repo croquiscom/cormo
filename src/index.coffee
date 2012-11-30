@@ -5,7 +5,7 @@
 ##
 # Exports [[#Connection]] class
 # @memberOf cormo
-exports.Connection = exports.DBConnection = require './connection'
+exports.Connection = require './connection'
 
 ##
 # Exports [[#Model]] class
