@@ -142,8 +142,8 @@ module.exports = (models) ->
   it 'delete some fields', (done) ->
     models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
-      delete user.name
-      delete user.age
+      user.name = null
+      user.age = null
       user.save (error, record) ->
         return done error if error
         user.should.be.equal record
@@ -250,3 +250,50 @@ module.exports = (models) ->
           user.should.eql record
           callback error
       , done
+
+  it 'dirty', (done) ->
+    return done null if not models.User.dirty_tracking
+    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      return done error if error
+
+      user.isDirty().should.be.equal false
+      user.getChanged().should.be.eql []
+      should.not.exist user.getPrevious('name')
+
+      user.name = 'Bill Smith'
+      user.isDirty().should.be.equal true
+      user.getChanged().should.be.eql ['name']
+      user.getPrevious('name').should.be.equal 'John Doe'
+
+      user.name = 'Alice Jackson'
+      user.isDirty().should.be.equal true
+      user.getChanged().should.be.eql ['name']
+      user.getPrevious('name').should.be.equal 'John Doe'
+
+      user.age = 10
+      user.isDirty().should.be.equal true
+      user.getChanged().sort().should.be.eql ['age','name']
+      user.getPrevious('name').should.be.equal 'John Doe'
+      user.getPrevious('age').should.be.equal 27
+
+      user.reset()
+      user.name.should.be.equal 'John Doe'
+      user.age.should.be.equal 27
+      user.isDirty().should.be.equal false
+      user.getChanged().should.be.eql []
+      should.not.exist user.getPrevious('name')
+
+      done null
+
+  it 'dirty after save', (done) ->
+    return done null if not models.User.dirty_tracking
+    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      return done error if error
+      user.name = 'Bill Smith'
+      user.isDirty().should.be.equal true
+      user.getChanged().should.be.eql ['name']
+      user.save (error) ->
+        return done error if error
+        user.isDirty().should.be.equal false
+        user.getChanged().should.be.eql []
+        done null

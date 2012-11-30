@@ -1,4 +1,5 @@
 async = require 'async'
+types = require '../types'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
@@ -37,13 +38,21 @@ class AdapterBase
     value
 
   valueToDB: (value, column, property) ->
-    if value? then value else null
+    if property.type is types.Object
+      JSON.stringify value
+    else if value?
+      value
+    else
+      null
 
   _getModelID: (data) ->
     data.id
 
   valueToModel: (value, column, property) ->
-    value
+    if property.type is types.Object
+      JSON.parse value
+    else
+      value
 
   _convertToModelInstance: (model, data) ->
     modelClass = @_connection.models[model]

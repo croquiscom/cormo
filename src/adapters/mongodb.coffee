@@ -83,7 +83,6 @@ class MongoDBAdapter extends AdapterBase
   key_type: types.String
   key_type_internal: 'objectid'
   support_geopoint: true
-  support_object: true
   support_nested: true
 
   ##

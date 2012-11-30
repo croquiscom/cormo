@@ -80,6 +80,8 @@ class SQLite3Adapter extends SQLAdapterBase
     Number data.id
 
   valueToModel: (value, column, property) ->
+    if property.type is types.Object
+      return JSON.parse value
     if value?
       if property.type is types.Date
         return new Date value

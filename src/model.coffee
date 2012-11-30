@@ -33,6 +33,8 @@ _setValue = (obj, parts, value) ->
 # @uses ModelCallback
 # @uses ModelTimestamp
 class Model
+  @dirty_tracking: false
+
   ##
   # Returns a new model class extending Model
   # @param {Connection} connection
@@ -120,6 +122,34 @@ class Model
     schema = ctor._schema
     adapter = ctor._adapter
 
+    Object.defineProperty @, '_prev_attributes', writable: true, value: {}
+    if ctor.dirty_tracking
+      Object.defineProperty @, '_attributes', value: {}
+      Object.defineProperty @, '_objects', value: {}
+      for column, property of schema
+        obj = @
+        parts = property.parts
+        if parts.length > 1
+          parts = parts[..]
+          parts.pop()
+          path = parts.join '.'
+          for part in parts
+            do (path) =>
+              if not obj.hasOwnProperty part
+                @_objects[path] = {}
+                @_defineIntermediateProperty obj, part, path, false
+            obj = obj[part]
+      for column, property of schema
+        [obj, last] = _getRef @, property.parts
+        @_defineProperty obj, last, column, false
+    else
+      Object.defineProperty @, 'isDirty', value: -> true
+      Object.defineProperty @, 'getChanged', value: -> []
+      Object.defineProperty @, 'get', value: ->
+      Object.defineProperty @, 'getPrevious', value: ->
+      Object.defineProperty @, 'set', value: ->
+      Object.defineProperty @, 'reset', value: ->
+
     if id = arguments[1]
       # if id exists, this is called from adapter with database record data
       for column, property of schema
@@ -129,10 +159,7 @@ class Model
         else
           value = data[property.dbname]
         if value?
-          if property.type is types.Object and not adapter.support_object
-            value = JSON.parse value
-          else
-            value = adapter.valueToModel value, column, property
+          value = adapter.valueToModel value, column, property
           _setValue @, parts, value
 
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
@@ -148,6 +175,54 @@ class Model
       Object.defineProperty @, 'id', configurable: true, enumerable: true, writable: false, value: undefined
 
     @_runCallbacks 'initialize', 'after'
+
+  _defineIntermediateProperty: (object, key, path, enumerable) ->
+    Object.defineProperty object, key,
+      configurable: true
+      enumerable: enumerable
+      get: => @_objects[path]
+      set: (value) =>
+        obj = @_objects[path]
+        for k of obj
+          obj[k] = undefined
+        for k, v of value
+          obj[k] = v
+
+  _defineProperty: (object, key, path, enumerable) ->
+    Object.defineProperty object, key,
+      configurable: true
+      enumerable: enumerable
+      get: => @get path
+      set: (value) => @set path, value
+
+  isDirty: ->
+    Object.keys(@_prev_attributes).length > 0
+
+  getChanged: ->
+    Object.keys @_prev_attributes
+
+  get: (path) ->
+    _getValue @_attributes, path.split '.'
+
+  getPrevious: (path) ->
+    @_prev_attributes[path]
+
+  set: (path, value) ->
+    parts = path.split '.'
+    if not @_prev_attributes.hasOwnProperty path
+      @_prev_attributes[path] = _getValue @_attributes, parts
+    [obj, last] = _getRef @, parts
+    @_defineProperty obj, last, path, value?
+    _setValue @_attributes, parts, value
+    while parts.length > 1
+      parts.pop()
+      [obj, last] = _getRef @, parts
+      @_defineIntermediateProperty obj, last, parts.join('.'), true
+
+  reset: ->
+    for path, value of @_prev_attributes
+      @set path, value
+    @_prev_attributes = {}
 
   ##
   # Creates a record.
@@ -268,10 +343,7 @@ class Model
     adapter = @_adapter
     parts = property.parts
     value = _getValue model, parts
-    if property.type is types.Object and not adapter.support_object
-      value = JSON.stringify value
-    else
-      value = adapter.valueToDB value, column, property
+    value = adapter.valueToDB value, column, property
     if allow_null or value isnt undefined
       if adapter.support_nested
         _setValue data, parts, value
@@ -304,14 +376,15 @@ class Model
       # save sub objects of each association
       foreign_key = inflector.foreign_key ctor._name
       async.forEach Object.keys(ctor._associations), (column, callback) =>
-          async.forEach @['__cache_' + column] or [], (sub, callback) ->
-              sub[foreign_key] = id
-              sub.save (error) ->
-                callback error
-            , (error) ->
-              callback error
-        , (error) =>
-          callback null, @
+        async.forEach @['__cache_' + column] or [], (sub, callback) ->
+          sub[foreign_key] = id
+          sub.save (error) ->
+            callback error
+        , (error) ->
+          callback error
+      , (error) =>
+        @_prev_attributes = {}
+        callback null, @
 
   @_createBulk: (records, callback) ->
     return if @_waitingForConnection @, @_createBulk, arguments
@@ -333,18 +406,43 @@ class Model
       callback null, records
 
   _update: (callback) ->
-    return if @constructor._waitingForConnection @, @_update, arguments
-
-    try
-      data = @_buildSaveData()
-    catch e
-      return callback e, @
-
     ctor = @constructor
-    ctor._connection.log ctor._name, 'update', data
-    ctor._adapter.update ctor._name, data, _bindDomain (error) =>
-      return callback error, @ if error
-      callback null, @
+    return if ctor._waitingForConnection @, @_update, arguments
+
+    if ctor.dirty_tracking
+      # update changed values only
+      if not @isDirty()
+        return callback null, @
+
+      data = {}
+      adapter = ctor._adapter
+      schema = ctor._schema
+      for path of @_prev_attributes
+        parts = path.split '.'
+        value = _getValue @_attributes, parts
+        value = adapter.valueToDB value, path, schema[path]
+        if adapter.support_nested
+          _setValue data, parts, value
+        else
+          data[schema[path].dbname] = value
+
+      ctor._connection.log ctor._name, 'update', data
+      adapter.updatePartial ctor._name, data, id: @id, {}, _bindDomain (error) =>
+        return callback error, @ if error
+        @_prev_attributes = {}
+        callback null, @
+    else
+      # update all
+      try
+        data = @_buildSaveData()
+      catch e
+        return callback e, @
+      
+      ctor._connection.log ctor._name, 'update', data
+      ctor._adapter.update ctor._name, data, _bindDomain (error) =>
+        return callback error, @ if error
+        @_prev_attributes = {}
+        callback null, @
 
   ##
   # Saves data to the database

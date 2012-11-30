@@ -151,3 +151,45 @@ module.exports = (models) ->
           error.should.have.property 'message', "'name.last' is required"
           callback null
     ], done
+
+  it 'keys on empty', (done) ->
+    User = models.User
+
+    User.column 'name'
+      first: String
+      last: String
+    User.column 'age', Number
+
+    async.waterfall [
+      (callback) -> models.connection.applySchemas callback
+      (callback) -> User.create name: { first: 'John', last: 'Doe' }, age: 20, callback
+      (user, callback) ->
+        user.should.have.keys 'id', 'name', 'age'
+        callback null
+      (callback) -> User.create age: 20, callback
+      (user, callback) ->
+        user.should.have.keys 'id', 'age'
+        callback null
+    ], done
+
+  it 'replace object', (done) ->
+    User = models.User
+
+    User.column 'name'
+      first: String
+      last: String
+
+    async.waterfall [
+      (callback) -> models.connection.applySchemas callback
+      (callback) -> User.create name: { first: 'John', last: 'Doe' }, callback
+      (user, callback) ->
+        user.name = first: 'Bill'
+        user.name.first.should.be.equal 'Bill'
+        user.save callback
+      (user, callback) -> User.find user.id, callback
+      (user, callback) ->
+        user.should.have.keys 'id', 'name'
+        user.name.should.have.keys 'first'
+        user.name.first.should.eql 'Bill'
+        callback null
+    ], done
