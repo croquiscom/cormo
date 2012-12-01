@@ -193,3 +193,22 @@ module.exports = (models) ->
         user.name.first.should.eql 'Bill'
         callback null
     ], done
+
+  it 'get & set', (done) ->
+    User = models.User
+
+    User.column 'name'
+      first: String
+      last: String
+
+    user = new User name: first: 'John', last: 'Doe'
+    user.get('name.first').should.be.equal 'John'
+    user.get('name.last').should.be.equal 'Doe'
+    user.set 'name.first', 'Bill'
+    user.get('name.first').should.be.equal 'Bill'
+    user.get('name.last').should.be.equal 'Doe'
+    user.set 'name', first: 'John'
+    user.get('name.first').should.be.equal 'John'
+    should.not.exist user.get('name.last')
+
+    done null

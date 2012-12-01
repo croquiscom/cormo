@@ -55,7 +55,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
     for column, property of @_connection.models[model]._schema
       column_sql = _propertyToSQL property
       if column_sql
-        sql.push property.dbname + ' ' + column_sql
+        sql.push property._dbname + ' ' + column_sql
     sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
     @_query sql, (error) ->
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
@@ -103,7 +103,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
     callback error
 
   _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
-    dbname = property.dbname
+    dbname = property._dbname
     values.push data[dbname]
     if insert
       fields.push dbname
@@ -124,7 +124,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
     fields = []
     places = []
     for column, value of data
-      property = _.find schema, (item) -> return item.dbname is column
+      property = _.find schema, (item) -> return item._dbname is column
       @_buildUpdateSetOfColumn property, data, values, fields, places
     [ fields.join(','), places.join(',') ]
 

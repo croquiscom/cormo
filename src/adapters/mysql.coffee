@@ -54,7 +54,7 @@ class MySQLAdapter extends SQLAdapterBase
     for column, property of @_connection.models[model]._schema
       column_sql = _propertyToSQL property
       if column_sql
-        sql.push property.dbname + ' ' + column_sql
+        sql.push property._dbname + ' ' + column_sql
     sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
     @_query sql, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
@@ -90,13 +90,13 @@ class MySQLAdapter extends SQLAdapterBase
 
   valueToModel: (value, column, property) ->
     if property.type is types.Object
-      return JSON.parse value
-    if value?
-      if property.type is types.GeoPoint
-        return [value.x, value.y]
-      else if property.type is types.Boolean
-        return value isnt 0
-    return value
+      JSON.parse value
+    else if property.type is types.GeoPoint
+      [value.x, value.y]
+    else if property.type is types.Boolean
+      value isnt 0
+    else
+      value
 
   _processSaveError = (error, callback) ->
     if error.code is 'ER_NO_SUCH_TABLE'
@@ -112,7 +112,7 @@ class MySQLAdapter extends SQLAdapterBase
     callback error
 
   _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
-    dbname = property.dbname
+    dbname = property._dbname
     if property.type is types.GeoPoint
       values.push data[dbname][0]
       values.push data[dbname][1]
@@ -142,7 +142,7 @@ class MySQLAdapter extends SQLAdapterBase
     fields = []
     places = []
     for column, value of data
-      property = _.find schema, (item) -> return item.dbname is column
+      property = _.find schema, (item) -> return item._dbname is column
       @_buildUpdateSetOfColumn property, data, values, fields, places
     [ fields.join(','), places.join(',') ]
 

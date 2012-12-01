@@ -151,10 +151,10 @@ class MongoDBAdapter extends AdapterBase
     data._id.toString()
 
   valueToModel: (value, column, property) ->
-    if value?
-      if property.type is 'objectid'
-        return value.toString()
-    return value
+    if property.type is 'objectid'
+      value.toString()
+    else
+      value
 
   ## @override AdapterBase::create
   create: (model, data, callback) ->

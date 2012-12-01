@@ -89,7 +89,7 @@ User.create { name: 'John Doe', age: 27 }, (error, user) ->
   console.log error
 ```
 
-See [[#Model::constructor]], [[#Model::save]], [[#Model.build]], [[#Model.create]] for more details.
+See [[#Model::constructor]], [[#ModelPersistence::save]], [[#Model.build]], [[#ModelPersistence.create]] for more details.
 
 ## Query
 
@@ -218,7 +218,7 @@ See [[#Connection::model]] for more details.
 
 ## Validations
 
-If you want validations, adds a validator using [[#Model.addValidator]].
+If you want validations, adds a validator using [[#ModelValidate.addValidator]].
 
 If a record is invalid, throws an error, or returns false or an error string in the validator.
 
@@ -245,7 +245,7 @@ User.create { name: 'John Doe', age: 10, email: 'invalid' }, (error, user) ->
   # error.message will be 'invalid email,too young' or 'too young,invalid email'
 ```
 
-See [[#Model.addValidator]] for more details.
+See [[#ModelValidate.addValidator]] for more details.
 
 ## Callbacks
 
@@ -363,7 +363,7 @@ Use [[#ModelTimestamp.timestamps]] to add created_at and updated_at to the table
 User.timestamps()
 ```
 
-Use [[#Model.createBulk]] to create many records at once.
+Use [[#ModelPersistence.createBulk]] to create many records at once.
 
 ```coffeescript
 User.createBulk [ { name: 'John Doe', age: 27 }, { name: 'Bill Smith', age: 45 } ], (error, users) ->

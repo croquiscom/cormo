@@ -47,6 +47,22 @@ exports.Object = 'object'
 exports.RecordID = 'recordid'
 
 ##
+# Converts JavaScript built-in class to CORMO type
+# @private
+# @param {Function|String} type
+# @return {String}
+exports._toCORMOType = (type) ->
+  switch type
+    when String then type = exports.String
+    when Number then type = exports.Number
+    when Boolean then type = exports.Boolean
+    when Date then type = exports.Date
+    when Object then type = exports.Object
+  if typeof type isnt 'string'
+    throw new Error 'unknown type : ' + type
+  type.toLowerCase()
+
+##
 # A pseudo class represents a record's unique identifier.
 #
 # Its real type differs by adapters.

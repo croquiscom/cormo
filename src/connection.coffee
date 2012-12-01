@@ -1,12 +1,27 @@
 EventEmitter = require('events').EventEmitter
 Model = require './model'
-association = require './association'
+_ = require 'underscore'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
 ##
 # Manages connection to a database
+# @uses ConnectionAssociation
 class Connection extends EventEmitter
+  ##
+  # Indicates the adapter associated to this connection
+  # @property _adapter
+  # @type AdapterBase
+  # @private
+  # @see Connection::constructor
+
+  ##
+  # Model lists using this connection.
+  # Maps from model name to model class
+  # @property models
+  # @type StringMap<Class<Model>>
+  # @see Connection::constructor
+
   ##
   # Creates a connection
   # @param {String} adapater_name
@@ -55,7 +70,7 @@ class Connection extends EventEmitter
   # @param {Error} callback.error
   # @see AdapterBase::applySchemas
   applySchemas: (callback) ->
-    association.applyAssociations @, @_pending_associations
+    @_applyAssociations @, @_pending_associations
     @_pending_associations = []
 
     if @_adapter.applySchemas? and not @_applying_schemas
@@ -76,5 +91,11 @@ class Connection extends EventEmitter
   # @param {String} type
   # @param {Object} data
   log: (model, type, data) ->
+
+_use = (file) ->
+  MixClass = require "./connection/#{file}"
+  _.extend Connection, MixClass
+  _.extend Connection::, MixClass::
+_use 'association'
 
 module.exports = Connection

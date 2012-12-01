@@ -13,6 +13,7 @@ task 'build', 'Builds JavaScript files from source', ->
     spawn command, args, stdio: 'inherit'
   compileFiles 'src'
   compileFiles 'src/adapters'
+  compileFiles 'src/connection'
   compileFiles 'src/model'
 
 task 'test', 'Runs Mocha tests', (options) ->

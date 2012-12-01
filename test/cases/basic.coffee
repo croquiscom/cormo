@@ -297,3 +297,11 @@ module.exports = (models) ->
         user.isDirty().should.be.equal false
         user.getChanged().should.be.eql []
         done null
+
+  it 'get & set', (done) ->
+    user = new models.User name: 'John Doe', age: 27
+    user.get('name').should.be.equal 'John Doe'
+    user.get('age').should.be.equal 27
+    user.set 'name', 'Bill Smith'
+    user.get('name').should.be.equal 'Bill Smith'
+    done null
