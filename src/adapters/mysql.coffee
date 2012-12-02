@@ -64,19 +64,13 @@ class MySQLAdapter extends SQLAdapterBase
     # TODO
     callback null
 
-  _applySchema: (model, callback) ->
+  ## @override AdapterBase::applySchema
+  applySchema: (model, callback) ->
     @_query "SHOW COLUMNS FROM #{tableize model}", (error, columns) =>
       if error?.code is 'ER_NO_SUCH_TABLE'
         @_createTable model, callback
       else
         @_alterTable model, columns, callback
-
-  ## @override AdapterBase::applySchemas
-  applySchemas: (callback) ->
-    async.forEach Object.keys(@_connection.models), (model, callback) =>
-        @_applySchema model, callback
-      , (error) ->
-        callback error
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->

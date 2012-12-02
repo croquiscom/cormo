@@ -1,6 +1,7 @@
 EventEmitter = require('events').EventEmitter
 Model = require './model'
 _ = require 'underscore'
+async = require 'async'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
@@ -34,6 +35,7 @@ class Connection extends EventEmitter
     @connected = false
     @models = {}
     @_pending_associations = []
+    @_schema_changed = false
 
     @_adapter = require(__dirname + '/adapters/' + adapter_name) @
     @_adapter.connect settings, _bindDomain (error) =>
@@ -59,25 +61,35 @@ class Connection extends EventEmitter
     return true
 
   _waitingForApplyingSchemas: (object, method, args) ->
-    return false if not @_applying_schemas
+    return false if not @_applying_schemas and not @_schema_changed
     @once 'schemas_applied', ->
       method.apply object, args
+    if not @_applying_schemas
+      @applySchemas()
     return true
 
   ##
   # Applies schemas
   # @param {Function} [callback]
   # @param {Error} callback.error
-  # @see AdapterBase::applySchemas
+  # @see AdapterBase::applySchema
   applySchemas: (callback) ->
-    @_applyAssociations @, @_pending_associations
-    @_pending_associations = []
+    return callback? null if not @_schema_changed
 
-    if @_adapter.applySchemas? and not @_applying_schemas
+    @_applyAssociations()
+
+    if not @_applying_schemas
       @_applying_schemas = true
       callAdapter = =>
-        @_adapter.applySchemas _bindDomain (error) =>
+        async.forEach Object.keys(@models), (model, callback) =>
+          modelClass = @models[model]
+          return callback null if not modelClass._schema_changed
+          @_adapter.applySchema model, (error) ->
+            modelClass._schema_changed = false if not error
+            callback error
+        , _bindDomain (error) =>
           @_applying_schemas = false
+          @_schema_changed = false
           @emit 'schemas_applied'
           callback? error
       return if @_waitingForConnection @, callAdapter, arguments

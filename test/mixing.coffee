@@ -67,12 +67,7 @@ describe 'mixing several database', ->
         return done error if error
         Post.drop (error) ->
           return done error if error
-          async.parallel [
-            (callback) -> mysql.applySchemas callback
-            (callback) -> mongodb.applySchemas callback
-          ], (error) ->
-            return done error if error
-            done null
+          done null
 
   beforeEach (done) ->
     models.User.deleteAll (error) ->

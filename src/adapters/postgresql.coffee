@@ -65,7 +65,8 @@ class PostgreSQLAdapter extends SQLAdapterBase
     # TODO
     callback null
 
-  _applySchema: (model, callback) ->
+  ## @override AdapterBase::applySchema
+  applySchema: (model, callback) ->
     table = tableize model
     @_query "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1", [table], (error, result) =>
       columns = result?.rows
@@ -73,13 +74,6 @@ class PostgreSQLAdapter extends SQLAdapterBase
         @_createTable model, callback
       else
         @_alterTable model, columns, callback
-
-  ## @override AdapterBase::applySchemas
-  applySchemas: (callback) ->
-    async.forEach Object.keys(@_connection.models), (model, callback) =>
-        @_applySchema model, callback
-      , (error) ->
-        callback error
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->

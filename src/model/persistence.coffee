@@ -64,7 +64,7 @@ class ModelPersistence
     return data
 
   _create: (callback) ->
-    return if @constructor._waitingForConnection @, @_create, arguments
+    return if @constructor._waitingForReady @, @_create, arguments
 
     try
       data = @_buildSaveData()
@@ -90,7 +90,7 @@ class ModelPersistence
         callback null, @
 
   @_createBulk: (records, callback) ->
-    return if @_waitingForConnection @, @_createBulk, arguments
+    return if @_waitingForReady @, @_createBulk, arguments
 
     error = undefined
     data_array = records.map (record) ->
@@ -110,7 +110,7 @@ class ModelPersistence
 
   _update: (callback) ->
     ctor = @constructor
-    return if ctor._waitingForConnection @, @_update, arguments
+    return if ctor._waitingForReady @, @_update, arguments
 
     if ctor.dirty_tracking
       # update changed values only

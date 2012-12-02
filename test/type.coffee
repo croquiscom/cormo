@@ -51,9 +51,7 @@ Object.keys(_dbs).forEach (db) ->
 
         Type.drop (error) ->
           return done error if error
-          connection.applySchemas (error) ->
-            return done error if error
-            done null
+          done null
 
     beforeEach (done) ->
       models.Type.deleteAll (error) ->

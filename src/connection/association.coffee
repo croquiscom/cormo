@@ -114,15 +114,15 @@ class ConnectionAssociation
   # @param {String} associations.type 'hasMany' or 'belongsTo'
   # @memberOf association
   # @private
-  _applyAssociations: (connection, associations) ->
-    associations.forEach (item) =>
+  _applyAssociations: ->
+    @_pending_associations.forEach (item) =>
       this_model = item.this_model
       options = item.options
       if typeof item.target_model_or_column is 'string'
         if item.options?.connection
           models = item.options.connection.models
         else
-          models = connection.models
+          models = @models
         if item.options?.type
           target_model = item.options.type
           options.as = item.target_model_or_column
@@ -135,5 +135,11 @@ class ConnectionAssociation
       else
         target_model = item.target_model_or_column
       @['_'+item.type] this_model, target_model, options
+
+    @_pending_associations = []
+
+  addAssociation: (association) ->
+    @_pending_associations.push association
+    @_schema_changed = true
 
 module.exports = ConnectionAssociation

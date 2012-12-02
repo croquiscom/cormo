@@ -40,9 +40,7 @@ Object.keys(_dbs).forEach (db) ->
 
         Place.drop (error) ->
           return done error if error
-          connection.applySchemas (error) ->
-            return done error if error
-            done null
+          done null
 
     beforeEach (done) ->
       models.Place.deleteAll (error) ->

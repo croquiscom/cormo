@@ -7,7 +7,6 @@ module.exports = (models) ->
       last: String
 
     async.waterfall [
-      (callback) -> models.connection.applySchemas callback
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         user.should.have.keys 'id', 'name'
@@ -31,7 +30,6 @@ module.exports = (models) ->
     User.column 'name.last', String
 
     async.waterfall [
-      (callback) -> models.connection.applySchemas callback
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         user.should.have.keys 'id', 'name'
@@ -57,7 +55,6 @@ module.exports = (models) ->
       last: { type: String, required: true }
 
     async.waterfall [
-      (callback) -> models.connection.applySchemas callback
       (callback) -> User.create { name: first: 'John', middle: 'F.', last: 'Doe' }, callback
       (user, callback) -> User.find user.id, callback
       (user, callback) ->
@@ -91,7 +88,6 @@ module.exports = (models) ->
       last: String
 
     async.waterfall [
-      (callback) -> models.connection.applySchemas callback
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) -> User.create { name: first: 'Bill', last: 'Smith' }, callback
       (user, callback) -> User.create { name: first: 'Daniel', last: 'Smith' }, callback
@@ -118,7 +114,6 @@ module.exports = (models) ->
       last: String
 
     async.waterfall [
-      (callback) -> models.connection.applySchemas callback
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         User.find(user.id).update name: first: 'Bill', (error, count) ->
@@ -143,7 +138,6 @@ module.exports = (models) ->
       last: { type: String, required: true }
 
     async.waterfall [
-      (callback) -> models.connection.applySchemas callback
       (callback) -> User.create { name: first: 'John', middle: 'F.', last: 'Doe' }, callback
       (user, callback) ->
         User.find(user.id).update name: last: null, (error) ->
@@ -161,7 +155,6 @@ module.exports = (models) ->
     User.column 'age', Number
 
     async.waterfall [
-      (callback) -> models.connection.applySchemas callback
       (callback) -> User.create name: { first: 'John', last: 'Doe' }, age: 20, callback
       (user, callback) ->
         user.should.have.keys 'id', 'name', 'age'
@@ -180,7 +173,6 @@ module.exports = (models) ->
       last: String
 
     async.waterfall [
-      (callback) -> models.connection.applySchemas callback
       (callback) -> User.create name: { first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         user.name = first: 'Bill'

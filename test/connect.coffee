@@ -26,7 +26,6 @@ Object.keys(_dbs).forEach (db) ->
       User = connection.model 'User',
         name: String
         age: Number
-      connection.applySchemas()
 
       User.create { name: 'John Doe', age: 27 }, (error, user) ->
         return done error if error

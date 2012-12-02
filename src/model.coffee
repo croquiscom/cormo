@@ -90,10 +90,11 @@ class Model
     Object.defineProperty @, '_associations', value: {}
     Object.defineProperty @, '_validators', value: []
     Object.defineProperty @, '_name', value: name
+    Object.defineProperty @, '_schema_changed', writable: true, value: true
     Object.defineProperty @, '_schema', value: {}
     Object.defineProperty @, '_intermediate_paths', value: {}
 
-  @_waitingForConnection: (object, method, args) ->
+  @_waitingForReady: (object, method, args) ->
     return true if @_connection._waitingForApplyingSchemas object, method, args
     return @_connection._waitingForConnection object, method, args
 
@@ -138,15 +139,22 @@ class Model
 
     @_schema[path] = property
 
+    @_schema_changed = true
+    @_connection._schema_changed = true
+
   ##
   # Drops this model from the database
   # @param {Function} callback
   # @param {Error} callback.error
   # @see AdapterBase::drop
   @drop: (callback) ->
-    return if @_waitingForConnection @, @drop, arguments
+    # do not need to apply schema before drop, only waiting connection established
+    return if @_connection._waitingForConnection @, @drop, arguments
 
-    @_adapter.drop @_name, _bindDomain callback
+    @_adapter.drop @_name, _bindDomain (error) =>
+      @_schema_changed = true
+      @_connection._schema_changed = true
+      callback error
 
   ##
   # Creates a record.
@@ -321,7 +329,7 @@ class Model
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
   @hasMany: (target_model_or_column, options) ->
-    @_connection._pending_associations.push
+    @_connection.addAssociation
       type: 'hasMany'
       this_model: @
       target_model_or_column: target_model_or_column
@@ -335,7 +343,7 @@ class Model
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
   @belongsTo: (target_model_or_column, options) ->
-    @_connection._pending_associations.push
+    @_connection.addAssociation
       type: 'belongsTo'
       this_model: @
       target_model_or_column: target_model_or_column

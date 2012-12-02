@@ -98,7 +98,8 @@ class MongoDBAdapter extends AdapterBase
     else
       return @_collections[name]
 
-  _applySchema: (model, callback) ->
+  ## @override AdapterBase::applySchema
+  applySchema: (model, callback) ->
     collection = @_collection(model)
     indexes = []
     for column, property of @_connection.models[model]._schema
@@ -111,13 +112,6 @@ class MongoDBAdapter extends AdapterBase
     async.forEach indexes, (index, callback) ->
         collection.ensureIndex index[0], index[1], (error) ->
           callback error
-      , (error) ->
-        callback error
-
-  ## @override AdapterBase::applySchemas
-  applySchemas: (callback) ->
-    async.forEach Object.keys(@_connection.models), (model, callback) =>
-        @_applySchema model, callback
       , (error) ->
         callback error
 

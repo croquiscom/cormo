@@ -17,13 +17,14 @@ class AdapterBase
     return error
 
   ##
-  # Applies schemas.
+  # Applies schema.
   # Creates tables, alter tables, create indexes, or etc. depending adapters
   # @abstract
+  # @param {String} model
   # @param {Function} callback
   # @param {Error} callback.error
   # @see Connection::applySchemas
-  applySchemas: (callback) -> callback new Error 'not implemented'
+  applySchema: (model, callback) -> callback null
 
   ##
   # Drops a model from the database

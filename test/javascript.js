@@ -36,12 +36,7 @@ Object.keys(_dbs).forEach(function (db) {
           if (error) {
             return done(error);
           }
-          connection.applySchemas(function (error) {
-            if (error) {
-              return done(error);
-            }
-            done(null);
-          });
+          done(null);
         });
       });
     });

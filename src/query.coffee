@@ -104,7 +104,7 @@ class Query
   # @see AdapterBase::findById
   # @see AdapterBase::find
   exec: (callback) ->
-    return if @_model._waitingForConnection @, @exec, arguments
+    return if @_model._waitingForReady @, @exec, arguments
 
     if @_find_single_id and @_conditions.length is 0
       @_connection.log @_name, 'find by id', id: @_id, options: @_options
@@ -141,7 +141,7 @@ class Query
   # @return {Query} this
   # @see AdapterBase::count
   count: (callback) ->
-    return if @_model._waitingForConnection @, @count, arguments
+    return if @_model._waitingForReady @, @count, arguments
 
     if @_id
       @_conditions.push id: @_id
@@ -170,7 +170,7 @@ class Query
   # @return {Query} this
   # @see AdapterBase::count
   update: (updates, callback) ->
-    return if @_model._waitingForConnection @, @update, arguments
+    return if @_model._waitingForReady @, @update, arguments
 
     errors = []
     data = {}
@@ -192,7 +192,7 @@ class Query
   # @return {Query} this
   # @see AdapterBase::delete
   delete: (callback) ->
-    return if @_model._waitingForConnection @, @delete, arguments
+    return if @_model._waitingForReady @, @delete, arguments
 
     if @_id
       @_conditions.push id: @_id

@@ -36,9 +36,7 @@ Object.keys(_dbs).forEach (db) ->
       models.User = User
       User.drop (error) ->
         return done error if error
-        connection.applySchemas (error) ->
-          return done error if error
-          done null
+        done null
 
     after (done) ->
       models.User.drop done

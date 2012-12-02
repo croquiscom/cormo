@@ -58,16 +58,10 @@ class SQLite3Adapter extends SQLAdapterBase
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       callback null
 
-  _applySchema: (model, callback) ->
+  ## @override AdapterBase::applySchema
+  applySchema: (model, callback) ->
     # TODO check table existence
     @_createTable model, callback
-
-  ## @override AdapterBase::applySchemas
-  applySchemas: (callback) ->
-    async.forEach Object.keys(@_connection.models), (model, callback) =>
-        @_applySchema model, callback
-      , (error) ->
-        callback error
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->

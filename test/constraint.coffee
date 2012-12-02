@@ -49,9 +49,7 @@ Object.keys(_dbs).forEach (db) ->
 
         User.drop (error) ->
           return done error if error
-          connection.applySchemas (error) ->
-            return done error if error
-            done null
+          done null
 
     beforeEach (done) ->
       models.User.deleteAll (error) ->
