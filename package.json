@@ -30,6 +30,7 @@
     "mongodb": ">=1.1.11",
     "mysql": ">=2.0.0-alpha4",
     "pg": "",
+    "redis": "",
     "sqlite3": "",
     "should": ""
   }

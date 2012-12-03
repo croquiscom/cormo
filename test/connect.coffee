@@ -10,6 +10,8 @@ _dbs =
   sqlite3_memory: {}
   postgresql:
     database: 'test'
+  redis:
+    database: 1
 
 Object.keys(_dbs).forEach (db) ->
   describe 'connect-' + db, ->

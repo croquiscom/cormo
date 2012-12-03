@@ -4,7 +4,7 @@ CORMO is an ORM framework for Node.js.
 
 Currently supports:
 
-* multi-DB: MySQL, MongoDB, SQLite3, PostgreSQL
+* multi-DB: MySQL, MongoDB, SQLite3, PostgreSQL, Redis
 * constraints
 * validations
 * associations

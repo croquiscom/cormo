@@ -31,6 +31,7 @@ class Connection extends EventEmitter
   # @see MongoDBAdapter::connect
   # @see PostgreSQLAdapter::connect
   # @see SQLite3Adapter::connect
+  # @see RedisAdapter::connect
   constructor: (adapter_name, settings) ->
     @connected = false
     @models = {}
