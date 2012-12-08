@@ -302,6 +302,8 @@ class MongoDBAdapter extends AdapterBase
   # @param {Object} settings
   # @param {String} [settings.host='localhost']
   # @param {Number} [settings.port=27017]
+  # @param {String} [settings.user]
+  # @param {String} [settings.password]
   # @param {String} settings.database
   # @param {Function} callback
   # @param {Error} callback.error
@@ -310,8 +312,16 @@ class MongoDBAdapter extends AdapterBase
     db = new mongodb.Db settings.database, server, safe: true
     db.open (error, client) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      @_client = client
-      callback null
+      if settings.user or settings.password
+        db.authenticate settings.user, settings.password, (error, success) =>
+          if success
+            @_client = client
+            callback null
+          else
+            callback MongoDBAdapter.wrapError 'unknown error', error
+      else
+        @_client = client
+        callback null
 
 module.exports = (connection) ->
   new MongoDBAdapter connection
