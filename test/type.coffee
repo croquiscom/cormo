@@ -10,8 +10,6 @@ _dbs =
   sqlite3_memory: {}
   postgresql:
     database: 'test'
-  redis:
-    database: 1
 
 Object.keys(_dbs).forEach (db) ->
   describe 'type-' + db, ->
@@ -40,6 +38,7 @@ Object.keys(_dbs).forEach (db) ->
             @column 'date', 'date'
             @column 'boolean', 'boolean'
             @column 'object', 'object'
+            @column 'string', 'string'
         else
           # using Connection method
           Type = connection.model 'Type',
@@ -48,6 +47,7 @@ Object.keys(_dbs).forEach (db) ->
             date: Date
             boolean: Boolean
             object: Object
+            string: String
 
         models.Type = Type
 
@@ -65,3 +65,4 @@ Object.keys(_dbs).forEach (db) ->
 
     require('./cases/type')(models)
     require('./cases/type_update')(models)
+    require('./cases/type_compare')(models)

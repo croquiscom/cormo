@@ -168,7 +168,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
     [ fields ] = @_buildPartialUpdateSet model, data, values
     sql = "UPDATE #{tableize model} SET #{fields}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere conditions, values
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
     @_query sql, values, (error, result) ->
       return _processSaveError model, error, callback if error
       callback null, result.rowCount
@@ -199,7 +199,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
     params = []
     sql = "SELECT #{selects} FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere conditions, params
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     if options?.limit?
       sql += ' LIMIT ' + options.limit
     if options?.orders.length > 0
@@ -220,7 +220,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
     params = []
     sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere conditions, params
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     #console.log sql, params
     @_query sql, params, (error, result) =>
       rows = result?.rows
@@ -233,7 +233,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
     params = []
     sql = "DELETE FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere conditions, params
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     #console.log sql, params
     @_query sql, params, (error, result) ->
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error or not result?

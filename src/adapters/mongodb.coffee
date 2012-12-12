@@ -40,10 +40,13 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
         else if typeof value is 'object' and (keys = Object.keys value).length is 1
           sub_key = keys[0]
           switch sub_key
-            when '$gt' or '$lt' or '$gte' or '$lte'
+            when '$gt', '$lt', '$gte', '$lte'
               obj = {}
               obj[key] = {}
-              obj[key][sub_key] = value[sub_key]
+              if schema[key]?.type is types.Date
+                obj[key][sub_key] = new Date value[sub_key]
+              else
+                obj[key][sub_key] = value[sub_key]
               return obj
             when '$contains'
               value = new RegExp value[sub_key], 'i'
@@ -61,7 +64,10 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
         if key is 'id'
           key = '_id'
         obj = {}
-        obj[key] = value
+        if schema[key]?.type is types.Date
+          obj[key] = new Date value
+        else
+          obj[key] = value
         return obj
     else
       subs = keys.map (key) ->

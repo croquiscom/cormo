@@ -1,4 +1,5 @@
 AdapterBase = require './base'
+types = require '../types'
 
 ##
 # Base class for SQL adapters
@@ -7,9 +8,9 @@ class SQLAdapterBase extends AdapterBase
   _param_place_holder: (pos) -> '?'
   _contains_op: 'LIKE'
 
-  _buildWhere: (conditions, params, conjunction='AND') ->
+  _buildWhere: (schema, conditions, params, conjunction='AND') ->
     if Array.isArray conditions
-      subs = conditions.map (condition) => @_buildWhere condition, params
+      subs = conditions.map (condition) => @_buildWhere schema, condition, params
     else if typeof conditions is 'object'
       keys = Object.keys conditions
       if keys.length is 0
@@ -19,9 +20,9 @@ class SQLAdapterBase extends AdapterBase
         if key.substr(0, 1) is '$'
           switch key
             when '$and'
-              return @_buildWhere conditions[key], params, 'AND'
+              return @_buildWhere schema, conditions[key], params, 'AND'
             when '$or'
-              return @_buildWhere conditions[key], params, 'OR'
+              return @_buildWhere schema, conditions[key], params, 'OR'
         else
           value = conditions[key]
           op = '='
@@ -54,13 +55,16 @@ class SQLAdapterBase extends AdapterBase
               when '$contains'
                 op = ' ' + @_contains_op + ' '
                 value = '%' + value[sub_key] + '%'
-          params.push value
+          if schema[key]?.type is types.Date
+            params.push new Date value
+          else
+            params.push value
           return key.replace('.', '_') + op + @_param_place_holder params.length
       else
         subs = keys.map (key) =>
           obj = {}
           obj[key] = conditions[key]
-          @_buildWhere obj, params
+          @_buildWhere schema, obj, params
     else
       return ''
     return '(' + subs.join(' ' + conjunction + ' ') + ')'
