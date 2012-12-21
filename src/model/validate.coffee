@@ -5,42 +5,49 @@ util = require '../util'
 # Model validate
 # @namespace model
 class ModelValidate
+  @_validateType: (column, type, value) ->
+    switch type
+      when types.Number
+        value = Number value
+        if isNaN value
+          throw "'#{column}' is not a number"
+      when types.Boolean
+        if typeof value isnt 'boolean'
+          throw "'#{column}' is not a boolean"
+      when types.Integer
+        value = Number value
+        # value>>0 checkes integer and 32bit
+        if isNaN(value) or (value>>0) isnt value
+          throw "'#{column}' is not an integer"
+      when types.GeoPoint
+        if not ( Array.isArray(value) and value.length is 2 )
+          throw "'#{column}' is not a geo point"
+        else
+          value[0] = Number value[0]
+          value[1] = Number value[1]
+      when types.Date
+        value = new Date value
+        if isNaN value.getTime()
+          throw "'#{column}' is not a date"
+    value
+
   @_validateColumn: (data, column, property) ->
     [obj, last] = util.getLeafOfPath data, property._parts, false
     value = obj?[last]
     if value?
-      switch property.type
-        when types.Number
-          value = Number value
-          if isNaN value
-            return "'#{column}' is not a number"
-          else
-            obj[last] = value
-        when types.Boolean
-          if typeof value isnt 'boolean'
-            return "'#{column}' is not a boolean"
-        when types.Integer
-          value = Number value
-          # value>>0 checkes integer and 32bit
-          if isNaN(value) or (value>>0) isnt value
-            return "'#{column}' is not an integer"
-          else
-            obj[last] = value
-        when types.GeoPoint
-          if not ( Array.isArray(value) and value.length is 2 )
-            return "'#{column}' is not a geo point"
-          else
-            value[0] = Number value[0]
-            value[1] = Number value[1]
-        when types.Date
-          value = new Date value
-          if isNaN value.getTime()
-            return "'#{column}' is not a date"
-          else
-            obj[last] = value
+      if property.array
+        throw "'#{column}' is not an array" if not Array.isArray value
+        try
+          for v, i in value
+            value[i] = @_validateType column, property.type, v
+        catch error
+          # TODO: detail message like 'array of types'
+          throw "'#{column}' is not an array"
+      else
+        obj[last] = @_validateType column, property.type, value
     else
       if property.required
-        return "'#{column}' is required"
+        throw "'#{column}' is required"
 
     return
 
@@ -57,7 +64,9 @@ class ModelValidate
     ctor = @constructor
     schema = ctor._schema
     for column, property of schema
-      if error = ctor._validateColumn @, column, property
+      try
+        ctor._validateColumn @, column, property
+      catch error
         errors.push error
 
     @constructor._validators.forEach (validator) =>

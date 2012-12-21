@@ -155,7 +155,9 @@ class Query
     for column of object
       property = schema[path+column]
       if property
-        if error = model._validateColumn updates, path+column, property
+        try
+          model._validateColumn updates, path+column, property
+        catch error
           errors.push error
         model._buildSaveDataColumn data, updates, path+column, property, true
       else if typeof object[column] is 'object'

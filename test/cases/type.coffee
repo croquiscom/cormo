@@ -116,3 +116,24 @@ module.exports = (models) ->
             callback null
       , (error) ->
         done error
+
+  it 'array of integer', (done) ->
+    data = [
+      [ [9,'30'], [9,30] ]
+      [ 9, null ]
+      [ [9,'12.8'], null ]
+    ]
+    async.forEach data, (item, callback) ->
+        models.Type.create { int_array: item[0] }, (error, type) ->
+          if item[1] is null
+            should.exist error
+            error.message.should.be.equal "'int_array' is not an array"
+            return callback null
+          return callback error if error
+          type.int_array.should.be.eql item[1]
+          models.Type.find type.id, (error, type) ->
+            return callback error if error
+            type.int_array.should.be.eql item[1]
+            callback null
+      , (error) ->
+        done error

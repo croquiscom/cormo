@@ -11,6 +11,8 @@ async = require 'async'
 _ = require 'underscore'
 
 _typeToSQL = (property) ->
+  if property.array
+    return 'VARCHAR(255)'
   switch property.type
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE'
@@ -74,7 +76,7 @@ class SQLite3Adapter extends SQLAdapterBase
     Number data.id
 
   valueToModel: (value, column, property) ->
-    if property.type is types.Object
+    if property.type is types.Object or property.array
       JSON.parse value
     else if property.type is types.Date
       new Date value

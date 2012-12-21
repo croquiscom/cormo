@@ -39,6 +39,7 @@ Object.keys(_dbs).forEach (db) ->
             @column 'boolean', 'boolean'
             @column 'object', 'object'
             @column 'string', 'string'
+            @column 'int_array', ['integer']
         else
           # using Connection method
           Type = connection.model 'Type',
@@ -48,6 +49,7 @@ Object.keys(_dbs).forEach (db) ->
             boolean: Boolean
             object: Object
             string: String
+            int_array: [cormo.types.Integer]
 
         models.Type = Type
 

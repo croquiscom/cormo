@@ -110,7 +110,7 @@ class Model
   # @param {Function|String|ColumnProperty} property
   @column: (path, property) ->
     # nested path
-    if typeof property is 'object' and (not property.type or property.type.type)
+    if typeof property is 'object' and not Array.isArray(property) and (not property.type or property.type.type)
       for subcolumn, subproperty of property
         @column path+'.'+subcolumn, subproperty
       return
@@ -118,8 +118,12 @@ class Model
     return if @_schema.hasOwnProperty path
 
     # convert simple type to property object
-    if typeof property is 'function' or typeof property is 'string'
+    if typeof property is 'function' or typeof property is 'string' or Array.isArray property
       property = type: property
+
+    if Array.isArray property.type
+      property.array = true
+      property.type = property.type[0]
 
     type = types._toCORMOType property.type
     if type is types.RecordID

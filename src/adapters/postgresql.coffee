@@ -11,6 +11,8 @@ async = require 'async'
 _ = require 'underscore'
 
 _typeToSQL = (property) ->
+  if property.array
+    return 'VARCHAR(255)'
   switch property.type
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE PRECISION'
