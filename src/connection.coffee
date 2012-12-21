@@ -8,6 +8,7 @@ _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 ##
 # Manages connection to a database
 # @uses ConnectionAssociation
+# @uses ConnectionManipulate
 class Connection extends EventEmitter
   ##
   # Indicates the adapter associated to this connection
@@ -110,5 +111,6 @@ _use = (file) ->
   _.extend Connection, MixClass
   _.extend Connection::, MixClass::
 _use 'association'
+_use 'manipulate'
 
 module.exports = Connection
