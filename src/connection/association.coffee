@@ -12,7 +12,6 @@ class ConnectionAssociation
   # @param {Object} [options]
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
-  # @memberOf association
   # @private
   _hasMany: (this_model, target_model, options) ->
     if options?.foreign_key
@@ -69,7 +68,6 @@ class ConnectionAssociation
   # @param {Object} [options]
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
-  # @memberOf association
   # @private
   _belongsTo: (this_model, target_model, options) ->
     if options?.foreign_key
@@ -112,7 +110,6 @@ class ConnectionAssociation
   # @param {Connection} connection
   # @param {Array<Object>} associations
   # @param {String} associations.type 'hasMany' or 'belongsTo'
-  # @memberOf association
   # @private
   _applyAssociations: ->
     @_pending_associations.forEach (item) =>
@@ -138,6 +135,18 @@ class ConnectionAssociation
 
     @_pending_associations = []
 
+  ##
+  # Adds an association
+  # @param {Object} association
+  # @param {String} association.type 'hasMany' or 'belongsTo'
+  # @param {Class<Model>} association.this_model
+  # @param {Class<Model>|String} association.target_model_or_column
+  # @param {Object} [association.options]
+  # @param {String} [association.options.type]
+  # @param {String} [association.options.as]
+  # @param {String} [association.options.foreign_key]
+  # @see Model.hasMany
+  # @see Model.belongsTo
   addAssociation: (association) ->
     @_pending_associations.push association
     @_schema_changed = true
