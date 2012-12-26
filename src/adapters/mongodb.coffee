@@ -11,6 +11,47 @@ types = require '../types'
 tableize = require('../inflector').tableize
 async = require 'async'
 
+_convertValueToObjectID = (value, key) ->
+  try
+    new ObjectID value
+  catch e
+    throw new Error("'#{key}' is not a valid id")
+
+_buildWhereSingle = (property, key, value) ->
+  if key isnt 'id' and not property?
+    throw new Error("unknown column '#{key}'")
+  property_type = property?.type
+  is_objectid = key is 'id' or property_type is 'objectid'
+  if Array.isArray value
+    if is_objectid
+      value = value.map (v) -> _convertValueToObjectID v, key
+    value = $in: value
+  else if typeof value is 'object' and (keys = Object.keys value).length is 1
+    sub_key = keys[0]
+    switch sub_key
+      when '$gt', '$lt', '$gte', '$lte'
+        obj = {}
+        obj[key] = {}
+        sub_value = value[sub_key]
+        sub_value = new Date sub_value if property_type is types.Date
+        obj[key][sub_key] = sub_value
+        return obj
+      when '$contains'
+        value = new RegExp value[sub_key], 'i'
+      when '$in'
+        if is_objectid
+          value[sub_key] = value[sub_key].map (v) -> _convertValueToObjectID v, key
+      else
+        throw new Error "unknown operator '#{sub_key}'"
+  else if is_objectid
+    value = _convertValueToObjectID value, key
+
+  obj = {}
+  key = '_id' if key is 'id'
+  value = new Date value if property_type is types.Date
+  obj[key] = value
+  return obj
+
 _buildWhere = (schema, conditions, conjunction='$and') ->
   if Array.isArray conditions
     subs = conditions.map (condition) -> _buildWhere schema, condition
@@ -28,59 +69,20 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
             return _buildWhere schema, conditions[key], '$or'
         return
       else
-        is_objectid = key is 'id' or schema[key].type is 'objectid'
-        value = conditions[key]
-        if Array.isArray value
-          if is_objectid
-            try
-              value = value.map (v) -> new ObjectID v
-            catch e
-              throw new Error("'#{key}' is not a valid id")
-          value = $in: value
-        else if typeof value is 'object' and (keys = Object.keys value).length is 1
-          sub_key = keys[0]
-          switch sub_key
-            when '$gt', '$lt', '$gte', '$lte'
-              obj = {}
-              obj[key] = {}
-              if schema[key]?.type is types.Date
-                obj[key][sub_key] = new Date value[sub_key]
-              else
-                obj[key][sub_key] = value[sub_key]
-              return obj
-            when '$contains'
-              value = new RegExp value[sub_key], 'i'
-            when '$in'
-              if is_objectid
-                try
-                  value[sub_key] = value[sub_key].map (v) -> new ObjectID v
-                catch e
-                  throw new Error("'#{key}' is not a valid id")
-        else if is_objectid
-          try
-            value = new ObjectID value
-          catch e
-            throw new Error("'#{key}' is not a valid id")
-        if key is 'id'
-          key = '_id'
-        obj = {}
-        if schema[key]?.type is types.Date
-          obj[key] = new Date value
-        else
-          obj[key] = value
-        return obj
+        return _buildWhereSingle schema[key], key, conditions[key]
     else
-      subs = keys.map (key) ->
-        obj = {}
-        obj[key] = conditions[key]
-        _buildWhere schema, obj
+      subs = keys.map (key) -> _buildWhereSingle schema[key], key, conditions[key]
   else
+    throw new Error "'#{JSON.stringify conditions}' is not an object"
+
+  if subs.length is 0
     return
-  return if subs.length is 0
-  return subs[0] if subs.length is 1
-  obj = {}
-  obj[conjunction] = subs
-  return obj
+  else if subs.length is 1
+    return subs[0]
+  else
+    obj = {}
+    obj[conjunction] = subs
+    return obj
 
 ##
 # Adapter for MongoDB

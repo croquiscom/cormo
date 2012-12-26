@@ -154,7 +154,10 @@ class SQLite3Adapter extends SQLAdapterBase
     [ fields ] = @_buildPartialUpdateSet model, data, values
     sql = "UPDATE #{tableize model} SET #{fields}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
+      try
+        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
+      catch e
+        return callback e
     @_query 'run', sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null, @changes
@@ -184,7 +187,10 @@ class SQLite3Adapter extends SQLAdapterBase
     params = []
     sql = "SELECT #{selects} FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      try
+        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      catch e
+        return callback e
     if options?.limit?
       sql += ' LIMIT ' + options.limit
     if options?.orders.length > 0
@@ -204,7 +210,10 @@ class SQLite3Adapter extends SQLAdapterBase
     params = []
     sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      try
+        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      catch e
+        return callback e
     #console.log sql, params
     @_query 'all', sql, params, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
@@ -216,7 +225,10 @@ class SQLite3Adapter extends SQLAdapterBase
     params = []
     sql = "DELETE FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      try
+        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      catch e
+        return callback e
     #console.log sql, params
     @_query 'run', sql, params, (error) ->
       # @ is sqlite3.Statement

@@ -8,6 +8,47 @@ class SQLAdapterBase extends AdapterBase
   _param_place_holder: (pos) -> '?'
   _contains_op: 'LIKE'
 
+  _buildWhereSingle: (property, key, value, params) ->
+    if key isnt 'id' and not property?
+      throw new Error("unknown column '#{key}'")
+    property_type = property?.type
+    op = '='
+    if Array.isArray value
+      values = value.map (value) =>
+        params.push value
+        return @_param_place_holder params.length
+      return "#{key.replace '.', '_'} IN (#{values.join ','})"
+    else if typeof value is 'object' and (keys = Object.keys value).length is 1
+      sub_key = keys[0]
+      switch sub_key
+        when '$in'
+          values = value[sub_key]
+          values = values.map (value) =>
+            params.push value
+            return @_param_place_holder params.length
+          return "#{key.replace '.', '_'} IN (#{values.join ','})"
+        when '$gt'
+          op = '>'
+          value = value[sub_key]
+        when '$lt'
+          op = '<'
+          value = value[sub_key]
+        when '$gte'
+          op = '>='
+          value = value[sub_key]
+        when '$lte'
+          op = '<='
+          value = value[sub_key]
+        when '$contains'
+          op = ' ' + @_contains_op + ' '
+          value = '%' + value[sub_key] + '%'
+        else
+          throw new Error "unknown operator '#{sub_key}'"
+
+    value = new Date value if property_type is types.Date
+    params.push value
+    return key.replace('.', '_') + op + @_param_place_holder params.length
+
   _buildWhere: (schema, conditions, params, conjunction='AND') ->
     if Array.isArray conditions
       subs = conditions.map (condition) => @_buildWhere schema, condition, params
@@ -24,49 +65,17 @@ class SQLAdapterBase extends AdapterBase
             when '$or'
               return @_buildWhere schema, conditions[key], params, 'OR'
         else
-          value = conditions[key]
-          op = '='
-          if Array.isArray value
-            values = value.map (value) =>
-              params.push value
-              return @_param_place_holder params.length
-            return "#{key.replace '.', '_'} IN (#{values.join ','})"
-          else if typeof value is 'object' and (keys = Object.keys value).length is 1
-            sub_key = keys[0]
-            if sub_key is '$in'
-              values = value[sub_key]
-              values = values.map (value) =>
-                params.push value
-                return @_param_place_holder params.length
-              return "#{key.replace '.', '_'} IN (#{values.join ','})"
-            switch sub_key
-              when '$gt'
-                op = '>'
-                value = value[sub_key]
-              when '$lt'
-                op = '<'
-                value = value[sub_key]
-              when '$gte'
-                op = '>='
-                value = value[sub_key]
-              when '$lte'
-                op = '<='
-                value = value[sub_key]
-              when '$contains'
-                op = ' ' + @_contains_op + ' '
-                value = '%' + value[sub_key] + '%'
-          if schema[key]?.type is types.Date
-            params.push new Date value
-          else
-            params.push value
-          return key.replace('.', '_') + op + @_param_place_holder params.length
+          return @_buildWhereSingle schema[key], key, conditions[key], params
       else
-        subs = keys.map (key) =>
-          obj = {}
-          obj[key] = conditions[key]
-          @_buildWhere schema, obj, params
+        subs = keys.map (key) => @_buildWhereSingle schema[key], key, conditions[key], params
     else
+      throw new Error "'#{JSON.stringify conditions}' is not an object"
+
+    if subs.length is 0
       return ''
-    return '(' + subs.join(' ' + conjunction + ' ') + ')'
+    else if subs.length is 1
+      return subs[0]
+    else
+      return '(' + subs.join(' ' + conjunction + ' ') + ')'
 
 module.exports = SQLAdapterBase

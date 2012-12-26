@@ -186,7 +186,10 @@ class MySQLAdapter extends SQLAdapterBase
     [ fields ] = @_buildPartialUpdateSet model, data, values
     sql = "UPDATE #{tableize model} SET #{fields}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
+      try
+        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
+      catch e
+        return callback e
     @_query sql, values, (error, result) ->
       return _processSaveError error, callback if error
       return callback MySQLAdapter.wrapError 'unknown error' if not result?
@@ -221,7 +224,10 @@ class MySQLAdapter extends SQLAdapterBase
     params = []
     sql = "SELECT #{selects} FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      try
+        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      catch e
+        return callback e
     if options?.orders.length > 0 or order_by
       orders = options.orders.map (order) ->
         if order[0] is '-'
@@ -244,7 +250,10 @@ class MySQLAdapter extends SQLAdapterBase
     params = []
     sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      try
+        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      catch e
+        return callback e
     #console.log sql, params
     @_query sql, params, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
@@ -256,7 +265,10 @@ class MySQLAdapter extends SQLAdapterBase
     params = []
     sql = "DELETE FROM #{tableize model}"
     if conditions.length > 0
-      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      try
+        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+      catch e
+        return callback e
     #console.log sql, params
     @_query sql, params, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error or not result?
