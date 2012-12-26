@@ -21,6 +21,8 @@ class SQLAdapterBase extends AdapterBase
     else if typeof value is 'object' and (keys = Object.keys value).length is 1
       sub_key = keys[0]
       switch sub_key
+        when '$not'
+          return "(NOT (#{@_buildWhereSingle property, key, value[sub_key], params}) OR #{key.replace('.', '_')} IS NULL)"
         when '$in'
           values = value[sub_key]
           values = values.map (value) =>

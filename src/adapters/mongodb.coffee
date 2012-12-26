@@ -17,7 +17,7 @@ _convertValueToObjectID = (value, key) ->
   catch e
     throw new Error("'#{key}' is not a valid id")
 
-_buildWhereSingle = (property, key, value) ->
+_buildWhereSingle = (property, key, value, not_op) ->
   if key isnt 'id' and not property?
     throw new Error("unknown column '#{key}'")
   property_type = property?.type
@@ -25,16 +25,24 @@ _buildWhereSingle = (property, key, value) ->
   if Array.isArray value
     if is_objectid
       value = value.map (v) -> _convertValueToObjectID v, key
-    value = $in: value
+    if not_op
+      value = $nin: value
+    else
+      value = $in: value
   else if typeof value is 'object' and (keys = Object.keys value).length is 1
     sub_key = keys[0]
     switch sub_key
+      when '$not'
+        return _buildWhereSingle property, key, value[sub_key], not not_op
       when '$gt', '$lt', '$gte', '$lte'
-        obj = {}
-        obj[key] = {}
         sub_value = value[sub_key]
         sub_value = new Date sub_value if property_type is types.Date
-        obj[key][sub_key] = sub_value
+        value = {}
+        value[sub_key] = sub_value
+        if not_op
+          value = $not: value
+        obj = {}
+        obj[key] = value
         return obj
       when '$contains'
         value = new RegExp value[sub_key], 'i'
@@ -43,8 +51,13 @@ _buildWhereSingle = (property, key, value) ->
           value[sub_key] = value[sub_key].map (v) -> _convertValueToObjectID v, key
       else
         throw new Error "unknown operator '#{sub_key}'"
-  else if is_objectid
-    value = _convertValueToObjectID value, key
+    if not_op
+      value = $not: value
+  else
+    if is_objectid
+      value = _convertValueToObjectID value, key
+    if not_op
+      value = $ne: value
 
   obj = {}
   key = '_id' if key is 'id'
