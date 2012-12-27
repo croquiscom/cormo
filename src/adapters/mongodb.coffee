@@ -183,8 +183,15 @@ class MongoDBAdapter extends AdapterBase
   create: (model, data, callback) ->
     @_collection(model).insert data, safe: true, (error, result) ->
       if error?.code is 11000
-        key = error.err.match /index: [\w-.]+\$(\w+)_1/
-        return callback new Error('duplicated ' + key?[1])
+        column = ''
+        key = error.err.match /index: [\w-.]+\$(\w+)/
+        if key?
+          column = key[1]
+          key = column.match /(\w+)_1/
+          if key?
+            column = key[1]
+          column = ' ' + column
+        return callback new Error('duplicated' + column)
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       id = result?[0]?._id.toString()
       if id
