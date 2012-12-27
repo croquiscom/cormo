@@ -125,11 +125,19 @@ class MongoDBAdapter extends AdapterBase
     indexes = []
     for column, property of @_connection.models[model]._schema
       if property.unique
-        indexes.push [ column, { safe: true, unique: true, sparse: true } ]
+        if property.required
+          indexes.push [ column, { unique: true } ]
+        else
+          indexes.push [ column, { unique: true, sparse: true } ]
       if property.type is types.GeoPoint
         obj = {}
         obj[column] = '2d'
         indexes.push [ obj ]
+    for index in @_connection.models[model]._indexes
+      if index.options.unique
+        indexes.push [ index.columns, { name: index.options.name, unique: true, sparse: true } ]
+      else
+        indexes.push [ index.columns, { name: index.options.name } ]
     async.forEach indexes, (index, callback) ->
         collection.ensureIndex index[0], index[1], (error) ->
           callback error

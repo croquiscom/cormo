@@ -56,9 +56,19 @@ class SQLite3Adapter extends SQLAdapterBase
       if column_sql
         sql.push property._dbname + ' ' + column_sql
     sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
-    @_query 'run', sql, (error, result) ->
+    @_query 'run', sql, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null
+      async.forEach @_connection.models[model]._indexes, (index, callback) =>
+        columns = []
+        for column, order of index.columns
+          order = if order is -1 then 'DESC' else 'ASC'
+          columns.push column + ' ' + order
+        unique = if index.options.unique then 'UNIQUE ' else ''
+        sql = "CREATE #{unique}INDEX #{index.options.name} ON #{table} (#{columns.join ','})"
+        @_query 'run', sql, callback
+      , (error) ->
+        return callback SQLite3Adapter.wrapError 'unknown error', error if error
+        callback null
 
   ## @override AdapterBase::applySchema
   applySchema: (model, callback) ->

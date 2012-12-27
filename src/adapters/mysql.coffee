@@ -57,6 +57,13 @@ class MySQLAdapter extends SQLAdapterBase
       column_sql = _propertyToSQL property
       if column_sql
         sql.push property._dbname + ' ' + column_sql
+    for index in @_connection.models[model]._indexes
+      columns = []
+      for column, order of index.columns
+        order = if order is -1 then 'DESC' else 'ASC'
+        columns.push column + ' ' + order
+      unique = if index.options.unique then 'UNIQUE ' else ''
+      sql.push "#{unique}INDEX #{index.options.name} (#{columns.join ','})"
     sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
     @_query sql, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error

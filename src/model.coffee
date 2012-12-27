@@ -93,6 +93,7 @@ class Model
     Object.defineProperty @, '_schema_changed', writable: true, value: true
     Object.defineProperty @, '_schema', value: {}
     Object.defineProperty @, '_intermediate_paths', value: {}
+    Object.defineProperty @, '_indexes', value: []
 
   @_waitingForReady: (object, method, args) ->
     return true if @_connection._waitingForApplyingSchemas object, method, args
@@ -145,6 +146,17 @@ class Model
 
     @_schema_changed = true
     @_connection._schema_changed = true
+
+  ##
+  # Adds an index to this model
+  # @param {Object} columns hash of <column, order>
+  # @param {Object} [options]
+  # @param {Boolean} [options.unique]
+  @index: (columns, options) ->
+    options ||= {}
+    if not options.name
+      options.name = Object.keys(columns).join('_')
+    @_indexes.push columns: columns, options: options
 
   ##
   # Drops this model from the database
