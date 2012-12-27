@@ -8,47 +8,31 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'geospatial-' + db, ->
-    connection = undefined
-    connect = (callback) ->
-      connection = new Connection db, _dbs[db]
-      if connection.connected
-        callback()
-      else
-        connection.once 'connected', callback
-        connection.once 'error', (error) ->
-          callback error
-
+    connection = new Connection db, _dbs[db]
     models = {}
 
     before (done) ->
-      connect (error) ->
-        return done error if error
+      if Math.floor Math.random() * 2
+        # using CoffeeScript extends keyword
+        class Place extends Model
+          @connection connection
+          @column 'name', 'string'
+          @column 'location', 'geopoint'
+      else
+        # using Connection method
+        Place = connection.model 'Place',
+          name: String
+          location: cormo.types.GeoPoint
 
-        if Math.floor Math.random() * 2
-          # using CoffeeScript extends keyword
-          class Place extends Model
-            @connection connection
-            @column 'name', 'string'
-            @column 'location', 'geopoint'
-        else
-          # using Connection method
-          Place = connection.model 'Place',
-            name: String
-            location: cormo.types.GeoPoint
+      models.Place = Place
 
-        models.Place = Place
-
-        Place.drop (error) ->
-          return done error if error
-          done null
+      dropModels [models.Place], done
 
     beforeEach (done) ->
-      models.Place.deleteAll (error) ->
-        return done error if error
-        done null
+      deleteAllRecords [models.Place], done
 
     after (done) ->
-      models.Place.drop done
+      dropModels [models.Place], done
 
     require('./cases/geospatial')(models)
 
@@ -61,18 +45,7 @@ _dbs_not =
 
 Object.keys(_dbs_not).forEach (db) ->
   describe 'geospatial-' + db, ->
-    connection = undefined
-    connect = (callback) ->
-      connection = new Connection db, _dbs_not[db]
-      if connection.connected
-        callback()
-      else
-        connection.once 'connected', callback
-        connection.once 'error', (error) ->
-          callback error
-
-    before (done) ->
-      connect done
+    connection = new Connection db, _dbs_not[db]
 
     it 'does not support geospatial', (done) ->
       ( ->

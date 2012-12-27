@@ -13,58 +13,45 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'type-' + db, ->
-    connection = undefined
-    connect = (callback) ->
-      connection = new Connection db, _dbs[db]
-      if connection.connected
-        callback()
-      else
-        connection.once 'connected', callback
-        connection.once 'error', (error) ->
-          callback error
-
+    connection = new Connection db, _dbs[db]
     models = {}
 
     before (done) ->
-      connect (error) ->
-        return done error if error
+      if Math.floor Math.random() * 2
+        # using CoffeeScript extends keyword
+        class Type extends Model
+          @connection connection
+          @column 'number', 'number'
+          @column 'int_c', 'integer'
+          @column 'date', 'date'
+          @column 'boolean', 'boolean'
+          @column 'object', 'object'
+          @column 'string', 'string'
+          @column 'int_array', ['integer']
+      else
+        # using Connection method
+        Type = connection.model 'Type',
+          number: Number
+          int_c: cormo.types.Integer
+          date: Date
+          boolean: Boolean
+          object: Object
+          string: String
+          int_array: [cormo.types.Integer]
 
-        if Math.floor Math.random() * 2
-          # using CoffeeScript extends keyword
-          class Type extends Model
-            @connection connection
-            @column 'number', 'number'
-            @column 'int_c', 'integer'
-            @column 'date', 'date'
-            @column 'boolean', 'boolean'
-            @column 'object', 'object'
-            @column 'string', 'string'
-            @column 'int_array', ['integer']
-        else
-          # using Connection method
-          Type = connection.model 'Type',
-            number: Number
-            int_c: cormo.types.Integer
-            date: Date
-            boolean: Boolean
-            object: Object
-            string: String
-            int_array: [cormo.types.Integer]
+      models.Type = Type
 
-        models.Type = Type
-
-        Type.drop (error) ->
-          return done error if error
-          done null
+      dropModels [models.Type], done
 
     beforeEach (done) ->
-      models.Type.deleteAll (error) ->
-        return done error if error
-        done null
+      deleteAllRecords [models.Type], done
 
     after (done) ->
-      models.Type.drop done
+      dropModels [models.Type], done
 
-    require('./cases/type')(models)
-    require('./cases/type_update')(models)
-    require('./cases/type_compare')(models)
+    describe '#basic', ->
+      require('./cases/type')(models)
+    describe '#update', ->
+      require('./cases/type_update')(models)
+    describe '#compare', ->
+      require('./cases/type_compare')(models)

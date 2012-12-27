@@ -10,3 +10,13 @@ Model.dirty_tracking = Math.floor(Math.random() * 2) isnt 0
 
 # 'global.should =' does not work because should module override Object.prototype.should
 Object.defineProperty global, 'should', value: require 'should'
+
+global.dropModels = (models, callback) ->
+  async.forEach models, (model, callback) ->
+    model.drop callback
+  , callback
+
+global.deleteAllRecords = (models, callback) ->
+  async.forEach models, (model, callback) ->
+    model.deleteAll callback
+  , callback

@@ -63,23 +63,13 @@ describe 'mixing several database', ->
       models.User = User
       models.Post = Post
 
-      User.drop (error) ->
-        return done error if error
-        Post.drop (error) ->
-          return done error if error
-          done null
+      dropModels [models.User, models.Post], done
 
   beforeEach (done) ->
-    models.User.deleteAll (error) ->
-      return done error if error
-      models.Post.deleteAll (error) ->
-        return done error if error
-        done null
+    deleteAllRecords [models.User, models.Post], done
 
   after (done) ->
-    models.User.drop (error) ->
-      models.Post.drop (error) ->
-        done null
+    dropModels [models.User, models.Post], done
 
   describe '#hasMany', ->
     require('./cases/association_has_many')(models)

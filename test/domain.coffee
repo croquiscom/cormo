@@ -13,46 +13,30 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'domain-' + db, ->
-    connection = undefined
-    connect = (callback) ->
-      connection = new Connection db, _dbs[db]
-      if connection.connected
-        callback()
-      else
-        connection.once 'connected', callback
-        connection.once 'error', (error) ->
-          callback error
-
+    connection = new Connection db, _dbs[db]
     models = {}
 
     before (done) ->
-      connect (error) ->
-        return done error if error
+      if Math.floor Math.random() * 2
+        # using CoffeeScript extends keyword
+        class User extends Model
+          @connection connection
+          @column 'name', String
+          @column 'age', Number
+      else
+        # using Connection method
+        User = connection.model 'User',
+          name: String
+          age: Number
 
-        if Math.floor Math.random() * 2
-          # using CoffeeScript extends keyword
-          class User extends Model
-            @connection connection
-            @column 'name', String
-            @column 'age', Number
-        else
-          # using Connection method
-          User = connection.model 'User',
-            name: String
-            age: Number
+      models.User = User
 
-        models.User = User
-
-        User.drop (error) ->
-          return done error if error
-          done null
+      dropModels [models.User], done
 
     beforeEach (done) ->
-      models.User.deleteAll (error) ->
-        return done error if error
-        done null
+      deleteAllRecords [models.User], done
 
     after (done) ->
-      models.User.drop done
+      dropModels [models.User], done
 
     require('./cases/domain')(models)

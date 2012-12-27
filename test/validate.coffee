@@ -15,59 +15,43 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'validate-' + db, ->
-    connection = undefined
-    connect = (callback) ->
-      connection = new Connection db, _dbs[db]
-      if connection.connected
-        callback()
-      else
-        connection.once 'connected', callback
-        connection.once 'error', (error) ->
-          callback error
-
+    connection = new Connection db, _dbs[db]
     models = {}
 
     before (done) ->
-      connect (error) ->
-        return done error if error
+      if Math.floor Math.random() * 2
+        # using CoffeeScript extends keyword
+        class User extends Model
+          @connection connection
+          @column 'name', String
+          @column 'age', Number
+          @column 'email', String
+      else
+        # using Connection method
+        User = connection.model 'User',
+          name: String
+          age: Number
+          email: String
 
-        if Math.floor Math.random() * 2
-          # using CoffeeScript extends keyword
-          class User extends Model
-            @connection connection
-            @column 'name', String
-            @column 'age', Number
-            @column 'email', String
-        else
-          # using Connection method
-          User = connection.model 'User',
-            name: String
-            age: Number
-            email: String
+      models.User = User
 
-        models.User = User
+      # checkes age validity
+      User.addValidator (record) ->
+        if record.age < 18
+          return 'too young'
+        
+      # checkes email validity
+      User.addValidator (record) ->
+        if record.email and not /^\w+@.+$/.test record.email
+          throw new Error 'invalid email'
+        return true
 
-        # checkes age validity
-        User.addValidator (record) ->
-          if record.age < 18
-            return 'too young'
-          
-        # checkes email validity
-        User.addValidator (record) ->
-          if record.email and not /^\w+@.+$/.test record.email
-            throw new Error 'invalid email'
-          return true
-
-        User.drop (error) ->
-          return done error if error
-          done null
+      dropModels [models.User], done
 
     beforeEach (done) ->
-      models.User.deleteAll (error) ->
-        return done error if error
-        done null
+      deleteAllRecords [models.User], done
 
     after (done) ->
-      models.User.drop done
+      dropModels [models.User], done
 
     require('./cases/validate')(models)

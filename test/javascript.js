@@ -9,49 +9,21 @@ _dbs = {
 };
 Object.keys(_dbs).forEach(function (db) {
   describe('javascript-' + db, function () {
-    var connection = undefined;
-    var connect = function (callback) {
-      connection = new Connection(db, _dbs[db]);
-      if (connection.connected) {
-        callback();
-      } else {
-        connection.once('connected', callback);
-        connection.once('error', function (error) {
-          callback(error);
-        });
-      }
-    };
-
+    var connection = new Connection(db, _dbs[db]);
     var models = {}
 
     before(function (done) {
-      connect(function (error) {
-        if (error) {
-          return done(error);
-        }
+      models.User = connection.model('User', { name: String, age: Number });
 
-        var User = models.User = connection.model('User', { name: String, age: Number });
-
-        User.drop(function (error) {
-          if (error) {
-            return done(error);
-          }
-          done(null);
-        });
-      });
+      dropModels([models.User], done);
     });
 
     beforeEach(function (done) {
-      models.User.deleteAll(function (error) {
-        if (error) {
-          return done(error);
-        }
-        done(null);
-      });
+      deleteAllRecords([models.User], done);
     });
 
     after(function (done) {
-      models.User.drop(done);
+      dropModels([models.User], done);
     });
 
     require('./cases/javascript')(models);
