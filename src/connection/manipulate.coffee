@@ -22,6 +22,13 @@ class ConnectionManipulate
     model.delete data, (error, count) ->
       callback error
 
+  _manipulateDeleteAllModels: (callback) ->
+    async.forEach Object.keys(@models), (model, callback) =>
+      model = @models[model]
+      model.delete (error, count) ->
+        callback error
+    , callback
+
   _manipulateConvertIds: (id_to_record_map, model, data) ->
     model = inflector.camelize model
     return if not @models[model]
@@ -63,6 +70,8 @@ class ConnectionManipulate
       else if key.substr(0, 7) is 'delete_'
         model = key.substr 7
         @_manipulateDeletion model, data, callback
+      else if key is 'deleteAll'
+        @_manipulateDeleteAllModels callback
       else
         return callback new Error('unknown command: '+key)
     , (error) ->

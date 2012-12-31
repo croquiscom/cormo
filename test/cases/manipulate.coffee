@@ -105,3 +105,34 @@ module.exports = (connection, models) ->
         posts[0].user_id.should.be.equal users[0].id
         callback null
     ], done
+
+  it 'deleteAll', (done) ->
+    async.waterfall [
+      (callback) ->
+        connection.manipulate [
+          { create_user: name: 'John Doe', age: 27 }
+          { create_post: title: 'first post', body: 'This is the 1st post.' }
+        ], callback
+      (id_to_record_map, callback) ->
+        models.User.count callback
+      (count, callback) ->
+        count.should.equal 1
+        callback null
+      (callback) ->
+        models.Post.count callback
+      (count, callback) ->
+        count.should.equal 1
+        callback null
+      (callback) ->
+        connection.manipulate 'deleteAll', callback
+      (id_to_record_map, callback) ->
+        models.User.count callback
+      (count, callback) ->
+        count.should.equal 0
+        callback null
+      (callback) ->
+        models.Post.count callback
+      (count, callback) ->
+        count.should.equal 0
+        callback null
+    ], done
