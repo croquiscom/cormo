@@ -8,7 +8,7 @@ module.exports = (connection, models) ->
         callback null
       (callback) ->
         connection.manipulate { create_user: name: 'John Doe', age: 27 }, callback
-      (callback) ->
+      (id_to_record_map, callback) ->
         models.User.count callback
       (count, callback) ->
         count.should.equal 1
@@ -24,7 +24,7 @@ module.exports = (connection, models) ->
     ], done
 
   it 'invalid model', (done) ->
-    connection.manipulate { create_account: name: 'John Doe', age: 27 }, (error) ->
+    connection.manipulate { create_account: name: 'John Doe', age: 27 }, (error, id_to_record_map) ->
       should.exist error
       error.should.be.an.instanceOf Error
       error.message.should.be.equal 'model Account does not exist'
@@ -38,7 +38,7 @@ module.exports = (connection, models) ->
           { create_user: name: 'Bill Smith', age: 45 }
           { create_user: name: 'Alice Jackson', age: 27 }
         ], callback
-      (callback) ->
+      (id_to_record_map, callback) ->
         models.User.count callback
       (count, callback) ->
         count.should.equal 3
@@ -53,9 +53,9 @@ module.exports = (connection, models) ->
           { create_user: name: 'Bill Smith', age: 45 }
           { create_user: name: 'Alice Jackson', age: 27 }
         ], callback
-      (callback) ->
+      (id_to_record_map, callback) ->
         connection.manipulate 'delete_user', callback
-      (callback) ->
+      (id_to_record_map, callback) ->
         models.User.count callback
       (count, callback) ->
         count.should.equal 0
@@ -70,9 +70,9 @@ module.exports = (connection, models) ->
           { create_user: name: 'Bill Smith', age: 45 }
           { create_user: name: 'Alice Jackson', age: 27 }
         ], callback
-      (callback) ->
+      (id_to_record_map, callback) ->
         connection.manipulate { delete_user: age: 27 }, callback
-      (callback) ->
+      (id_to_record_map, callback) ->
         models.User.count callback
       (count, callback) ->
         count.should.equal 1
@@ -84,5 +84,24 @@ module.exports = (connection, models) ->
         users[0].should.have.keys 'id', 'name', 'age'
         users[0].name.should.be.equal 'Bill Smith'
         users[0].age.should.be.equal 45
+        callback null
+    ], done
+
+  it 'build association', (done) ->
+    async.waterfall [
+      (callback) ->
+        connection.manipulate [
+          { create_user: id: 'user1', name: 'John Doe', age: 27 }
+          { create_post: title: 'first post', body: 'This is the 1st post.', user_id: 'user1' }
+        ], callback
+      (id_to_record_map, callback) ->
+        models.User.where callback
+      (users, callback) ->
+        models.Post.where (error, posts) ->
+          callback error, users, posts
+      (users, posts, callback) ->
+        users.should.have.length 1
+        posts.should.have.length 1
+        posts[0].user_id.should.be.equal users[0].id
         callback null
     ], done

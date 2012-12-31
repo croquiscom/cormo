@@ -1,5 +1,6 @@
 async = require 'async'
 inflector = require '../inflector'
+types = require '../types'
 
 ##
 # Manipulate data
@@ -11,7 +12,7 @@ class ConnectionManipulate
     model = @models[model]
 
     model.create data, (error, record) ->
-      callback error
+      callback error, record
 
   _manipulateDeletion: (model, data, callback) ->
     model = inflector.camelize model
@@ -21,12 +22,23 @@ class ConnectionManipulate
     model.delete data, (error, count) ->
       callback error
 
+  _manipulateConvertIds: (id_to_record_map, model, data) ->
+    model = inflector.camelize model
+    return if not @models[model]
+    model = @models[model]
+
+    for column, property of model._schema
+      if property.record_id and data.hasOwnProperty column
+        data[column] = id_to_record_map[data[column]].id
+
   ##
   # Manipulate data
   # @param {Array<Object>} commands
   # @param {Function} callback
   # @param {Error} callback.error
+  # @param {Object} callback.id_to_record_map
   manipulate: (commands, callback) ->
+    id_to_record_map = {}
     commands = [commands] if not Array.isArray commands
     async.forEachSeries commands, (command, callback) =>
       if typeof command is 'object'
@@ -41,13 +53,19 @@ class ConnectionManipulate
       return callback new Error('invalid command: '+JSON.stringify(command)) if not key
       if key.substr(0, 7) is 'create_'
         model = key.substr 7
-        @_manipulateCreation model, data, callback
+        id = data.id
+        delete data.id
+        @_manipulateConvertIds id_to_record_map, model, data
+        @_manipulateCreation model, data, (error, record) ->
+          return callback error if error
+          id_to_record_map[id] = record if id
+          callback null
       else if key.substr(0, 7) is 'delete_'
         model = key.substr 7
         @_manipulateDeletion model, data, callback
       else
         return callback new Error('unknown command: '+key)
     , (error) ->
-      callback error
+      callback error, id_to_record_map
 
 module.exports = ConnectionManipulate

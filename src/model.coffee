@@ -129,6 +129,7 @@ class Model
     type = types._toCORMOType property.type
     if type is types.RecordID
       type = @_getKeyType property.connection
+      property.record_id = true
 
     # check supports of GeoPoint
     if type is types.GeoPoint and not @_adapter.support_geopoint
