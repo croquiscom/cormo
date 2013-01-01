@@ -188,18 +188,24 @@ class Query
 
   ##
   # Executes the query as a delete operation
+  # @param {Object} [options]
+  # @param {Boolean} [options.skip_log=false]
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Number} callback.count
   # @return {Query} this
   # @see AdapterBase::delete
-  delete: (callback) ->
+  delete: (options, callback) ->
     return if @_model._waitingForReady @, @delete, arguments
+
+    if typeof options is 'function'
+      callback = options
+      options = {}
 
     if @_id
       @_conditions.push id: @_id
       delete @_id
-    @_connection.log @_name, 'delete', conditions: @_conditions
+    @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log
     @_adapter.delete @_name, @_conditions, _bindDomain callback
 
 module.exports = Query

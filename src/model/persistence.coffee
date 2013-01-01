@@ -1,6 +1,7 @@
 async = require 'async'
 inflector = require '../inflector'
 util = require '../util'
+_ = require 'underscore'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
@@ -12,14 +13,20 @@ class ModelPersistence
   # Creates a record and saves it to the database
   # 'Model.create(data, callback)' is the same as 'Model.build(data).save(callback)'
   # @param {Object} [data={}]
+  # @param {Object} [options]
+  # @param {Boolean} [options.skip_log=false]
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Model} callback.record created record
-  @create: (data, callback) ->
+  @create: (data, options, callback) ->
     if typeof data is 'function'
       callback = data
       data = {}
-    @build(data).save callback
+      options = {}
+    else if typeof options is 'function'
+      callback = options
+      options = {}
+    @build(data).save options, callback
 
   ##
   # Creates multiple records and saves them to the database.
@@ -63,7 +70,7 @@ class ModelPersistence
       data.id = ctor._adapter.idToDB @id
     return data
 
-  _create: (callback) ->
+  _create: (options, callback) ->
     return if @constructor._waitingForReady @, @_create, arguments
 
     try
@@ -72,7 +79,7 @@ class ModelPersistence
       return callback e, @
 
     ctor = @constructor
-    ctor._connection.log ctor._name, 'create', data
+    ctor._connection.log ctor._name, 'create', data if not options?.skip_log
     ctor._adapter.create ctor._name, data, _bindDomain (error, id) =>
       return callback error, @ if error
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
@@ -108,7 +115,7 @@ class ModelPersistence
         Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: ids[i]
       callback null, records
 
-  _update: (callback) ->
+  _update: (options, callback) ->
     ctor = @constructor
     return if ctor._waitingForReady @, @_update, arguments
 
@@ -123,7 +130,7 @@ class ModelPersistence
       for path of @_prev_attributes
         ctor._buildSaveDataColumn data, @_attributes, path, schema[path], true
 
-      ctor._connection.log ctor._name, 'update', data
+      ctor._connection.log ctor._name, 'update', data if not options?.skip_log
       adapter.updatePartial ctor._name, data, id: @id, {}, _bindDomain (error) =>
         return callback error, @ if error
         @_prev_attributes = {}
@@ -135,7 +142,7 @@ class ModelPersistence
       catch e
         return callback e, @
       
-      ctor._connection.log ctor._name, 'update', data
+      ctor._connection.log ctor._name, 'update', data if not options?.skip_log
       ctor._adapter.update ctor._name, data, _bindDomain (error) =>
         return callback error, @ if error
         @_prev_attributes = {}
@@ -145,6 +152,7 @@ class ModelPersistence
   # Saves data to the database
   # @param {Object} [options]
   # @param {Boolean} [options.validate=true]
+  # @param {Boolean} [options.skip_log=false]
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Model} callback.record this
@@ -157,20 +165,20 @@ class ModelPersistence
     if options?.validate isnt false
       @validate (error) =>
         return callback error if error
-        @save validate: false, callback
+        @save _.extend({}, options, validate: false), callback
       return
 
     @_runCallbacks 'save', 'before'
 
     if @id
       @_runCallbacks 'update', 'before'
-      @_update (error, record) =>
+      @_update options, (error, record) =>
         @_runCallbacks 'update', 'after'
         @_runCallbacks 'save', 'after'
         callback error, record
     else
       @_runCallbacks 'create', 'before'
-      @_create (error, record) =>
+      @_create options, (error, record) =>
         @_runCallbacks 'create', 'after'
         @_runCallbacks 'save', 'after'
         callback error, record
