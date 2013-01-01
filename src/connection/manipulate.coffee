@@ -6,7 +6,7 @@ types = require '../types'
 # Manipulate data
 # @namespace connection
 class ConnectionManipulate
-  _manipulateCreation: (model, data, callback) ->
+  _manipulateCreate: (model, data, callback) ->
     model = inflector.camelize model
     return callback new Error("model #{model} does not exist") if not @models[model]
     model = @models[model]
@@ -14,7 +14,7 @@ class ConnectionManipulate
     model.create data, (error, record) ->
       callback error, record
 
-  _manipulateDeletion: (model, data, callback) ->
+  _manipulateDelete: (model, data, callback) ->
     model = inflector.camelize model
     return callback new Error("model #{model} does not exist") if not @models[model]
     model = @models[model]
@@ -27,6 +27,19 @@ class ConnectionManipulate
       model = @models[model]
       model.delete (error, count) ->
         callback error
+    , callback
+
+  _manipulateDropModel: (model, callback) ->
+    model = inflector.camelize model
+    return callback new Error("model #{model} does not exist") if not @models[model]
+    model = @models[model]
+
+    model.drop callback
+
+  _manipulateDropAllModels: (callback) ->
+    async.forEach Object.keys(@models), (model, callback) =>
+      model = @models[model]
+      model.drop callback
     , callback
 
   _manipulateConvertIds: (id_to_record_map, model, data) ->
@@ -63,15 +76,20 @@ class ConnectionManipulate
         id = data.id
         delete data.id
         @_manipulateConvertIds id_to_record_map, model, data
-        @_manipulateCreation model, data, (error, record) ->
+        @_manipulateCreate model, data, (error, record) ->
           return callback error if error
           id_to_record_map[id] = record if id
           callback null
       else if key.substr(0, 7) is 'delete_'
         model = key.substr 7
-        @_manipulateDeletion model, data, callback
+        @_manipulateDelete model, data, callback
       else if key is 'deleteAll'
         @_manipulateDeleteAllModels callback
+      else if key.substr(0, 5) is 'drop_'
+        model = key.substr 5
+        @_manipulateDropModel model, callback
+      else if key is 'dropAll'
+        @_manipulateDropAllModels callback
       else
         return callback new Error('unknown command: '+key)
     , (error) ->
