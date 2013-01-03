@@ -127,8 +127,11 @@ class ModelPersistence
       data = {}
       adapter = ctor._adapter
       schema = ctor._schema
-      for path of @_prev_attributes
-        ctor._buildSaveDataColumn data, @_attributes, path, schema[path], true
+      try
+        for path of @_prev_attributes
+          ctor._buildSaveDataColumn data, @_attributes, path, schema[path], true
+      catch e
+        return callback e, @
 
       ctor._connection.log ctor._name, 'update', data if not options?.skip_log
       adapter.updatePartial ctor._name, data, id: @id, {}, _bindDomain (error) =>

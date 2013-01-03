@@ -106,6 +106,43 @@ module.exports = (connection, models) ->
         callback null
     ], done
 
+  it 'build association by real id', (done) ->
+    async.waterfall [
+      (callback) ->
+        connection.manipulate [
+          { create_user: id: 'user1', name: 'John Doe', age: 27 }
+        ], callback
+      (id_to_record_map, callback) ->
+        connection.manipulate [
+          { create_post: title: 'first post', body: 'This is the 1st post.', user_id: id_to_record_map.user1.id }
+        ], callback
+      (id_to_record_map, callback) ->
+        models.User.where callback
+      (users, callback) ->
+        models.Post.where (error, posts) ->
+          callback error, users, posts
+      (users, posts, callback) ->
+        users.should.have.length 1
+        posts.should.have.length 1
+        posts[0].user_id.should.be.equal users[0].id
+        callback null
+    ], done
+
+  it 'id is not shared between manipulates', (done) ->
+    async.waterfall [
+      (callback) ->
+        connection.manipulate [
+          { create_user: id: 'user1', name: 'John Doe', age: 27 }
+        ], callback
+      (id_to_record_map, callback) ->
+        connection.manipulate [
+          { create_post: title: 'first post', body: 'This is the 1st post.', user_id: 'user1' }
+        ], (error) ->
+          should.exist error
+          error.should.be.an.instanceOf Error
+          callback null
+    ], done
+
   it 'deleteAll', (done) ->
     async.waterfall [
       (callback) ->

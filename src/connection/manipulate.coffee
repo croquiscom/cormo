@@ -49,7 +49,9 @@ class ConnectionManipulate
 
     for column, property of model._schema
       if property.record_id and data.hasOwnProperty column
-        data[column] = id_to_record_map[data[column]].id
+        record = id_to_record_map[data[column]]
+        if record
+          data[column] = record.id
 
   ##
   # Manipulate data

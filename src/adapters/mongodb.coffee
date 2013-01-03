@@ -158,7 +158,7 @@ class MongoDBAdapter extends AdapterBase
     try
       return new ObjectID value
     catch e
-      callback new Error("'id' is not a valid ID")
+      throw new Error("'id' is not a valid ID")
 
   valueToDB: (value, column, property) ->
     return if not value?
@@ -167,7 +167,7 @@ class MongoDBAdapter extends AdapterBase
       try
         return new ObjectID value
       catch e
-        callback new Error("'#{column}' is not a valid ID")
+        throw new Error("'#{column}' is not a valid ID")
     return value
 
   _getModelID: (data) ->
