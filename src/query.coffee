@@ -97,17 +97,23 @@ class Query
 
   ##
   # Executes the query
+  # @param {Object} [options]
+  # @param {Boolean} [options.skip_log=false]
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Model|Array<Model>} callback.records
   # @return {Query} this
   # @see AdapterBase::findById
   # @see AdapterBase::find
-  exec: (callback) ->
+  exec: (options, callback) ->
     return if @_model._waitingForReady @, @exec, arguments
 
+    if typeof options is 'function'
+      callback = options
+      options = {}
+
     if @_find_single_id and @_conditions.length is 0
-      @_connection.log @_name, 'find by id', id: @_id, options: @_options
+      @_connection.log @_name, 'find by id', id: @_id, options: @_options if not options?.skip_log
       @_adapter.findById @_name, @_id, @_options, _bindDomain (error, record) ->
         return callback new Error('not found') if error or not record
         callback null, record
@@ -121,7 +127,7 @@ class Query
       else
         @_conditions.push id: @_id
         expected_count = 1
-    @_connection.log @_name, 'find', conditions: @_conditions, options: @_options
+    @_connection.log @_name, 'find', conditions: @_conditions, options: @_options if not options?.skip_log
     @_adapter.find @_name, @_conditions, @_options, _bindDomain (error, records) =>
       return callback error if error
       if expected_count?

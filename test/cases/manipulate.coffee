@@ -1,3 +1,8 @@
+_compareUser = (user, expected) ->
+  user.should.have.keys 'id', 'name', 'age'
+  user.name.should.equal expected.name
+  user.age.should.equal expected.age
+
 module.exports = (connection, models) ->
   it 'create simple', (done) ->
     async.waterfall [
@@ -171,5 +176,27 @@ module.exports = (connection, models) ->
         models.Post.count callback
       (count, callback) ->
         count.should.equal 0
+        callback null
+    ], done
+
+  it 'find record', (done) ->
+    async.waterfall [
+      (callback) ->
+        connection.manipulate [
+          { create_user: name: 'John Doe', age: 27 }
+          { create_user: name: 'Bill Smith', age: 45 }
+          { create_user: name: 'Alice Jackson', age: 27 }
+        ], callback
+      (id_to_record_map, callback) ->
+        connection.manipulate [
+          { find_users: id: 'users', age: 27 }
+        ], callback
+      (id_to_record_map, callback) ->
+        users = id_to_record_map.users
+        users.should.be.an.instanceOf Array
+        users.should.have.length 2
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        _compareUser users[0], name: 'Alice Jackson', age: 27
+        _compareUser users[1], name: 'John Doe', age: 27
         callback null
     ], done

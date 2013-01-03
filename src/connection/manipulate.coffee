@@ -42,6 +42,14 @@ class ConnectionManipulate
       model.drop callback
     , callback
 
+  _manipulateFind: (model, data, callback) ->
+    model = inflector.camelize inflector.singularize model
+    return callback new Error("model #{model} does not exist") if not @models[model]
+    model = @models[model]
+
+    model.where(data).exec skip_log: true, (error, records) ->
+      callback error, records
+
   _manipulateConvertIds: (id_to_record_map, model, data) ->
     model = inflector.camelize model
     return if not @models[model]
@@ -94,6 +102,15 @@ class ConnectionManipulate
         @_manipulateDropModel model, callback
       else if key is 'dropAll'
         @_manipulateDropAllModels callback
+      else if key.substr(0, 5) is 'find_'
+        model = key.substr 5
+        id = data.id
+        delete data.id
+        return callback null if not id
+        @_manipulateFind model, data, (error, records) ->
+          return callback error if error
+          id_to_record_map[id] = records
+          callback null
       else
         return callback new Error('unknown command: '+key)
     , (error) ->
