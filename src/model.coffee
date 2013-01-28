@@ -103,9 +103,9 @@ class Model
 
   @_checkConnection: ->
     return if @hasOwnProperty '_connection'
-    if not Connection.defaultConnection?
+    if not Model._Connection.defaultConnection?
       throw new Error 'Create a Connection before creating a Model'
-    @connection Connection.defaultConnection
+    @connection Model._Connection.defaultConnection
 
   @_waitingForReady: (object, method, args) ->
     return true if @_connection._waitingForApplyingSchemas object, method, args

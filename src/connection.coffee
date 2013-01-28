@@ -124,4 +124,6 @@ _use = (file) ->
 _use 'association'
 _use 'manipulate'
 
+Model._Connection = Connection
+
 module.exports = Connection
