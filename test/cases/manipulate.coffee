@@ -3,7 +3,7 @@ _compareUser = (user, expected) ->
   user.name.should.equal expected.name
   user.age.should.equal expected.age
 
-module.exports = (connection, models) ->
+module.exports = (models) ->
   it 'create simple', (done) ->
     async.waterfall [
       (callback) ->

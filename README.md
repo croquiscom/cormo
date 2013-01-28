@@ -43,10 +43,11 @@ User = connection.model 'User',
 
 # using CoffeeScript extends keyword
 class Post extends cormo.Model
-  @connection connection # must be first
+  @connection connection # if omitted, Connection.defaultConnection will be used instead
   @column 'title', String # 'String' is the same as '{ type: String }'
   @column 'body', 'string' # you can also use 'string' to specify a string type
 
+# apply defined models to Database. This can be omitted
 connection.applySchemas (error) ->
   console.log error
 ```
@@ -207,8 +208,6 @@ User = connection.model 'User',
   age: { type: Number, required: true }
   email: { type: String, unique: true, required: true }
 
-connection.applySchemas()
-
 User.create { name: 'Bill Smith', age: 45, email: 'bill@foo.org' }, (error, user1) ->
   User.create { name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, (error, user2) ->
     # error.message will be 'duplicated email' or 'duplicated'
@@ -238,8 +237,6 @@ User.addValidator (record) ->
   if record.email and not /^\w+@.+$/.test record.email
     throw new Error 'invalid email'
   return true
-
-connection.applySchemas()
 
 User.create { name: 'John Doe', age: 10, email: 'invalid' }, (error, user) ->
   # error.message will be 'invalid email,too young' or 'too young,invalid email'
@@ -276,7 +273,6 @@ User.afterCreate ->
 
 # while defining a model
 class Post extends cormo.Model
-  @connection connection # must be first
   @column 'title', String # 'String' is the same as '{ type: String }'
   @column 'body', 'string' # you can also use 'string' to specify a string type
   @afterSave 'onAfterSave'
@@ -305,9 +301,6 @@ Post.belongsTo User
 # this will add 'parent_post_id' to the Post model
 Post.hasMany Post, as: 'comments', foreign_key: 'parent_post_id'
 Post.belongsTo Post, as: 'parent_post'
-
-# you must call applySchemas after defining association
-connection.applySchemas()
 
 # get associated objects
 user.posts (error, records) ->
@@ -342,8 +335,6 @@ Currently, we supports only near query of 2D location in MongoDB and MySQL.
 Place = connection.model 'Place',
   name: String
   location: cormo.types.GeoPoint
-
-connection.applySchemas()
 
 # create 
 Place.create name: 'Carrier Dome', location: [-76.136131, 43.036240]

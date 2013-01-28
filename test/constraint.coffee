@@ -13,15 +13,15 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'constraint-' + db, ->
-    connection = new Connection db, _dbs[db]
     models = {}
 
     describe '#basic', ->
       before (done) ->
+        global.connection = new Connection db, _dbs[db]
+
         if Math.floor Math.random() * 2
           # using CoffeeScript extends keyword
           class User extends Model
-            @connection connection
             @column 'name', { type: String, required: true }
             @column 'age', { type: Number, required: true }
             @column 'email', { type: String, unique: true, required: true }
@@ -50,10 +50,11 @@ Object.keys(_dbs).forEach (db) ->
 
     describe '#multicolumn', ->
       before (done) ->
+        global.connection = new Connection db, _dbs[db]
+
         if Math.floor Math.random() * 2
           # using CoffeeScript extends keyword
           class Version extends Model
-            @connection connection
             @column 'major', 'number'
             @column 'minor', 'number'
             @index { major: 1, minor: 1 }, { unique: true }

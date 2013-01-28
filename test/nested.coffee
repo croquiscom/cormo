@@ -13,13 +13,12 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'nested-' + db, ->
-    connection = new Connection db, _dbs[db]
     models = {}
 
     beforeEach (done) ->
+      global.connection = new Connection db, _dbs[db]
       class User extends Model
         @connection connection
-      models.connection = connection
       models.User = User
       dropModels [models.User], done
 

@@ -13,12 +13,11 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'callbacks-' + db, ->
-    connection = new Connection db, _dbs[db]
     models = {}
 
     beforeEach (done) ->
+      global.connection = new Connection db, _dbs[db]
       class User extends Model
-        @connection connection
         @column 'name', String
         @column 'age', Number
       models.User = User

@@ -5,6 +5,7 @@ global.async = require 'async'
 global.cormo = require '../index'
 global.Connection = cormo.Connection
 global.Model = cormo.Model
+global.connection = undefined
 
 Model.dirty_tracking = Math.floor(Math.random() * 2) isnt 0
 

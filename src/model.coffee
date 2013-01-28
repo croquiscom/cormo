@@ -79,9 +79,14 @@ class Model
 
   ##
   # Sets a connection of this model
+  #
+  # If this methods was not called explicitly, this model will use Connection.defaultConnection
   # @param {Connection} connection
   # @param {String} [name]
   @connection: (connection, name) ->
+    if @hasOwnProperty '_connection'
+      throw new Error 'Model::connection was called twice'
+
     name = @name if not name
     connection.models[name] = @
 
@@ -94,6 +99,12 @@ class Model
     Object.defineProperty @, '_schema', value: {}
     Object.defineProperty @, '_intermediate_paths', value: {}
     Object.defineProperty @, '_indexes', value: []
+
+  @_checkConnection: ->
+    return if @hasOwnProperty '_connection'
+    if not Connection.defaultConnection?
+      throw new Error 'Create a Connection before creating a Model'
+    @connection Connection.defaultConnection
 
   @_waitingForReady: (object, method, args) ->
     return true if @_connection._waitingForApplyingSchemas object, method, args
@@ -110,6 +121,8 @@ class Model
   # @param {String} path
   # @param {Function|String|ColumnProperty} property
   @column: (path, property) ->
+    @_checkConnection()
+
     # nested path
     if typeof property is 'object' and not Array.isArray(property) and (not property.type or property.type.type)
       for subcolumn, subproperty of property
@@ -154,6 +167,8 @@ class Model
   # @param {Object} [options]
   # @param {Boolean} [options.unique]
   @index: (columns, options) ->
+    @_checkConnection()
+
     options ||= {}
     if not options.name
       options.name = Object.keys(columns).join('_')
@@ -346,6 +361,8 @@ class Model
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
   @hasMany: (target_model_or_column, options) ->
+    @_checkConnection()
+
     @_connection.addAssociation
       type: 'hasMany'
       this_model: @
@@ -360,6 +377,8 @@ class Model
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
   @belongsTo: (target_model_or_column, options) ->
+    @_checkConnection()
+
     @_connection.addAssociation
       type: 'belongsTo'
       this_model: @

@@ -11,6 +11,13 @@ _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 # @uses ConnectionManipulate
 class Connection extends EventEmitter
   ##
+  # Default connection
+  # @property defaultConnection
+  # @type Connection
+  # @static
+  # @see Connection::constructor
+
+  ##
   # Indicates the adapter associated to this connection
   # @property _adapter
   # @type AdapterBase
@@ -27,13 +34,17 @@ class Connection extends EventEmitter
   ##
   # Creates a connection
   # @param {String} adapater_name
-  # @param {Object} settings adapter specific settings
+  # @param {Object} settings connection settings & adapter specific settings
+  # @param {Boolean} [settings.is_default=true] Connection.defaultConnection will be set to this if true
   # @see MySQLAdapter::connect
   # @see MongoDBAdapter::connect
   # @see PostgreSQLAdapter::connect
   # @see SQLite3Adapter::connect
   # @see RedisAdapter::connect
   constructor: (adapter_name, settings) ->
+    if settings.is_default isnt false
+      Connection.defaultConnection = @
+
     @connected = false
     @models = {}
     @_pending_associations = []

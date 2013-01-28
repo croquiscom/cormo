@@ -8,14 +8,14 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'geospatial-' + db, ->
-    connection = new Connection db, _dbs[db]
     models = {}
 
     before (done) ->
+      global.connection = new Connection db, _dbs[db]
+
       if Math.floor Math.random() * 2
         # using CoffeeScript extends keyword
         class Place extends Model
-          @connection connection
           @column 'name', 'string'
           @column 'location', 'geopoint'
       else
@@ -45,7 +45,8 @@ _dbs_not =
 
 Object.keys(_dbs_not).forEach (db) ->
   describe 'geospatial-' + db, ->
-    connection = new Connection db, _dbs_not[db]
+    before ->
+      global.connection = new Connection db, _dbs_not[db]
 
     it 'does not support geospatial', (done) ->
       ( ->

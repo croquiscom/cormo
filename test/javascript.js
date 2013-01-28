@@ -9,10 +9,11 @@ _dbs = {
 };
 Object.keys(_dbs).forEach(function (db) {
   describe('javascript-' + db, function () {
-    var connection = new Connection(db, _dbs[db]);
     var models = {}
 
     before(function (done) {
+      global.connection = new Connection(db, _dbs[db]);
+
       models.User = connection.model('User', { name: String, age: Number });
 
       dropModels([models.User], done);

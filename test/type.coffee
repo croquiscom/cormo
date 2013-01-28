@@ -13,14 +13,14 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'type-' + db, ->
-    connection = new Connection db, _dbs[db]
     models = {}
 
     before (done) ->
+      global.connection = new Connection db, _dbs[db]
+
       if Math.floor Math.random() * 2
         # using CoffeeScript extends keyword
         class Type extends Model
-          @connection connection
           @column 'number', 'number'
           @column 'int_c', 'integer'
           @column 'date', 'date'
