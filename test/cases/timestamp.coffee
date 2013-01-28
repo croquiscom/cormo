@@ -1,7 +1,7 @@
-module.exports = (models) ->
+module.exports = () ->
   it 'created_at', (done) ->
     now = Date.now()
-    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+    connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
       user.should.have.property 'created_at'
       user.should.have.property 'updated_at'
@@ -10,7 +10,7 @@ module.exports = (models) ->
       done null
 
   it 'updated_at', (done) ->
-    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+    connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
       created_at = user.created_at
       setTimeout ->

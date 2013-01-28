@@ -19,11 +19,11 @@ _createPlaces = (Place, data, callback) ->
   data.sort -> 0.5 - Math.random() # random sort
   Place.createBulk data, callback
 
-module.exports = (models) ->
+module.exports = () ->
   it 'valid geopoint', (done) ->
-    models.Place.create name: 'Carrier Dome', location: [-76.136131, 43.036240], (error, place) ->
+    connection.Place.create name: 'Carrier Dome', location: [-76.136131, 43.036240], (error, place) ->
       return done error if error
-      models.Place.find place.id, (error, record) ->
+      connection.Place.find place.id, (error, record) ->
         return done error if error
         record.should.have.property 'name', 'Carrier Dome'
         record.should.have.property 'location'
@@ -41,7 +41,7 @@ module.exports = (models) ->
       [ -76.136131, 43.036240, 10.59 ]
     ]
     async.forEach data, (item, callback) ->
-        models.Place.create name: 'Carrier Dome', location: item, (error, place) ->
+        connection.Place.create name: 'Carrier Dome', location: item, (error, place) ->
           error.should.exist
           error.should.have.property 'message', "'location' is not a geo point"
           callback null
@@ -49,9 +49,9 @@ module.exports = (models) ->
         done error
 
   it 'near query 1', (done) ->
-    _createPlaces models.Place, (error) ->
+    _createPlaces connection.Place, (error) ->
       return done error if error
-      models.Place.where().near(location: [-80, 40]).exec (error, places) ->
+      connection.Place.where().near(location: [-80, 40]).exec (error, places) ->
         expected = [
           'The White House'
           'Carrier Dome'
@@ -72,9 +72,9 @@ module.exports = (models) ->
         done null
 
   it 'near query 2', (done) ->
-    _createPlaces models.Place, (error) ->
+    _createPlaces connection.Place, (error) ->
       return done error if error
-      models.Place.where().near(location: [-5, 45]).limit(4).exec (error, places) ->
+      connection.Place.where().near(location: [-5, 45]).limit(4).exec (error, places) ->
         expected = [
           'Wimbledon'
           'Palace of Versailles'
@@ -86,9 +86,9 @@ module.exports = (models) ->
         done null
 
   it 'near query 3', (done) ->
-    _createPlaces models.Place, (error) ->
+    _createPlaces connection.Place, (error) ->
       return done error if error
-      models.Place.where().near(location: [170, 45]).limit(1).exec (error, places) ->
+      connection.Place.where().near(location: [170, 45]).limit(1).exec (error, places) ->
         expected = [
           'Sapporo Dome'
         ]

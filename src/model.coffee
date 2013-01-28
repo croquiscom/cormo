@@ -89,6 +89,7 @@ class Model
 
     name = @name if not name
     connection.models[name] = @
+    connection[name] = @
 
     Object.defineProperty @, '_connection', value: connection
     Object.defineProperty @, '_adapter', value: connection._adapter

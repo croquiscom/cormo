@@ -13,8 +13,6 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'type-' + db, ->
-    models = {}
-
     before (done) ->
       global.connection = new Connection db, _dbs[db]
 
@@ -39,19 +37,17 @@ Object.keys(_dbs).forEach (db) ->
           string: String
           int_array: [cormo.types.Integer]
 
-      models.Type = Type
-
-      dropModels [models.Type], done
+      dropModels [Type], done
 
     beforeEach (done) ->
-      deleteAllRecords [models.Type], done
+      deleteAllRecords [connection.Type], done
 
     after (done) ->
-      dropModels [models.Type], done
+      dropModels [connection.Type], done
 
     describe '#basic', ->
-      require('./cases/type')(models)
+      require('./cases/type')()
     describe '#update', ->
-      require('./cases/type_update')(models)
+      require('./cases/type_update')()
     describe '#compare', ->
-      require('./cases/type_compare')(models)
+      require('./cases/type_compare')()

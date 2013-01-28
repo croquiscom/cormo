@@ -8,8 +8,6 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'geospatial-' + db, ->
-    models = {}
-
     before (done) ->
       global.connection = new Connection db, _dbs[db]
 
@@ -24,17 +22,15 @@ Object.keys(_dbs).forEach (db) ->
           name: String
           location: cormo.types.GeoPoint
 
-      models.Place = Place
-
-      dropModels [models.Place], done
+      dropModels [Place], done
 
     beforeEach (done) ->
-      deleteAllRecords [models.Place], done
+      deleteAllRecords [connection.Place], done
 
     after (done) ->
-      dropModels [models.Place], done
+      dropModels [connection.Place], done
 
-    require('./cases/geospatial')(models)
+    require('./cases/geospatial')()
 
 _dbs_not =
   sqlite3:

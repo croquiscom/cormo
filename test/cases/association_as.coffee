@@ -3,13 +3,13 @@ _compareComment = (a, b) ->
   a.should.have.property 'body', b.body
   a.should.have.property 'parent_post_id', b.parent_post_id
 
-module.exports = (models) ->
+module.exports = () ->
   it 'get sub objects', (done) ->
-    models.Post.create { title: 'my post', body: 'This is a my post.' }, (error, post) ->
+    connection.Post.create { title: 'my post', body: 'This is a my post.' }, (error, post) ->
       return done error if error
-      models.Post.create { title: 'first comment', body: 'This is the 1st comment.', parent_post_id: post.id }, (error, comment1) ->
+      connection.Post.create { title: 'first comment', body: 'This is the 1st comment.', parent_post_id: post.id }, (error, comment1) ->
         return done error if error
-        models.Post.create { title: 'second comment', body: 'This is the 2nd comment.', parent_post_id: post.id }, (error, comment2) ->
+        connection.Post.create { title: 'second comment', body: 'This is the 2nd comment.', parent_post_id: post.id }, (error, comment2) ->
           return done error if error
           post.comments (error, comments) ->
             return done error if error
@@ -20,9 +20,9 @@ module.exports = (models) ->
             done null
 
   it 'get associated object', (done) ->
-    models.Post.create { title: 'my post', body: 'This is a my post.' }, (error, post) ->
+    connection.Post.create { title: 'my post', body: 'This is a my post.' }, (error, post) ->
       return done error if error
-      models.Post.create { title: 'first comment', body: 'This is the 1st comment.', parent_post_id: post.id }, (error, comment1) ->
+      connection.Post.create { title: 'first comment', body: 'This is the 1st comment.', parent_post_id: post.id }, (error, comment1) ->
         return done error if error
         comment1.parent_post (error, record) ->
           return done error if error

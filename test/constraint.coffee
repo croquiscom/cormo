@@ -13,8 +13,6 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'constraint-' + db, ->
-    models = {}
-
     describe '#basic', ->
       before (done) ->
         global.connection = new Connection db, _dbs[db]
@@ -34,19 +32,15 @@ Object.keys(_dbs).forEach (db) ->
             email: { type: String, unique: true, required: true }
             facebook_id: { type: String, unique: true }
 
-        models.User = User
-
-        dropModels [models.User], done
+        dropModels [User], done
 
       beforeEach (done) ->
-        deleteAllRecords [models.User], done
+        deleteAllRecords [connection.User], done
 
       after (done) ->
-        dropModels [models.User], (error) ->
-          delete models.User
-          done error
+        dropModels [connection.User], done
 
-      require('./cases/constraint')(models)
+      require('./cases/constraint')()
 
     describe '#multicolumn', ->
       before (done) ->
@@ -60,21 +54,17 @@ Object.keys(_dbs).forEach (db) ->
             @index { major: 1, minor: 1 }, { unique: true }
         else
           # using Connection method
-          Version = connection.model 'User',
+          Version = connection.model 'Version',
             major: Number
             minor: Number
           Version.index { major: 1, minor: 1 }, { unique: true }
 
-        models.Version = Version
-
-        dropModels [models.Version], done
+        dropModels [Version], done
 
       beforeEach (done) ->
-        deleteAllRecords [models.Version], done
+        deleteAllRecords [connection.Version], done
 
       after (done) ->
-        dropModels [models.Version], (error) ->
-          delete models.Version
-          done error
+        dropModels [connection.Version], done
 
-      require('./cases/constraint_multicolumn')(models)
+      require('./cases/constraint_multicolumn')()

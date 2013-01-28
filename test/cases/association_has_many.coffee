@@ -3,14 +3,14 @@ _comparePost = (a, b) ->
   a.should.have.property 'title', b.title
   a.should.have.property 'body', b.body
 
-module.exports = (models) ->
+module.exports = () ->
   it 'collection_accessor.build on a new object', (done) ->
     async.waterfall [
       # create two new objects
       (callback) ->
-        user1 = models.User.build name: 'John Doe', age: 27
+        user1 = connection.User.build name: 'John Doe', age: 27
         should.exist user1.posts
-        user2 = models.User.build name: 'Bill Smith', age: 45
+        user2 = connection.User.build name: 'Bill Smith', age: 45
         should.exist user2.posts
         callback null, user1, user2
       # check default status
@@ -47,10 +47,10 @@ module.exports = (models) ->
     async.waterfall [
       # create two new objects
       (callback) ->
-        models.User.create { name: 'John Doe', age: 27 }, (error, user1) ->
+        connection.User.create { name: 'John Doe', age: 27 }, (error, user1) ->
           return callback error if error
           should.exist user1.posts
-          models.User.create { name: 'Bill Smith', age: 45 }, (error, user2) ->
+          connection.User.create { name: 'Bill Smith', age: 45 }, (error, user2) ->
             return callback error if error
             should.exist user2.posts
             callback null, user1, user2
@@ -85,7 +85,7 @@ module.exports = (models) ->
       done error
 
   it 'save object after creating a sub object', (done) ->
-    user = models.User.build name: 'John Doe', age: 27
+    user = connection.User.build name: 'John Doe', age: 27
     post = user.posts.build title: 'first post', body: 'This is the 1st post.'
     should.not.exist user.id
     should.not.exist post.id
@@ -98,9 +98,9 @@ module.exports = (models) ->
       done null
 
   it 'get sub objects', (done) ->
-    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
-      models.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
-        models.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
+    connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      connection.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
+        connection.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
           user.posts (error, posts) ->
             posts.should.have.length 2
             posts.sort (a, b) -> if a.body < b.body then -1 else 1
@@ -109,12 +109,12 @@ module.exports = (models) ->
             done null
 
   it 'sub objects are cached', (done) ->
-    models.User.create { name: 'John Doe', age: 27 }, (error, user) ->
-      models.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
+    connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      connection.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
         user.posts (error, posts) ->
           posts.should.have.length 1
           _comparePost posts[0], post1
-          models.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
+          connection.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
             user.posts (error, posts) ->
               # added object is not fetched
               posts.should.have.length 1

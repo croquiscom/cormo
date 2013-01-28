@@ -13,9 +13,9 @@ _createUsers = function (User, data, callback) {
   User.createBulk(data, callback);
 };
 
-module.exports = function (models) {
+module.exports = function () {
   it('create one', function (done) {
-    var user = new models.User();
+    var user = new connection.User();
     user.name = 'John Doe';
     user.age = 27;
     user.should.have.property('name', 'John Doe');
@@ -24,21 +24,21 @@ module.exports = function (models) {
   });
 
   it('initialize in constructor', function (done) {
-    var user = new models.User({name: 'John Doe', age: 27});
+    var user = new connection.User({name: 'John Doe', age: 27});
     user.should.have.property('name', 'John Doe');
     user.should.have.property('age', 27);
     done(null);
   });
 
   it('build method', function (done) {
-    var user = models.User.build({name: 'John Doe', age: 27});
+    var user = connection.User.build({name: 'John Doe', age: 27});
     user.should.have.property('name', 'John Doe');
     user.should.have.property('age', 27);
     done(null);
   });
 
   it('add a new record to the database', function (done) {
-    var user = new models.User({name: 'John Doe', age: 27});
+    var user = new connection.User({name: 'John Doe', age: 27});
     user.save(function (error) {
       if (error) {
         return done(error);
@@ -49,7 +49,7 @@ module.exports = function (models) {
   });
 
   it('create method', function (done) {
-    models.User.create({ name: 'John Doe', age: 27 }, function (error, user) {
+    connection.User.create({ name: 'John Doe', age: 27 }, function (error, user) {
       if (error) {
         return done(error);
       }
@@ -59,11 +59,11 @@ module.exports = function (models) {
   });
 
   it('simple where', function (done) {
-    _createUsers(models.User, function (error, users) {
+    _createUsers(connection.User, function (error, users) {
       if (error) {
         return done(error);
       }
-      models.User.where({age: 27}, function (error, users) {
+      connection.User.where({age: 27}, function (error, users) {
         if (error) {
           return done(error);
         }
@@ -79,11 +79,11 @@ module.exports = function (models) {
   });
 
   it('where chain', function (done) {
-    _createUsers(models.User, function (error, users) {
+    _createUsers(connection.User, function (error, users) {
       if (error) {
         return done(error);
       }
-      models.User.where({age: 27}).where({name: 'Alice Jackson'}).exec(function (error, users) {
+      connection.User.where({age: 27}).where({name: 'Alice Jackson'}).exec(function (error, users) {
         if (error) {
           return done(error);
         }
@@ -96,11 +96,11 @@ module.exports = function (models) {
   });
 
   it('$or', function (done) {
-    _createUsers(models.User, function (error, users) {
+    _createUsers(connection.User, function (error, users) {
       if (error) {
         return done(error);
       }
-      models.User.where({$or: [ { age: 32 }, { name: 'John Doe' } ]}, function (error, users) {
+      connection.User.where({$or: [ { age: 32 }, { name: 'John Doe' } ]}, function (error, users) {
         if (error) {
           return done(error);
         }

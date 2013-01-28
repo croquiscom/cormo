@@ -16,14 +16,14 @@ _createUsers = (User, data, callback) ->
   data.sort -> 0.5 - Math.random() # random sort
   User.createBulk data, callback
 
-module.exports = (models) ->
+module.exports = () ->
   it 'update all', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.update age: 10, (error, count) ->
+      connection.User.update age: 10, (error, count) ->
         return done error if error
         count.should.equal 5
-        models.User.where (error, users) ->
+        connection.User.where (error, users) ->
           users.sort (a, b) -> if a.name < b.name then -1 else 1
           _compareUser users[0], name: 'Alice Jackson', age: 10
           _compareUser users[1], name: 'Bill Smith', age: 10
@@ -33,12 +33,12 @@ module.exports = (models) ->
           done null
 
   it 'update condition', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.update { age: 10 }, age: 27, (error, count) ->
+      connection.User.update { age: 10 }, age: 27, (error, count) ->
         return done error if error
         count.should.equal 2
-        models.User.where (error, users) ->
+        connection.User.where (error, users) ->
           users.sort (a, b) -> if a.name < b.name then -1 else 1
           _compareUser users[0], name: 'Alice Jackson', age: 10
           _compareUser users[1], name: 'Bill Smith', age: 45
@@ -48,13 +48,13 @@ module.exports = (models) ->
           done null
 
   it 'find & update', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       users.sort (a, b) -> if a.name < b.name then -1 else 1
       return done error if error
-      models.User.find(users[2].id).update age: 10, (error, count) ->
+      connection.User.find(users[2].id).update age: 10, (error, count) ->
         return done error if error
         count.should.equal 1
-        models.User.where (error, users) ->
+        connection.User.where (error, users) ->
           users.sort (a, b) -> if a.name < b.name then -1 else 1
           _compareUser users[0], name: 'Alice Jackson', age: 27
           _compareUser users[1], name: 'Bill Smith', age: 45
@@ -64,11 +64,11 @@ module.exports = (models) ->
           done null
 
   it 'update to remove a field (set null)', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.find(users[2].id).update age: null, (error, count) ->
+      connection.User.find(users[2].id).update age: null, (error, count) ->
         return done error if error
         count.should.equal 1
-        models.User.find users[2].id, (error, user) ->
+        connection.User.find users[2].id, (error, user) ->
           user.should.have.keys 'id', 'name'
           done null

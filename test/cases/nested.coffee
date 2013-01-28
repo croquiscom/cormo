@@ -1,6 +1,6 @@
-module.exports = (models) ->
+module.exports = () ->
   it 'define a model, create an instance and fetch it', (done) ->
-    User = models.User
+    User = connection.User
 
     User.column 'name'
       first: String
@@ -24,7 +24,7 @@ module.exports = (models) ->
     ], done
 
   it 'another style to define a model', (done) ->
-    User = models.User
+    User = connection.User
 
     User.column 'name.first', String
     User.column 'name.last', String
@@ -47,7 +47,7 @@ module.exports = (models) ->
     ], done
 
   it 'constraint', (done) ->
-    User = models.User
+    User = connection.User
 
     User.column 'name'
       first: { type: String, required: true }
@@ -81,7 +81,7 @@ module.exports = (models) ->
     ], done
 
   it 'query', (done) ->
-    User = models.User
+    User = connection.User
 
     User.column 'name'
       first: String
@@ -107,7 +107,7 @@ module.exports = (models) ->
     ], done
 
   it 'update', (done) ->
-    User = models.User
+    User = connection.User
 
     User.column 'name'
       first: String
@@ -130,7 +130,7 @@ module.exports = (models) ->
     ], done
 
   it 'constraint on update', (done) ->
-    User = models.User
+    User = connection.User
 
     User.column 'name'
       first: { type: String, required: true }
@@ -147,7 +147,7 @@ module.exports = (models) ->
     ], done
 
   it 'keys on empty', (done) ->
-    User = models.User
+    User = connection.User
 
     User.column 'name'
       first: String
@@ -166,7 +166,7 @@ module.exports = (models) ->
     ], done
 
   it 'replace object', (done) ->
-    User = models.User
+    User = connection.User
 
     User.column 'name'
       first: String
@@ -187,7 +187,7 @@ module.exports = (models) ->
     ], done
 
   it 'get & set', (done) ->
-    User = models.User
+    User = connection.User
 
     User.column 'name'
       first: String

@@ -13,16 +13,13 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'nested-' + db, ->
-    models = {}
-
     beforeEach (done) ->
       global.connection = new Connection db, _dbs[db]
       class User extends Model
         @connection connection
-      models.User = User
-      dropModels [models.User], done
+      dropModels [User], done
 
     after (done) ->
-      dropModels [models.User], done
+      dropModels [connection.User], done
 
-    require('./cases/nested')(models)
+    require('./cases/nested')()

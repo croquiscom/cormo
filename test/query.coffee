@@ -13,8 +13,6 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'query-' + db, ->
-    models = {}
-
     before (done) ->
       global.connection = new Connection db, _dbs[db]
 
@@ -29,19 +27,17 @@ Object.keys(_dbs).forEach (db) ->
           name: String
           age: Number
 
-      models.User = User
-
-      dropModels [models.User], done
+      dropModels [User], done
 
     beforeEach (done) ->
-      deleteAllRecords [models.User], done
+      deleteAllRecords [connection.User], done
 
     after (done) ->
-      dropModels [models.User], done
+      dropModels [connection.User], done
 
     describe '#simple', ->
-      require('./cases/query')(models)
+      require('./cases/query')()
     describe '#$not', ->
-      require('./cases/query_not')(models)
+      require('./cases/query_not')()
     describe '#update', ->
-      require('./cases/query_update')(models)
+      require('./cases/query_update')()

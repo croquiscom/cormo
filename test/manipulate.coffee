@@ -13,8 +13,6 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'manipulate-' + db, ->
-    models = {}
-
     before (done) ->
       global.connection = new Connection db, _dbs[db]
 
@@ -42,15 +40,12 @@ Object.keys(_dbs).forEach (db) ->
         User.hasMany Post
         Post.belongsTo User
 
-      models.User = User
-      models.Post = Post
-
-      dropModels [models.User, models.Post], done
+      dropModels [User, Post], done
 
     beforeEach (done) ->
-      deleteAllRecords [models.User, models.Post], done
+      deleteAllRecords [connection.User, connection.Post], done
 
     after (done) ->
-      dropModels [models.User, models.Post], done
+      dropModels [connection.User, connection.Post], done
 
-    require('./cases/manipulate')(models)
+    require('./cases/manipulate')()

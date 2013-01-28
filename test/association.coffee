@@ -13,8 +13,6 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'association-' + db, ->
-    models = {}
-
     before (done) ->
       global.connection = new Connection db, _dbs[db]
 
@@ -47,20 +45,17 @@ Object.keys(_dbs).forEach (db) ->
         Post.hasMany Post, as: 'comments', foreign_key: 'parent_post_id'
         Post.belongsTo Post, as: 'parent_post'
 
-      models.User = User
-      models.Post = Post
-
-      dropModels [models.User, models.Post], done
+      dropModels [User, Post], done
 
     beforeEach (done) ->
-      deleteAllRecords [models.User, models.Post], done
+      deleteAllRecords [connection.User, connection.Post], done
 
     after (done) ->
-      dropModels [models.User, models.Post], done
+      dropModels [connection.User, connection.Post], done
 
     describe '#hasMany', ->
-      require('./cases/association_has_many')(models)
+      require('./cases/association_has_many')()
     describe '#belongsTo', ->
-      require('./cases/association_belongs_to')(models)
+      require('./cases/association_belongs_to')()
     describe '#as', ->
-      require('./cases/association_as')(models)
+      require('./cases/association_as')()

@@ -9,11 +9,11 @@ _createUsers = (User, data, callback) ->
     ]
   User.createBulk data, callback
 
-module.exports = (models) ->
+module.exports = () ->
   it 'unique', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.create { name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, (error, user) ->
+      connection.User.create { name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, (error, user) ->
         should.exist error
         # 'duplicated email' or 'duplicated'
         error.message.should.match /^duplicated( email)?$/
@@ -24,7 +24,7 @@ module.exports = (models) ->
         done null
 
   it 'check uniqueness on update by Model::save', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
       users[0].email = 'bill@foo.org'
       users[0].save (error) ->
@@ -34,9 +34,9 @@ module.exports = (models) ->
         done null
 
   it 'check uniqueness on update by Model.update', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.find(users[0].id).update email: 'bill@foo.org', (error) ->
+      connection.User.find(users[0].id).update email: 'bill@foo.org', (error) ->
         should.exist error
         # 'duplicated email' or 'duplicated'
         error.message.should.match /^duplicated( email)?$/
@@ -45,17 +45,17 @@ module.exports = (models) ->
   it 'required', (done) ->
     async.parallel [
       (callback) ->
-        models.User.create { age: 10, email: 'test1@example.com' }, (error, user) ->
+        connection.User.create { age: 10, email: 'test1@example.com' }, (error, user) ->
           should.exist error
           error.message.should.equal "'name' is required"
           callback null
       (callback) ->
-        models.User.create { name: 'test', email: 'test2@example.com' }, (error, user) ->
+        connection.User.create { name: 'test', email: 'test2@example.com' }, (error, user) ->
           should.exist error
           error.message.should.equal "'age' is required"
           callback null
       (callback) ->
-        models.User.create { name: 'test', age: 10 }, (error, user) ->
+        connection.User.create { name: 'test', age: 10 }, (error, user) ->
           should.exist error
           error.message.should.equal "'email' is required"
           callback null
@@ -65,14 +65,14 @@ module.exports = (models) ->
   it 'unique but not required', (done) ->
     # There can be two null values
     # ( MongoDB can have an index unique but not sparse )
-    models.User.create { name: 'test', age: 10, email: 'test1@example.com' }, (error, user) ->
+    connection.User.create { name: 'test', age: 10, email: 'test1@example.com' }, (error, user) ->
       return done error if error
-      models.User.create { name: 'test', age: 10, email: 'test2@example.com' }, (error, user) ->
+      connection.User.create { name: 'test', age: 10, email: 'test2@example.com' }, (error, user) ->
         return done error if error
         done null
 
   it 'required on update by Model::save', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
       users[0].name = null
       users[0].save (error) ->
@@ -81,9 +81,9 @@ module.exports = (models) ->
         done null
 
   it 'required on update by Model.update', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.find(users[0].id).update name: null, (error) ->
+      connection.User.find(users[0].id).update name: null, (error) ->
         should.exist error
         error.message.should.equal "'name' is required"
         done null

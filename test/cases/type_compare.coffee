@@ -1,4 +1,4 @@
-module.exports = (models) ->
+module.exports = () ->
   it 'compare number', (done) ->
     data = [
       { number: 10 }
@@ -8,15 +8,15 @@ module.exports = (models) ->
     ]
     async.waterfall [
       (callback) ->
-        models.Type.createBulk data, callback
+        connection.Type.createBulk data, callback
       (records, callback) ->
-        models.Type.where number: 14.6, callback
+        connection.Type.where number: 14.6, callback
       (records, callback) ->
         records.should.have.length 1
         records[0].number.should.be.equal 14.6
         callback null
       (callback) ->
-        models.Type.where { number: $lt: 12 }, callback
+        connection.Type.where { number: $lt: 12 }, callback
       (records, callback) ->
         records.should.have.length 2
         records.sort (a, b) -> if a.number < b.number then -1 else 1
@@ -34,15 +34,15 @@ module.exports = (models) ->
     ]
     async.waterfall [
       (callback) ->
-        models.Type.createBulk data, callback
+        connection.Type.createBulk data, callback
       (records, callback) ->
-        models.Type.where int_c: 15, callback
+        connection.Type.where int_c: 15, callback
       (records, callback) ->
         records.should.have.length 1
         records[0].int_c.should.be.equal 15
         callback null
       (callback) ->
-        models.Type.where { int_c: $lt: 12 }, callback
+        connection.Type.where { int_c: $lt: 12 }, callback
       (records, callback) ->
         records.should.have.length 2
         records.sort (a, b) -> if a.int_c < b.int_c then -1 else 1
@@ -60,21 +60,21 @@ module.exports = (models) ->
     ]
     async.waterfall [
       (callback) ->
-        models.Type.createBulk data, callback
+        connection.Type.createBulk data, callback
       (records, callback) ->
-        models.Type.where date: new Date('2012/10/13 21:32:54'), callback
-      (records, callback) ->
-        records.should.have.length 1
-        records[0].date.should.be.equal new Date('2012/10/13 21:32:54')
-        callback null
-      (callback) ->
-        models.Type.where date: '2012/10/13 21:32:54', callback
+        connection.Type.where date: new Date('2012/10/13 21:32:54'), callback
       (records, callback) ->
         records.should.have.length 1
         records[0].date.should.be.equal new Date('2012/10/13 21:32:54')
         callback null
       (callback) ->
-        models.Type.where { date: $lt: new Date('2012/10/14 00:00:00') }, callback
+        connection.Type.where date: '2012/10/13 21:32:54', callback
+      (records, callback) ->
+        records.should.have.length 1
+        records[0].date.should.be.equal new Date('2012/10/13 21:32:54')
+        callback null
+      (callback) ->
+        connection.Type.where { date: $lt: new Date('2012/10/14 00:00:00') }, callback
       (records, callback) ->
         records.should.have.length 2
         records.sort (a, b) -> if a.date.getTime() < b.date.getTime() then -1 else 1
@@ -92,9 +92,9 @@ module.exports = (models) ->
     ]
     async.waterfall [
       (callback) ->
-        models.Type.createBulk data, callback
+        connection.Type.createBulk data, callback
       (records, callback) ->
-        models.Type.where boolean: true, callback
+        connection.Type.where boolean: true, callback
       (records, callback) ->
         records.should.have.length 3
         records[0].boolean.should.be.equal true
@@ -102,7 +102,7 @@ module.exports = (models) ->
         records[2].boolean.should.be.equal true
         callback null
       (callback) ->
-        models.Type.where boolean: false, callback
+        connection.Type.where boolean: false, callback
       (records, callback) ->
         records.should.have.length 1
         records[0].boolean.should.be.equal false
@@ -118,9 +118,9 @@ module.exports = (models) ->
     ]
     async.waterfall [
       (callback) ->
-        models.Type.createBulk data, callback
+        connection.Type.createBulk data, callback
       (records, callback) ->
-        models.Type.where string: 'a', callback
+        connection.Type.where string: 'a', callback
       (records, callback) ->
         # some adapters(currently, MySQL) may do case insensitive comparison.
         # skip test for now
@@ -130,7 +130,7 @@ module.exports = (models) ->
         records[0].string.should.be.equal 'a'
         callback null
       (callback) ->
-        models.Type.where { string: $lt: 'D' }, callback
+        connection.Type.where { string: $lt: 'D' }, callback
       (records, callback) ->
         records.should.have.length 2
         records.sort (a, b) -> if a.string < b.string then -1 else 1

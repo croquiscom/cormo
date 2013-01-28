@@ -3,23 +3,23 @@ _compareUser = (user, expected) ->
   user.name.should.equal expected.name
   user.age.should.equal expected.age
 
-module.exports = (models) ->
+module.exports = () ->
   it 'create simple', (done) ->
     async.waterfall [
       (callback) ->
-        models.User.count callback
+        connection.User.count callback
       (count, callback) ->
         count.should.equal 0
         callback null
       (callback) ->
         connection.manipulate { create_user: name: 'John Doe', age: 27 }, callback
       (id_to_record_map, callback) ->
-        models.User.count callback
+        connection.User.count callback
       (count, callback) ->
         count.should.equal 1
         callback null
       (callback) ->
-        models.User.where callback
+        connection.User.where callback
       (users, callback) ->
         users.should.have.length 1
         users[0].should.have.keys 'id', 'name', 'age'
@@ -44,7 +44,7 @@ module.exports = (models) ->
           { create_user: name: 'Alice Jackson', age: 27 }
         ], callback
       (id_to_record_map, callback) ->
-        models.User.count callback
+        connection.User.count callback
       (count, callback) ->
         count.should.equal 3
         callback null
@@ -61,7 +61,7 @@ module.exports = (models) ->
       (id_to_record_map, callback) ->
         connection.manipulate 'delete_user', callback
       (id_to_record_map, callback) ->
-        models.User.count callback
+        connection.User.count callback
       (count, callback) ->
         count.should.equal 0
         callback null
@@ -78,12 +78,12 @@ module.exports = (models) ->
       (id_to_record_map, callback) ->
         connection.manipulate { delete_user: age: 27 }, callback
       (id_to_record_map, callback) ->
-        models.User.count callback
+        connection.User.count callback
       (count, callback) ->
         count.should.equal 1
         callback null
       (callback) ->
-        models.User.where callback
+        connection.User.where callback
       (users, callback) ->
         users.should.have.length 1
         users[0].should.have.keys 'id', 'name', 'age'
@@ -100,9 +100,9 @@ module.exports = (models) ->
           { create_post: title: 'first post', body: 'This is the 1st post.', user_id: 'user1' }
         ], callback
       (id_to_record_map, callback) ->
-        models.User.where callback
+        connection.User.where callback
       (users, callback) ->
-        models.Post.where (error, posts) ->
+        connection.Post.where (error, posts) ->
           callback error, users, posts
       (users, posts, callback) ->
         users.should.have.length 1
@@ -122,9 +122,9 @@ module.exports = (models) ->
           { create_post: title: 'first post', body: 'This is the 1st post.', user_id: id_to_record_map.user1.id }
         ], callback
       (id_to_record_map, callback) ->
-        models.User.where callback
+        connection.User.where callback
       (users, callback) ->
-        models.Post.where (error, posts) ->
+        connection.Post.where (error, posts) ->
           callback error, users, posts
       (users, posts, callback) ->
         users.should.have.length 1
@@ -156,24 +156,24 @@ module.exports = (models) ->
           { create_post: title: 'first post', body: 'This is the 1st post.' }
         ], callback
       (id_to_record_map, callback) ->
-        models.User.count callback
+        connection.User.count callback
       (count, callback) ->
         count.should.equal 1
         callback null
       (callback) ->
-        models.Post.count callback
+        connection.Post.count callback
       (count, callback) ->
         count.should.equal 1
         callback null
       (callback) ->
         connection.manipulate 'deleteAll', callback
       (id_to_record_map, callback) ->
-        models.User.count callback
+        connection.User.count callback
       (count, callback) ->
         count.should.equal 0
         callback null
       (callback) ->
-        models.Post.count callback
+        connection.Post.count callback
       (count, callback) ->
         count.should.equal 0
         callback null

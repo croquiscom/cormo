@@ -16,11 +16,11 @@ _createUsers = (User, data, callback) ->
   data.sort -> 0.5 - Math.random() # random sort
   User.createBulk data, callback
 
-module.exports = (models) ->
+module.exports = () ->
   it 'simple where', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.where age: 27, (error, users) ->
+      connection.User.where age: 27, (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -29,37 +29,37 @@ module.exports = (models) ->
         done null
 
   it 'where chain', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.where(age: 27).where(name: 'Alice Jackson').exec (error, users) ->
+      connection.User.where(age: 27).where(name: 'Alice Jackson').exec (error, users) ->
         return done error if error
         users.should.have.length 1
         _compareUser users[0], name: 'Alice Jackson', age: 27
         done null
 
   it 'id', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       target = users[0]
       return done error if error
-      models.User.where { id: target.id }, (error, users) ->
+      connection.User.where { id: target.id }, (error, users) ->
         return done error if error
         users.should.have.length 1
         _compareUser users[0], target
         done null
 
   it 'implicit and', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.where age: 27, name: 'Alice Jackson', (error, users) ->
+      connection.User.where age: 27, name: 'Alice Jackson', (error, users) ->
         return done error if error
         users.should.have.length 1
         _compareUser users[0], name: 'Alice Jackson', age: 27
         done null
 
   it '$or', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.where $or: [ { age: 32 }, { name: 'John Doe' } ], (error, users) ->
+      connection.User.where $or: [ { age: 32 }, { name: 'John Doe' } ], (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -68,9 +68,9 @@ module.exports = (models) ->
         done null
 
   it 'comparison', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.where [ { age: { $gt: 30 } }, { age: { $lte: 45 } } ], (error, users) ->
+      connection.User.where [ { age: { $gt: 30 } }, { age: { $lte: 45 } } ], (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -79,9 +79,9 @@ module.exports = (models) ->
         done null
 
   it 'contains', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.where { name: { $contains: 'smi' } }, (error, users) ->
+      connection.User.where { name: { $contains: 'smi' } }, (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -90,9 +90,9 @@ module.exports = (models) ->
         done null
 
   it '$in', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.where age: $in: [ 32, 45, 57 ], (error, users) ->
+      connection.User.where age: $in: [ 32, 45, 57 ], (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -101,10 +101,10 @@ module.exports = (models) ->
         done null
 
   it '$in for id', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
       users.sort (a, b) -> if a.name < b.name then -1 else 1
-      models.User.where id: $in: [ users[2].id, users[0].id ], (error, users) ->
+      connection.User.where id: $in: [ users[2].id, users[0].id ], (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -113,9 +113,9 @@ module.exports = (models) ->
         done null
 
   it 'implicit $in', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.where age: [ 32, 45, 57 ], (error, users) ->
+      connection.User.where age: [ 32, 45, 57 ], (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -124,40 +124,40 @@ module.exports = (models) ->
         done null
 
   it 'count none', (done) ->
-    models.User.count (error, count) ->
+    connection.User.count (error, count) ->
       count.should.equal 0
       done null
 
   it 'count all', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.count (error, count) ->
+      connection.User.count (error, count) ->
         count.should.equal 5
         done null
 
   it 'count condition', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.count age: 27, (error, count) ->
+      connection.User.count age: 27, (error, count) ->
         count.should.equal 2
         done null
 
   it 'delete all', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.delete (error, count) ->
+      connection.User.delete (error, count) ->
         count.should.equal 5
-        models.User.where (error, users) ->
+        connection.User.where (error, users) ->
           return done error if error
           users.should.have.length 0
           done null
 
   it 'delete condition', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.delete age: 27, (error, count) ->
+      connection.User.delete age: 27, (error, count) ->
         count.should.equal 2
-        models.User.where (error, users) ->
+        connection.User.where (error, users) ->
           return done error if error
           users.should.have.length 3
           users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -167,26 +167,26 @@ module.exports = (models) ->
           done null
 
   it 'limit', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
       async.series [
         (callback) ->
-          models.User.where().exec (error, users) ->
+          connection.User.where().exec (error, users) ->
             return callback error if error
             users.should.have.length 5
             callback null
         (callback) ->
-          models.User.where().limit(3).exec (error, users) ->
+          connection.User.where().limit(3).exec (error, users) ->
             return callback error if error
             users.should.have.length 3
             callback null
         (callback) ->
-          models.User.where(age: { $lt: 40 }).exec (error, users) ->
+          connection.User.where(age: { $lt: 40 }).exec (error, users) ->
             return callback error if error
             users.should.have.length 4
             callback null
         (callback) ->
-          models.User.where(age: { $lt: 40 }).limit(1).exec (error, users) ->
+          connection.User.where(age: { $lt: 40 }).limit(1).exec (error, users) ->
             return callback error if error
             users.should.have.length 1
             users[0].should.have.property 'name'
@@ -203,21 +203,21 @@ module.exports = (models) ->
         done error
 
   it 'select', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
       async.series [
         (callback) ->
-          models.User.select (error, users) ->
+          connection.User.select (error, users) ->
             return callback error if error
             users[0].should.have.keys [ 'id', 'name', 'age' ]
             callback null
         (callback) ->
-          models.User.select 'name age address', (error, users) ->
+          connection.User.select 'name age address', (error, users) ->
             return callback error if error
             users[0].should.have.keys [ 'id', 'name', 'age' ]
             callback null
         (callback) ->
-          models.User.select 'name', (error, users) ->
+          connection.User.select 'name', (error, users) ->
             return callback error if error
             users[0].should.have.keys [ 'id', 'name' ]
             callback null
@@ -225,9 +225,9 @@ module.exports = (models) ->
         done error
 
   it 'order (string)', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.order 'name', (error, users) ->
+      connection.User.order 'name', (error, users) ->
         return done error if error
         users.should.have.length 5
         _compareUser users[0], name: 'Alice Jackson', age: 27
@@ -235,7 +235,7 @@ module.exports = (models) ->
         _compareUser users[2], name: 'Daniel Smith', age: 8
         _compareUser users[3], name: 'Gina Baker', age: 32
         _compareUser users[4], name: 'John Doe', age: 27
-        models.User.order '-name', (error, users) ->
+        connection.User.order '-name', (error, users) ->
           return done error if error
           users.should.have.length 5
           _compareUser users[0], name: 'John Doe', age: 27
@@ -246,9 +246,9 @@ module.exports = (models) ->
           done null
 
   it 'order (number)', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.order 'age', (error, users) ->
+      connection.User.order 'age', (error, users) ->
         return done error if error
         users.should.have.length 5
         _compareUser users[0], name: 'Daniel Smith', age: 8
@@ -260,7 +260,7 @@ module.exports = (models) ->
           _compareUser users[2], name: 'Alice Jackson', age: 27
         _compareUser users[3], name: 'Gina Baker', age: 32
         _compareUser users[4], name: 'Bill Smith', age: 45
-        models.User.order '-age', (error, users) ->
+        connection.User.order '-age', (error, users) ->
           return done error if error
           users.should.have.length 5
           _compareUser users[0], name: 'Bill Smith', age: 45
@@ -275,9 +275,9 @@ module.exports = (models) ->
           done null
 
   it 'order (complex)', (done) ->
-    _createUsers models.User, (error, users) ->
+    _createUsers connection.User, (error, users) ->
       return done error if error
-      models.User.order 'age name', (error, users) ->
+      connection.User.order 'age name', (error, users) ->
         return done error if error
         users.should.have.length 5
         _compareUser users[0], name: 'Daniel Smith', age: 8
@@ -285,7 +285,7 @@ module.exports = (models) ->
         _compareUser users[2], name: 'John Doe', age: 27
         _compareUser users[3], name: 'Gina Baker', age: 32
         _compareUser users[4], name: 'Bill Smith', age: 45
-        models.User.order 'age -name', (error, users) ->
+        connection.User.order 'age -name', (error, users) ->
           return done error if error
           users.should.have.length 5
           _compareUser users[0], name: 'Daniel Smith', age: 8

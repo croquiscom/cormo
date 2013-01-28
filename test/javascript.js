@@ -9,24 +9,22 @@ _dbs = {
 };
 Object.keys(_dbs).forEach(function (db) {
   describe('javascript-' + db, function () {
-    var models = {}
-
     before(function (done) {
       global.connection = new Connection(db, _dbs[db]);
 
-      models.User = connection.model('User', { name: String, age: Number });
+      var User = connection.model('User', { name: String, age: Number });
 
-      dropModels([models.User], done);
+      dropModels([User], done);
     });
 
     beforeEach(function (done) {
-      deleteAllRecords([models.User], done);
+      deleteAllRecords([connection.User], done);
     });
 
     after(function (done) {
-      dropModels([models.User], done);
+      dropModels([connection.User], done);
     });
 
-    require('./cases/javascript')(models);
+    require('./cases/javascript')();
   });
 });

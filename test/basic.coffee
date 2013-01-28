@@ -15,8 +15,6 @@ _dbs =
 
 Object.keys(_dbs).forEach (db) ->
   describe 'basic-' + db, ->
-    models = {}
-
     before (done) ->
       global.connection = new Connection db, _dbs[db]
 
@@ -31,14 +29,12 @@ Object.keys(_dbs).forEach (db) ->
           name: String
           age: Number
 
-      models.User = User
-
-      dropModels [models.User], done
+      dropModels [User], done
 
     beforeEach (done) ->
-      deleteAllRecords [models.User], done
+      deleteAllRecords [connection.User], done
 
     after (done) ->
-      dropModels [models.User], done
+      dropModels [connection.User], done
 
-    require('./cases/basic')(models)
+    require('./cases/basic')()
