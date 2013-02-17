@@ -205,7 +205,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       rows = result?.rows
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       if rows?.length is 1
-        callback null, @_convertToModelInstance model, rows[0]
+        callback null, @_convertToModelInstance model, rows[0], options.select
       else if rows?.length > 1
         callback new Error 'unknown error'
       else
@@ -237,7 +237,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
     @_query sql, params, (error, result) =>
       rows = result?.rows
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
-      callback null, rows.map (record) => @_convertToModelInstance model, record
+      callback null, rows.map (record) => @_convertToModelInstance model, record, options.select
 
   ## @override AdapterBase::count
   count: (model, conditions, callback) ->

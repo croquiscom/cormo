@@ -2,8 +2,10 @@ _compareUser = (user, expected) ->
   if expected.age?
     user.should.have.keys 'id', 'name', 'age'
     user.age.should.equal expected.age
-  else
+  else if user.constructor.eliminate_null
     user.should.have.keys 'id', 'name'
+  else
+    user.should.have.keys 'id', 'name', 'age'
   user.name.should.equal expected.name
 
 _createUsers = (User, data, callback) ->

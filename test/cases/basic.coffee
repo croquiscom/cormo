@@ -121,10 +121,10 @@ module.exports = () ->
 
   it 'try to create with extra data', (done) ->
     user = new connection.User { id: 1, name: 'John Doe', age: 27, extra: 'extra' }
-    user.should.not.have.property 'id'
+    user.should.have.property 'id', null
     user.should.not.have.property 'extra'
     user.id = 1
-    user.should.not.have.property 'id' # id is read only
+    user.should.have.property 'id', null # id is read only
     user.extra = 'extra'
     user.should.have.property 'extra', 'extra'
     user.save (error, record) ->
@@ -149,8 +149,12 @@ module.exports = () ->
         user.should.be.equal record
         connection.User.find user.id, (error, record) ->
           return done error if error
-          record.should.not.have.property 'name'
-          record.should.not.have.property 'age'
+          if connection.User.eliminate_null
+            record.should.have.keys 'id'
+          else
+            record.should.have.keys 'id', 'name', 'age'
+            record.should.have.property 'name', null
+            record.should.have.property 'age', null
           done null
 
   it 'find records', (done) ->

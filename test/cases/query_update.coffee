@@ -70,5 +70,8 @@ module.exports = () ->
         return done error if error
         count.should.equal 1
         connection.User.find users[2].id, (error, user) ->
-          user.should.have.keys 'id', 'name'
+          if connection.User.eliminate_null
+            user.should.have.keys 'id', 'name'
+          else
+            user.should.have.keys 'id', 'name', 'age'
           done null

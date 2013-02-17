@@ -39,6 +39,8 @@ class Model
   # @type Boolean
   @dirty_tracking: false
 
+  @eliminate_null: false
+
   ##
   # Indicates the connection associated to this model
   # @property _connection
@@ -151,7 +153,7 @@ class Model
 
     parts = path.split '.'
     for i in [0...parts.length-1]
-      @_intermediate_paths[parts[0..i]] = 1
+      @_intermediate_paths[parts[0..i].join '.'] = 1
 
     property.type = type
     property._parts = path.split '.'
@@ -217,6 +219,7 @@ class Model
     ctor = @constructor
     schema = ctor._schema
     adapter = ctor._adapter
+    dont_eliminate_null = not ctor.eliminate_null
 
     Object.defineProperty @, '_prev_attributes', writable: true, value: {}
     if ctor.dirty_tracking
@@ -239,8 +242,11 @@ class Model
 
     if id = arguments[1]
       # if id exists, this is called from adapter with database record data
+      selected_columns = arguments[2]
       support_nested = adapter.support_nested
       for column, property of schema
+        if selected_columns and selected_columns.indexOf(column) is -1
+          continue
         parts = property._parts
         value = if support_nested
           util.getPropertyOfPath data, parts
@@ -248,7 +254,12 @@ class Model
           data[property._dbname]
         if value?
           value = adapter.valueToModel value, column, property
+        else
+          value = null
+        if value? or dont_eliminate_null
           util.setPropertyOfPath @, parts, value
+
+      @_collapseNestedNulls selected_columns if dont_eliminate_null
 
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
 
@@ -257,12 +268,34 @@ class Model
       for column, property of schema
         parts = property._parts
         value = util.getPropertyOfPath data, parts
-        if value?
+        if value is undefined
+          value = null
+        if value? or dont_eliminate_null
           util.setPropertyOfPath @, parts, value
 
-      Object.defineProperty @, 'id', configurable: true, enumerable: true, writable: false, value: undefined
+      @_collapseNestedNulls() if dont_eliminate_null
+
+      Object.defineProperty @, 'id', configurable: true, enumerable: true, writable: false, value: null
 
     @_runCallbacks 'initialize', 'after'
+
+  ##
+  # Set nested object null if all children are null
+  _collapseNestedNulls: (selected_columns) ->
+    ctor = @constructor
+    for path in Object.keys(ctor._intermediate_paths)
+      if selected_columns and selected_columns.indexOf(path) is -1
+        continue
+      if ctor.dirty_tracking
+        obj = @_intermediates
+        last = path
+      else
+        [obj, last] = util.getLeafOfPath @, path
+      has_non_null = false
+      for key, value of obj[last]
+        has_non_null = true if value?
+      if not has_non_null
+        obj[last] = null
 
   _defineProperty: (object, key, path, enumerable) ->
     Object.defineProperty object, key,
@@ -304,6 +337,7 @@ class Model
   # @param {} value
   # @return {}
   set: (path, value) ->
+    eliminate_null = @constructor.eliminate_null
     if @_intermediates.hasOwnProperty path
       obj = @_intermediates[path]
       for k of obj
@@ -317,7 +351,10 @@ class Model
       if not @_prev_attributes.hasOwnProperty path
         @_prev_attributes[path] = prev_value
       [obj, last] = util.getLeafOfPath @, parts
-      @_defineProperty obj, last, path, value?
+      if eliminate_null
+        @_defineProperty obj, last, path, value? if eliminate_null or prev_value is undefined
+      else if prev_value is undefined
+        @_defineProperty obj, last, path, true
       util.setPropertyOfPath @_attributes, parts, value
       while parts.length > 1
         parts.pop()

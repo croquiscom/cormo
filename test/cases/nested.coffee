@@ -69,7 +69,10 @@ module.exports = () ->
       (user, callback) -> User.find user.id, callback
       (user, callback) ->
         user.should.have.keys 'id', 'name'
-        user.name.should.have.keys 'first', 'last'
+        if User.eliminate_null
+          user.name.should.have.keys 'first', 'last'
+        else
+          user.name.should.have.keys 'first', 'middle', 'last'
         user.name.first.should.eql 'John'
         user.name.last.should.eql 'Doe'
         callback null
@@ -161,7 +164,11 @@ module.exports = () ->
         callback null
       (callback) -> User.create age: 20, callback
       (user, callback) ->
-        user.should.have.keys 'id', 'age'
+        if User.eliminate_null
+          user.should.have.keys 'id', 'age'
+        else
+          user.should.have.keys 'id', 'name', 'age'
+          user.should.have.property 'name', null
         callback null
     ], done
 
@@ -181,7 +188,10 @@ module.exports = () ->
       (user, callback) -> User.find user.id, callback
       (user, callback) ->
         user.should.have.keys 'id', 'name'
-        user.name.should.have.keys 'first'
+        if User.eliminate_null
+          user.name.should.have.keys 'first'
+        else
+          user.name.should.have.keys 'first', 'last'
         user.name.first.should.eql 'Bill'
         callback null
     ], done

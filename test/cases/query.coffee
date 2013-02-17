@@ -209,17 +209,17 @@ module.exports = () ->
         (callback) ->
           connection.User.select (error, users) ->
             return callback error if error
-            users[0].should.have.keys [ 'id', 'name', 'age' ]
+            users[0].should.have.keys 'id', 'name', 'age'
             callback null
         (callback) ->
           connection.User.select 'name age address', (error, users) ->
             return callback error if error
-            users[0].should.have.keys [ 'id', 'name', 'age' ]
+            users[0].should.have.keys 'id', 'name', 'age'
             callback null
         (callback) ->
           connection.User.select 'name', (error, users) ->
             return callback error if error
-            users[0].should.have.keys [ 'id', 'name' ]
+            users[0].should.have.keys 'id', 'name'
             callback null
       ], (error) ->
         done error

@@ -212,7 +212,7 @@ class MySQLAdapter extends SQLAdapterBase
     @_query sql, id, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       if result?.length is 1
-        callback null, @_convertToModelInstance model, result[0]
+        callback null, @_convertToModelInstance model, result[0], options.select
       else if result?.length > 1
         callback new Error 'unknown error'
       else
@@ -250,7 +250,7 @@ class MySQLAdapter extends SQLAdapterBase
     @_query sql, params, (error, result) =>
       #console.log result
       return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null, result.map (record) => @_convertToModelInstance model, record
+      callback null, result.map (record) => @_convertToModelInstance model, record, options.select
 
   ## @override AdapterBase::count
   count: (model, conditions, callback) ->

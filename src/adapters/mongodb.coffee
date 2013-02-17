@@ -267,13 +267,13 @@ class MongoDBAdapter extends AdapterBase
       id = new ObjectID id
     catch e
       return callback new Error('not found')
-    options = {}
+    client_options = {}
     if fields
-      options.fields = fields
-    @_collection(model).findOne _id: id, options, (error, result) =>
+      client_options.fields = fields
+    @_collection(model).findOne _id: id, client_options, (error, result) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       return callback new Error('not found') if not result
-      callback null, @_convertToModelInstance model, result
+      callback null, @_convertToModelInstance model, result, options.select
 
   ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->
@@ -299,17 +299,17 @@ class MongoDBAdapter extends AdapterBase
         else
           orders[order] = 1
     #console.log JSON.stringify conditions
-    options =
+    client_options =
       limit: options.limit
     if fields
-      options.fields = fields
+      client_options.fields = fields
     if orders
-      options.sort = orders
-    @_collection(model).find conditions, options, (error, cursor) =>
+      client_options.sort = orders
+    @_collection(model).find conditions, client_options, (error, cursor) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
       cursor.toArray (error, result) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
-        callback null, result.map (record) => @_convertToModelInstance model, record
+        callback null, result.map (record) => @_convertToModelInstance model, record, options.select
 
   ## @override AdapterBase::count
   count: (model, conditions, callback) ->

@@ -55,9 +55,9 @@ class AdapterBase
     else
       value
 
-  _convertToModelInstance: (model, data) ->
+  _convertToModelInstance: (model, data, selected_columns) ->
     modelClass = @_connection.models[model]
-    new modelClass data, @_getModelID data
+    new modelClass data, @_getModelID(data), selected_columns
 
   ##
   # Creates a record
