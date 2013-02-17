@@ -312,8 +312,10 @@ class Model
         obj[k] = v
     else
       parts = path.split '.'
+      prev_value = util.getPropertyOfPath @_attributes, parts
+      return if prev_value is value
       if not @_prev_attributes.hasOwnProperty path
-        @_prev_attributes[path] = util.getPropertyOfPath @_attributes, parts
+        @_prev_attributes[path] = prev_value
       [obj, last] = util.getLeafOfPath @, parts
       @_defineProperty obj, last, path, value?
       util.setPropertyOfPath @_attributes, parts, value
