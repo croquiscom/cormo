@@ -308,7 +308,7 @@ class MongoDBAdapter extends AdapterBase
     @_collection(model).find conditions, client_options, (error, cursor) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
       cursor.toArray (error, result) =>
-        return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
+        return callback MongoDBAdapter.wrapError 'unknown error', error if error
         callback null, result.map (record) => @_convertToModelInstance model, record, options.select
 
   ## @override AdapterBase::count
@@ -322,16 +322,64 @@ class MongoDBAdapter extends AdapterBase
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null, count
 
+  _doIntegrityActions: (integrities, ids, callback) ->
+    async.forEach integrities, (integrity, callback) =>
+      if integrity.type is 'parent_nullify'
+        data = {}
+        data[integrity.column] = null
+        conditions = {}
+        conditions[integrity.column] = ids
+        @updatePartial integrity.child, data, conditions, {}, (error) ->
+          callback error
+      else if integrity.type is 'parent_restrict'
+        conditions = {}
+        conditions[integrity.column] = ids
+        @count integrity.child, conditions, (error, count) ->
+          return callback error if error
+          return callback new Error 'rejected' if count>0
+          callback null
+      else if integrity.type is 'parent_delete'
+        conditions = {}
+        conditions[integrity.column] = ids
+        @delete integrity.child, conditions, (error, count) ->
+          return callback error if error
+          callback null
+      else
+        callback null
+    , callback
+
   ## @override AdapterBase::delete
   delete: (model, conditions, callback) ->
+    model_class = @_connection.models[model]
     try
-      conditions = _buildWhere @_connection.models[model]._schema, conditions
+      conditions = _buildWhere model_class._schema, conditions
     catch e
       return callback e
     #console.log JSON.stringify conditions
-    @_collection(model).remove conditions, safe: true, (error, count) ->
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null, count
+    integrities = model_class._integrities.filter (integrity) -> integrity.type.substr(0, 7) is 'parent_'
+    if integrities.length > 0
+      async.waterfall [
+        # find all ids of records to be deleted
+        (callback) =>
+          @_collection(model).find conditions, fields: { _id: 1 }, (error, cursor) =>
+            return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
+            cursor.toArray (error, result) =>
+              return callback MongoDBAdapter.wrapError 'unknown error', error if error
+              ids = result.map (record) -> record._id.toString()
+              callback null, ids
+        # do actions for integrity
+        (ids, callback) =>
+          @_doIntegrityActions integrities, ids, callback
+        # delete records in real
+        (callback) =>
+          @_collection(model).remove conditions, safe: true, (error, count) ->
+            return callback MongoDBAdapter.wrapError 'unknown error', error if error
+            callback null, count
+      ], callback
+    else
+      @_collection(model).remove conditions, safe: true, (error, count) ->
+        return callback MongoDBAdapter.wrapError 'unknown error', error if error
+        callback null, count
 
   ##
   # Connects to the database

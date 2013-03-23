@@ -52,16 +52,24 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   _createTable: (model, callback) ->
     table = tableize model
+    model_class = @_connection.models[model]
     sql = []
     sql.push 'id SERIAL PRIMARY KEY'
-    for column, property of @_connection.models[model]._schema
+    for column, property of model_class._schema
       column_sql = _propertyToSQL property
       if column_sql
         sql.push property._dbname + ' ' + column_sql
+    for integrity in model_class._integrities
+      if integrity.type is 'child_nullify'
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE SET NULL"
+      else if integrity.type is 'child_restrict'
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE RESTRICT"
+      else if integrity.type is 'child_delete'
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE CASCADE"
     sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
     @_query sql, (error) =>
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
-      async.forEach @_connection.models[model]._indexes, (index, callback) =>
+      async.forEach model_class._indexes, (index, callback) =>
         columns = []
         for column, order of index.columns
           order = if order is -1 then 'DESC' else 'ASC'
@@ -266,6 +274,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
         return callback e
     #console.log sql, params
     @_query sql, params, (error, result) ->
+      return callback new Error 'rejected' if error and error.code is '23503'
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error or not result?
       callback null, result.rowCount
 

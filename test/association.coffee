@@ -59,3 +59,5 @@ Object.keys(_dbs).forEach (db) ->
       require('./cases/association_belongs_to')()
     describe '#as', ->
       require('./cases/association_as')()
+    describe '#integrity', ->
+      require('./cases/association_integrity')()

@@ -102,6 +102,7 @@ class Model
     Object.defineProperty @, '_schema', value: {}
     Object.defineProperty @, '_intermediate_paths', value: {}
     Object.defineProperty @, '_indexes', value: []
+    Object.defineProperty @, '_integrities', value: []
 
   @_checkConnection: ->
     return if @hasOwnProperty '_connection'
@@ -400,6 +401,7 @@ class Model
   # @param {String} [options.type]
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
+  # @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
   @hasMany: (target_model_or_column, options) ->
     @_checkConnection()
 

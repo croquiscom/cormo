@@ -51,19 +51,27 @@ class MySQLAdapter extends SQLAdapterBase
 
   _createTable: (model, callback) ->
     table = tableize model
+    model_class = @_connection.models[model]
     sql = []
     sql.push 'id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY'
-    for column, property of @_connection.models[model]._schema
+    for column, property of model_class._schema
       column_sql = _propertyToSQL property
       if column_sql
         sql.push property._dbname + ' ' + column_sql
-    for index in @_connection.models[model]._indexes
+    for index in model_class._indexes
       columns = []
       for column, order of index.columns
         order = if order is -1 then 'DESC' else 'ASC'
         columns.push column + ' ' + order
       unique = if index.options.unique then 'UNIQUE ' else ''
       sql.push "#{unique}INDEX #{index.options.name} (#{columns.join ','})"
+    for integrity in model_class._integrities
+      if integrity.type is 'child_nullify'
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE SET NULL"
+      else if integrity.type is 'child_restrict'
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE RESTRICT"
+      else if integrity.type is 'child_delete'
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE CASCADE"
     sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
     @_query sql, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
@@ -278,6 +286,7 @@ class MySQLAdapter extends SQLAdapterBase
         return callback e
     #console.log sql, params
     @_query sql, params, (error, result) ->
+      return callback new Error 'rejected' if error and error.code is 'ER_ROW_IS_REFERENCED_'
       return callback MySQLAdapter.wrapError 'unknown error', error if error or not result?
       callback null, result.affectedRows
 

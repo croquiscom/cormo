@@ -12,6 +12,7 @@ class ConnectionAssociation
   # @param {Object} [options]
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
+  # @param {String} [options.integrity='ignore'] 'ignore', 'nullify'
   # @private
   _hasMany: (this_model, target_model, options) ->
     if options?.foreign_key
@@ -21,6 +22,9 @@ class ConnectionAssociation
     else
       foreign_key = inflector.foreign_key this_model._name
     target_model.column foreign_key, type: types.RecordID, connection: this_model._connection
+    if options?.integrity
+      target_model._integrities.push type: 'child_'+options.integrity, column: foreign_key, parent: this_model._name
+      this_model._integrities.push type: 'parent_'+options.integrity, column: foreign_key, child: target_model._name
 
     column = options?.as or inflector.tableize(target_model._name)
     columnCache = '__cache_' + column

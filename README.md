@@ -327,6 +327,28 @@ post.save (error) ->
 
 See [[#Model.hasMany]], [[#Model.belongsTo]] for more details.
 
+### keep data consistent
+
+CORMO supports foreign key constraints by DBMS for SQL-based DBMS or by framework for MongoDB.
+(CORMO does not guarantee integrity for MongoDB even if using this feature)
+
+To use constraints, give an integrity options on [[#Model.hasMany]].
+
+```coffeescript
+# the same as "CREATE TABLE posts ( user_id INT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+User.hasMany Post, integrity: 'nullify'
+
+# the same as "CREATE TABLE posts ( user_id INT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT"
+User.hasMany Post, integrity: 'restrict'
+
+# the same as "CREATE TABLE posts ( user_id INT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+User.hasMany Post, integrity: 'delete'
+
+# no option means no foreign key constraint
+# so there may be a post with invalid user_id
+User.hasMany Post
+```
+
 ## Geospatial query
 
 Currently, we supports only near query of 2D location in MongoDB and MySQL.
