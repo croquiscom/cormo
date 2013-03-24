@@ -213,7 +213,7 @@ class MySQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
     if options.select
-      selects = 'id,' + options.select.join ','
+      selects = if options.select.length>0 then 'id,' + options.select.join ',' else 'id'
     else
       selects = '*'
     sql = "SELECT #{selects} FROM #{tableize model} WHERE id=? LIMIT 1"
@@ -229,7 +229,7 @@ class MySQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->
     if options.select
-      selects = 'id,' + options.select.join ','
+      selects = if options.select.length>0 then 'id,' + options.select.join ',' else 'id'
     else
       selects = '*'
     if options.near? and field = Object.keys(options.near)[0]

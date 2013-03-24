@@ -221,6 +221,11 @@ module.exports = () ->
             return callback error if error
             users[0].should.have.keys 'id', 'name'
             callback null
+        (callback) ->
+          connection.User.select '', (error, users) ->
+            return callback error if error
+            users[0].should.have.keys 'id'
+            callback null
       ], (error) ->
         done error
 

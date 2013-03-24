@@ -205,7 +205,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
     if options.select
-      selects = 'id,' + options.select.join ','
+      selects = if options.select.length>0 then 'id,' + options.select.join ',' else 'id'
     else
       selects = '*'
     table = tableize model
@@ -222,7 +222,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->
     if options.select
-      selects = 'id,' + options.select.join ','
+      selects = if options.select.length>0 then 'id,' + options.select.join ',' else 'id'
     else
       selects = '*'
     params = []
