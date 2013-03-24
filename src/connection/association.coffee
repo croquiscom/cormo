@@ -1,3 +1,4 @@
+_ = require 'underscore'
 inflector = require '../inflector'
 types = require '../types'
 
@@ -22,9 +23,10 @@ class ConnectionAssociation
     else
       foreign_key = inflector.foreign_key this_model._name
     target_model.column foreign_key, type: types.RecordID, connection: this_model._connection
-    if options?.integrity
-      target_model._integrities.push type: 'child_'+options.integrity, column: foreign_key, parent: this_model._name
-      this_model._integrities.push type: 'parent_'+options.integrity, column: foreign_key, child: target_model._name
+
+    integrity = options?.integrity or 'ignore'
+    target_model._integrities.push type: 'child_'+integrity, column: foreign_key, parent: this_model._name
+    this_model._integrities.push type: 'parent_'+integrity, column: foreign_key, child: target_model._name
 
     column = options?.as or inflector.tableize(target_model._name)
     columnCache = '__cache_' + column
@@ -154,5 +156,42 @@ class ConnectionAssociation
   addAssociation: (association) ->
     @_pending_associations.push association
     @_schema_changed = true
+
+  ##
+  # Returns inconsistent records against associations
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Object} callback.inconsistencies Hash of model name to Array of RecordIDs
+  getInconsistencies: (callback) ->
+    result = {}
+    async.forEach Object.keys(@models), (model, callback) =>
+      modelClass = @models[model]
+      integrities = modelClass._integrities.filter (integrity) -> integrity.type.substr(0, 7) is 'parent_'
+      if integrities.length > 0
+        modelClass.select '', (error, records) =>
+          ids = records.map (record) -> record.id
+          async.forEach integrities, (integrity, callback) =>
+            query = @models[integrity.child].select ''
+            conditions = {}
+            conditions[integrity.column] = $not: $in: ids
+            query.where(conditions)
+            if integrity.type is 'parent_nullify'
+              conditions = {}
+              conditions[integrity.column] = $not: null
+              query.where(conditions)
+            query.exec (error, records) ->
+              return callback error if error
+              return callback null if records.length is 0
+              array = result[integrity.child] ||= []
+              [].push.apply array, records.map (record) -> record.id
+              _.uniq array
+              callback null
+          , (error) ->
+            callback null
+      else
+        callback null
+    , (error) ->
+      return callback error if error
+      callback null, result
 
 module.exports = ConnectionAssociation
