@@ -42,6 +42,10 @@ class Model
   @eliminate_null: false
 
   ##
+  # Archives deleted records in the archive table
+  @archive: false
+
+  ##
   # Indicates the connection associated to this model
   # @property _connection
   # @type Connection

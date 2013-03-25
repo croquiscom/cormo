@@ -382,3 +382,13 @@ Use [[#ModelPersistence.createBulk]] to create many records at once.
 User.createBulk [ { name: 'John Doe', age: 27 }, { name: 'Bill Smith', age: 45 } ], (error, users) ->
   console.log users
 ```
+
+If [[#Model.archive]] is true, deleted records are archived in the _Archive table.
+
+```coffeescript
+User.archive = true
+User.delete age: 27, (error, count) ->
+  # _Archive will have delete records as
+  #   { model: 'User', data: <deleted user 1> },
+  #   { model: 'User', data: <deleted user 2> }, ...
+```

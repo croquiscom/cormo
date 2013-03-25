@@ -81,6 +81,14 @@ class Connection extends EventEmitter
       @applySchemas()
     return true
 
+  _checkArchive: ->
+    for model, modelClass of @models
+      if modelClass.archive and not modelClass._connection.models.hasOwnProperty '_Archive'
+        class _Archive extends Model
+          @connection modelClass._connection
+          @column 'model', String
+          @column 'data', Object
+
   ##
   # Applies schemas
   # @param {Function} [callback]
@@ -93,6 +101,9 @@ class Connection extends EventEmitter
 
     if not @_applying_schemas
       @_applying_schemas = true
+
+      @_checkArchive()
+
       callAdapter = =>
         async.forEach Object.keys(@models), (model, callback) =>
           modelClass = @models[model]

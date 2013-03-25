@@ -15,10 +15,12 @@ Object.defineProperty global, 'should', value: require 'should'
 
 global.dropModels = (models, callback) ->
   async.forEach models, (model, callback) ->
+    return callback null if not model
     model.drop callback
   , callback
 
 global.deleteAllRecords = (models, callback) ->
   async.forEach models, (model, callback) ->
+    return callback null if not model
     model.deleteAll callback
   , callback

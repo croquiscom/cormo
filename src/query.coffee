@@ -212,6 +212,14 @@ class Query
       @_conditions.push id: @_id
       delete @_id
     @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log
-    @_adapter.delete @_name, @_conditions, _bindDomain callback
+    if @_model.archive
+      @_model.where @_conditions, (error, records) =>
+        return callback error if error
+        records = records.map (record) => model: @_name, data: record
+        @_connection.models['_Archive'].createBulk records, (error, records) =>
+          return callback error if error
+          @_adapter.delete @_name, @_conditions, _bindDomain callback
+    else
+      @_adapter.delete @_name, @_conditions, _bindDomain callback
 
 module.exports = Query
