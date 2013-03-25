@@ -1,4 +1,5 @@
 _ = require 'underscore'
+async = require 'async'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
