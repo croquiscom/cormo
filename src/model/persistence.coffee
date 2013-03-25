@@ -37,6 +37,8 @@ class ModelPersistence
   @createBulk: (data, callback) ->
     return callback new Error 'data is not an array' if not Array.isArray data
 
+    return callback null, [] if data.length is 0
+
     records = data.map (item) => @build item
     async.forEach records, (record, callback) ->
       record.validate callback
