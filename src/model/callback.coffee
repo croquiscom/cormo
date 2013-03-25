@@ -80,6 +80,7 @@ class ModelCallback
   # @param {String} name
   # @param {Function|String} method
   @addCallback: (type, name, method) ->
+    @_checkConnection()
     return if not (type is 'before' or type is 'after') or not name
     callbacks_map = @_callbacks_map ||= {}
     callbacks = callbacks_map[name] ||= []

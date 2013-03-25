@@ -94,6 +94,7 @@ class ModelValidate
   # @param {Function} validator
   # @param {Model} validator.record
   @addValidator: (validator) ->
+    @_checkConnection()
     @_validators.push validator
 
 module.exports = ModelValidate
