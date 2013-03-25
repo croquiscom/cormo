@@ -24,6 +24,7 @@ class ConnectionManipulate
 
   _manipulateDeleteAllModels: (callback) ->
     async.forEach Object.keys(@models), (model, callback) =>
+      return callback null if model is '_Archive'
       model = @models[model]
       model.where().delete skip_log: true, (error, count) ->
         callback error

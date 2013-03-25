@@ -86,6 +86,7 @@ class Connection extends EventEmitter
       if modelClass.archive and not modelClass._connection.models.hasOwnProperty '_Archive'
         class _Archive extends Model
           @connection modelClass._connection
+          @archive: false
           @column 'model', String
           @column 'data', Object
 

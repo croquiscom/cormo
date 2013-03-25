@@ -112,10 +112,17 @@ class MongoDBAdapter extends AdapterBase
     @_connection = connection
     @_collections = {}
 
+  _getMongoDBColName = (name) ->
+    # there is a problem with name begins with underscore
+    if name is '_archives'
+      '@archives'
+    else
+      name
+
   _collection: (name) ->
     name = tableize name
     if not @_collections[name]
-      return @_collections[name] = new mongodb.Collection @_client, name
+      return @_collections[name] = new mongodb.Collection @_client, _getMongoDBColName name
     else
       return @_collections[name]
 
@@ -148,7 +155,7 @@ class MongoDBAdapter extends AdapterBase
   drop: (model, callback) ->
     name = tableize model
     delete @_collections[name]
-    @_client.dropCollection name, (error) ->
+    @_client.dropCollection _getMongoDBColName(name), (error) ->
       # ignore not found error
       if error and error.errmsg isnt 'ns not found'
         return callback MongoDBAdapter.wrapError 'unknown error', error
