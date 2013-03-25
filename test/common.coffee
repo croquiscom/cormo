@@ -22,5 +22,9 @@ global.dropModels = (models, callback) ->
 global.deleteAllRecords = (models, callback) ->
   async.forEach models, (model, callback) ->
     return callback null if not model
-    model.deleteAll callback
+    archive = model.archive
+    model.archive = false
+    model.deleteAll (error, count) ->
+      model.archive = archive
+      callback error
   , callback

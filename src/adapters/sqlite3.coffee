@@ -37,6 +37,7 @@ _propertyToSQL = (property) ->
 # @namespace adapter
 class SQLite3Adapter extends SQLAdapterBase
   key_type: types.Integer
+  native_integrity: true
 
   ##
   # Creates a SQLite3 adapter
@@ -58,11 +59,11 @@ class SQLite3Adapter extends SQLAdapterBase
         sql.push property._dbname + ' ' + column_sql
     for integrity in model_class._integrities
       if integrity.type is 'child_nullify'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE SET NULL"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE SET NULL"
       else if integrity.type is 'child_restrict'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE RESTRICT"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE RESTRICT"
       else if integrity.type is 'child_delete'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE CASCADE"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE CASCADE"
     sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
     @_query 'run', sql, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error

@@ -39,6 +39,7 @@ _propertyToSQL = (property) ->
 class MySQLAdapter extends SQLAdapterBase
   key_type: types.Integer
   support_geopoint: true
+  native_integrity: true
 
   ##
   # Creates a MySQL adapter
@@ -67,11 +68,11 @@ class MySQLAdapter extends SQLAdapterBase
       sql.push "#{unique}INDEX #{index.options.name} (#{columns.join ','})"
     for integrity in model_class._integrities
       if integrity.type is 'child_nullify'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE SET NULL"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE SET NULL"
       else if integrity.type is 'child_restrict'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE RESTRICT"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE RESTRICT"
       else if integrity.type is 'child_delete'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent}(id) ON DELETE CASCADE"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE CASCADE"
     sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
     @_query sql, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error

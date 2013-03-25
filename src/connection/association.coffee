@@ -25,8 +25,8 @@ class ConnectionAssociation
     target_model.column foreign_key, type: types.RecordID, connection: this_model._connection
 
     integrity = options?.integrity or 'ignore'
-    target_model._integrities.push type: 'child_'+integrity, column: foreign_key, parent: this_model._name
-    this_model._integrities.push type: 'parent_'+integrity, column: foreign_key, child: target_model._name
+    target_model._integrities.push type: 'child_'+integrity, column: foreign_key, parent: this_model
+    this_model._integrities.push type: 'parent_'+integrity, column: foreign_key, child: target_model
 
     column = options?.as or inflector.tableize(target_model._name)
     columnCache = '__cache_' + column
@@ -171,7 +171,7 @@ class ConnectionAssociation
         modelClass.select '', (error, records) =>
           ids = records.map (record) -> record.id
           async.forEach integrities, (integrity, callback) =>
-            query = @models[integrity.child].select ''
+            query = integrity.child.select ''
             conditions = {}
             conditions[integrity.column] = $not: $in: ids
             query.where(conditions)
@@ -182,7 +182,7 @@ class ConnectionAssociation
             query.exec (error, records) ->
               return callback error if error
               return callback null if records.length is 0
-              array = result[integrity.child] ||= []
+              array = result[integrity.child._name] ||= []
               [].push.apply array, records.map (record) -> record.id
               _.uniq array
               callback null

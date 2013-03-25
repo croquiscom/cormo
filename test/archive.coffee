@@ -19,7 +19,7 @@ Object.keys(_dbs).forEach (db) ->
       class User extends Model
         @column 'name', String
         @column 'age', Number
-        @hasMany 'posts'
+        @hasMany 'posts', integrity: 'delete'
         @archive: true
 
       class Post extends Model
@@ -28,12 +28,12 @@ Object.keys(_dbs).forEach (db) ->
         @belongsTo 'user'
         @archive: true
 
-      dropModels [User, Post], done
+      dropModels [Post, User], done
 
     beforeEach (done) ->
-      deleteAllRecords [connection.User, connection.Post, connection._Archive], done
+      deleteAllRecords [connection._Archive, connection.Post, connection.User], done
 
     after (done) ->
-      dropModels [connection.User, connection.Post, connection._Archive], done
+      dropModels [connection._Archive, connection.Post, connection.User], done
 
     require('./cases/archive')()

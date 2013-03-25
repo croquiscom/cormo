@@ -192,6 +192,58 @@ class Query
     @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
     @_adapter.updatePartial @_name, data, @_conditions, @_options, _bindDomain callback
 
+  _doIntegrityActions: (integrities, ids, callback) ->
+    async.forEach integrities, (integrity, callback) =>
+      if integrity.type is 'parent_nullify'
+        data = {}
+        data[integrity.column] = null
+        conditions = {}
+        conditions[integrity.column] = ids
+        integrity.child.update data, conditions, (error, count) ->
+          callback error
+      else if integrity.type is 'parent_restrict'
+        conditions = {}
+        conditions[integrity.column] = ids
+        integrity.child.count conditions, (error, count) ->
+          return callback error if error
+          return callback new Error 'rejected' if count>0
+          callback null
+      else if integrity.type is 'parent_delete'
+        conditions = {}
+        conditions[integrity.column] = ids
+        integrity.child.delete conditions, (error, count) ->
+          return callback error if error
+          callback null
+      else
+        callback null
+    , callback
+
+  _doArchiveAndIntegrity: (options, callback) ->
+    need_archive = @_model.archive
+    integrities = @_model._integrities.filter (integrity) -> integrity.type.substr(0, 7) is 'parent_'
+    need_child_archive = integrities.some (integrity) => integrity.child.archive
+    need_integrity = need_child_archive or (integrities.length > 0 and not @_adapter.native_integrity)
+    return callback null if not need_archive and not need_integrity
+
+    async.waterfall [
+      # find all records to be deleted
+      (callback) =>
+        query = @_model.where @_conditions
+        # we need only id field for integrity
+        query.select '' if not need_archive
+        query.exec callback
+      (records, callback) =>
+        return callback null, records if not need_archive
+        archive_records = records.map (record) => model: @_name, data: record
+        @_connection.models['_Archive'].createBulk archive_records, (error) =>
+          return callback error if error
+          callback null, records
+      (records, callback) =>
+        return callback null if not need_integrity
+        ids = records.map (record) -> record.id
+        @_doIntegrityActions integrities, ids, callback
+    ], callback
+
   ##
   # Executes the query as a delete operation
   # @param {Object} [options]
@@ -212,14 +264,9 @@ class Query
       @_conditions.push id: @_id
       delete @_id
     @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log
-    if @_model.archive
-      @_model.where @_conditions, (error, records) =>
-        return callback error if error
-        records = records.map (record) => model: @_name, data: record
-        @_connection.models['_Archive'].createBulk records, (error, records) =>
-          return callback error if error
-          @_adapter.delete @_name, @_conditions, _bindDomain callback
-    else
+
+    @_doArchiveAndIntegrity options, (error) =>
+      return callback error if error
       @_adapter.delete @_name, @_conditions, _bindDomain callback
 
 module.exports = Query
