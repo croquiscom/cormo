@@ -76,3 +76,8 @@ class RecordID
 # A pseudo class represents an integer
 # @namespace types
 class Integer
+
+##
+# A pseudo class represents a two-dimensional point
+# @namespace types
+class GeoPoint
