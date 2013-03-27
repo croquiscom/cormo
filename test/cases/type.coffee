@@ -6,15 +6,15 @@ module.exports = () ->
       [ '8a', null ]
       [ 'abc', null ]
     ]
-    async.forEach data, (item, callback) ->
-        connection.Type.create { number: item[0] }, (error, type) ->
+    _g.async.forEach data, (item, callback) ->
+        _g.connection.Type.create { number: item[0] }, (error, type) ->
           if item[1] is null
             should.exist error
             error.message.should.be.equal "'number' is not a number"
             return callback null
           return callback error if error
           type.number.should.be.equal item[1]
-          connection.Type.find type.id, (error, type) ->
+          _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
             type.number.should.be.equal item[1]
             callback null
@@ -29,15 +29,15 @@ module.exports = () ->
       [ '8a', null ]
       [ 'abc', null ]
     ]
-    async.forEach data, (item, callback) ->
-        connection.Type.create { int_c: item[0] }, (error, type) ->
+    _g.async.forEach data, (item, callback) ->
+        _g.connection.Type.create { int_c: item[0] }, (error, type) ->
           if item[1] is null
             should.exist error
             error.message.should.be.equal "'int_c' is not an integer"
             return callback null
           return callback error if error
           type.int_c.should.be.equal item[1]
-          connection.Type.find type.id, (error, type) ->
+          _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
             type.int_c.should.be.equal item[1]
             callback null
@@ -53,8 +53,8 @@ module.exports = () ->
       [ '2012/13/01', null ]
       [ new Date('2013/01/12 03:42:21').getTime(), new Date('2013/01/12 03:42:21').getTime() ]
     ]
-    async.forEach data, (item, callback) ->
-        connection.Type.create { date: item[0] }, (error, type) ->
+    _g.async.forEach data, (item, callback) ->
+        _g.connection.Type.create { date: item[0] }, (error, type) ->
           if item[1] is null
             should.exist error
             error.message.should.be.equal "'date' is not a date"
@@ -62,7 +62,7 @@ module.exports = () ->
           return callback error if error
           new should.Assertion(type.date).be.an.instanceof Date
           type.date.getTime().should.be.equal item[1]
-          connection.Type.find type.id, (error, type) ->
+          _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
             new should.Assertion(type.date).be.an.instanceof Date
             type.date.getTime().should.be.equal item[1]
@@ -77,15 +77,15 @@ module.exports = () ->
       [ 'str', null ]
       [ 5, null ]
     ]
-    async.forEach data, (item, callback) ->
-        connection.Type.create { boolean: item[0] }, (error, type) ->
+    _g.async.forEach data, (item, callback) ->
+        _g.connection.Type.create { boolean: item[0] }, (error, type) ->
           if item[1] is null
             should.exist error
             error.message.should.be.equal "'boolean' is not a boolean"
             return callback null
           return callback error if error
           type.boolean.should.be.equal item[1]
-          connection.Type.find type.id, (error, type) ->
+          _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
             type.boolean.should.be.equal item[1]
             callback null
@@ -100,14 +100,14 @@ module.exports = () ->
       [ false, false ]
       [ {a: 5, b: ['oh']}, {a: 5, b: ['oh']} ]
     ]
-    async.forEach data, (item, callback) ->
-        connection.Type.create { object: item[0] }, (error, type) ->
+    _g.async.forEach data, (item, callback) ->
+        _g.connection.Type.create { object: item[0] }, (error, type) ->
           return callback error if error
           if typeof item[1] is 'object'
             type.object.should.be.eql item[1]
           else
             type.object.should.be.equal item[1]
-          connection.Type.find type.id, (error, type) ->
+          _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
             if typeof item[1] is 'object'
               type.object.should.be.eql item[1]
@@ -123,15 +123,15 @@ module.exports = () ->
       [ 9, null ]
       [ [9,'12.8'], null ]
     ]
-    async.forEach data, (item, callback) ->
-        connection.Type.create { int_array: item[0] }, (error, type) ->
+    _g.async.forEach data, (item, callback) ->
+        _g.connection.Type.create { int_array: item[0] }, (error, type) ->
           if item[1] is null
             should.exist error
             error.message.should.be.equal "'int_array' is not an array"
             return callback null
           return callback error if error
           type.int_array.should.be.eql item[1]
-          connection.Type.find type.id, (error, type) ->
+          _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
             type.int_array.should.be.eql item[1]
             callback null

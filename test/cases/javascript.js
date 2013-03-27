@@ -15,7 +15,7 @@ _createUsers = function (User, data, callback) {
 
 module.exports = function () {
   it('create one', function (done) {
-    var user = new connection.User();
+    var user = new _g.connection.User();
     user.name = 'John Doe';
     user.age = 27;
     user.should.have.property('name', 'John Doe');
@@ -24,21 +24,21 @@ module.exports = function () {
   });
 
   it('initialize in constructor', function (done) {
-    var user = new connection.User({name: 'John Doe', age: 27});
+    var user = new _g.connection.User({name: 'John Doe', age: 27});
     user.should.have.property('name', 'John Doe');
     user.should.have.property('age', 27);
     done(null);
   });
 
   it('build method', function (done) {
-    var user = connection.User.build({name: 'John Doe', age: 27});
+    var user = _g.connection.User.build({name: 'John Doe', age: 27});
     user.should.have.property('name', 'John Doe');
     user.should.have.property('age', 27);
     done(null);
   });
 
   it('add a new record to the database', function (done) {
-    var user = new connection.User({name: 'John Doe', age: 27});
+    var user = new _g.connection.User({name: 'John Doe', age: 27});
     user.save(function (error) {
       if (error) {
         return done(error);
@@ -49,7 +49,7 @@ module.exports = function () {
   });
 
   it('create method', function (done) {
-    connection.User.create({ name: 'John Doe', age: 27 }, function (error, user) {
+    _g.connection.User.create({ name: 'John Doe', age: 27 }, function (error, user) {
       if (error) {
         return done(error);
       }
@@ -59,11 +59,11 @@ module.exports = function () {
   });
 
   it('simple where', function (done) {
-    _createUsers(connection.User, function (error, users) {
+    _createUsers(_g.connection.User, function (error, users) {
       if (error) {
         return done(error);
       }
-      connection.User.where({age: 27}, function (error, users) {
+      _g.connection.User.where({age: 27}, function (error, users) {
         if (error) {
           return done(error);
         }
@@ -79,11 +79,11 @@ module.exports = function () {
   });
 
   it('where chain', function (done) {
-    _createUsers(connection.User, function (error, users) {
+    _createUsers(_g.connection.User, function (error, users) {
       if (error) {
         return done(error);
       }
-      connection.User.where({age: 27}).where({name: 'Alice Jackson'}).exec(function (error, users) {
+      _g.connection.User.where({age: 27}).where({name: 'Alice Jackson'}).exec(function (error, users) {
         if (error) {
           return done(error);
         }
@@ -96,11 +96,11 @@ module.exports = function () {
   });
 
   it('$or', function (done) {
-    _createUsers(connection.User, function (error, users) {
+    _createUsers(_g.connection.User, function (error, users) {
       if (error) {
         return done(error);
       }
-      connection.User.where({$or: [ { age: 32 }, { name: 'John Doe' } ]}, function (error, users) {
+      _g.connection.User.where({$or: [ { age: 32 }, { name: 'John Doe' } ]}, function (error, users) {
         if (error) {
           return done(error);
         }

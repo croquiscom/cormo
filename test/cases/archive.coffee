@@ -18,9 +18,9 @@ _comparePost = (archive, expected) ->
 module.exports = ->
   it 'basic', (done) ->
     users = undefined
-    async.waterfall [
+    _g.async.waterfall [
       (callback) ->
-        connection.manipulate [
+        _g.connection.manipulate [
           { create_user: id: 'user0', name: 'John Doe', age: 27 }
           { create_user: id: 'user1', name: 'Bill Smith', age: 45 }
           { create_user: id: 'user2', name: 'Alice Jackson', age: 27 }
@@ -29,20 +29,20 @@ module.exports = ->
         ], callback
       (id_to_record_map, callback) ->
         users = [0..4].map (i) -> id_to_record_map['user'+i]
-        connection._Archive.where callback
+        _g.connection._Archive.where callback
       (records, callback) ->
         records.should.have.length 0
-        connection.User.find(users[3].id).delete callback
+        _g.connection.User.find(users[3].id).delete callback
       (count, callback) ->
         count.should.be.equal 1
-        connection._Archive.where callback
+        _g.connection._Archive.where callback
       (records, callback) ->
         records.should.have.length 1
         _compareUser records[0], users[3]
-        connection.User.delete age:27, callback
+        _g.connection.User.delete age:27, callback
       (count, callback) ->
         count.should.be.equal 2
-        connection._Archive.where callback
+        _g.connection._Archive.where callback
       (records, callback) ->
         records.should.have.length 3
         records.sort (a, b) -> if a.data.id < b.data.id then -1 else 1
@@ -56,9 +56,9 @@ module.exports = ->
   it 'by integrity', (done) ->
     users = undefined
     posts = undefined
-    async.waterfall [
+    _g.async.waterfall [
       (callback) ->
-        connection.manipulate [
+        _g.connection.manipulate [
           { create_user: id: 'user0', name: 'John Doe', age: 27 }
           { create_user: id: 'user1', name: 'Bill Smith', age: 45 }
           { create_post: id: 'post0', user_id: 'user0', title: 'first post', body: 'This is the 1st post.' }
@@ -68,13 +68,13 @@ module.exports = ->
       (id_to_record_map, callback) ->
         users = [0..0].map (i) -> id_to_record_map['user'+i]
         posts = [0..1].map (i) -> id_to_record_map['post'+i]
-        connection._Archive.where callback
+        _g.connection._Archive.where callback
       (records, callback) ->
         records.should.have.length 0
-        connection.User.find(users[0].id).delete callback
+        _g.connection.User.find(users[0].id).delete callback
       (count, callback) ->
         count.should.be.equal 1
-        connection._Archive.where callback
+        _g.connection._Archive.where callback
       (records, callback) ->
         records.should.have.length 3
         records.sort (a, b) ->

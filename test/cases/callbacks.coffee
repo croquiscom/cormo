@@ -1,6 +1,6 @@
 module.exports = () ->
   it 'callbacks for a new record', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.afterFind 'after_find1'
     User::after_find1 = -> logs.push 'after_find1 : ' + @name
@@ -17,7 +17,7 @@ module.exports = () ->
     done null
 
   it 'callbacks for finding a record', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.createBulk [
       { name: 'John Doe', age: 27 }
@@ -37,7 +37,7 @@ module.exports = () ->
         done null
 
   it 'callbacks for finding records', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.createBulk [
       { name: 'John Doe', age: 27 }
@@ -66,7 +66,7 @@ module.exports = () ->
         done null
 
   it 'callbacks for creating a record', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.beforeValidate 'before_validate1'
     User::before_validate1 = -> logs.push 'before_validate1 : ' + @name
@@ -115,7 +115,7 @@ module.exports = () ->
       done null
 
   it 'callbacks for updating a record', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.create { name: 'John Doe', age: 27 }, (error, user) ->
       User.beforeValidate 'before_validate1'
@@ -166,7 +166,7 @@ module.exports = () ->
         done null
 
   it 'callbacks for destroying a record', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.beforeDestroy 'before_destroy1'
     User::before_destroy1 = -> logs.push 'before_destroy1 : ' + @name

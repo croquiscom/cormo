@@ -14,13 +14,13 @@ _dbs =
 Object.keys(_dbs).forEach (db) ->
   describe 'callbacks-' + db, ->
     beforeEach (done) ->
-      global.connection = new Connection db, _dbs[db]
-      class User extends Model
+      _g.connection = new _g.Connection db, _dbs[db]
+      class User extends _g.Model
         @column 'name', String
         @column 'age', Number
-      dropModels [User], done
+      _g.dropModels [User], done
 
     after (done) ->
-      dropModels [connection.User], done
+      _g.dropModels [_g.connection.User], done
 
     require('./cases/callbacks')()

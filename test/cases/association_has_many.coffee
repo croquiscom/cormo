@@ -5,12 +5,12 @@ _comparePost = (a, b) ->
 
 module.exports = () ->
   it 'collection_accessor.build on a new object', (done) ->
-    async.waterfall [
+    _g.async.waterfall [
       # create two new objects
       (callback) ->
-        user1 = connection.User.build name: 'John Doe', age: 27
+        user1 = _g.connection.User.build name: 'John Doe', age: 27
         should.exist user1.posts
-        user2 = connection.User.build name: 'Bill Smith', age: 45
+        user2 = _g.connection.User.build name: 'Bill Smith', age: 45
         should.exist user2.posts
         callback null, user1, user2
       # check default status
@@ -44,13 +44,13 @@ module.exports = () ->
       done error
 
   it 'collection_accessor.build on an existing object', (done) ->
-    async.waterfall [
+    _g.async.waterfall [
       # create two new objects
       (callback) ->
-        connection.User.create { name: 'John Doe', age: 27 }, (error, user1) ->
+        _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user1) ->
           return callback error if error
           should.exist user1.posts
-          connection.User.create { name: 'Bill Smith', age: 45 }, (error, user2) ->
+          _g.connection.User.create { name: 'Bill Smith', age: 45 }, (error, user2) ->
             return callback error if error
             should.exist user2.posts
             callback null, user1, user2
@@ -85,7 +85,7 @@ module.exports = () ->
       done error
 
   it 'save object after creating a sub object', (done) ->
-    user = connection.User.build name: 'John Doe', age: 27
+    user = _g.connection.User.build name: 'John Doe', age: 27
     post = user.posts.build title: 'first post', body: 'This is the 1st post.'
     should.not.exist user.id
     should.not.exist post.id
@@ -98,9 +98,9 @@ module.exports = () ->
       done null
 
   it 'get sub objects', (done) ->
-    connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
-      connection.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
-        connection.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
+    _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      _g.connection.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
+        _g.connection.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
           user.posts (error, posts) ->
             posts.should.have.length 2
             posts.sort (a, b) -> if a.body < b.body then -1 else 1
@@ -109,12 +109,12 @@ module.exports = () ->
             done null
 
   it 'sub objects are cached', (done) ->
-    connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
-      connection.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
+    _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      _g.connection.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
         user.posts (error, posts) ->
           posts.should.have.length 1
           _comparePost posts[0], post1
-          connection.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
+          _g.connection.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
             user.posts (error, posts) ->
               # added object is not fetched
               posts.should.have.length 1

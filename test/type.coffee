@@ -14,11 +14,11 @@ _dbs =
 Object.keys(_dbs).forEach (db) ->
   describe 'type-' + db, ->
     before (done) ->
-      global.connection = new Connection db, _dbs[db]
+      _g.connection = new _g.Connection db, _dbs[db]
 
       if Math.floor Math.random() * 2
         # using CoffeeScript extends keyword
-        class Type extends Model
+        class Type extends _g.Model
           @column 'number', 'number'
           @column 'int_c', 'integer'
           @column 'date', 'date'
@@ -28,22 +28,22 @@ Object.keys(_dbs).forEach (db) ->
           @column 'int_array', ['integer']
       else
         # using Connection method
-        Type = connection.model 'Type',
+        Type = _g.connection.model 'Type',
           number: Number
-          int_c: cormo.types.Integer
+          int_c: _g.cormo.types.Integer
           date: Date
           boolean: Boolean
           object: Object
           string: String
-          int_array: [cormo.types.Integer]
+          int_array: [_g.cormo.types.Integer]
 
-      dropModels [Type], done
+      _g.dropModels [Type], done
 
     beforeEach (done) ->
-      deleteAllRecords [connection.Type], done
+      _g.deleteAllRecords [_g.connection.Type], done
 
     after (done) ->
-      dropModels [connection.Type], done
+      _g.dropModels [_g.connection.Type], done
 
     describe '#basic', ->
       require('./cases/type')()

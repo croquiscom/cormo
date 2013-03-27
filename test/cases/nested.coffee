@@ -1,12 +1,12 @@
 module.exports = () ->
   it 'define a model, create an instance and fetch it', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.column 'name'
       first: String
       last: String
 
-    async.waterfall [
+    _g.async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         user.should.have.keys 'id', 'name'
@@ -24,12 +24,12 @@ module.exports = () ->
     ], done
 
   it 'another style to define a model', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.column 'name.first', String
     User.column 'name.last', String
 
-    async.waterfall [
+    _g.async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         user.should.have.keys 'id', 'name'
@@ -47,14 +47,14 @@ module.exports = () ->
     ], done
 
   it 'constraint', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.column 'name'
       first: { type: String, required: true }
       middle: String
       last: { type: String, required: true }
 
-    async.waterfall [
+    _g.async.waterfall [
       (callback) -> User.create { name: first: 'John', middle: 'F.', last: 'Doe' }, callback
       (user, callback) -> User.find user.id, callback
       (user, callback) ->
@@ -84,13 +84,13 @@ module.exports = () ->
     ], done
 
   it 'query', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.column 'name'
       first: String
       last: String
 
-    async.waterfall [
+    _g.async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) -> User.create { name: first: 'Bill', last: 'Smith' }, callback
       (user, callback) -> User.create { name: first: 'Daniel', last: 'Smith' }, callback
@@ -110,13 +110,13 @@ module.exports = () ->
     ], done
 
   it 'update', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.column 'name'
       first: String
       last: String
 
-    async.waterfall [
+    _g.async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         User.find(user.id).update name: first: 'Bill', (error, count) ->
@@ -133,14 +133,14 @@ module.exports = () ->
     ], done
 
   it 'constraint on update', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.column 'name'
       first: { type: String, required: true }
       middle: String
       last: { type: String, required: true }
 
-    async.waterfall [
+    _g.async.waterfall [
       (callback) -> User.create { name: first: 'John', middle: 'F.', last: 'Doe' }, callback
       (user, callback) ->
         User.find(user.id).update name: last: null, (error) ->
@@ -150,14 +150,14 @@ module.exports = () ->
     ], done
 
   it 'keys on empty', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.column 'name'
       first: String
       last: String
     User.column 'age', Number
 
-    async.waterfall [
+    _g.async.waterfall [
       (callback) -> User.create name: { first: 'John', last: 'Doe' }, age: 20, callback
       (user, callback) ->
         user.should.have.keys 'id', 'name', 'age'
@@ -173,13 +173,13 @@ module.exports = () ->
     ], done
 
   it 'replace object', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.column 'name'
       first: String
       last: String
 
-    async.waterfall [
+    _g.async.waterfall [
       (callback) -> User.create name: { first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         user.name = first: 'Bill'
@@ -197,7 +197,7 @@ module.exports = () ->
     ], done
 
   it 'get & set', (done) ->
-    User = connection.User
+    User = _g.connection.User
 
     User.column 'name'
       first: String

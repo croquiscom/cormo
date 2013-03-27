@@ -14,26 +14,26 @@ _dbs =
 Object.keys(_dbs).forEach (db) ->
   describe 'archive-' + db, ->
     before (done) ->
-      global.connection = new Connection db, _dbs[db]
+      _g.connection = new _g.Connection db, _dbs[db]
 
-      class User extends Model
+      class User extends _g.Model
         @column 'name', String
         @column 'age', Number
         @hasMany 'posts', integrity: 'delete'
         @archive: true
 
-      class Post extends Model
+      class Post extends _g.Model
         @column 'title', String
         @column 'body', String
         @belongsTo 'user'
         @archive: true
 
-      dropModels [Post, User], done
+      _g.dropModels [Post, User], done
 
     beforeEach (done) ->
-      deleteAllRecords [connection._Archive, connection.Post, connection.User], done
+      _g.deleteAllRecords [_g.connection._Archive, _g.connection.Post, _g.connection.User], done
 
     after (done) ->
-      dropModels [connection._Archive, connection.Post, connection.User], done
+      _g.dropModels [_g.connection._Archive, _g.connection.Post, _g.connection.User], done
 
     require('./cases/archive')()

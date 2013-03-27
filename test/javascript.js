@@ -10,19 +10,19 @@ _dbs = {
 Object.keys(_dbs).forEach(function (db) {
   describe('javascript-' + db, function () {
     before(function (done) {
-      global.connection = new Connection(db, _dbs[db]);
+      _g.connection = new _g.Connection(db, _dbs[db]);
 
-      var User = connection.model('User', { name: String, age: Number });
+      var User = _g.connection.model('User', { name: String, age: Number });
 
-      dropModels([User], done);
+      _g.dropModels([User], done);
     });
 
     beforeEach(function (done) {
-      deleteAllRecords([connection.User], done);
+      _g.deleteAllRecords([_g.connection.User], done);
     });
 
     after(function (done) {
-      dropModels([connection.User], done);
+      _g.dropModels([_g.connection.User], done);
     });
 
     require('./cases/javascript')();

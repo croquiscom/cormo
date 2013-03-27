@@ -14,38 +14,38 @@ _dbs =
 Object.keys(_dbs).forEach (db) ->
   describe 'manipulate-' + db, ->
     before (done) ->
-      global.connection = new Connection db, _dbs[db]
+      _g.connection = new _g.Connection db, _dbs[db]
 
       if Math.floor Math.random() * 2
         # using CoffeeScript extends keyword
-        class User extends Model
+        class User extends _g.Model
           @column 'name', String
           @column 'age', Number
           @hasMany 'posts'
 
-        class Post extends Model
+        class Post extends _g.Model
           @column 'title', String
           @column 'body', String
           @belongsTo 'user'
       else
         # using Connection method
-        User = connection.model 'User',
+        User = _g.connection.model 'User',
           name: String
           age: Number
 
-        Post = connection.model 'Post',
+        Post = _g.connection.model 'Post',
           title: String
           body: String
 
         User.hasMany Post
         Post.belongsTo User
 
-      dropModels [User, Post], done
+      _g.dropModels [User, Post], done
 
     beforeEach (done) ->
-      deleteAllRecords [connection.User, connection.Post], done
+      _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
 
     after (done) ->
-      dropModels [connection.User, connection.Post], done
+      _g.dropModels [_g.connection.User, _g.connection.Post], done
 
     require('./cases/manipulate')()

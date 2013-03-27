@@ -2,19 +2,19 @@ require './common'
 
 describe 'mixing several database', ->
   before (done) ->
-    global.connection = {}
-    mysql = new Connection 'mysql', database: 'test'
-    mongodb = new Connection 'mongodb', database: 'test'
+    _g.connection = {}
+    mysql = new _g.Connection 'mysql', database: 'test'
+    mongodb = new _g.Connection 'mongodb', database: 'test'
 
     if Math.floor Math.random() * 2
       # using CoffeeScript extends keyword
-      class User extends Model
+      class User extends _g.Model
         @connection mongodb
         @column 'name', String
         @column 'age', Number
         @hasMany 'posts', connection: mysql
 
-      class Post extends Model
+      class Post extends _g.Model
         @connection mysql
         @column 'title', String
         @column 'body', String
@@ -37,16 +37,16 @@ describe 'mixing several database', ->
       Post.hasMany Post, as: 'comments', foreign_key: 'parent_post_id'
       Post.belongsTo Post, as: 'parent_post'
 
-    connection.User = User
-    connection.Post = Post
+    _g.connection.User = User
+    _g.connection.Post = Post
 
-    dropModels [User, Post], done
+    _g.dropModels [User, Post], done
 
   beforeEach (done) ->
-    deleteAllRecords [connection.User, connection.Post], done
+    _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
 
   after (done) ->
-    dropModels [connection.User, connection.Post], done
+    _g.dropModels [_g.connection.User, _g.connection.Post], done
 
   describe '#hasMany', ->
     require('./cases/association_has_many')()

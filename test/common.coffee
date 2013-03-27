@@ -1,26 +1,28 @@
 # common modules to test cases
 
-global.async = require 'async'
+global._g = {}
 
-global.cormo = require '../index'
-global.Connection = cormo.Connection
-global.Model = cormo.Model
-global.connection = undefined
+_g.async = require 'async'
 
-Model.dirty_tracking = Math.floor(Math.random() * 2) isnt 0
-Model.eliminate_null = Math.floor(Math.random() * 2) isnt 0
+_g.cormo = require '../index'
+_g.Connection = _g.cormo.Connection
+_g.Model = _g.cormo.Model
+_g.connection = undefined
+
+_g.Model.dirty_tracking = Math.floor(Math.random() * 2) isnt 0
+_g.Model.eliminate_null = Math.floor(Math.random() * 2) isnt 0
 
 # 'global.should =' does not work because should module override Object.prototype.should
 Object.defineProperty global, 'should', value: require 'should'
 
-global.dropModels = (models, callback) ->
-  async.forEach models, (model, callback) ->
+_g.dropModels = (models, callback) ->
+  _g.async.forEach models, (model, callback) ->
     return callback null if not model
     model.drop callback
   , callback
 
-global.deleteAllRecords = (models, callback) ->
-  async.forEach models, (model, callback) ->
+_g.deleteAllRecords = (models, callback) ->
+  _g.async.forEach models, (model, callback) ->
     return callback null if not model
     archive = model.archive
     model.archive = false

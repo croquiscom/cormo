@@ -1,4 +1,5 @@
 _ = require 'underscore'
+async = require 'async'
 inflector = require '../inflector'
 types = require '../types'
 
@@ -163,6 +164,8 @@ class ConnectionAssociation
   # @param {Error} callback.error
   # @param {Object} callback.inconsistencies Hash of model name to Array of RecordIDs
   getInconsistencies: (callback) ->
+    return if @_waitingForApplyingSchemas @, @getInconsistencies, arguments
+
     result = {}
     async.forEach Object.keys(@models), (model, callback) =>
       modelClass = @models[model]

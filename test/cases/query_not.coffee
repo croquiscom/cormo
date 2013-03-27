@@ -23,9 +23,9 @@ _createUsers = (User, data, callback) ->
 
 module.exports = () ->
   it 'simple not', (done) ->
-    _createUsers connection.User, (error, users) ->
+    _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      connection.User.where age: $not: 27, (error, users) ->
+      _g.connection.User.where age: $not: 27, (error, users) ->
         return done error if error
         users.should.have.length 3
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -35,9 +35,9 @@ module.exports = () ->
         done null
 
   it 'where not chain', (done) ->
-    _createUsers connection.User, (error, users) ->
+    _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      connection.User.where(age: $not: 27).where(name: $not: 'Daniel Smith').exec (error, users) ->
+      _g.connection.User.where(age: $not: 27).where(name: $not: 'Daniel Smith').exec (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -46,23 +46,23 @@ module.exports = () ->
         done null
 
   it 'not for id', (done) ->
-    _createUsers connection.User, (error, users) ->
+    _createUsers _g.connection.User, (error, users) ->
       target = users[0]
       return done error if error
-      connection.User.where { id: $not: target.id }, (error, users) ->
+      _g.connection.User.where { id: $not: target.id }, (error, users) ->
         return done error if error
         users.should.have.length 4
         done null
 
   it 'not for comparison', (done) ->
-    _createUsers connection.User, (error, users) ->
+    _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      connection.User.where age: $gt: 30, (error, users) ->
+      _g.connection.User.where age: $gt: 30, (error, users) ->
         return done error if error
         users.should.have.length 1
         _compareUser users[0], name: 'Bill Smith', age: 45
         # '> 30' != 'not < 30' because of null value
-        connection.User.where age: $not: $lt: 30, (error, users) ->
+        _g.connection.User.where age: $not: $lt: 30, (error, users) ->
           return done error if error
           users.should.have.length 2
           users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -71,9 +71,9 @@ module.exports = () ->
           done null
 
   it 'not contains', (done) ->
-    _createUsers connection.User, (error, users) ->
+    _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      connection.User.where name: $not: $contains: 'smi', (error, users) ->
+      _g.connection.User.where name: $not: $contains: 'smi', (error, users) ->
         return done error if error
         users.should.have.length 3
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -83,9 +83,9 @@ module.exports = () ->
         done null
 
   it 'not $in', (done) ->
-    _createUsers connection.User, (error, users) ->
+    _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      connection.User.where age: $not: $in: [ 27, 45, 57 ], (error, users) ->
+      _g.connection.User.where age: $not: $in: [ 27, 45, 57 ], (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -94,10 +94,10 @@ module.exports = () ->
         done null
 
   it 'not $in for id', (done) ->
-    _createUsers connection.User, (error, users) ->
+    _createUsers _g.connection.User, (error, users) ->
       return done error if error
       users.sort (a, b) -> if a.name < b.name then -1 else 1
-      connection.User.where id: $not: $in: [ users[2].id, users[0].id ], (error, users) ->
+      _g.connection.User.where id: $not: $in: [ users[2].id, users[0].id ], (error, users) ->
         return done error if error
         users.should.have.length 3
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -107,9 +107,9 @@ module.exports = () ->
         done null
 
   it 'not for implicit $in', (done) ->
-    _createUsers connection.User, (error, users) ->
+    _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      connection.User.where age: $not: [ 27, 45, 57 ], (error, users) ->
+      _g.connection.User.where age: $not: [ 27, 45, 57 ], (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1

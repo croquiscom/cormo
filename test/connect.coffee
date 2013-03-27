@@ -16,16 +16,16 @@ _dbs =
 Object.keys(_dbs).forEach (db) ->
   describe 'connect-' + db, ->
     before (done) ->
-      global.connection = new Connection db, _dbs[db]
-      User = connection.model 'User',
+      _g.connection = new _g.Connection db, _dbs[db]
+      User = _g.connection.model 'User',
         name: String
         age: Number
       User.drop (error) ->
         done null
 
     it 'can process without waiting connected and schemas applied', (done) ->
-      global.connection = new Connection db, _dbs[db]
-      User = connection.model 'User',
+      _g.connection = new _g.Connection db, _dbs[db]
+      User = _g.connection.model 'User',
         name: String
         age: Number
 
