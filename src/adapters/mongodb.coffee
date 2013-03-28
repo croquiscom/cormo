@@ -29,7 +29,7 @@ _buildWhereSingle = (property, key, value, not_op) ->
       value = $nin: value
     else
       value = $in: value
-  else if typeof value is 'object' and (keys = Object.keys value).length is 1
+  else if typeof value is 'object' and value isnt null and (keys = Object.keys value).length is 1
     sub_key = keys[0]
     switch sub_key
       when '$not'
@@ -54,7 +54,7 @@ _buildWhereSingle = (property, key, value, not_op) ->
     if not_op
       value = $not: value
   else
-    if is_objectid
+    if is_objectid and value?
       value = _convertValueToObjectID value, key
     if not_op
       value = $ne: value

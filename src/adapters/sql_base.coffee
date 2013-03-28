@@ -22,7 +22,10 @@ class SQLAdapterBase extends AdapterBase
       sub_key = keys[0]
       switch sub_key
         when '$not'
-          return "(NOT (#{@_buildWhereSingle property, key, value[sub_key], params}) OR #{key.replace('.', '_')} IS NULL)"
+          if value[sub_key] is null
+            return "NOT #{key.replace('.', '_')} IS NULL"
+          else
+            return "(NOT (#{@_buildWhereSingle property, key, value[sub_key], params}) OR #{key.replace('.', '_')} IS NULL)"
         when '$in'
           values = value[sub_key]
           values = values.map (value) =>

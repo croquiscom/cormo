@@ -178,7 +178,8 @@ class ConnectionAssociation
             conditions = {}
             conditions[integrity.column] = $not: $in: ids
             query.where(conditions)
-            if integrity.type is 'parent_nullify'
+            property = integrity.child._schema[integrity.column]
+            if not property.required
               conditions = {}
               conditions[integrity.column] = $not: null
               query.where(conditions)
