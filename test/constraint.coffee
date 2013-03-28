@@ -24,6 +24,11 @@ Object.keys(_dbs).forEach (db) ->
             @column 'age', { type: Number, required: true }
             @column 'email', { type: String, unique: true, required: true }
             @column 'facebook_id', { type: String, unique: true }
+
+          class Post extends _g.Model
+            @column 'title', String
+            @column 'body', String
+            @belongsTo 'user', required: true
         else
           # using Connection method
           User = _g.connection.model 'User',
@@ -32,13 +37,18 @@ Object.keys(_dbs).forEach (db) ->
             email: { type: String, unique: true, required: true }
             facebook_id: { type: String, unique: true }
 
-        _g.dropModels [User], done
+          Post = _g.connection.model 'Post',
+            title: String
+            body: String
+          Post.belongsTo User, required: true
+
+        _g.dropModels [User, Post], done
 
       beforeEach (done) ->
-        _g.deleteAllRecords [_g.connection.User], done
+        _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
 
       after (done) ->
-        _g.dropModels [_g.connection.User], done
+        _g.dropModels [_g.connection.User, _g.connection.Post], done
 
       require('./cases/constraint')()
 

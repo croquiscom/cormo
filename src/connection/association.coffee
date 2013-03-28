@@ -83,7 +83,7 @@ class ConnectionAssociation
       foreign_key = options.as + '_id'
     else
       foreign_key = inflector.foreign_key target_model._name
-    this_model.column foreign_key, type: types.RecordID, connection: target_model._connection
+    this_model.column foreign_key, type: types.RecordID, connection: target_model._connection, required: options?.required
 
     column = options?.as or inflector.underscore(target_model._name)
     columnCache = '__cache_' + column

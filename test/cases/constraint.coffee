@@ -87,3 +87,17 @@ module.exports = () ->
         should.exist error
         error.message.should.equal "'name' is required"
         done null
+
+  it 'required of belongsTo', (done) ->
+    _g.async.waterfall [
+      (callback) ->
+        _g.connection.User.create { name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, callback
+      (user, callback) ->
+        _g.connection.Post.create { title: 'first post', body: 'This is the 1st post.' }, (error, post) ->
+          should.exist error
+          error.message.should.equal "'user_id' is required"
+          callback null, user
+      (user, callback) ->
+        _g.connection.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, callback
+    ], (error) ->
+      done error

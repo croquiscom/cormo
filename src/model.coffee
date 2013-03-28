@@ -137,7 +137,12 @@ class Model
         @column path+'.'+subcolumn, subproperty
       return
 
-    return if @_schema.hasOwnProperty path
+    if @_schema.hasOwnProperty path
+      # if using association, a column may be defined more than twice (by hasMany and belongsTo, for example)
+      # overwrite some properties if given later
+      if property?.required?
+        @_schema[path].required = property.required
+      return
 
     # convert simple type to property object
     if typeof property is 'function' or typeof property is 'string' or Array.isArray property
@@ -422,6 +427,7 @@ class Model
   # @param {String} [options.type]
   # @param {String} [options.as]
   # @param {String} [options.foreign_key]
+  # @param {Boolean} [options.required]
   @belongsTo: (target_model_or_column, options) ->
     @_checkConnection()
 
