@@ -89,6 +89,20 @@ class Query
     return @
 
   ##
+  # Groups result records
+  # @param {String} group_by
+  # @param {Object} fields
+  # @return {Query} this
+  group: (group_by, fields) ->
+    @_options.group_by = null
+    schema_columns = Object.keys @_model._schema
+    if typeof group_by is 'string'
+      columns = group_by.split(/\s+/).filter (column) -> schema_columns.indexOf(column) >= 0
+      @_options.group_by = columns
+    @_options.group_fields = fields
+    return @
+
+  ##
   # Sets limit of query
   # @param {Number} limit
   # @return {Query} this

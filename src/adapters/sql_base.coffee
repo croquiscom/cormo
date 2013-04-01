@@ -83,4 +83,22 @@ class SQLAdapterBase extends AdapterBase
     else
       return '(' + subs.join(' ' + conjunction + ' ') + ')'
 
+  _buildGroupFields: (group_by, group_fields) ->
+    selects = []
+    if group_by
+      [].push.apply selects, group_by
+    for field, expr of group_fields
+      op = Object.keys(expr)[0]
+      if op is '$sum'
+        sub_expr = expr[op]
+        if sub_expr is 1
+          selects.push "COUNT(*) as #{field}"
+        else if sub_expr.substr(0, 1) is '$'
+          selects.push "SUM(#{sub_expr.substr 1}) as #{field}"
+        else
+          throw new Error "unknown expression '#{JSON.stringify op}'"
+      else
+        throw new Error "unknown expression '#{JSON.stringify op}'"
+    return selects.join ','
+
 module.exports = SQLAdapterBase

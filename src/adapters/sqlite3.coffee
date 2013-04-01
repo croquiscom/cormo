@@ -199,7 +199,9 @@ class SQLite3Adapter extends SQLAdapterBase
 
   ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->
-    if options.select
+    if options.group_by or options.group_fields
+      selects = @_buildGroupFields options.group_by, options.group_fields
+    else if options.select
       selects = if options.select.length>0 then 'id,' + options.select.join ',' else 'id'
     else
       selects = '*'
@@ -210,6 +212,8 @@ class SQLite3Adapter extends SQLAdapterBase
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
       catch e
         return callback e
+    if options.group_by
+      sql += ' GROUP BY ' + options.group_by.join ','
     if options?.limit?
       sql += ' LIMIT ' + options.limit
     if options?.orders.length > 0
@@ -222,7 +226,10 @@ class SQLite3Adapter extends SQLAdapterBase
     #console.log sql, params
     @_query 'all', sql, params, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null, result.map (record) => @_convertToModelInstance model, record, options.select
+      if options.group_fields
+        callback null, result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
+      else
+        callback null, result.map (record) => @_convertToModelInstance model, record, options.select
 
   ## @override AdapterBase::count
   count: (model, conditions, callback) ->

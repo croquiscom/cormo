@@ -97,6 +97,20 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
     obj[conjunction] = subs
     return obj
 
+_buildGroupFields = (group_by, group_fields) ->
+  group = {}
+  if group_by
+    if group_by.length is 1
+      group._id = '$' + group_by[0]
+    else
+      group._id = {}
+      group_by.forEach (field) -> group._id[field] = '$' + field
+  else
+    group._id = null
+  for field, expr of group_fields
+    group[field] = expr
+  return group
+
 ##
 # Adapter for MongoDB
 # @namespace adapter
@@ -312,11 +326,24 @@ class MongoDBAdapter extends AdapterBase
       client_options.fields = fields
     if orders
       client_options.sort = orders
-    @_collection(model).find conditions, client_options, (error, cursor) =>
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
-      cursor.toArray (error, result) =>
+    if options.group_by or options.group_fields
+      pipeline = []
+      if conditions
+        pipeline.push $match: conditions
+      pipeline.push $group: _buildGroupFields options.group_by, options.group_fields
+      @_collection(model).aggregate pipeline, (error, result) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error
-        callback null, result.map (record) => @_convertToModelInstance model, record, options.select
+        callback null, result.map (record) =>
+          if options.group_by
+            if options.group_by.length is 1
+              record[options.group_by[0]] = record._id
+          @_convertToGroupInstance model, record, options.group_by, options.group_fields
+    else
+      @_collection(model).find conditions, client_options, (error, cursor) =>
+        return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
+        cursor.toArray (error, result) =>
+          return callback MongoDBAdapter.wrapError 'unknown error', error if error
+          callback null, result.map (record) => @_convertToModelInstance model, record, options.select
 
   ## @override AdapterBase::count
   count: (model, conditions, callback) ->

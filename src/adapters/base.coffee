@@ -59,6 +59,17 @@ class AdapterBase
     modelClass = @_connection.models[model]
     new modelClass data, @_getModelID(data), selected_columns
 
+  _convertToGroupInstance: (model, data, group_by, group_fields) ->
+    instance = {}
+    if group_by
+      for field in group_by
+        instance[field] = data[field]
+    for field, expr of group_fields
+      op = Object.keys(expr)[0]
+      if op is '$sum'
+        instance[field] = Number data[field]
+    return instance
+
   ##
   # Creates a record
   # @abstract

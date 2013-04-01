@@ -70,6 +70,21 @@ class ModelQuery
     @_createOptionalQueryAndRun 'order', orders, 'exec', callback
 
   ##
+  # Groups result records
+  # @param {String} group_by
+  # @param {Object} fields
+  # @param {Function} [callback]
+  # @param {Error} callback.error
+  # @param {Array<Object>} callback.records
+  # @return {Query}
+  @group: (group_by, fields, callback) ->
+    query = new Query @
+    query.group group_by, fields
+    if typeof callback is 'function'
+      query.exec callback
+    query
+
+  ##
   # Counts records by conditions
   # @param {Object} [condition]
   # @param {Function} [callback]
