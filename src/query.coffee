@@ -246,7 +246,7 @@ class Query
         query = @_model.where @_conditions
         # we need only id field for integrity
         query.select '' if not need_archive
-        query.exec callback
+        query.exec skip_log: options?.skip_log, callback
       (records, callback) =>
         return callback null, records if not need_archive
         archive_records = records.map (record) => model: @_name, data: record
@@ -255,6 +255,7 @@ class Query
           callback null, records
       (records, callback) =>
         return callback null if not need_integrity
+        return callback null if records.length is 0
         ids = records.map (record) -> record.id
         @_doIntegrityActions integrities, ids, callback
     ], callback
