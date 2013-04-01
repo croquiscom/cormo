@@ -62,8 +62,11 @@ class AdapterBase
   _convertToGroupInstance: (model, data, group_by, group_fields) ->
     instance = {}
     if group_by
+      schema = @_connection.models[model]._schema
       for field in group_by
-        instance[field] = data[field]
+        property = schema[field]
+        if property
+          instance[field] = @valueToModel data[field], field, property
     for field, expr of group_fields
       op = Object.keys(expr)[0]
       if op is '$sum'
