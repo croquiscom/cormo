@@ -69,6 +69,58 @@ class ConnectionAssociation
         return @[columnGetter]
 
   ##
+  # Adds a has-one association
+  # @param {Class<Model>} this_model
+  # @param {Class<Model>} target_model
+  # @param {Object} [options]
+  # @private
+  _hasOne: (this_model, target_model, options) ->
+    if options?.foreign_key
+      foreign_key = options.foreign_key
+    else if options?.as
+      foreign_key = options.as + '_id'
+    else
+      foreign_key = inflector.foreign_key this_model._name
+    target_model.column foreign_key, type: types.RecordID, connection: this_model._connection
+
+    integrity = options?.integrity or 'ignore'
+    target_model._integrities.push type: 'child_'+integrity, column: foreign_key, parent: this_model
+    this_model._integrities.push type: 'parent_'+integrity, column: foreign_key, child: target_model
+
+    column = options?.as or inflector.underscore(target_model._name)
+    columnCache = '__cache_' + column
+    columnGetter = '__getter_' + column
+
+    this_model._associations[column] = { type: 'hasOne' }
+
+    Object.defineProperty this_model.prototype, column,
+      get: ->
+        # getter must be created per instance due to __scope
+        if not @.hasOwnProperty columnGetter
+          getter = (reload, callback) ->
+            if typeof reload is 'function'
+              callback = reload
+              reload = false
+            # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
+            # but use getter.__scope for safety
+            self = getter.__scope
+            if (not self[columnCache] or reload) and self.id
+              conditions = {}
+              conditions[foreign_key] = self.id
+              target_model.where conditions, (error, records) ->
+                return callback error if error
+                return callback new Error('integrity error') if records.length > 1
+                record = if records.length is 0 then null else records[0]
+                self[columnCache] = record
+                callback null, record
+            else
+              callback null, self[columnCache]
+          getter.__scope = @
+          Object.defineProperty @, columnCache, value: null, writable: true
+          Object.defineProperty @, columnGetter, value: getter
+        return @[columnGetter]
+
+  ##
   # Adds a belongs-to association
   # @param {Class<Model>} this_model
   # @param {Class<Model>} target_model
@@ -130,7 +182,7 @@ class ConnectionAssociation
         if item.options?.type
           target_model = item.options.type
           options.as = item.target_model_or_column
-        else if item.type is 'belongsTo'
+        else if item.type is 'belongsTo' or item.type is 'hasOne'
           target_model = inflector.camelize item.target_model_or_column
         else
           target_model = inflector.classify item.target_model_or_column

@@ -421,6 +421,23 @@ class Model
       options: options
 
   ##
+  # Adds a has-one association
+  # @param {Class<Model>|String} target_model_or_column
+  # @param {Object} [options]
+  # @param {String} [options.type]
+  # @param {String} [options.as]
+  # @param {String} [options.foreign_key]
+  # @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
+  @hasOne: (target_model_or_column, options) ->
+    @_checkConnection()
+
+    @_connection.addAssociation
+      type: 'hasOne'
+      this_model: @
+      target_model_or_column: target_model_or_column
+      options: options
+
+  ##
   # Adds a belongs-to association
   # @param {Class<Model>|String} target_model_or_column
   # @param {Object} [options]
