@@ -52,6 +52,7 @@ module.exports = () ->
     _createPlaces _g.connection.Place, (error) ->
       return done error if error
       _g.connection.Place.where().near(location: [-80, 40]).exec (error, places) ->
+        return done error if error
         expected = [
           'The White House'
           'Carrier Dome'
@@ -75,6 +76,7 @@ module.exports = () ->
     _createPlaces _g.connection.Place, (error) ->
       return done error if error
       _g.connection.Place.where().near(location: [-5, 45]).limit(4).exec (error, places) ->
+        return done error if error
         expected = [
           'Wimbledon'
           'Palace of Versailles'
@@ -89,8 +91,22 @@ module.exports = () ->
     _createPlaces _g.connection.Place, (error) ->
       return done error if error
       _g.connection.Place.where().near(location: [170, 45]).limit(1).exec (error, places) ->
+        return done error if error
         expected = [
           'Sapporo Dome'
+        ]
+        places = places.map (place) -> place.name
+        places.should.eql expected
+        done null
+
+  it 'near and condition', (done) ->
+    _createPlaces _g.connection.Place, (error) ->
+      return done error if error
+      _g.connection.Place.where(name: $contains: 'Stadium').near(location: [170, 45]).limit(2).exec (error, places) ->
+        return done error if error
+        expected = [
+          'Jamsil Baseball Stadium'
+          'Anfield Football Stadium'
         ]
         places = places.map (place) -> place.name
         places.should.eql expected

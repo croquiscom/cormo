@@ -10,6 +10,7 @@ AdapterBase = require './base'
 types = require '../types'
 tableize = require('../inflector').tableize
 async = require 'async'
+_ = require 'underscore'
 
 _convertValueToObjectID = (value, key) ->
   try
@@ -93,6 +94,13 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
   else if subs.length is 1
     return subs[0]
   else
+    if conjunction is '$and'
+      subs.unshift {}
+      obj = _.extend.apply _, subs
+      subs.shift()
+      keys = Object.keys obj
+      if not _.some(keys, (key) -> key.substr(0, 1) is '$')
+        return obj
     obj = {}
     obj[conjunction] = subs
     return obj
@@ -306,12 +314,17 @@ class MongoDBAdapter extends AdapterBase
     catch e
       return callback e
     if options.near? and field = Object.keys(options.near)[0]
-      obj = {}
-      obj[field] = { $near: options.near[field] }
-      if conditions
-        conditions = { $and : [  conditions, obj ] }
+      # MongoDB fails if $near is mixed with $and
+      keys = Object.keys conditions if conditions
+      if keys and (keys.length > 1 or keys[0].substr(0, 1) isnt '$')
+        conditions[field] = { $near: options.near[field] }
       else
-        conditions = obj
+        obj = {}
+        obj[field] = { $near: options.near[field] }
+        if conditions
+          conditions = { $and : [  conditions, obj ] }
+        else
+          conditions = obj
     if options.orders.length > 0
       orders = {}
       options.orders.forEach (order) ->
