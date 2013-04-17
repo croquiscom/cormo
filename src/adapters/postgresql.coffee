@@ -205,12 +205,9 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
-    if options.select
-      selects = if options.select.length>0 then 'id,' + options.select.join ',' else 'id'
-    else
-      selects = '*'
+    select = @_buildSelect @_connection.models[model], options.select
     table = tableize model
-    @_query "SELECT #{selects} FROM #{table} WHERE id=$1 LIMIT 1", [id], (error, result) =>
+    @_query "SELECT #{select} FROM #{table} WHERE id=$1 LIMIT 1", [id], (error, result) =>
       rows = result?.rows
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       if rows?.length is 1
@@ -223,13 +220,11 @@ class PostgreSQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->
     if options.group_by or options.group_fields
-      selects = @_buildGroupFields options.group_by, options.group_fields
-    else if options.select
-      selects = if options.select.length>0 then 'id,' + options.select.join ',' else 'id'
+      select = @_buildGroupFields options.group_by, options.group_fields
     else
-      selects = '*'
+      select = @_buildSelect @_connection.models[model], options.select
     params = []
-    sql = "SELECT #{selects} FROM #{tableize model}"
+    sql = "SELECT #{select} FROM #{tableize model}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params

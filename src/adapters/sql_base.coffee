@@ -101,4 +101,15 @@ class SQLAdapterBase extends AdapterBase
         throw new Error "unknown expression '#{JSON.stringify op}'"
     return selects.join ','
 
+  _buildSelect: (model_class, select) ->
+    if select
+      if select.length>0
+        schema = model_class._schema
+        select = select.map (column) -> schema[column]._dbname
+        return 'id,' + select.join ','
+      else
+        return 'id'
+    else
+      return '*'
+
 module.exports = SQLAdapterBase

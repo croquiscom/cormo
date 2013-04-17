@@ -214,3 +214,40 @@ module.exports = () ->
     should.not.exist user.get('name.last')
 
     done null
+
+  it 'select sub', (done) ->
+    User = _g.connection.User
+
+    User.column 'name'
+      first: String
+      last: String
+
+    _g.async.waterfall [
+      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
+      (user, callback) -> User.select 'name.first', callback
+      (users, callback) ->
+        users.should.have.length 1
+        users[0].should.have.keys 'id', 'name'
+        users[0].name.should.have.keys 'first'
+        users[0].name.first.should.eql 'John'
+        callback null
+    ], done
+
+  it 'select super', (done) ->
+    User = _g.connection.User
+
+    User.column 'name'
+      first: String
+      last: String
+
+    _g.async.waterfall [
+      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
+      (user, callback) -> User.select 'name', callback
+      (users, callback) ->
+        users.should.have.length 1
+        users[0].should.have.keys 'id', 'name'
+        users[0].name.should.have.keys 'first', 'last'
+        users[0].name.first.should.eql 'John'
+        users[0].name.last.should.eql 'Doe'
+        callback null
+    ], done

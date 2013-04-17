@@ -68,8 +68,16 @@ class Query
     @_options.select = null
     schema_columns = Object.keys @_model._schema
     if typeof columns is 'string'
-      columns = columns.split(/\s+/).filter (column) -> schema_columns.indexOf(column) >= 0
-      @_options.select = columns
+      select = []
+      columns.split(/\s+/).forEach (column) ->
+        if schema_columns.indexOf(column) >= 0
+          select.push column
+        else
+          # select all nested columns
+          column += '.'
+          schema_columns.forEach (sc) ->
+            select.push sc if sc.indexOf(column) is 0
+      @_options.select = select
     return @
 
   ##

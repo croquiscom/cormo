@@ -213,11 +213,8 @@ class MySQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
-    if options.select
-      selects = if options.select.length>0 then 'id,' + options.select.join ',' else 'id'
-    else
-      selects = '*'
-    sql = "SELECT #{selects} FROM #{tableize model} WHERE id=? LIMIT 1"
+    select = @_buildSelect @_connection.models[model], options.select
+    sql = "SELECT #{select} FROM #{tableize model} WHERE id=? LIMIT 1"
     @_query sql, id, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       if result?.length is 1
@@ -230,17 +227,15 @@ class MySQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->
     if options.group_by or options.group_fields
-      selects = @_buildGroupFields options.group_by, options.group_fields
-    else if options.select
-      selects = if options.select.length>0 then 'id,' + options.select.join ',' else 'id'
+      select = @_buildGroupFields options.group_by, options.group_fields
     else
-      selects = '*'
+      select = @_buildSelect @_connection.models[model], options.select
     if options.near? and field = Object.keys(options.near)[0]
       order_by = "#{field}_distance"
       location = options.near[field]
-      selects += ",GLENGTH(LINESTRING(#{field},POINT(#{location[0]},#{location[1]}))) AS #{field}_distance"
+      select += ",GLENGTH(LINESTRING(#{field},POINT(#{location[0]},#{location[1]}))) AS #{field}_distance"
     params = []
-    sql = "SELECT #{selects} FROM #{tableize model}"
+    sql = "SELECT #{select} FROM #{tableize model}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
