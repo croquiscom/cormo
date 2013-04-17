@@ -95,11 +95,13 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
     return subs[0]
   else
     if conjunction is '$and'
+      before_count = _.reduce subs, ( (memo, sub) -> memo + Object.keys(sub).length ), 0
       subs.unshift {}
       obj = _.extend.apply _, subs
       subs.shift()
       keys = Object.keys obj
-      if not _.some(keys, (key) -> key.substr(0, 1) is '$')
+      after_count = keys.length
+      if before_count is after_count and not _.some(keys, (key) -> key.substr(0, 1) is '$')
         return obj
     obj = {}
     obj[conjunction] = subs
