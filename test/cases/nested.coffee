@@ -23,6 +23,25 @@ module.exports = () ->
         callback null
     ], done
 
+  it 'get a record whose super column is null', (done) ->
+    User = _g.connection.User
+
+    User.column 'name'
+      first: String
+      last: String
+
+    _g.async.waterfall [
+      (callback) -> User.create {}, callback
+      (user, callback) -> User.find user.id, callback
+      (user, callback) ->
+        if _g.connection.User.eliminate_null
+          user.should.have.keys 'id'
+        else
+          user.should.have.keys 'id', 'name'
+        #TODO should.not.exist user.name
+        callback null
+    ], done
+
   it 'another style to define a model', (done) ->
     User = _g.connection.User
 
@@ -249,5 +268,29 @@ module.exports = () ->
         users[0].name.should.have.keys 'first', 'last'
         users[0].name.first.should.eql 'John'
         users[0].name.last.should.eql 'Doe'
+        callback null
+    ], done
+
+  it 'update super null', (done) ->
+    User = _g.connection.User
+
+    User.column 'name'
+      first: String
+      last: String
+
+    _g.async.waterfall [
+      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
+      (user, callback) ->
+        User.find(user.id).update name: null, (error, count) ->
+          return callback error if error
+          count.should.be.equal 1
+          callback null, user.id
+      (id, callback) -> User.find id, callback
+      (user, callback) ->
+        if _g.connection.User.eliminate_null
+          user.should.have.keys 'id'
+        else
+          user.should.have.keys 'id', 'name'
+        #TODO should.not.exist user.name
         callback null
     ], done

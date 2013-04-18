@@ -67,12 +67,13 @@ class Query
   select: (columns) ->
     @_options.select = null
     schema_columns = Object.keys @_model._schema
+    intermediate_paths = @_model._intermediate_paths
     if typeof columns is 'string'
       select = []
       columns.split(/\s+/).forEach (column) ->
         if schema_columns.indexOf(column) >= 0
           select.push column
-        else
+        else if intermediate_paths[column]
           # select all nested columns
           column += '.'
           schema_columns.forEach (sc) ->
@@ -189,6 +190,13 @@ class Query
         catch error
           errors.push error
         model._buildSaveDataColumn data, updates, path+column, property, true
+      else if not object[column] and model._intermediate_paths[column]
+        # set all nested columns null
+        column += '.'
+        temp = {}
+        Object.keys(schema).forEach (sc) ->
+          temp[sc.substr(column.length)] = null if sc.indexOf(column) is 0
+        @_validateAndBuildSaveData errors, data, updates, path + column, temp
       else if typeof object[column] is 'object'
         @_validateAndBuildSaveData errors, data, updates, path + column + '.', object[column]
 
