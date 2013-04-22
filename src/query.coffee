@@ -120,6 +120,13 @@ class Query
     return @
 
   ##
+  # Returns raw instances instead of model instances
+  # @see Query::exec
+  return_raw_instance: ->
+    @_options.return_raw_instance = true
+    return @
+
+  ##
   # Executes the query
   # @param {Object} [options]
   # @param {Boolean} [options.skip_log=false]

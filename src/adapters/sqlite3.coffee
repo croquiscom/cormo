@@ -188,7 +188,10 @@ class SQLite3Adapter extends SQLAdapterBase
     @_query 'all', "SELECT #{select} FROM #{table} WHERE id=? LIMIT 1", id, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       if result?.length is 1
-        callback null, @_convertToModelInstance model, result[0], options.select
+        if options.return_raw_instance
+          callback null, @_refineRawInstance model, result[0], options.select
+        else
+          callback null, @_convertToModelInstance model, result[0], options.select
       else if result?.length > 1
         callback new Error 'unknown error'
       else
@@ -224,7 +227,10 @@ class SQLite3Adapter extends SQLAdapterBase
       if options.group_fields
         callback null, result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
       else
-        callback null, result.map (record) => @_convertToModelInstance model, record, options.select
+        if options.return_raw_instance
+          callback null, result.map (record) => @_refineRawInstance model, record, options.select
+        else
+          callback null, result.map (record) => @_convertToModelInstance model, record, options.select
 
   ## @override AdapterBase::count
   count: (model, conditions, callback) ->

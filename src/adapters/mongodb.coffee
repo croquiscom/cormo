@@ -210,6 +210,18 @@ class MongoDBAdapter extends AdapterBase
     else
       value
 
+  _refineRawInstance: (model, data, selected_columns) ->
+    id = data._id.toString()
+    delete data._id
+    for column, value of data
+      data[column] = value.toString() if value instanceof ObjectID
+    Object.defineProperty data, 'id', configurable: false, enumerable: true, writable: false, value: id
+    if not @_connection.models[model].eliminate_null
+      selected_columns = Object.keys @_connection.models[model]._schema if not selected_columns
+      for column in selected_columns
+        data[column] = null if not data.hasOwnProperty column
+    return data
+
   ## @override AdapterBase::create
   create: (model, data, callback) ->
     @_collection(model).insert data, safe: true, (error, result) ->
@@ -304,7 +316,10 @@ class MongoDBAdapter extends AdapterBase
     @_collection(model).findOne _id: id, client_options, (error, result) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       return callback new Error('not found') if not result
-      callback null, @_convertToModelInstance model, result, options.select
+      if options.return_raw_instance
+        callback null, @_refineRawInstance model, result, options.select
+      else
+        callback null, @_convertToModelInstance model, result, options.select
 
   ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->
@@ -358,7 +373,10 @@ class MongoDBAdapter extends AdapterBase
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
         cursor.toArray (error, result) =>
           return callback MongoDBAdapter.wrapError 'unknown error', error if error
-          callback null, result.map (record) => @_convertToModelInstance model, record, options.select
+          if options.return_raw_instance
+            callback null, result.map (record) => @_refineRawInstance model, record, options.select
+          else
+            callback null, result.map (record) => @_convertToModelInstance model, record, options.select
 
   ## @override AdapterBase::count
   count: (model, conditions, callback) ->

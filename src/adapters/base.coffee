@@ -55,9 +55,15 @@ class AdapterBase
     else
       value
 
+  _refineRawInstance: (model, data, selected_columns) ->
+    id = @_getModelID(data)
+    Object.defineProperty data, 'id', configurable: false, enumerable: true, writable: false, value: id
+    return data
+
   _convertToModelInstance: (model, data, selected_columns) ->
+    id = @_getModelID(data)
     modelClass = @_connection.models[model]
-    new modelClass data, @_getModelID(data), selected_columns
+    return new modelClass data, id, selected_columns
 
   _convertToGroupInstance: (model, data, group_by, group_fields) ->
     instance = {}

@@ -112,4 +112,12 @@ class SQLAdapterBase extends AdapterBase
     else
       return '*'
 
+  _refineRawInstance: (model, data, selected_columns) ->
+    id = @_getModelID(data)
+    Object.defineProperty data, 'id', configurable: false, enumerable: true, writable: false, value: id
+    if @_connection.models[model].eliminate_null
+      for column of data
+        delete data[column] if not data[column]?
+    return data
+
 module.exports = SQLAdapterBase
