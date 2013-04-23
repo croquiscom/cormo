@@ -273,13 +273,14 @@ class MongoDBAdapter extends AdapterBase
       value
 
   _refineRawInstance: (model, data, selected_columns) ->
+    selected_columns = Object.keys @_connection.models[model]._schema if not selected_columns
     id = _objectIdToString data._id
     delete data._id
-    for column, value of data
+    for column in selected_columns
+      value = data[column]
       data[column] = _objectIdToString value if value instanceof ObjectID
     Object.defineProperty data, 'id', configurable: false, enumerable: true, writable: false, value: id
     if not @_connection.models[model].eliminate_null
-      selected_columns = Object.keys @_connection.models[model]._schema if not selected_columns
       for column in selected_columns
         data[column] = null if not data.hasOwnProperty column
     return data
