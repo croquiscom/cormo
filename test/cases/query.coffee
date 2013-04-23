@@ -348,3 +348,49 @@ module.exports = () ->
         else
           users[0].should.have.keys 'id', 'name', 'age'
         done null
+
+  it 'cache', (done) ->
+    _g.async.waterfall [
+      (callback) ->
+        _createUsers _g.connection.User, callback
+      (users, callback) ->
+        _g.connection.User.where(age: 27).cache(key: 'user', ttl: 30, refresh: true).exec callback
+      (users, callback) ->
+        users.should.have.length 2
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        _compareUser users[0], name: 'Alice Jackson', age: 27
+        _compareUser users[1], name: 'John Doe', age: 27
+        callback null
+      (callback) ->
+        # different conditions, will return cached result
+        _g.connection.User.where(age: 8).cache(key: 'user', ttl: 30).exec callback
+      (users, callback) ->
+        users.should.have.length 2
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        _compareUser users[0], name: 'Alice Jackson', age: 27
+        _compareUser users[1], name: 'John Doe', age: 27
+        callback null
+      (callback) ->
+        # try ignoring cache
+        _g.connection.User.where(age: 8).cache(key: 'user', ttl: 30, refresh: true).exec callback
+      (users, callback) ->
+        users.should.have.length 1
+        _compareUser users[0], name: 'Daniel Smith', age: 8
+        callback null
+      (callback) ->
+        # different conditions, will return cached result
+        _g.connection.User.where(age: 32).cache(key: 'user', ttl: 30).exec callback
+      (users, callback) ->
+        users.should.have.length 1
+        _compareUser users[0], name: 'Daniel Smith', age: 8
+        callback null
+      # try after removing cache
+      (callback) ->
+        _g.connection.User.removeCache 'user', callback
+      (callback) ->
+        _g.connection.User.where(age: 32).cache(key: 'user', ttl: 30).exec callback
+      (users, callback) ->
+        users.should.have.length 1
+        _compareUser users[0], name: 'Gina Baker', age: 32
+        callback null
+    ], done

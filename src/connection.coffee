@@ -2,6 +2,8 @@ EventEmitter = require('events').EventEmitter
 Model = require './model'
 _ = require 'underscore'
 async = require 'async'
+try
+  redis = require 'redis'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
@@ -36,6 +38,10 @@ class Connection extends EventEmitter
   # @param {String} adapater_name
   # @param {Object} settings connection settings & adapter specific settings
   # @param {Boolean} [settings.is_default=true] Connection.defaultConnection will be set to this if true
+  # @param {Object} [settings.redis_cache] Redis server settings to cache
+  # @param {String} [settings.redis_cache.host='127.0.0.1']
+  # @param {Number} [settings.redis_cache.port=6379]
+  # @param {Number} [settings.redis_cache.database=0]
   # @see MySQLAdapter::connect
   # @see MongoDBAdapter::connect
   # @see PostgreSQLAdapter::connect
@@ -44,6 +50,12 @@ class Connection extends EventEmitter
   constructor: (adapter_name, settings) ->
     if settings.is_default isnt false
       Connection.defaultConnection = @
+
+    redis_cache = settings.redis_cache or {}
+    redis_cache.host ||= '127.0.0.1'
+    redis_cache.port ||= 6379
+    redis_cache.database ||= 0
+    @_redis_cache_settings = redis_cache
 
     @connected = false
     @models = {}
@@ -128,6 +140,27 @@ class Connection extends EventEmitter
   # @param {String} type
   # @param {Object} data
   log: (model, type, data) ->
+
+  _connectRedisCache: (callback) ->
+    if @_connecting_redis_cache
+      @once 'redis_cache_connected', callback
+      return
+
+    if @_redis_cache_client
+      callback null, @_redis_cache_client
+    else if not redis
+      throw new Error('cache needs Redis')
+    else
+      @_connecting_redis_cache = true
+      settings = @_redis_cache_settings
+      client = redis.createClient settings.port or 6379, settings.host or '127.0.0.1'
+      client.on 'connect', =>
+        client.select settings.database or 0, (error) =>
+          @_connecting_redis_cache = false
+          @_redis_cache_client = client if not error
+          @emit 'redis_cache_connected', error, client
+          callback error, client
+
 
 _use = (file) ->
   MixClass = require "./connection/#{file}"

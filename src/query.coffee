@@ -127,22 +127,21 @@ class Query
     return @
 
   ##
-  # Executes the query
-  # @param {Object} [options]
-  # @param {Boolean} [options.skip_log=false]
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Model|Array<Model>} callback.records
-  # @return {Query} this
-  # @see AdapterBase::findById
-  # @see AdapterBase::find
-  exec: (options, callback) ->
-    return if @_model._waitingForReady @, @exec, arguments
+  # Cache result.
+  #
+  # If cache of key exists, actual query does not performed.
+  # If cache does not exist, query result will be saved in cache.
+  #
+  # Redis is used to cache.
+  # @param {Object} options
+  # @param {String} options.key
+  # @param {NUmber} options.ttl TTL in seconds
+  # @param {Boolean} options.refresh don't load from cache if true
+  cache: (options) ->
+    @_options.cache = options
+    return @
 
-    if typeof options is 'function'
-      callback = options
-      options = {}
-
+  _exec: (options, callback) ->
     if @_find_single_id and @_conditions.length is 0
       @_connection.log @_name, 'find by id', id: @_id, options: @_options if not options?.skip_log
       @_adapter.findById @_name, @_id, @_options, _bindDomain (error, record) ->
@@ -169,6 +168,36 @@ class Query
             return record if record.id is id
       else
         callback null, records
+
+  ##
+  # Executes the query
+  # @param {Object} [options]
+  # @param {Boolean} [options.skip_log=false]
+  # @param {Function} callback
+  # @param {Error} callback.error
+  # @param {Model|Array<Model>} callback.records
+  # @return {Query} this
+  # @see AdapterBase::findById
+  # @see AdapterBase::find
+  exec: (options, callback) ->
+    return if @_model._waitingForReady @, @exec, arguments
+
+    if typeof options is 'function'
+      callback = options
+      options = {}
+
+    if (cache_options = @_options.cache) and (cache_key = cache_options.key)
+      # try cache
+      @_model._loadFromCache cache_key, cache_options.refresh, (error, records) =>
+        return callback null, records if not error
+        # no cache, execute query
+        @_exec options, (error, records) =>
+          return callback error if error
+          # save result to cache
+          @_model._saveToCache cache_key, cache_options.ttl, records, (error) ->
+            callback error, records
+    else
+      @_exec options, callback
 
   ##
   # Executes the query as a count operation

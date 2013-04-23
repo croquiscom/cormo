@@ -33,6 +33,7 @@ class ColumnProperty
 # @uses ModelTimestamp
 # @uses ModelPersistence
 # @uses ModelValidate
+# @uses ModelCache
 class Model
   ##
   # Tracks changes of a record if true
@@ -463,5 +464,6 @@ _use 'callback'
 _use 'timestamp'
 _use 'persistence'
 _use 'validate'
+_use 'cache'
 
 module.exports = Model
