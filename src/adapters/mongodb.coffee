@@ -13,10 +13,78 @@ async = require 'async'
 _ = require 'underscore'
 
 _convertValueToObjectID = (value, key) ->
-  try
-    new ObjectID value
-  catch e
-    throw new Error("'#{key}' is not a valid id")
+  if value?
+    len = value.length
+    if len is 24
+      oid = ''
+      number = parseInt(value.substr(0, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(2, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(4, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(6, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(8, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(10, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(12, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(14, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(16, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(18, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(20, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      number = parseInt(value.substr(22, 2), 16)
+      oid += String.fromCharCode number if number>=0 and number<256
+      if oid.length is 12
+        return _bsontype: 'ObjectID', id: oid
+  throw new Error("'#{key}' is not a valid id")
+
+_objectIdToString = (oid) ->
+  oid = oid.id
+  str = ''
+  value = oid.charCodeAt 0
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 1
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 2
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 3
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 4
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 5
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 6
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 7
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 8
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 9
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 10
+  str += '0' if value < 16
+  str += value.toString(16)
+  value = oid.charCodeAt 11
+  str += '0' if value < 16
+  str += value.toString(16)
+  return str
 
 _buildWhereSingle = (property, key, value, not_op) ->
   if key isnt 'id' and not property?
@@ -186,35 +254,29 @@ class MongoDBAdapter extends AdapterBase
       callback null
 
   idToDB: (value) ->
-    try
-      return new ObjectID value
-    catch e
-      throw new Error("'id' is not a valid ID")
+    _convertValueToObjectID value, 'id'
 
   valueToDB: (value, column, property) ->
     return if not value?
     # convert id type
     if column is 'id' or property.type is 'objectid'
-      try
-        return new ObjectID value
-      catch e
-        throw new Error("'#{column}' is not a valid ID")
+      return _convertValueToObjectID value, column
     return value
 
   _getModelID: (data) ->
-    data._id.toString()
+    _objectIdToString data._id
 
   valueToModel: (value, column, property) ->
     if property.type is 'objectid'
-      value.toString()
+      _objectIdToString value
     else
       value
 
   _refineRawInstance: (model, data, selected_columns) ->
-    id = data._id.toString()
+    id = _objectIdToString data._id
     delete data._id
     for column, value of data
-      data[column] = value.toString() if value instanceof ObjectID
+      data[column] = _objectIdToString value if value instanceof ObjectID
     Object.defineProperty data, 'id', configurable: false, enumerable: true, writable: false, value: id
     if not @_connection.models[model].eliminate_null
       selected_columns = Object.keys @_connection.models[model]._schema if not selected_columns
@@ -236,7 +298,7 @@ class MongoDBAdapter extends AdapterBase
           column = ' ' + column
         return callback new Error('duplicated' + column)
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      id = result?[0]?._id.toString()
+      id = _objectIdToString result?[0]?._id
       if id
         delete data._id
         callback null, id
@@ -252,7 +314,7 @@ class MongoDBAdapter extends AdapterBase
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       error = undefined
       ids = result.map (doc) ->
-        id = doc._id.toString()
+        id = _objectIdToString doc._id
         if id
           delete data._id
         else
@@ -307,7 +369,7 @@ class MongoDBAdapter extends AdapterBase
       fields = {}
       options.select.forEach (column) -> fields[column] = 1
     try
-      id = new ObjectID id
+      id = _convertValueToObjectID id, 'id'
     catch e
       return callback new Error('not found')
     client_options = {}
