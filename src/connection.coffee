@@ -39,6 +39,7 @@ class Connection extends EventEmitter
   # @param {Object} settings connection settings & adapter specific settings
   # @param {Boolean} [settings.is_default=true] Connection.defaultConnection will be set to this if true
   # @param {Object} [settings.redis_cache] Redis server settings to cache
+  # @param {RedisClient} [settings.redis_cache.client] Use this client instead of creating one
   # @param {String} [settings.redis_cache.host='127.0.0.1']
   # @param {Number} [settings.redis_cache.port=6379]
   # @param {Number} [settings.redis_cache.database=0]
@@ -52,9 +53,6 @@ class Connection extends EventEmitter
       Connection.defaultConnection = @
 
     redis_cache = settings.redis_cache or {}
-    redis_cache.host ||= '127.0.0.1'
-    redis_cache.port ||= 6379
-    redis_cache.database ||= 0
     @_redis_cache_settings = redis_cache
 
     @connected = false
@@ -142,24 +140,20 @@ class Connection extends EventEmitter
   log: (model, type, data) ->
 
   _connectRedisCache: (callback) ->
-    if @_connecting_redis_cache
-      @once 'redis_cache_connected', callback
-      return
-
     if @_redis_cache_client
       callback null, @_redis_cache_client
     else if not redis
       throw new Error('cache needs Redis')
     else
-      @_connecting_redis_cache = true
       settings = @_redis_cache_settings
-      client = redis.createClient settings.port or 6379, settings.host or '127.0.0.1'
-      client.on 'connect', =>
-        client.select settings.database or 0, (error) =>
-          @_connecting_redis_cache = false
-          @_redis_cache_client = client if not error
-          @emit 'redis_cache_connected', error, client
-          callback error, client
+      @_redis_cache_client = client = settings.client or (redis.createClient settings.port or 6379, settings.host or '127.0.0.1')
+      if settings.database?
+        client.select settings.database
+        client.once 'connect', ->
+          client.send_anyways = true
+          client.select settings.database
+          client.send_anyways = false
+      callback null, client
 
 
 _use = (file) ->

@@ -135,7 +135,7 @@ class Query
   # Redis is used to cache.
   # @param {Object} options
   # @param {String} options.key
-  # @param {NUmber} options.ttl TTL in seconds
+  # @param {Number} options.ttl TTL in seconds
   # @param {Boolean} options.refresh don't load from cache if true
   cache: (options) ->
     @_options.cache = options
