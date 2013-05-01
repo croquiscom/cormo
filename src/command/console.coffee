@@ -7,6 +7,7 @@ repl = require 'repl'
 vm = require 'vm'
 
 Connection = require '../connection'
+Model = require '../model'
 
 prettyErrorMessage = coffee.helpers.prettyErrorMessage or (e) -> e
 
@@ -62,8 +63,11 @@ class CommandConsole
     @_setupContext repl.context
 
   _setupContext: (context) ->
+    context.Connection = Connection
+    context.Model = Model
     context.connection = connection = Connection.defaultConnection
-    for model, modelClass of connection.models
-      context[model] = modelClass
+    if connection
+      for model, modelClass of connection.models
+        context[model] = modelClass
 
 module.exports = CommandConsole
