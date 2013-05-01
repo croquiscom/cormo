@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "async": "",
+    "commander": "",
     "inflect": "",
     "underscore": ""
   },
