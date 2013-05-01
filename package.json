@@ -24,6 +24,7 @@
   "dependencies": {
     "async": "",
     "commander": "",
+    "fibers": "",
     "inflect": "",
     "underscore": ""
   },
