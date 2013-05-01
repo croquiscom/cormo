@@ -2,7 +2,7 @@ module.exports = () ->
   it 'define a model, create an instance and fetch it', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: String
       last: String
 
@@ -26,7 +26,7 @@ module.exports = () ->
   it 'get a record whose super column is null', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: String
       last: String
 
@@ -68,7 +68,7 @@ module.exports = () ->
   it 'constraint', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: { type: String, required: true }
       middle: String
       last: { type: String, required: true }
@@ -105,7 +105,7 @@ module.exports = () ->
   it 'query', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: String
       last: String
 
@@ -131,7 +131,7 @@ module.exports = () ->
   it 'update', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: String
       last: String
 
@@ -154,7 +154,7 @@ module.exports = () ->
   it 'constraint on update', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: { type: String, required: true }
       middle: String
       last: { type: String, required: true }
@@ -171,7 +171,7 @@ module.exports = () ->
   it 'keys on empty', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: String
       last: String
     User.column 'age', Number
@@ -194,7 +194,7 @@ module.exports = () ->
   it 'replace object', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: String
       last: String
 
@@ -218,7 +218,7 @@ module.exports = () ->
   it 'get & set', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: String
       last: String
 
@@ -237,7 +237,7 @@ module.exports = () ->
   it 'select sub', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: String
       last: String
 
@@ -255,7 +255,7 @@ module.exports = () ->
   it 'select super', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: String
       last: String
 
@@ -274,7 +274,7 @@ module.exports = () ->
   it 'update super null', (done) ->
     User = _g.connection.User
 
-    User.column 'name'
+    User.column 'name',
       first: String
       last: String
 
