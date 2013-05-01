@@ -15,6 +15,7 @@ task 'build', 'Builds JavaScript files from source', ->
   compileFiles 'src/adapters'
   compileFiles 'src/connection'
   compileFiles 'src/model'
+  compileFiles 'src/command'
 
 task 'test', 'Runs Mocha tests', (options) ->
   command = './node_modules/.bin/mocha'

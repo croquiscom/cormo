@@ -13,6 +13,11 @@ exports.Connection = require './connection'
 exports.Model = require './model'
 
 ##
+# Exports [[#Command]] class
+# @memberOf cormo
+exports.Command = require './command'
+
+##
 # Exports [[#types]] module
 # @memberOf cormo
 
