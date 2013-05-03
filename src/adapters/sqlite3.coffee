@@ -212,8 +212,6 @@ class SQLite3Adapter extends SQLAdapterBase
         return callback e
     if options.group_by
       sql += ' GROUP BY ' + options.group_by.join ','
-    if options?.limit?
-      sql += ' LIMIT ' + options.limit
     if options?.orders.length > 0
       orders = options.orders.map (order) ->
         if order[0] is '-'
@@ -221,6 +219,11 @@ class SQLite3Adapter extends SQLAdapterBase
         else
           return order + ' ASC'
       sql += ' ORDER BY ' + orders.join ','
+    if options?.limit?
+      sql += ' LIMIT ' + options.limit
+      sql += ' OFFSET ' + options.skip if options?.skip?
+    else if options?.skip?
+      sql += ' LIMIT 2147483647 OFFSET ' + options.skip
     #console.log sql, params
     @_query 'all', sql, params, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error

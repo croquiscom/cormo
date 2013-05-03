@@ -415,6 +415,7 @@ class MongoDBAdapter extends AdapterBase
     #console.log JSON.stringify conditions
     client_options =
       limit: options.limit
+      skip: options.skip
     if fields
       client_options.fields = fields
     if orders

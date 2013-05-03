@@ -99,6 +99,20 @@ module.exports = () ->
         places.should.eql expected
         done null
 
+  it 'near query 4', (done) ->
+    _createPlaces _g.connection.Place, (error) ->
+      return done error if error
+      _g.connection.Place.where().near(location: [-80, 40]).skip(3).limit(3).exec (error, places) ->
+        return done error if error
+        expected = [
+          'Dodgers Stadium'
+          'Candlestick Park'
+          'Anfield Football Stadium'
+        ]
+        places = places.map (place) -> place.name
+        places.should.eql expected
+        done null
+
   it 'near and condition', (done) ->
     _createPlaces _g.connection.Place, (error) ->
       return done error if error

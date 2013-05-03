@@ -257,6 +257,9 @@ class MySQLAdapter extends SQLAdapterBase
       sql += ' ORDER BY ' + orders.join ','
     if options?.limit?
       sql += ' LIMIT ' + options.limit
+      sql += ' OFFSET ' + options.skip if options?.skip?
+    else if options?.skip?
+      sql += ' LIMIT 2147483647 OFFSET ' + options.skip
     #console.log sql, params
     @_query sql, params, (error, result) =>
       #console.log result

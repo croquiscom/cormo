@@ -235,8 +235,6 @@ class PostgreSQLAdapter extends SQLAdapterBase
         return callback e
     if options.group_by
       sql += ' GROUP BY ' + options.group_by.join ','
-    if options?.limit?
-      sql += ' LIMIT ' + options.limit
     if options?.orders.length > 0
       orders = options.orders.map (order) ->
         if order[0] is '-'
@@ -244,6 +242,11 @@ class PostgreSQLAdapter extends SQLAdapterBase
         else
           return order + ' ASC'
       sql += ' ORDER BY ' + orders.join ','
+    if options?.limit?
+      sql += ' LIMIT ' + options.limit
+      sql += ' OFFSET ' + options.skip if options?.skip?
+    else if options?.skip?
+      sql += ' LIMIT ALL OFFSET ' + options.skip
     #console.log sql, params
     @_query sql, params, (error, result) =>
       rows = result?.rows

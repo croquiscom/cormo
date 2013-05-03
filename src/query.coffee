@@ -120,6 +120,14 @@ class Query
     return @
 
   ##
+  # Sets skip of query
+  # @param {Number} skip
+  # @return {Query} this
+  skip: (skip) ->
+    @_options.skip = skip
+    return @
+
+  ##
   # Returns raw instances instead of model instances
   # @see Query::exec
   return_raw_instance: ->
