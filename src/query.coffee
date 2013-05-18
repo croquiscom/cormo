@@ -15,6 +15,7 @@ class Query
     @_connection = model._connection
     @_adapter = model._connection._adapter
     @_conditions = []
+    @_includes = []
     @_options =
       orders: []
  
@@ -66,9 +67,9 @@ class Query
   # @return {Query} this
   select: (columns) ->
     @_options.select = null
-    schema_columns = Object.keys @_model._schema
-    intermediate_paths = @_model._intermediate_paths
     if typeof columns is 'string'
+      schema_columns = Object.keys @_model._schema
+      intermediate_paths = @_model._intermediate_paths
       select = []
       columns.split(/\s+/).forEach (column) ->
         if schema_columns.indexOf(column) >= 0
@@ -149,6 +150,14 @@ class Query
     @_options.cache = options
     return @
 
+  ##
+  # Returns associated objects also
+  # @param {String} column
+  # @param {String} [select]
+  include: (column, select) ->
+    @_includes.push column: column, select: select
+    return @
+
   _exec: (options, callback) ->
     if @_find_single_id and @_conditions.length is 0
       @_connection.log @_name, 'find by id', id: @_id, options: @_options if not options?.skip_log
@@ -177,6 +186,14 @@ class Query
       else
         callback null, records
 
+  _execAndInclude: (options, callback) ->
+    @_exec options, (error, records) =>
+      return callback error if error
+      async.forEach @_includes, (include, callback) =>
+        @_connection.fetchAssociated records, include.column, include.select, callback
+      , (error) ->
+        callback error, records
+
   ##
   # Executes the query
   # @param {Object} [options]
@@ -199,13 +216,13 @@ class Query
       @_model._loadFromCache cache_key, cache_options.refresh, (error, records) =>
         return callback null, records if not error
         # no cache, execute query
-        @_exec options, (error, records) =>
+        @_execAndInclude options, (error, records) =>
           return callback error if error
           # save result to cache
           @_model._saveToCache cache_key, cache_options.ttl, records, (error) ->
             callback error, records
     else
-      @_exec options, callback
+      @_execAndInclude options, callback
 
   ##
   # Executes the query as a count operation

@@ -33,7 +33,7 @@ class ConnectionAssociation
     columnCache = '__cache_' + column
     columnGetter = '__getter_' + column
 
-    this_model._associations[column] = { type: 'hasMany' }
+    this_model._associations[column] = { type: 'hasMany', target_model: target_model, foreign_key: foreign_key }
 
     Object.defineProperty this_model.prototype, column,
       get: ->
@@ -91,7 +91,7 @@ class ConnectionAssociation
     columnCache = '__cache_' + column
     columnGetter = '__getter_' + column
 
-    this_model._associations[column] = { type: 'hasOne' }
+    this_model._associations[column] = { type: 'hasOne', target_model: target_model }
 
     Object.defineProperty this_model.prototype, column,
       get: ->
@@ -140,6 +140,8 @@ class ConnectionAssociation
     column = options?.as or inflector.underscore(target_model._name)
     columnCache = '__cache_' + column
     columnGetter = '__getter_' + column
+
+    this_model._associations[column] = { type: 'belongsTo', target_model: target_model }
 
     Object.defineProperty this_model.prototype, column,
       get: ->
@@ -249,5 +251,92 @@ class ConnectionAssociation
     , (error) ->
       return callback error if error
       callback null, result
+
+  _fetchAssociatedBelongsTo: (records, target_model, column, select, callback) ->
+    id_column = column + '_id'
+    if Array.isArray records
+      id_to_record_map = {}
+      records.forEach (record) ->
+        id = record[id_column]
+        if id
+          (id_to_record_map[id] ||= []).push record
+        else if not record.hasOwnProperty column
+          Object.defineProperty record, column, enumerable: true, value: null
+        return
+      ids = Object.keys id_to_record_map
+      query = target_model.find(ids)
+      if select
+        query.select select
+      query.exec (error, sub_records) ->
+        return callback null if error
+        sub_records.forEach (sub_record) ->
+          id_to_record_map[sub_record.id].forEach (record) ->
+            Object.defineProperty record, column, enumerable: true, value: sub_record
+        callback null
+    else
+      id = records[id_column]
+      if id
+        query = target_model.find(id)
+        if select
+          query.select select
+        query.exec (error, sub_record) ->
+          return callback error if error
+          Object.defineProperty records, column, enumerable: true, value: sub_record
+          callback null
+      else if not records.hasOwnProperty column
+        Object.defineProperty records, column, enumerable: true, value: null
+        callback null
+
+  _fetchAssociatedHasMany: (records, target_model, foreign_key, column, select, callback) ->
+    if Array.isArray records
+      ids = records.map (record) ->
+        Object.defineProperty record, column, enumerable: true, value: []
+        record.id
+      cond = {}
+      cond[foreign_key] = $in: ids
+      query = target_model.where cond
+      if select
+        query.select select + ' ' + foreign_key
+      query.exec (error, sub_records) ->
+        return callback null if error
+        sub_records.forEach (sub_record) ->
+          records.forEach (record) ->
+            record[column].push sub_record if record.id is sub_record[foreign_key]
+        callback null
+    else
+      Object.defineProperty records, column, enumerable: true, value: []
+      cond = {}
+      cond[foreign_key] = records.id
+      query = target_model.where cond
+      if select
+        query.select select + ' ' + foreign_key
+      query.exec (error, sub_records) ->
+        return callback null if error
+        sub_records.forEach (sub_record) ->
+          records[column].push sub_record
+        callback null
+
+  ##
+  # Fetches associated records
+  # @param {Model|Array<Model>} records
+  # @param {String} column
+  # @param {String} [select]
+  # @param {Function} callback
+  # @param {Error} callback.error
+  fetchAssociated: (records, column, select, callback) ->
+    if typeof select is 'function'
+      callback = select
+      select = null
+    
+    record = if Array.isArray records then records[0] else records
+    return callback null if not record
+    association = record.constructor._associations[column]
+    return callback new Error("unknown column '#{column}'") if not association
+    if association.type is 'belongsTo'
+      @_fetchAssociatedBelongsTo records, association.target_model, column, select, callback
+    else if association.type is 'hasMany'
+      @_fetchAssociatedHasMany records, association.target_model, association.foreign_key, column, select, callback
+    else
+      return callback new Error("unknown column '#{column}'")
 
 module.exports = ConnectionAssociation
