@@ -212,6 +212,11 @@ class SQLite3Adapter extends SQLAdapterBase
         return callback e
     if options.group_by
       sql += ' GROUP BY ' + options.group_by.join ','
+    if options.conditions_of_group.length > 0
+      try
+        sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
+      catch e
+        return callback e
     if options?.orders.length > 0
       orders = options.orders.map (order) ->
         if order[0] is '-'

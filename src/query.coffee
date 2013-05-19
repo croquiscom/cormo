@@ -18,6 +18,7 @@ class Query
     @_includes = []
     @_options =
       orders: []
+      conditions_of_group: []
  
   ##
   # Finds a record by id
@@ -50,15 +51,24 @@ class Query
     @_options.near = target
     return @
 
+  _addCondition: (condition) ->
+    if @_options.group_fields
+      keys = Object.keys condition
+      if keys.length is 1 and @_options.group_fields.hasOwnProperty keys[0]
+        @_options.conditions_of_group.push condition
+        return
+    @_conditions.push condition
+
   ##
   # Finds records by condition
   # @param {Object} condition
   # @return {Query} this
   where: (condition) ->
     if Array.isArray condition
-      @_conditions.push.apply @_conditions, condition
+      condition.forEach (cond) =>
+        @_addCondition cond
     else if condition?
-      @_conditions.push condition
+      @_addCondition condition
     return @
 
   ##

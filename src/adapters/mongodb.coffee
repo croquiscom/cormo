@@ -424,6 +424,8 @@ class MongoDBAdapter extends AdapterBase
         pipeline.push $match: conditions
       pipeline.push $group: _buildGroupFields options.group_by, options.group_fields
       pipeline.push $sort: orders if orders
+      if options.conditions_of_group.length > 0
+        pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
       @_collection(model).aggregate pipeline, (error, result) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error
         callback null, result.map (record) =>

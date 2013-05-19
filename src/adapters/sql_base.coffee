@@ -12,6 +12,9 @@ class SQLAdapterBase extends AdapterBase
     if key isnt 'id' and not property?
       throw new Error("unknown column '#{key}'")
     property_type = property?.type
+    if property and not property_type
+      # group field
+      key = @_buildGroupExpr property
     op = '='
     if Array.isArray value
       values = value.map (value) =>
@@ -83,22 +86,25 @@ class SQLAdapterBase extends AdapterBase
     else
       return '(' + subs.join(' ' + conjunction + ' ') + ')'
 
+  _buildGroupExpr: (group_expr) ->
+    op = Object.keys(group_expr)[0]
+    if op is '$sum'
+      sub_expr = group_expr[op]
+      if sub_expr is 1
+        return "COUNT(*)"
+      else if sub_expr.substr(0, 1) is '$'
+        return "SUM(#{sub_expr.substr 1})"
+      else
+        throw new Error "unknown expression '#{JSON.stringify op}'"
+    else
+      throw new Error "unknown expression '#{JSON.stringify op}'"
+
   _buildGroupFields: (group_by, group_fields) ->
     selects = []
     if group_by
       [].push.apply selects, group_by
     for field, expr of group_fields
-      op = Object.keys(expr)[0]
-      if op is '$sum'
-        sub_expr = expr[op]
-        if sub_expr is 1
-          selects.push "COUNT(*) as #{field}"
-        else if sub_expr.substr(0, 1) is '$'
-          selects.push "SUM(#{sub_expr.substr 1}) as #{field}"
-        else
-          throw new Error "unknown expression '#{JSON.stringify op}'"
-      else
-        throw new Error "unknown expression '#{JSON.stringify op}'"
+      selects.push "#{@_buildGroupExpr expr} as #{field}"
     return selects.join ','
 
   _buildSelect: (model_class, select) ->
