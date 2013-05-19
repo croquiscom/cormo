@@ -409,22 +409,21 @@ class MongoDBAdapter extends AdapterBase
       orders = {}
       options.orders.forEach (order) ->
         if order[0] is '-'
-          orders[order[1..]] = -1
+          column = order[1..]
+          dir = -1
         else
-          orders[order] = 1
+          column = order
+          dir = 1
+        if options.group_by and column is options.group_by.join(',')
+          column = '_id'
+        orders[column] = dir
     #console.log JSON.stringify conditions
-    client_options =
-      limit: options.limit
-      skip: options.skip
-    if fields
-      client_options.fields = fields
-    if orders
-      client_options.sort = orders
     if options.group_by or options.group_fields
       pipeline = []
       if conditions
         pipeline.push $match: conditions
       pipeline.push $group: _buildGroupFields options.group_by, options.group_fields
+      pipeline.push $sort: orders if orders
       @_collection(model).aggregate pipeline, (error, result) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error
         callback null, result.map (record) =>
@@ -433,6 +432,13 @@ class MongoDBAdapter extends AdapterBase
               record[options.group_by[0]] = record._id
           @_convertToGroupInstance model, record, options.group_by, options.group_fields
     else
+      client_options =
+        limit: options.limit
+        skip: options.skip
+      if fields
+        client_options.fields = fields
+      if orders
+        client_options.sort = orders
       @_collection(model).find conditions, client_options, (error, cursor) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
         cursor.toArray (error, result) =>

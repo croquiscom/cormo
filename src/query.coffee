@@ -87,14 +87,16 @@ class Query
   # @param {String} orders
   # @return {Query} this
   order: (orders) ->
-    schema_columns = Object.keys @_model._schema
     if typeof orders is 'string'
+      avaliable_columns = []
+      [].push.apply avaliable_columns, Object.keys @_model._schema
+      [].push.apply avaliable_columns, Object.keys @_options.group_fields if @_options.group_fields
       orders.split(/\s+/).forEach (order) =>
         asc = true
         if order[0] is '-'
           asc = false
           order = order[1..]
-        if schema_columns.indexOf(order) >= 0
+        if avaliable_columns.indexOf(order) >= 0
           @_options.orders.push if asc then order else '-'+order
     return @
 
