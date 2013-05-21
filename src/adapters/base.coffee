@@ -133,7 +133,7 @@ class AdapterBase
   # @param {Function} callback
   # @param {Error} callback.error
   # @param {Model} callback.record
-  # @throws Error('not found')
+  # @throws {Error('not found')}
   # @see Query::exec
   findById: (model, id, options, callback) -> callback new Error 'not implemented'
 

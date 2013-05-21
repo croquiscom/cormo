@@ -36,5 +36,5 @@ task 'test:cov', 'Gets tests coverage', (options) ->
 
 task 'doc', 'Make documents', ->
   command = './node_modules/.bin/crojsdoc'
-  args = ['-q','-f','--title','CORMO','--external-types','src/doc_types.json','src','guides']
+  args = []
   spawn command, args, stdio: 'inherit'

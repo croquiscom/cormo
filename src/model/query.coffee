@@ -24,7 +24,7 @@ class ModelQuery
   # @param {Error} callback.error
   # @param {Model|Array<Model>} callback.record
   # @return {Query}
-  # @throws Error('not found')
+  # @throws {Error('not found')}
   @find: (id, callback) ->
     @_createQueryAndRun 'find', id, 'exec', callback
 
@@ -35,7 +35,7 @@ class ModelQuery
   # @param {Error} callback.error
   # @param {Array<Model>} callback.records
   # @return {Query}
-  # @throws Error('not found')
+  # @throws {Error('not found')}
   @findPreserve: (ids, callback) ->
     @_createQueryAndRun 'findPreserve', ids, 'exec', callback
 
