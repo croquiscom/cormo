@@ -48,300 +48,111 @@ User.create name: 'John Doe', age: 27, (error, user2) ->
   console.log error
 ```
 
-# Usage
-
-## Query
+## Retreive records
 
 ```coffeescript
-# simple query
-# the same as "SELECT * FROM users WHERE age=27"
-User.where age: 27, (error, users) ->
-  console.log users
-
-# else you can use query chain
-User.where(age: 27).exec (error, users) ->
-  console.log users
-
-# select partial columns
-# the same as "SELECT name,age FROM users"
-User.select 'name age', (error, users) ->
-  console.log users
-
-# sort result
-# the same as "SELECT * FROM users ORDER BY age ASC, name DESC"
-User.order 'age -name', (error, users) ->
-  console.log users
-
-# two condition
-# the same as "SELECT * FROM users WHERE name='John Doe' AND age=27"
-User.where name: 'John Doe', age: 27, (error, users) ->
-  console.log users
-
-# using query chain
-User.where(name: 'John Doe').where(age: 27).exec (error, users) ->
-  console.log users
-
-# find by id, return a single record
 User.find 1, (error, user) ->
-  console.log user
 
-# find multiple ids
-# will return error unless records are found for all ids
-User.find [1,2,3], (error, users) ->
-  console.log users
+User.where name: 'John Doe', (error, users) ->
 
-# find multiple ids with same order
-User.findPreserve [2,1,2,3], (error, users) ->
-  # users[0].id is 2 and users[1].id is 1 and users[2].id is 2 and users[3].id is 3
-  console.log users
+User.where(age: 27)
+  .select('name')
+  .order('name')
+  .limit(5)
+  .skip(100)
+  .exec (error, users) ->
 
-# get count of all records
-# the same as "SELECT COUNT(*) FROM users"
+User.where($or: [ { age: { $lt: 20 } }, { age: { $gt: 60 } } ])
+  .where(name: { $contains: 'smi' })
+  .exec (error, users) ->
+```
+
+## Count records
+
+```coffeescript
 User.count (error, count) ->
-  console.log count
 
-# get count of matched records
-# the same as "SELECT COUNT(*) FROM users WHERE age=27"
 User.count age: 27, (error, count) ->
-  console.log count
+```
 
-# update records that match conditions
-# the same as "UPDATE users SET age=10 WHERE age=27"
-User.update { age: 10 }, age: 27, (error, count) ->
-  console.log count
+## Update records
 
-# using query chain
+```coffeescript
+User.find 1, (error, user) ->
+  user.age = 30
+  user.save (error) ->
+
+User.find(1).update age: 10, (error, count) ->
+
 User.where(age: 27).update age:10, (error, count) ->
-  console.log count
+```
 
-# delete records that match conditions
-# the same as "DELETE FROM users WHERE age=27"
+## Delete records
+
+```coffeescript
 User.delete age: 27, (error, count) ->
-  console.log count
-
-# or condition, similar syntax with MongoDB
-# the same as "SELECT * FROM users WHERE name='John Doe' OR age=27"
-User.where $or: [ { name: 'John Doe' }, { age: 27 } ], (error, users) ->
-  console.log users
-
-# comparison
-# the same as "SELECT * FROM users WHERE age > 30 AND age <= 45"
-User.where [ { age: { $gt: 30 } }, { age: { $lte: 45 } } ], (error, users) ->
-  console.log users
-
-# containing some text in case insensitive
-# the same as "SELECT * FROM users WHERE name LIKE '%smi%'"
-User.where { name: { $contains: 'smi' } }, (error, users) ->
-  console.log users
-
-# subset
-# the same as "SELECT * FROM users WHERE age IN (10,20,30)"
-User.where { age: { $in: [ 10, 20, 30 ] } }, (error, users) ->
-  console.log users
-
-# you can omit the $in keyword (implicit $in)
-User.where { age: [ 10, 20, 30 ] }, (error, users) ->
-  console.log users
-
-# limit records
-# the same as "SELECT * FROM users WHERE age<40 LIMIT 3"
-User.where(age: { $lt: 40 }).limit(3).exec (error, users) ->
-  console.log users
 ```
 
-See [[#ModelQuery]], [[#Query]] for more details.
-
-## Constraints
-
-Currently supports 'unique' and 'required'(not null).
-
-'unique' is supported on the database layer.
-'required' is supported on the CORMO layer(while validating).
-
-The column unique but not required can have multiple null values.
+## Constraint
 
 ```coffeescript
-User = connection.model 'User',
-  name: { type: String, required: true }
-  age: { type: Number, required: true }
-  email: { type: String, unique: true, required: true }
-
-User.create { name: 'Bill Smith', age: 45, email: 'bill@foo.org' }, (error, user1) ->
-  User.create { name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, (error, user2) ->
-    # error.message will be 'duplicated email' or 'duplicated'
+class User extends cormo.Model
+  @column 'name', type: String, required: true
+  @column 'age', type: Number, required: true
+  @column 'email', type: String, unique: true, required: true
 ```
 
-See [[#Connection::model]] for more details.
-
-## Validations
-
-If you want validations, adds a validator using [[#ModelValidate.addValidator]].
-
-If a record is invalid, throws an error, or returns false or an error string in the validator.
+## Validation
 
 ```coffeescript
-User = models.User = connection.model 'User',
-  name: String
-  age: Number
-  email: String
+class User extends cormo.Model
+  @column 'name', String
+  @column 'age', Number
+  @column 'email', String
 
-# checkes age validity
-User.addValidator (record) ->
-  if record.age < 18
-    return 'too young'
-  
-# checkes email validity
-User.addValidator (record) ->
-  if record.email and not /^\w+@.+$/.test record.email
-    throw new Error 'invalid email'
-  return true
-
-User.create { name: 'John Doe', age: 10, email: 'invalid' }, (error, user) ->
-  # error.message will be 'invalid email,too young' or 'too young,invalid email'
+  @addValidator (record) ->
+    if record.age < 18
+      return 'too young'
 ```
-
-See [[#ModelValidate.addValidator]] for more details.
 
 ## Callbacks
 
-CORMO supports following callbacks:
-
-* afterInitialize
-* afterFind
-* beforeValidate
-* afterValidate
-* beforeSave
-* afterSave
-* beforeCreate
-* afterCreate
-* beforeUpdate
-* afterUpdate
-* beforeDestroy
-* afterDestroy
-
 ```coffeescript
-# using method name
-User.afterInitialize 'onAfterInitialie'
-User::onAfterInitialie = ->
-  console.log 'initialized'
+class User extends cormo.Model
+  @column 'name', String
+  @column 'age', Number
 
-# using anonymous function
-User.afterCreate ->
-  console.log 'created'
-
-# while defining a model
-class Post extends cormo.Model
-  @column 'title', String # 'String' is the same as '{ type: String }'
-  @column 'body', 'string' # you can also use 'string' to specify a string type
-  @afterSave 'onAfterSave'
-
-  onAfterSave: ->
-    console.log 'saved'
+  @beforeSave ->
+    @name = @name.trim()
 ```
 
 ## Associations
 
 ```coffeescript
-User = connection.model 'User',
-  name: String
-  age: Number
+class User extends cormo.Model
+  @column 'name', String
+  @column 'age', Number
+  @hasMany 'posts'
 
-Post = connection.model 'Post',
-  title: String
-  body: String
-
-# one-to-many association
-# this will add 'user_id' to the Post model
-User.hasMany Post
-Post.belongsTo User
-
-# one-to-many association with 'as'
-# this will add 'parent_post_id' to the Post model
-Post.hasMany Post, as: 'comments', foreign_key: 'parent_post_id'
-Post.belongsTo Post, as: 'parent_post'
-
-# get associated objects
-user.posts (error, records) ->
-  console.log records
-post.user (error, record) ->
-  console.log record
-post.comments (error, records) ->
-  console.log records
-post.parent_post (error, record) ->
-  console.log record
-
-# returned objects are cached, give true to reload
-user.posts true, (error, records) ->
-  console.log records
-
-# two ways to create an associated object
-Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post) ->
-  console.log post
-
-post = user.posts.build title: 'first post', body: 'This is the 1st post.'
-post.save (error) ->
-  console.log error
-```
-
-See [[#Model.hasMany]], [[#Model.belongsTo]] for more details.
-
-### keep data consistent
-
-CORMO supports foreign key constraints by DBMS for SQL-based DBMS or by framework for MongoDB.
-(CORMO does not guarantee integrity for MongoDB even if using this feature)
-
-To use constraints, give an integrity options on [[#Model.hasMany]].
-
-```coffeescript
-# the same as "CREATE TABLE posts ( user_id INT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
-User.hasMany Post, integrity: 'nullify'
-
-# the same as "CREATE TABLE posts ( user_id INT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT"
-User.hasMany Post, integrity: 'restrict'
-
-# the same as "CREATE TABLE posts ( user_id INT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
-User.hasMany Post, integrity: 'delete'
-
-# no option means no foreign key constraint
-# so there may be a post with invalid user_id
-User.hasMany Post
+class Post extends cormo.Model
+  @column 'title', String
+  @column 'body', String
+  @belongsTo 'user'
 ```
 
 ## Geospatial query
 
-Currently, we supports only near query of 2D location in MongoDB and MySQL.
-
 ```coffeescript
-Place = connection.model 'Place',
-  name: String
-  location: cormo.types.GeoPoint
+class Place extends cormo.Model
+  @column 'name', String
+  @column 'location', cormo.types.GeoPoint
 
 # create 
 Place.create name: 'Carrier Dome', location: [-76.136131, 43.036240]
 
 # query
-Place.where().near(location: [-5, 45]).limit(4).exec (error, places) ->
+Place.query().near(location: [-5, 45]).limit(4).exec (error, places) ->
   console.log places
-```
-
-See [[#Query::near]] for more details.
-
-## Other features
-
-Use [[#ModelTimestamp.timestamps]] to add created_at and updated_at to the table.
-
-```coffeescript
-User.timestamps()
-```
-
-If [[#Model.archive]] is true, deleted records are archived in the _Archive table.
-
-```coffeescript
-User.archive = true
-User.delete age: 27, (error, count) ->
-  # _Archive will have delete records as
-  #   { model: 'User', data: <deleted user 1> },
-  #   { model: 'User', data: <deleted user 2> }, ...
 ```
 
 # License
