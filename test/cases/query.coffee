@@ -171,12 +171,12 @@ module.exports = () ->
       return done error if error
       _g.async.series [
         (callback) ->
-          _g.connection.User.where().exec (error, users) ->
+          _g.connection.User.query().exec (error, users) ->
             return callback error if error
             users.should.have.length 5
             callback null
         (callback) ->
-          _g.connection.User.where().limit(3).exec (error, users) ->
+          _g.connection.User.query().limit(3).exec (error, users) ->
             return callback error if error
             users.should.have.length 3
             callback null
@@ -207,14 +207,14 @@ module.exports = () ->
       return done error if error
       _g.async.series [
         (callback) ->
-          _g.connection.User.where().order('age').skip(3).exec (error, users) ->
+          _g.connection.User.query().order('age').skip(3).exec (error, users) ->
             return callback error if error
             users.should.have.length 2
             _compareUser users[0], name: 'Gina Baker', age: 32
             _compareUser users[1], name: 'Bill Smith', age: 45
             callback null
         (callback) ->
-          _g.connection.User.where().order('age').skip(1).limit(2).exec (error, users) ->
+          _g.connection.User.query().order('age').skip(1).limit(2).exec (error, users) ->
             return callback error if error
             users.should.have.length 2
             users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -361,7 +361,7 @@ module.exports = () ->
   it 'return_raw_instance of null value without select', (done) ->
     _g.connection.User.createBulk [ { name: 'Gina Baker' } ], (error, users) ->
       return done error if error
-      _g.connection.User.where().return_raw_instance().exec (error, users) ->
+      _g.connection.User.query().return_raw_instance().exec (error, users) ->
         return done error if error
         users.should.have.length 1
         if _g.connection.User.eliminate_null

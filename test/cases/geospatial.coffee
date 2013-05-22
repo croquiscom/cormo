@@ -51,7 +51,7 @@ module.exports = () ->
   it 'near query 1', (done) ->
     _createPlaces _g.connection.Place, (error) ->
       return done error if error
-      _g.connection.Place.where().near(location: [-80, 40]).exec (error, places) ->
+      _g.connection.Place.query().near(location: [-80, 40]).exec (error, places) ->
         return done error if error
         expected = [
           'The White House'
@@ -75,7 +75,7 @@ module.exports = () ->
   it 'near query 2', (done) ->
     _createPlaces _g.connection.Place, (error) ->
       return done error if error
-      _g.connection.Place.where().near(location: [-5, 45]).limit(4).exec (error, places) ->
+      _g.connection.Place.query().near(location: [-5, 45]).limit(4).exec (error, places) ->
         return done error if error
         expected = [
           'Wimbledon'
@@ -90,7 +90,7 @@ module.exports = () ->
   it 'near query 3', (done) ->
     _createPlaces _g.connection.Place, (error) ->
       return done error if error
-      _g.connection.Place.where().near(location: [170, 45]).limit(1).exec (error, places) ->
+      _g.connection.Place.query().near(location: [170, 45]).limit(1).exec (error, places) ->
         return done error if error
         expected = [
           'Sapporo Dome'
@@ -102,7 +102,7 @@ module.exports = () ->
   it 'near query 4', (done) ->
     _createPlaces _g.connection.Place, (error) ->
       return done error if error
-      _g.connection.Place.where().near(location: [-80, 40]).skip(3).limit(3).exec (error, places) ->
+      _g.connection.Place.query().near(location: [-80, 40]).skip(3).limit(3).exec (error, places) ->
         return done error if error
         expected = [
           'Dodgers Stadium'

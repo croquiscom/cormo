@@ -18,6 +18,11 @@ class ModelQuery
       @_createQueryAndRun criteria, data, operation, callback
 
   ##
+  # Creates q query object
+  @query: ->
+    new Query @
+
+  ##
   # Finds a record by id
   # @param {RecordID|Array<RecordID>} id
   # @param {Function} [callback]

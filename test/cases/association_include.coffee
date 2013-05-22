@@ -21,7 +21,7 @@ module.exports = ->
   it 'include objects that belong to', (done) ->
     _g.async.waterfall [
       (callback) ->
-        _g.connection.Post.where().include('user').exec callback
+        _g.connection.Post.query().include('user').exec callback
       (posts, callback) ->
         posts.should.have.length 3
 
@@ -63,7 +63,7 @@ module.exports = ->
   it 'include objects that belong to with select', (done) ->
     _g.async.waterfall [
       (callback) ->
-        _g.connection.Post.where().include('user', 'name').exec callback
+        _g.connection.Post.query().include('user', 'name').exec callback
       (posts, callback) ->
         posts.should.have.length 3
 
@@ -91,7 +91,7 @@ module.exports = ->
   it 'include objects that have many', (done) ->
     _g.async.waterfall [
       (callback) ->
-        _g.connection.User.where().include('posts').exec callback
+        _g.connection.User.query().include('posts').exec callback
       (users, callback) ->
         users.should.have.length 2
 
@@ -150,7 +150,7 @@ module.exports = ->
   it 'include objects that have many with select', (done) ->
     _g.async.waterfall [
       (callback) ->
-        _g.connection.User.where().include('posts', 'title').exec callback
+        _g.connection.User.query().include('posts', 'title').exec callback
       (users, callback) ->
         users.should.have.length 2
 
