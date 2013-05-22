@@ -1,5 +1,12 @@
 The list of terms used in this project.
 
+
+Table
+-----
+
+Other candidates:
+ * collection
+
 Record
 ------
 A single data in a table
@@ -8,6 +15,7 @@ Other candidates:
  * row
  * instance (of model)
  * tuple
+ * document
 
 Column
 ------

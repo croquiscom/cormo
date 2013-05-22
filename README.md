@@ -4,93 +4,51 @@ CORMO is an ORM framework for Node.js.
 
 Currently supports:
 
-* multi-DB: MySQL, MongoDB, SQLite3, PostgreSQL, Redis
+* multi-DB: MySQL, MongoDB, SQLite3, PostgreSQL
 * constraints
 * validations
 * associations
 * geospatial query
+* callbacks
+* aggregation
+* nested column
 
-Will support:
+See https://github.com/croquiscom/cormo/wiki/Future-Plans for future plans.
 
-* auto table migration
-* more DB, validations, associations, ...
+# Overview
 
-This project is not yet stabilized.
-API can be changed.
-
-# Usage
-## Connect to DB
-
-```coffeescript
-Connection = require('cormo').Connection
-
-connection = new Connection 'mysql', database: 'test'
-
-another = new Connection 'mongodb', database: 'test'
-```
-
-See documents for each adapter([[#AdapterBase]]) for detail options.
+You can see detail guides on http://croquiscom.github.io/cormo/.
 
 ## Define models
 
 ```coffeescript
-# this will create two tables - users, posts.
+cormo = require 'cormo'
+connection = new cormo.Connection 'mysql', database: 'test'
 
-# using model method
-User = connection.model 'User',
-  name: { type: String }
-  age: { type: Number }
+# this will create two tables - users, posts - in the database.
 
-# using CoffeeScript extends keyword
+class User extends cormo.Model
+  @column 'name', type: String
+  @column 'age', type: cormo.types.Integer
+
 class Post extends cormo.Model
-  @connection connection # if omitted, Connection.defaultConnection will be used instead
-  @column 'title', String # 'String' is the same as '{ type: String }'
-  @column 'body', 'string' # you can also use 'string' to specify a string type
-
-# apply defined models to Database. This can be omitted
-connection.applySchemas (error) ->
-  console.log error
+  @column 'title', String # `String` is the same as `type: String`
+  @column 'body', 'string' # you can also use `string` to specify a string type
+  @column 'date', Date
 ```
 
-You can use any of cormo.types.String, 'string', or String
-(native JavaScript Function, if exists) to specify a type.
-
-Currently supported types:
-
-* String
-* Number
-* Integer
-* Date
-* GeoPoint (MySQL, MonogoDB only)
-
-See [[#Connection::model]], [[#Connection::applySchemas]] for more details.
-
-## Create a record
+## Create records
 
 ```coffeescript
-# new with no data
-user1 = new User()
-user1.name = 'John Doe'
-user1.age = 27
+user1 = new User name: 'John Doe', age: 27
 user1.save (error) ->
   console.log error
 
-# new with data
-user2 = new User name: 'John Doe', age: 27
-user2.save (error) ->
-  console.log error
-
-# build is the same as new
-user3 = User.build name: 'John Doe', age: 27
-user3.save (error) ->
-  console.log error
-
-# create is the same as build and save
-User.create { name: 'John Doe', age: 27 }, (error, user) ->
+User.create name: 'John Doe', age: 27, (error, user2) ->
   console.log error
 ```
 
-See [[#Model::constructor]], [[#ModelPersistence::save]], [[#Model.build]], [[#ModelPersistence.create]] for more details.
+# Usage
 
 ## Query
 
@@ -374,13 +332,6 @@ Use [[#ModelTimestamp.timestamps]] to add created_at and updated_at to the table
 
 ```coffeescript
 User.timestamps()
-```
-
-Use [[#ModelPersistence.createBulk]] to create many records at once.
-
-```coffeescript
-User.createBulk [ { name: 'John Doe', age: 27 }, { name: 'Bill Smith', age: 45 } ], (error, users) ->
-  console.log users
 ```
 
 If [[#Model.archive]] is true, deleted records are archived in the _Archive table.
