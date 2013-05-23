@@ -105,12 +105,16 @@ _buildWhereSingle = (property, key, value, not_op) ->
         return _buildWhereSingle property, key, value[sub_key], not not_op
       when '$gt', '$lt', '$gte', '$lte'
         sub_value = value[sub_key]
-        sub_value = new Date sub_value if property_type is types.Date
+        if is_objectid
+          sub_value = _convertValueToObjectID sub_value, key
+        else if property_type is types.Date
+          sub_value = new Date sub_value
         value = {}
         value[sub_key] = sub_value
         if not_op
           value = $not: value
         obj = {}
+        key = '_id' if key is 'id'
         obj[key] = value
         return obj
       when '$contains'

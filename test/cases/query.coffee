@@ -415,3 +415,16 @@ module.exports = () ->
         _compareUser users[0], name: 'Gina Baker', age: 32
         callback null
     ], done
+
+  it 'comparison on id', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.where id: $lt: users[2].id, (error, records) ->
+        return done error if error
+        records.should.have.length 2
+        _compareUser users[0], records[0]
+        _compareUser users[1], records[1]
+        _g.connection.User.count id: $lt: users[2].id, (error, count) ->
+          return done error if error
+          count.should.equal 2
+          done null
