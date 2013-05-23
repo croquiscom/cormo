@@ -42,7 +42,7 @@ _convertValueToObjectID = (value, key) ->
       number = parseInt(value.substr(22, 2), 16)
       oid += String.fromCharCode number if number>=0 and number<256
       if oid.length is 12
-        return _bsontype: 'ObjectID', id: oid
+        return _bsontype: 'ObjectID', id: oid, toString: (-> value), toJSON: (-> value)
   throw new Error("'#{key}' is not a valid id")
 
 _objectIdToString = (oid) ->
