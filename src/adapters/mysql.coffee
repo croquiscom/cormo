@@ -6,7 +6,6 @@ catch e
 
 SQLAdapterBase = require './sql_base'
 types = require '../types'
-tableize = require('../inflector').tableize
 async = require 'async'
 _ = require 'underscore'
 
@@ -51,8 +50,8 @@ class MySQLAdapter extends SQLAdapterBase
     @_client.query sql, data, callback
 
   _createTable: (model, callback) ->
-    table = tableize model
     model_class = @_connection.models[model]
+    tableName = model_class.tableName
     sql = []
     sql.push 'id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY'
     for column, property of model_class._schema
@@ -68,12 +67,12 @@ class MySQLAdapter extends SQLAdapterBase
       sql.push "#{unique}INDEX #{index.options.name} (#{columns.join ','})"
     for integrity in model_class._integrities
       if integrity.type is 'child_nullify'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE SET NULL"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE SET NULL"
       else if integrity.type is 'child_restrict'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE RESTRICT"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE RESTRICT"
       else if integrity.type is 'child_delete'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE CASCADE"
-    sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE CASCADE"
+    sql = "CREATE TABLE #{tableName} ( #{sql.join ','} )"
     @_query sql, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
@@ -84,7 +83,8 @@ class MySQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::applySchema
   applySchema: (model, callback) ->
-    @_query "SHOW COLUMNS FROM #{tableize model}", (error, columns) =>
+    tableName = @_connection.models[model].tableName
+    @_query "SHOW COLUMNS FROM #{tableName}", (error, columns) =>
       if error?.code is 'ER_NO_SUCH_TABLE'
         @_createTable model, callback
       else
@@ -92,8 +92,8 @@ class MySQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->
-    table = tableize model
-    @_query "DROP TABLE IF EXISTS #{table}", (error) ->
+    tableName = @_connection.models[model].tableName
+    @_query "DROP TABLE IF EXISTS #{tableName}", (error) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
 
@@ -160,9 +160,10 @@ class MySQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::create
   create: (model, data, callback) ->
+    tableName = @_connection.models[model].tableName
     values = []
     [ fields, places ] = @_buildUpdateSet model, data, values, true
-    sql = "INSERT INTO #{tableize model} (#{fields}) VALUES (#{places})"
+    sql = "INSERT INTO #{tableName} (#{fields}) VALUES (#{places})"
     @_query sql, values, (error, result) ->
       return _processSaveError error, callback if error
       if id = result?.insertId
@@ -172,13 +173,14 @@ class MySQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::createBulk
   createBulk: (model, data, callback) ->
+    tableName = @_connection.models[model].tableName
     values = []
     fields = undefined
     places = []
     data.forEach (item) =>
       [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
       places.push '(' + places_sub + ')'
-    sql = "INSERT INTO #{tableize model} (#{fields}) VALUES #{places.join ','}"
+    sql = "INSERT INTO #{tableName} (#{fields}) VALUES #{places.join ','}"
     @_query sql, values, (error, result) ->
       return _processSaveError error, callback if error
       if id = result?.insertId
@@ -188,19 +190,21 @@ class MySQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->
+    tableName = @_connection.models[model].tableName
     values = []
     [ fields ] = @_buildUpdateSet model, data, values
     values.push data.id
-    sql = "UPDATE #{tableize model} SET #{fields} WHERE id=?"
+    sql = "UPDATE #{tableName} SET #{fields} WHERE id=?"
     @_query sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null
 
   ## @override AdapterBase::updatePartial
   updatePartial: (model, data, conditions, options, callback) ->
+    tableName = @_connection.models[model].tableName
     values = []
     [ fields ] = @_buildPartialUpdateSet model, data, values
-    sql = "UPDATE #{tableize model} SET #{fields}"
+    sql = "UPDATE #{tableName} SET #{fields}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
@@ -214,7 +218,8 @@ class MySQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
     select = @_buildSelect @_connection.models[model], options.select
-    sql = "SELECT #{select} FROM #{tableize model} WHERE id=? LIMIT 1"
+    tableName = @_connection.models[model].tableName
+    sql = "SELECT #{select} FROM #{tableName} WHERE id=? LIMIT 1"
     @_query sql, id, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       if result?.length is 1
@@ -238,7 +243,8 @@ class MySQLAdapter extends SQLAdapterBase
       location = options.near[field]
       select += ",GLENGTH(LINESTRING(#{field},POINT(#{location[0]},#{location[1]}))) AS #{field}_distance"
     params = []
-    sql = "SELECT #{select} FROM #{tableize model}"
+    tableName = @_connection.models[model].tableName
+    sql = "SELECT #{select} FROM #{tableName}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
@@ -280,7 +286,8 @@ class MySQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::count
   count: (model, conditions, callback) ->
     params = []
-    sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
+    tableName = @_connection.models[model].tableName
+    sql = "SELECT COUNT(*) AS count FROM #{tableName}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
@@ -295,7 +302,8 @@ class MySQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::delete
   delete: (model, conditions, callback) ->
     params = []
-    sql = "DELETE FROM #{tableize model}"
+    tableName = @_connection.models[model].tableName
+    sql = "DELETE FROM #{tableName}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params

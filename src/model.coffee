@@ -1,4 +1,5 @@
 _ = require 'underscore'
+tableize = require('./inflector').tableize
 types = require './types'
 util = require './util'
 
@@ -45,6 +46,11 @@ class Model
   ##
   # Archives deleted records in the archive table
   @archive: false
+
+  ##
+  # @property tableName
+  # @type String
+  # @static
 
   ##
   # Indicates the connection associated to this model
@@ -108,6 +114,8 @@ class Model
     Object.defineProperty @, '_intermediate_paths', value: {}
     Object.defineProperty @, '_indexes', value: []
     Object.defineProperty @, '_integrities', value: []
+
+    @tableName = tableize name if not @tableName
 
   @_checkConnection: ->
     return if @hasOwnProperty '_connection'

@@ -8,7 +8,6 @@ ObjectID = mongodb.ObjectID
 
 AdapterBase = require './base'
 types = require '../types'
-tableize = require('../inflector').tableize
 async = require 'async'
 _ = require 'underscore'
 
@@ -215,8 +214,8 @@ class MongoDBAdapter extends AdapterBase
     else
       name
 
-  _collection: (name) ->
-    name = tableize name
+  _collection: (model) ->
+    name = @_connection.models[model].tableName
     if not @_collections[name]
       return @_collections[name] = new mongodb.Collection @_client, _getMongoDBColName name
     else
@@ -249,7 +248,7 @@ class MongoDBAdapter extends AdapterBase
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->
-    name = tableize model
+    name = @_connection.models[model].tableName
     delete @_collections[name]
     @_client.dropCollection _getMongoDBColName(name), (error) ->
       # ignore not found error

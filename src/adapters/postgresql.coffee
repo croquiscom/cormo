@@ -6,7 +6,6 @@ catch e
 
 SQLAdapterBase = require './sql_base'
 types = require '../types'
-tableize = require('../inflector').tableize
 async = require 'async'
 _ = require 'underscore'
 
@@ -52,8 +51,8 @@ class PostgreSQLAdapter extends SQLAdapterBase
       callback error, result
 
   _createTable: (model, callback) ->
-    table = tableize model
     model_class = @_connection.models[model]
+    tableName = model_class.tableName
     sql = []
     sql.push 'id SERIAL PRIMARY KEY'
     for column, property of model_class._schema
@@ -62,12 +61,12 @@ class PostgreSQLAdapter extends SQLAdapterBase
         sql.push property._dbname + ' ' + column_sql
     for integrity in model_class._integrities
       if integrity.type is 'child_nullify'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE SET NULL"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE SET NULL"
       else if integrity.type is 'child_restrict'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE RESTRICT"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE RESTRICT"
       else if integrity.type is 'child_delete'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{tableize integrity.parent._name}(id) ON DELETE CASCADE"
-    sql = "CREATE TABLE #{table} ( #{sql.join ','} )"
+        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE CASCADE"
+    sql = "CREATE TABLE #{tableName} ( #{sql.join ','} )"
     @_query sql, (error) =>
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       async.forEach model_class._indexes, (index, callback) =>
@@ -76,7 +75,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
           order = if order is -1 then 'DESC' else 'ASC'
           columns.push column + ' ' + order
         unique = if index.options.unique then 'UNIQUE ' else ''
-        sql = "CREATE #{unique}INDEX #{index.options.name} ON #{table} (#{columns.join ','})"
+        sql = "CREATE #{unique}INDEX #{index.options.name} ON #{tableName} (#{columns.join ','})"
         @_query sql, callback
       , (error) ->
         return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
@@ -88,8 +87,8 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::applySchema
   applySchema: (model, callback) ->
-    table = tableize model
-    @_query "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1", [table], (error, result) =>
+    tableName = @_connection.models[model].tableName
+    @_query "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1", [tableName], (error, result) =>
       columns = result?.rows
       if error or columns.length is 0
         @_createTable model, callback
@@ -98,15 +97,15 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->
-    table = tableize model
-    @_query "DROP TABLE IF EXISTS #{table}", (error) ->
+    tableName = @_connection.models[model].tableName
+    @_query "DROP TABLE IF EXISTS #{tableName}", (error) ->
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       callback null
 
   _getModelID: (data) ->
     Number data.id
 
-  _processSaveError = (model, error, callback) ->
+  _processSaveError = (tableName, error, callback) ->
     if error.code is '42P01'
       error = new Error('table does not exist')
     else if error.code is '23505'
@@ -114,7 +113,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       key = error.message.match /unique constraint \"(.*)\"/
       if key?
         column = key[1]
-        key = column.match new RegExp "#{tableize model}_([^']*)_key"
+        key = column.match new RegExp "#{tableName}_([^']*)_key"
         if key?
           column = key[1]
         column = ' ' + column
@@ -151,12 +150,13 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::create
   create: (model, data, callback) ->
+    tableName = @_connection.models[model].tableName
     values = []
     [ fields, places ] = @_buildUpdateSet model, data, values, true
-    sql = "INSERT INTO #{tableize model} (#{fields}) VALUES (#{places}) RETURNING id"
+    sql = "INSERT INTO #{tableName} (#{fields}) VALUES (#{places}) RETURNING id"
     @_query sql, values, (error, result) ->
       rows = result?.rows
-      return _processSaveError model, error, callback if error
+      return _processSaveError tableName, error, callback if error
       if rows?.length is 1 and rows[0].id?
         callback null, rows[0].id
       else
@@ -164,15 +164,16 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::createBulk
   createBulk: (model, data, callback) ->
+    tableName = @_connection.models[model].tableName
     values = []
     fields = undefined
     places = []
     data.forEach (item) =>
       [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
       places.push '(' + places_sub + ')'
-    sql = "INSERT INTO #{tableize model} (#{fields}) VALUES #{places.join ','} RETURNING id"
+    sql = "INSERT INTO #{tableName} (#{fields}) VALUES #{places.join ','} RETURNING id"
     @_query sql, values, (error, result) ->
-      return _processSaveError model, error, callback if error
+      return _processSaveError tableName, error, callback if error
       ids = result?.rows.map (row) -> row.id
       if ids.length is data.length
         callback null, ids
@@ -181,33 +182,35 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->
+    tableName = @_connection.models[model].tableName
     values = []
     [ fields ] = @_buildUpdateSet model, data, values
     values.push data.id
-    sql = "UPDATE #{tableize model} SET #{fields} WHERE id=$#{values.length}"
+    sql = "UPDATE #{tableName} SET #{fields} WHERE id=$#{values.length}"
     @_query sql, values, (error) ->
-      return _processSaveError model, error, callback if error
+      return _processSaveError tableName, error, callback if error
       callback null
 
   ## @override AdapterBase::updatePartial
   updatePartial: (model, data, conditions, options, callback) ->
+    tableName = @_connection.models[model].tableName
     values = []
     [ fields ] = @_buildPartialUpdateSet model, data, values
-    sql = "UPDATE #{tableize model} SET #{fields}"
+    sql = "UPDATE #{tableName} SET #{fields}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
       catch e
         return callback e
     @_query sql, values, (error, result) ->
-      return _processSaveError model, error, callback if error
+      return _processSaveError tableName, error, callback if error
       callback null, result.rowCount
 
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
     select = @_buildSelect @_connection.models[model], options.select
-    table = tableize model
-    @_query "SELECT #{select} FROM #{table} WHERE id=$1 LIMIT 1", [id], (error, result) =>
+    tableName = @_connection.models[model].tableName
+    @_query "SELECT #{select} FROM #{tableName} WHERE id=$1 LIMIT 1", [id], (error, result) =>
       rows = result?.rows
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       if rows?.length is 1
@@ -227,7 +230,8 @@ class PostgreSQLAdapter extends SQLAdapterBase
     else
       select = @_buildSelect @_connection.models[model], options.select
     params = []
-    sql = "SELECT #{select} FROM #{tableize model}"
+    tableName = @_connection.models[model].tableName
+    sql = "SELECT #{select} FROM #{tableName}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
@@ -267,7 +271,8 @@ class PostgreSQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::count
   count: (model, conditions, callback) ->
     params = []
-    sql = "SELECT COUNT(*) AS count FROM #{tableize model}"
+    tableName = @_connection.models[model].tableName
+    sql = "SELECT COUNT(*) AS count FROM #{tableName}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
@@ -283,7 +288,8 @@ class PostgreSQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::delete
   delete: (model, conditions, callback) ->
     params = []
-    sql = "DELETE FROM #{tableize model}"
+    tableName = @_connection.models[model].tableName
+    sql = "DELETE FROM #{tableName}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
