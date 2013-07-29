@@ -4,6 +4,7 @@ _ = require 'underscore'
 async = require 'async'
 try
   redis = require 'redis'
+{inspect} = require 'util'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
@@ -155,6 +156,8 @@ class Connection extends EventEmitter
           client.send_anyways = false
       callback null, client
 
+  inspect: (depth) ->
+    inspect @models
 
 _use = (file) ->
   MixClass = require "./connection/#{file}"
