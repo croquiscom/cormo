@@ -1,5 +1,6 @@
 _ = require 'underscore'
 async = require 'async'
+console_future = require './console_future'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
@@ -223,18 +224,19 @@ class Query
       callback = options
       options = {}
 
-    if (cache_options = @_options.cache) and (cache_key = cache_options.key)
-      # try cache
-      @_model._loadFromCache cache_key, cache_options.refresh, (error, records) =>
-        return callback null, records if not error
-        # no cache, execute query
-        @_execAndInclude options, (error, records) =>
-          return callback error if error
-          # save result to cache
-          @_model._saveToCache cache_key, cache_options.ttl, records, (error) ->
-            callback error, records
-    else
-      @_execAndInclude options, callback
+    console_future.execute callback, (callback) =>
+      if (cache_options = @_options.cache) and (cache_key = cache_options.key)
+        # try cache
+        @_model._loadFromCache cache_key, cache_options.refresh, (error, records) =>
+          return callback null, records if not error
+          # no cache, execute query
+          @_execAndInclude options, (error, records) =>
+            return callback error if error
+            # save result to cache
+            @_model._saveToCache cache_key, cache_options.ttl, records, (error) ->
+              callback error, records
+      else
+        @_execAndInclude options, callback
 
   ##
   # Executes the query as a count operation
@@ -246,11 +248,12 @@ class Query
   count: (callback) ->
     return if @_model._waitingForReady @, @count, arguments
 
-    if @_id
-      @_conditions.push id: @_id
-      delete @_id
-    @_connection.log @_name, 'count', conditions: @_conditions
-    @_adapter.count @_name, @_conditions, _bindDomain callback
+    console_future.execute callback, (callback) =>
+      if @_id
+        @_conditions.push id: @_id
+        delete @_id
+      @_connection.log @_name, 'count', conditions: @_conditions
+      @_adapter.count @_name, @_conditions, _bindDomain callback
 
   _validateAndBuildSaveData: (errors, data, updates, path, object) ->
     model = @_model
@@ -284,17 +287,18 @@ class Query
   update: (updates, callback) ->
     return if @_model._waitingForReady @, @update, arguments
 
-    errors = []
-    data = {}
-    @_validateAndBuildSaveData errors, data, updates, '', updates
-    if errors.length > 0
-      return callback new Error errors.join ','
+    console_future.execute callback, (callback) =>
+      errors = []
+      data = {}
+      @_validateAndBuildSaveData errors, data, updates, '', updates
+      if errors.length > 0
+        return callback new Error errors.join ','
 
-    if @_id
-      @_conditions.push id: @_id
-      delete @_id
-    @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
-    @_adapter.updatePartial @_name, data, @_conditions, @_options, _bindDomain callback
+      if @_id
+        @_conditions.push id: @_id
+        delete @_id
+      @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
+      @_adapter.updatePartial @_name, data, @_conditions, @_options, _bindDomain callback
 
   _doIntegrityActions: (integrities, ids, callback) ->
     async.forEach integrities, (integrity, callback) =>
@@ -365,13 +369,14 @@ class Query
       callback = options
       options = {}
 
-    if @_id
-      @_conditions.push id: @_id
-      delete @_id
-    @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log
+    console_future.execute callback, (callback) =>
+      if @_id
+        @_conditions.push id: @_id
+        delete @_id
+      @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log
 
-    @_doArchiveAndIntegrity options, (error) =>
-      return callback error if error
-      @_adapter.delete @_name, @_conditions, _bindDomain callback
+      @_doArchiveAndIntegrity options, (error) =>
+        return callback error if error
+        @_adapter.delete @_name, @_conditions, _bindDomain callback
 
 module.exports = Query

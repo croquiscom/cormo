@@ -1,4 +1,5 @@
 async = require 'async'
+console_future = require '../console_future'
 inflector = require '../inflector'
 types = require '../types'
 
@@ -71,50 +72,51 @@ class ConnectionManipulate
   manipulate: (commands, callback) ->
     @log '<conn>', 'manipulate', commands
 
-    id_to_record_map = {}
-    commands = [commands] if not Array.isArray commands
-    async.forEachSeries commands, (command, callback) =>
-      if typeof command is 'object'
-        key = Object.keys command
-        if key.length is 1
-          key = key[0]
-          data = command[key]
+    console_future.execute callback, (callback) =>
+      id_to_record_map = {}
+      commands = [commands] if not Array.isArray commands
+      async.forEachSeries commands, (command, callback) =>
+        if typeof command is 'object'
+          key = Object.keys command
+          if key.length is 1
+            key = key[0]
+            data = command[key]
+          else
+            key = undefined
+        else if typeof command is 'string'
+          key = command
+        return callback new Error('invalid command: '+JSON.stringify(command)) if not key
+        if key.substr(0, 7) is 'create_'
+          model = key.substr 7
+          id = data.id
+          delete data.id
+          @_manipulateConvertIds id_to_record_map, model, data
+          @_manipulateCreate model, data, (error, record) ->
+            return callback error if error
+            id_to_record_map[id] = record if id
+            callback null
+        else if key.substr(0, 7) is 'delete_'
+          model = key.substr 7
+          @_manipulateDelete model, data, callback
+        else if key is 'deleteAll'
+          @_manipulateDeleteAllModels callback
+        else if key.substr(0, 5) is 'drop_'
+          model = key.substr 5
+          @_manipulateDropModel model, callback
+        else if key is 'dropAll'
+          @_manipulateDropAllModels callback
+        else if key.substr(0, 5) is 'find_'
+          model = key.substr 5
+          id = data.id
+          delete data.id
+          return callback null if not id
+          @_manipulateFind model, data, (error, records) ->
+            return callback error if error
+            id_to_record_map[id] = records
+            callback null
         else
-          key = undefined
-      else if typeof command is 'string'
-        key = command
-      return callback new Error('invalid command: '+JSON.stringify(command)) if not key
-      if key.substr(0, 7) is 'create_'
-        model = key.substr 7
-        id = data.id
-        delete data.id
-        @_manipulateConvertIds id_to_record_map, model, data
-        @_manipulateCreate model, data, (error, record) ->
-          return callback error if error
-          id_to_record_map[id] = record if id
-          callback null
-      else if key.substr(0, 7) is 'delete_'
-        model = key.substr 7
-        @_manipulateDelete model, data, callback
-      else if key is 'deleteAll'
-        @_manipulateDeleteAllModels callback
-      else if key.substr(0, 5) is 'drop_'
-        model = key.substr 5
-        @_manipulateDropModel model, callback
-      else if key is 'dropAll'
-        @_manipulateDropAllModels callback
-      else if key.substr(0, 5) is 'find_'
-        model = key.substr 5
-        id = data.id
-        delete data.id
-        return callback null if not id
-        @_manipulateFind model, data, (error, records) ->
-          return callback error if error
-          id_to_record_map[id] = records
-          callback null
-      else
-        return callback new Error('unknown command: '+key)
-    , (error) ->
-      callback error, id_to_record_map
+          return callback new Error('unknown command: '+key)
+      , (error) ->
+        callback error, id_to_record_map
 
 module.exports = ConnectionManipulate

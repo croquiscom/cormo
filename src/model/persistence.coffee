@@ -1,7 +1,8 @@
+_ = require 'underscore'
 async = require 'async'
+console_future = require '../console_future'
 inflector = require '../inflector'
 util = require '../util'
-_ = require 'underscore'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
@@ -26,7 +27,8 @@ class ModelPersistence
     else if typeof options is 'function'
       callback = options
       options = {}
-    @build(data).save options, callback
+    console_future.execute callback, (callback) =>
+      @build(data).save options, callback
 
   ##
   # Creates multiple records and saves them to the database.

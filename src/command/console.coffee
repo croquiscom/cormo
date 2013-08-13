@@ -9,6 +9,16 @@ fs = require 'fs'
 
 Connection = require '../connection'
 Model = require '../model'
+Query = require '../query'
+
+console_future = require '../console_future'
+console_future.execute = (callback, func) ->
+  if typeof callback isnt 'function'
+    future = new Future()
+    callback = future.resolver()
+  func callback
+  if future
+    return future.wait()
 
 prettyErrorMessage = coffee.helpers.prettyErrorMessage or (e) -> e
 
@@ -143,6 +153,12 @@ class CommandConsole
               if assign_to
                 context[assign_to] = result
               delete context.$
+            else if result instanceof Query
+              future = new Future()
+              result.exec future.resolver()
+              result = future.wait()
+              if assign_to
+                context[assign_to] = result
           catch e
             return callback prettyErrorMessage e, filename, cmd, true
           callback null, result
@@ -161,5 +177,6 @@ class CommandConsole
     if connection
       for model, modelClass of connection.models
         context[model] = modelClass
+    connection.applySchemas()
 
 module.exports = CommandConsole

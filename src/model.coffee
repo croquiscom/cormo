@@ -1,4 +1,5 @@
 _ = require 'underscore'
+console_future = require './console_future'
 tableize = require('./inflector').tableize
 types = require './types'
 util = require './util'
@@ -205,10 +206,11 @@ class Model
     # do not need to apply schema before drop, only waiting connection established
     return if @_connection._waitingForConnection @, @drop, arguments
 
-    @_adapter.drop @_name, _bindDomain (error) =>
-      @_schema_changed = true
-      @_connection._schema_changed = true
-      callback error
+    console_future.execute callback, (callback) =>
+      @_adapter.drop @_name, _bindDomain (error) =>
+        @_schema_changed = true
+        @_connection._schema_changed = true
+        callback error
 
   ##
   # Creates a record.
@@ -392,25 +394,25 @@ class Model
   # @param {Function} callback
   # @param {Error} callback.error
   destroy: (callback) ->
-    callback = (->) if typeof callback isnt 'function'
-    @_runCallbacks 'destroy', 'before'
-    if @id
-      @constructor.delete { id: @id }, (error, count) =>
+    console_future.execute callback, (callback) =>
+      callback = (->) if typeof callback isnt 'function'
+      @_runCallbacks 'destroy', 'before'
+      if @id
+        @constructor.delete { id: @id }, (error, count) =>
+          @_runCallbacks 'destroy', 'after'
+          callback error
+      else
         @_runCallbacks 'destroy', 'after'
-        callback error
-    else
-      @_runCallbacks 'destroy', 'after'
-      callback null
-    return
+        callback null
 
   ##
   # Deletes all records from the database
   # @param {Function} callback
   # @param {Error} callback.error
   @deleteAll: (callback) ->
-    callback = (->) if typeof callback isnt 'function'
-    @delete callback
-    return
+    console_future.execute callback, (callback) =>
+      callback = (->) if typeof callback isnt 'function'
+      @delete callback
 
   ##
   # Adds a has-many association

@@ -20,5 +20,6 @@ exports.Command = require './command'
 ##
 # Exports [[#types]] module
 # @memberOf cormo
-
 exports.types = require './types'
+
+exports.console_future = require './console_future'
