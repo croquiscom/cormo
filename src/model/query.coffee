@@ -1,21 +1,22 @@
+console_future = require '../console_future'
 Query = require '../query'
 
 ##
 # Model query
 # @namespace model
 class ModelQuery
-  @_createQueryAndRun: (criteria, data, operation, callback) ->
+  @_createQueryAndRun: (criteria, data, callback) ->
     query = new Query @
     query[criteria] data
     if typeof callback is 'function'
-      query[operation] callback
+      query.exec callback
     query
 
-  @_createOptionalQueryAndRun: (criteria, data, operation, callback) ->
+  @_createOptionalQueryAndRun: (criteria, data, callback) ->
     if typeof data is 'function'
-      @_createQueryAndRun criteria, null, operation, data
+      @_createQueryAndRun criteria, null, data
     else
-      @_createQueryAndRun criteria, data, operation, callback
+      @_createQueryAndRun criteria, data, callback
 
   ##
   # Creates q query object
@@ -31,7 +32,7 @@ class ModelQuery
   # @return {Query}
   # @throws {Error('not found')}
   @find: (id, callback) ->
-    @_createQueryAndRun 'find', id, 'exec', callback
+    @_createQueryAndRun 'find', id, callback
 
   ##
   # Finds records by ids while preserving order.
@@ -42,7 +43,7 @@ class ModelQuery
   # @return {Query}
   # @throws {Error('not found')}
   @findPreserve: (ids, callback) ->
-    @_createQueryAndRun 'findPreserve', ids, 'exec', callback
+    @_createQueryAndRun 'findPreserve', ids, callback
 
   ##
   # Finds records by conditions
@@ -52,7 +53,7 @@ class ModelQuery
   # @param {Array<Model>} callback.records
   # @return {Query}
   @where: (condition, callback) ->
-    @_createOptionalQueryAndRun 'where', condition, 'exec', callback
+    @_createOptionalQueryAndRun 'where', condition, callback
 
   ##
   # Selects columns for result
@@ -62,7 +63,7 @@ class ModelQuery
   # @param {Array<Model>} callback.records
   # @return {Query}
   @select: (columns, callback) ->
-    @_createOptionalQueryAndRun 'select', columns, 'exec', callback
+    @_createOptionalQueryAndRun 'select', columns, callback
 
   ##
   # Specifies orders of result
@@ -72,7 +73,7 @@ class ModelQuery
   # @param {Array<Model>} callback.records
   # @return {Query}
   @order: (orders, callback) ->
-    @_createOptionalQueryAndRun 'order', orders, 'exec', callback
+    @_createOptionalQueryAndRun 'order', orders, callback
 
   ##
   # Groups result records
@@ -95,9 +96,16 @@ class ModelQuery
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
-  # @return {Query}
   @count: (condition, callback) ->
-    @_createOptionalQueryAndRun 'where', condition, 'count', callback
+    if typeof condition is 'function'
+      callback = condition
+      condition = null
+
+    console_future.execute callback, (callback) =>
+      callback = (->) if typeof callback isnt 'function'
+      query = new Query @
+      query.where condition
+      query.count callback
 
   ##
   # Updates some fields of records that match conditions
@@ -106,17 +114,16 @@ class ModelQuery
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
-  # @return {Query}
   @update: (updates, condition, callback) ->
     if typeof condition is 'function'
       callback = condition
       condition = null
 
-    query = new Query @
-    query.where condition
-    if typeof callback is 'function'
+    console_future.execute callback, (callback) =>
+      callback = (->) if typeof callback isnt 'function'
+      query = new Query @
+      query.where condition
       query.update updates, callback
-    query
 
   ##
   # Deletes records by conditions
@@ -124,8 +131,15 @@ class ModelQuery
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
-  # @return {Query}
   @delete: (condition, callback) ->
-    @_createOptionalQueryAndRun 'where', condition, 'delete', callback
+    if typeof condition is 'function'
+      callback = condition
+      condition = null
+
+    console_future.execute callback, (callback) =>
+      callback = (->) if typeof callback isnt 'function'
+      query = new Query @
+      query.where condition
+      query.delete callback
 
 module.exports = ModelQuery
