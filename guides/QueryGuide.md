@@ -174,6 +174,16 @@ You can give some options to [[#Query::exec]].
 
 </tbody></table>
 
+## Request only one record
+
+If you know that there will be only one result (e.x. query on unique column), [[#Query::one]] will be helpful.
+It makes a query return a single instance (or null) instead of array of instances.
+
+```
+User.where(age: 27).one().exec (error, user) ->
+  console.log user
+```
+
 # Count records
 
 [[#Query::count]] returns the count of records.

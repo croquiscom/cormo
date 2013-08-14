@@ -126,6 +126,16 @@ class Query
     return @
 
   ##
+  # Returns only one record (or null if does not exists).
+  #
+  # This is different from limit(1). limit(1) returns array of length 1 while this returns an instance.
+  # @return {Query} this
+  one: ->
+    @_options.limit = 1
+    @_options.one = true
+    return @
+
+  ##
   # Sets limit of query
   # @param {Number} limit
   # @return {Query} this
@@ -193,9 +203,12 @@ class Query
       if expected_count?
         return callback new Error('not found') if records.length isnt expected_count
       if @_preserve_order_ids
-        callback null, @_preserve_order_ids.map (id) ->
+        records =  @_preserve_order_ids.map (id) ->
           for record in records
             return record if record.id is id
+      if @_options.one
+        return callback new Error('unknown error') if records.length > 1
+        callback null, if records.length is 1 then records[0] else null
       else
         callback null, records
 

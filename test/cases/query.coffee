@@ -202,6 +202,30 @@ module.exports = () ->
       ], (error) ->
         done error
 
+  it 'one', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.async.series [
+        (callback) ->
+          _g.connection.User.where(age: { $lt: 40 }).one().exec (error, user) ->
+            return callback error if error
+            user.should.have.property 'name'
+            if user.name is 'Alice Jackson'
+              _compareUser user, name: 'Alice Jackson', age: 27
+            else if user.name is 'John Doe'
+              _compareUser user, name: 'John Doe', age: 27
+            else if user.name is 'Gina Baker'
+              _compareUser user, name: 'Gina Baker', age: 32
+            else
+              _compareUser user, name: 'Daniel Smith', age: 8
+            callback null
+        (callback) ->
+          _g.connection.User.where(age: { $lt: 5}).one().exec (error, user) ->
+            should.not.exist user
+            callback null
+      ], (error) ->
+        done error
+
   it 'skip', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
