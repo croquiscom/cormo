@@ -20,6 +20,8 @@ class ModelPersistence
   # @param {Error} callback.error
   # @param {Model} callback.record created record
   @create: (data, options, callback) ->
+    return if @_waitingForReady @, @create, arguments
+
     if typeof data is 'function'
       callback = data
       data = {}
@@ -37,6 +39,8 @@ class ModelPersistence
   # @param {Error} callback.error
   # @param {Array<Model>} callback.records created records
   @createBulk: (data, callback) ->
+    return if @_waitingForReady @, @createBulk, arguments
+
     return callback new Error 'data is not an array' if not Array.isArray data
 
     return callback null, [] if data.length is 0
