@@ -63,6 +63,38 @@ module.exports = () ->
           _compareUser users[4], name: 'John Doe', age: 27
           done null
 
+  it 'find multiple & update', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      users.sort (a, b) -> if a.name < b.name then -1 else 1
+      return done error if error
+      _g.connection.User.find([users[2].id, users[3].id]).update age: 10, (error, count) ->
+        return done error if error
+        count.should.equal 2
+        _g.connection.User.where (error, users) ->
+          users.sort (a, b) -> if a.name < b.name then -1 else 1
+          _compareUser users[0], name: 'Alice Jackson', age: 27
+          _compareUser users[1], name: 'Bill Smith', age: 45
+          _compareUser users[2], name: 'Daniel Smith', age: 10
+          _compareUser users[3], name: 'Gina Baker', age: 10
+          _compareUser users[4], name: 'John Doe', age: 27
+          done null
+
+  it 'find undefined & update', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      users.sort (a, b) -> if a.name < b.name then -1 else 1
+      return done error if error
+      _g.connection.User.find(undefined).update age: 10, (error, count) ->
+        return done error if error
+        count.should.equal 0
+        _g.connection.User.where (error, users) ->
+          users.sort (a, b) -> if a.name < b.name then -1 else 1
+          _compareUser users[0], name: 'Alice Jackson', age: 27
+          _compareUser users[1], name: 'Bill Smith', age: 45
+          _compareUser users[2], name: 'Daniel Smith', age: 8
+          _compareUser users[3], name: 'Gina Baker', age: 32
+          _compareUser users[4], name: 'John Doe', age: 27
+          done null
+
   it 'update to remove a field (set null)', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error

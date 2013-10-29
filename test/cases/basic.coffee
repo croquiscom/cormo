@@ -75,6 +75,15 @@ module.exports = () ->
         error.message.should.equal 'not found'
         done null
 
+  it 'find undefined with condition', (done) ->
+    _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      return done error if error
+      _g.connection.User.find(undefined).where(age: $gt: 0).exec (error) ->
+        should.exist error
+        error.should.be.an.instanceOf Error
+        error.message.should.equal 'not found'
+        done null
+
   it 'update a record', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error

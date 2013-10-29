@@ -184,12 +184,13 @@ class Query
   _exec: (options, callback) ->
     if @_find_single_id and @_conditions.length is 0
       @_connection.log @_name, 'find by id', id: @_id, options: @_options if not options?.skip_log
+      return callback new Error('not found') if not @_id
       @_adapter.findById @_name, @_id, @_options, _bindDomain (error, record) ->
         return callback new Error('not found') if error or not record
         callback null, record
       return
     expected_count = undefined
-    if @_id
+    if @_id or @_find_single_id
       if Array.isArray @_id
         return callback null, [] if @_id.length is 0
         @_conditions.push id: { $in: @_id }
@@ -262,7 +263,7 @@ class Query
     return if @_model._waitingForReady @, @count, arguments
 
     console_future.execute callback, (callback) =>
-      if @_id
+      if @_id or @_find_single_id
         @_conditions.push id: @_id
         delete @_id
       @_connection.log @_name, 'count', conditions: @_conditions
@@ -307,7 +308,7 @@ class Query
       if errors.length > 0
         return callback new Error errors.join ','
 
-      if @_id
+      if @_id or @_find_single_id
         @_conditions.push id: @_id
         delete @_id
       @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
@@ -383,7 +384,7 @@ class Query
       options = {}
 
     console_future.execute callback, (callback) =>
-      if @_id
+      if @_id or @_find_single_id
         @_conditions.push id: @_id
         delete @_id
       @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log

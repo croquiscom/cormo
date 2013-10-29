@@ -452,3 +452,20 @@ module.exports = () ->
           return done error if error
           count.should.equal 2
           done null
+
+  it 'find undefined & count', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.find(undefined).count (error, count) ->
+        count.should.equal 0
+        done null
+
+  it 'find undefined & delete', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.find(undefined).delete (error, count) ->
+        count.should.equal 0
+        _g.connection.User.where (error, users) ->
+          return done error if error
+          users.should.have.length 5
+          done null
