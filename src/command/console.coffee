@@ -109,6 +109,34 @@ addHistory = (repl, filename, maxSize) ->
       repl.outputStream.write "#{repl.rli.history[..].reverse().join '\n'}\n"
       repl.displayPrompt()
 
+addArgCompleter = (repl) ->
+  rli = repl.rli
+  node_completer = rli.completer
+  rli.completer = (line, callback) ->
+    node_completer line, (error, result) ->
+      show_args = true
+      if error or not result[0]
+        # something wrong
+        show_args = false
+      else if result[0].length > 1
+        # more than one candidate
+        show_args = false
+      else if result[0].length is 1 and result[0][0] isnt result[1]
+        # one candidate but need to be completed automatically
+        show_args = false
+      else if not /^[A-Za-z0-9_.]+\s*$/.test line
+        # support only for simple case
+        show_args = false
+      return callback error, result if not show_args
+
+      repl.eval line, repl.context, 'repl', (error, obj) ->
+        if typeof obj is 'function'
+          rli.output.write '\r\n'
+          argsMatch = obj.toString().match /^function\s*[^\(]*\(\s*([^\)]*)\)/m
+          rli.output.write "#{line.trim()} \u001b[35m#{argsMatch[1]}\u001b[39m\r\n"
+          rli._refreshLine()
+        callback error, result
+
 ##
 # CORMO console
 class CommandConsole
@@ -168,6 +196,7 @@ class CommandConsole
     addMultilineHandler repl
     historyFile = path.join process.env.HOME, '.cormo_history' if process.env.HOME
     addHistory repl, historyFile, 10240 if historyFile
+    addArgCompleter repl
     @_setupContext repl.context
 
   _setupContext: (context) ->
