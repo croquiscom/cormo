@@ -154,9 +154,13 @@ class Query
   ##
   # Returns raw instances instead of model instances
   # @see Query::exec
-  return_raw_instance: ->
+  lean: ->
     @_options.return_raw_instance = true
     return @
+
+  ##
+  # Same as [[Query::lean]], for backword compatibility
+  return_raw_instance: @::lean
 
   ##
   # Cache result.

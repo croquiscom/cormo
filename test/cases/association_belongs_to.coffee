@@ -9,7 +9,7 @@ module.exports = () ->
           user.should.eql record
           done null
 
-  it 'return_raw_instance for association', (done) ->
+  it 'lean option for association', (done) ->
     _g.async.waterfall [
       (callback) ->
         _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -18,7 +18,7 @@ module.exports = () ->
             return callback error if error
             callback null, user.id, post.id
       (user_id, post_id, callback) ->
-        _g.connection.Post.find(post_id).return_raw_instance().exec (error, post) ->
+        _g.connection.Post.find(post_id).lean().exec (error, post) ->
           return callback error if error
           post.id.should.equal post_id
           post.title.should.equal 'first post'

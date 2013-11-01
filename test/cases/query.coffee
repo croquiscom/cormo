@@ -345,10 +345,10 @@ module.exports = () ->
           _compareUser users[4], name: 'Bill Smith', age: 45
           done null
 
-  it 'return_raw_instance for a single record', (done) ->
+  it 'lean option for a single record', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
-      _g.connection.User.find(user.id).return_raw_instance().exec (error, record) ->
+      _g.connection.User.find(user.id).lean().exec (error, record) ->
         return done error if error
         should.exist record
         record.should.not.be.an.instanceOf _g.connection.User
@@ -357,10 +357,10 @@ module.exports = () ->
         record.should.have.property 'age', user.age
         done null
 
-  it 'return_raw_instance for multiple records', (done) ->
+  it 'lean option for multiple records', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      _g.connection.User.where(age: 27).return_raw_instance().exec (error, users) ->
+      _g.connection.User.where(age: 27).lean().exec (error, users) ->
         return done error if error
         users.should.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
@@ -370,10 +370,10 @@ module.exports = () ->
         _compareUser users[1], name: 'John Doe', age: 27
         done null
 
-  it 'return_raw_instance of null value with select', (done) ->
+  it 'lean option of null value with select', (done) ->
     _g.connection.User.createBulk [ { name: 'Gina Baker' } ], (error, users) ->
       return done error if error
-      _g.connection.User.select('name age').return_raw_instance().exec (error, users) ->
+      _g.connection.User.select('name age').lean().exec (error, users) ->
         return done error if error
         users.should.have.length 1
         if _g.connection.User.eliminate_null
@@ -382,10 +382,10 @@ module.exports = () ->
           users[0].should.have.keys 'id', 'name', 'age'
         done null
 
-  it 'return_raw_instance of null value without select', (done) ->
+  it 'lean option of null value without select', (done) ->
     _g.connection.User.createBulk [ { name: 'Gina Baker' } ], (error, users) ->
       return done error if error
-      _g.connection.User.query().return_raw_instance().exec (error, users) ->
+      _g.connection.User.query().lean().exec (error, users) ->
         return done error if error
         users.should.have.length 1
         if _g.connection.User.eliminate_null

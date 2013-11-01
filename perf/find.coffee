@@ -40,9 +40,9 @@ async.forEachSeries Object.keys(_dbs), (db, callback) ->
       deferred.resolve()
   , defer: true
 
-  suite.add 'find with return_raw_instance', (deferred) ->
+  suite.add 'find with lean option', (deferred) ->
     async.times 100, (i, callback) ->
-      User.where(age: $gt: 10).where(age: $lt: 20).return_raw_instance().exec (error, users) ->
+      User.where(age: $gt: 10).where(age: $lt: 20).lean().exec (error, users) ->
         return callback error if error
         return callback 'find error' if users.length isnt 9
         callback null
