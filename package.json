@@ -1,7 +1,7 @@
 {
   "name": "cormo",
   "description": "ORM framework for Node.js",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "keywords": [
     "orm",
     "mongodb",
