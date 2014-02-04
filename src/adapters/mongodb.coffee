@@ -12,37 +12,42 @@ async = require 'async'
 _ = require 'underscore'
 
 _convertValueToObjectID = (value, key) ->
-  if value?
-    len = value.length
-    if len is 24
-      oid = ''
-      number = parseInt(value.substr(0, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(2, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(4, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(6, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(8, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(10, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(12, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(14, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(16, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(18, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(20, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      number = parseInt(value.substr(22, 2), 16)
-      oid += String.fromCharCode number if number>=0 and number<256
-      if oid.length is 12
-        return _bsontype: 'ObjectID', id: oid, toString: (-> value), toJSON: (-> value)
-  throw new Error("'#{key}' is not a valid id")
+  try
+    new ObjectID value
+  catch e
+    throw new Error("'#{key}' is not a valid id")
+# speed up version, doesn't work with native_parser
+#  if value?
+#    len = value.length
+#    if len is 24
+#      oid = ''
+#      number = parseInt(value.substr(0, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(2, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(4, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(6, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(8, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(10, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(12, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(14, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(16, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(18, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(20, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      number = parseInt(value.substr(22, 2), 16)
+#      oid += String.fromCharCode number if number>=0 and number<256
+#      if oid.length is 12
+#        return _bsontype: 'ObjectID', id: oid, toString: (-> value), toJSON: (-> value)
+#  throw new Error("'#{key}' is not a valid id")
 
 _objectIdToString = (oid) ->
   oid = oid.id
@@ -487,20 +492,14 @@ class MongoDBAdapter extends AdapterBase
   # @param {Function} callback
   # @param {Error} callback.error
   connect: (settings, callback) ->
-    server = new mongodb.Server settings.host or 'localhost', settings.port or 27017, {}
-    db = new mongodb.Db settings.database, server, safe: true
-    db.open (error, client) =>
+    if settings.user or settings.password
+      url = "mongodb://#{settings.user}:#{settings.password}@#{settings.host or 'localhost'}:#{settings.port or 27017}/#{settings.database}"
+    else
+      url = "mongodb://#{settings.host or 'localhost'}:#{settings.port or 27017}/#{settings.database}"
+    mongodb.MongoClient.connect url, (error, db) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      if settings.user or settings.password
-        db.authenticate settings.user, settings.password, (error, success) =>
-          if success
-            @_client = client
-            callback null
-          else
-            callback MongoDBAdapter.wrapError 'unknown error', error
-      else
-        @_client = client
-        callback null
+      @_client = db
+      callback null
 
   ## @override AdapterBase::close
   close: ->
