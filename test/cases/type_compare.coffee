@@ -65,21 +65,21 @@ module.exports = () ->
         _g.connection.Type.where date: new Date('2012/10/13 21:32:54'), callback
       (records, callback) ->
         records.should.have.length 1
-        records[0].date.should.be.equal new Date('2012/10/13 21:32:54')
+        records[0].date.should.be.eql new Date('2012/10/13 21:32:54')
         callback null
       (callback) ->
         _g.connection.Type.where date: '2012/10/13 21:32:54', callback
       (records, callback) ->
         records.should.have.length 1
-        records[0].date.should.be.equal new Date('2012/10/13 21:32:54')
+        records[0].date.should.be.eql new Date('2012/10/13 21:32:54')
         callback null
       (callback) ->
         _g.connection.Type.where { date: $lt: new Date('2012/10/14 00:00:00') }, callback
       (records, callback) ->
         records.should.have.length 2
         records.sort (a, b) -> if a.date.getTime() < b.date.getTime() then -1 else 1
-        records[0].date.should.be.equal new Date('2012/10/12 21:32:54')
-        records[1].date.should.be.equal new Date('2012/10/13 21:32:54')
+        records[0].date.should.be.eql new Date('2012/10/12 21:32:54')
+        records[1].date.should.be.eql new Date('2012/10/13 21:32:54')
         callback null
     ], done
 

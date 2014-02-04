@@ -67,7 +67,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       else if integrity.type is 'child_delete'
         sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE CASCADE"
     sql = "CREATE TABLE #{tableName} ( #{sql.join ','} )"
-    @_query sql, (error) =>
+    @_query sql, null, (error) =>
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       async.forEach model_class._indexes, (index, callback) =>
         columns = []
@@ -76,7 +76,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
           columns.push column + ' ' + order
         unique = if index.options.unique then 'UNIQUE ' else ''
         sql = "CREATE #{unique}INDEX #{index.options.name} ON #{tableName} (#{columns.join ','})"
-        @_query sql, callback
+        @_query sql, null, callback
       , (error) ->
         return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
         callback null
@@ -98,7 +98,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::drop
   drop: (model, callback) ->
     tableName = @_connection.models[model].tableName
-    @_query "DROP TABLE IF EXISTS #{tableName}", (error) ->
+    @_query "DROP TABLE IF EXISTS #{tableName}", null, (error) ->
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       callback null
 
