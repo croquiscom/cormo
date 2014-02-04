@@ -6,6 +6,13 @@ util = require './util'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
+_pf_isDirty = -> true
+_pf_getChanged = -> []
+_pf_get = (path) -> util.getPropertyOfPath @, path.split '.'
+_pf_getPrevious = ->
+_pf_set = (path, value) -> util.setPropertyOfPath @, path.split('.'), value
+_pf_reset = ->
+
 ##
 # Properties of a column of a model
 class ColumnProperty
@@ -254,12 +261,12 @@ class Model
         [obj, last] = util.getLeafOfPath @, property._parts
         @_defineProperty obj, last, column, false
     else
-      Object.defineProperty @, 'isDirty', value: -> true
-      Object.defineProperty @, 'getChanged', value: -> []
-      Object.defineProperty @, 'get', value: (path) -> util.getPropertyOfPath @, path.split '.'
-      Object.defineProperty @, 'getPrevious', value: ->
-      Object.defineProperty @, 'set', value: (path, value) -> util.setPropertyOfPath @, path.split('.'), value
-      Object.defineProperty @, 'reset', value: ->
+      Object.defineProperty @, 'isDirty', value: _pf_isDirty
+      Object.defineProperty @, 'getChanged', value: _pf_getChanged
+      Object.defineProperty @, 'get', value: _pf_get
+      Object.defineProperty @, 'getPrevious', value: _pf_getPrevious
+      Object.defineProperty @, 'set', value: _pf_set
+      Object.defineProperty @, 'reset', value: _pf_reset
 
     if id = arguments[1]
       # if id exists, this is called from adapter with database record data
