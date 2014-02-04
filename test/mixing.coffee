@@ -2,7 +2,6 @@ require './common'
 
 describe 'mixing several database', ->
   before (done) ->
-    _g.connection = {}
     mysql = new _g.Connection 'mysql', database: 'test'
     mongodb = new _g.Connection 'mongodb', database: 'test'
 
@@ -37,8 +36,11 @@ describe 'mixing several database', ->
       Post.hasMany Post, as: 'comments', foreign_key: 'parent_post_id'
       Post.belongsTo Post, as: 'parent_post'
 
-    _g.connection.User = User
-    _g.connection.Post = Post
+    _g.connection =
+      mysql: mysql
+      mongodb: mongodb
+      User: User
+      Post: Post
 
     _g.dropModels [User, Post], done
 
@@ -46,7 +48,11 @@ describe 'mixing several database', ->
     _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
 
   after (done) ->
-    _g.dropModels [_g.connection.User, _g.connection.Post], done
+    _g.dropModels [_g.connection.User, _g.connection.Post], ->
+      _g.connection.mysql.close()
+      _g.connection.mongodb.close()
+      _g.connection = null
+      done null
 
   describe '#hasMany', ->
     require('./cases/association_has_many')()

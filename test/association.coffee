@@ -62,7 +62,10 @@ Object.keys(_dbs).forEach (db) ->
       _g.deleteAllRecords [_g.connection.User, _g.connection.Post, _g.connection.Computer], done
 
     after (done) ->
-      _g.dropModels [_g.connection.User, _g.connection.Post, _g.connection.Computer], done
+      _g.dropModels [_g.connection.User, _g.connection.Post, _g.connection.Computer], ->
+        _g.connection.close()
+        _g.connection = null
+        done null
 
     describe '#hasMany', ->
       require('./cases/association_has_many')()

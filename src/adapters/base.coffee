@@ -171,4 +171,8 @@ class AdapterBase
   # @see Query::delete
   delete: (model, conditions, callback) -> callback new Error 'not implemented'
 
+  ##
+  # Closes connection
+  close: ->
+
 module.exports = AdapterBase

@@ -48,7 +48,10 @@ Object.keys(_dbs).forEach (db) ->
         _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
 
       after (done) ->
-        _g.dropModels [_g.connection.User, _g.connection.Post], done
+        _g.dropModels [_g.connection.User, _g.connection.Post], ->
+          _g.connection.close()
+          _g.connection = null
+          done null
 
       require('./cases/constraint')()
 
@@ -75,6 +78,9 @@ Object.keys(_dbs).forEach (db) ->
         _g.deleteAllRecords [_g.connection.Version], done
 
       after (done) ->
-        _g.dropModels [_g.connection.Version], done
+        _g.dropModels [_g.connection.Version], ->
+          _g.connection.close()
+          _g.connection = null
+          done null
 
       require('./cases/constraint_multicolumn')()

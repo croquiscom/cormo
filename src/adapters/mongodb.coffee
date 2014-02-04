@@ -502,5 +502,11 @@ class MongoDBAdapter extends AdapterBase
         @_client = client
         callback null
 
+  ## @override AdapterBase::close
+  close: ->
+    if @_client
+      @_client.close()
+    @_client = null
+
 module.exports = (connection) ->
   new MongoDBAdapter connection

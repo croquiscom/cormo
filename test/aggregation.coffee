@@ -46,6 +46,9 @@ Object.keys(_dbs).forEach (db) ->
       ], done
 
     after (done) ->
-      _g.dropModels [_g.connection.Order], done
+      _g.dropModels [_g.connection.Order], ->
+        _g.connection.close()
+        _g.connection = null
+        done null
 
     require('./cases/aggregation')()

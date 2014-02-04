@@ -290,5 +290,11 @@ class SQLite3Adapter extends SQLAdapterBase
       @_query 'run', 'PRAGMA foreign_keys=ON', (error) ->
         callback null
 
+  ## @override AdapterBase::close
+  close: ->
+    if @_client
+      @_client.close()
+    @_client = null
+
 module.exports = (connection) ->
   new SQLite3Adapter connection

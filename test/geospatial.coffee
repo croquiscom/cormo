@@ -28,7 +28,10 @@ Object.keys(_dbs).forEach (db) ->
       _g.deleteAllRecords [_g.connection.Place], done
 
     after (done) ->
-      _g.dropModels [_g.connection.Place], done
+      _g.dropModels [_g.connection.Place], ->
+        _g.connection.close()
+        _g.connection = null
+        done null
 
     require('./cases/geospatial')()
 

@@ -71,6 +71,14 @@ class Connection extends EventEmitter
       @emit 'connected'
 
   ##
+  # Closes this connection.
+  # A closed connection can be used no more.
+  close: ->
+    Connection.defaultConnection = null if Connection.defaultConnection is @
+    @_adapter.close()
+    @_adapter = null
+
+  ##
   # Creates a model class
   # @param {String} name
   # @param {Object} schema

@@ -48,6 +48,9 @@ Object.keys(_dbs).forEach (db) ->
       _g.deleteAllRecords [_g.connection.User], done
 
     after (done) ->
-      _g.dropModels [_g.connection.User], done
+      _g.dropModels [_g.connection.User], ->
+        _g.connection.close()
+        _g.connection = null
+        done null
 
     require('./cases/validate')()

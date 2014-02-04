@@ -350,5 +350,11 @@ class MySQLAdapter extends SQLAdapterBase
           msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{settings.database}'" else 'unknown error'
           callback MySQLAdapter.wrapError msg, error
 
+  ## @override AdapterBase::close
+  close: ->
+    if @_client
+      @_client.end()
+    @_client = null
+
 module.exports = (connection) ->
   new MySQLAdapter connection

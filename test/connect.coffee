@@ -39,3 +39,9 @@ Object.keys(_dbs).forEach (db) ->
           record.should.have.property 'name', user.name
           record.should.have.property 'age', user.age
           done null
+
+    after (done) ->
+      _g.dropModels [_g.connection.User], ->
+        _g.connection.close()
+        _g.connection = null
+        done null

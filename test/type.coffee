@@ -43,7 +43,10 @@ Object.keys(_dbs).forEach (db) ->
       _g.deleteAllRecords [_g.connection.Type], done
 
     after (done) ->
-      _g.dropModels [_g.connection.Type], done
+      _g.dropModels [_g.connection.Type], ->
+        _g.connection.close()
+        _g.connection = null
+        done null
 
     describe '#basic', ->
       require('./cases/type')()

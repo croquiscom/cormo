@@ -19,7 +19,10 @@ Object.keys(_dbs).forEach (db) ->
         @connection _g.connection
       _g.dropModels [User], done
 
-    after (done) ->
-      _g.dropModels [_g.connection.User], done
+    afterEach (done) ->
+      _g.dropModels [_g.connection.User], ->
+        _g.connection.close()
+        _g.connection = null
+        done null
 
     require('./cases/nested')()

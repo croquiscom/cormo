@@ -28,6 +28,9 @@ Object.keys(_dbs).forEach (db) ->
       _g.dropModels [Comment, Event, Team], done
 
     after (done) ->
-      _g.dropModels [_g.connection.Comment, _g.connection.Event, _g.connection.Team], done
+      _g.dropModels [_g.connection.Comment, _g.connection.Event, _g.connection.Team], ->
+        _g.connection.close()
+        _g.connection = null
+        done null
 
     require('./cases/integrity')()
