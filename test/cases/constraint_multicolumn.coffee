@@ -1,11 +1,13 @@
+{expect} = require 'chai'
+
 module.exports = () ->
   it 'unique', (done) ->
     _g.connection.Version.create major: 1, minor: 1, (error, version) ->
       return done error if error
       _g.connection.Version.create major: 1, minor: 1, (error, version) ->
         # 'duplicated email' or 'duplicated'
-        error.message.should.match /^duplicated( major_minor)?$/
-        should.exist error
+        expect(error.message).to.match /^duplicated( major_minor)?$/
+        expect(error).to.exist
         done null
 
   it 'each can duplicate', (done) ->

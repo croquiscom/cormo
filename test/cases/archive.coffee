@@ -1,19 +1,21 @@
+{expect} = require 'chai'
+
 _compareUser = (archive, expected) ->
-  archive.model.should.be.equal 'User'
+  expect(archive.model).to.equal 'User'
   user = archive.data
-  user.should.have.keys 'id', 'name', 'age'
-  user.id.should.equal expected.id
-  user.name.should.equal expected.name
-  user.age.should.equal expected.age
+  expect(user).to.have.keys 'id', 'name', 'age'
+  expect(user.id).to.equal expected.id
+  expect(user.name).to.equal expected.name
+  expect(user.age).to.equal expected.age
 
 _comparePost = (archive, expected) ->
-  archive.model.should.be.equal 'Post'
+  expect(archive.model).to.equal 'Post'
   post = archive.data
-  post.should.have.keys 'id', 'title', 'body', 'user_id'
-  post.id.should.equal expected.id
-  post.title.should.equal expected.title
-  post.body.should.equal expected.body
-  post.user_id.should.equal expected.user_id
+  expect(post).to.have.keys 'id', 'title', 'body', 'user_id'
+  expect(post.id).to.equal expected.id
+  expect(post.title).to.equal expected.title
+  expect(post.body).to.equal expected.body
+  expect(post.user_id).to.equal expected.user_id
 
 module.exports = ->
   it 'basic', (done) ->
@@ -31,20 +33,20 @@ module.exports = ->
         users = [0..4].map (i) -> id_to_record_map['user'+i]
         _g.connection._Archive.where callback
       (records, callback) ->
-        records.should.have.length 0
+        expect(records).to.have.length 0
         _g.connection.User.find(users[3].id).delete callback
       (count, callback) ->
-        count.should.be.equal 1
+        expect(count).to.equal 1
         _g.connection._Archive.where callback
       (records, callback) ->
-        records.should.have.length 1
+        expect(records).to.have.length 1
         _compareUser records[0], users[3]
         _g.connection.User.delete age:27, callback
       (count, callback) ->
-        count.should.be.equal 2
+        expect(count).to.equal 2
         _g.connection._Archive.where callback
       (records, callback) ->
-        records.should.have.length 3
+        expect(records).to.have.length 3
         records.sort (a, b) -> if a.data.id < b.data.id then -1 else 1
         users.sort (a, b) -> if a.id < b.id then -1 else 1
         _compareUser records[0], users[0]
@@ -70,13 +72,13 @@ module.exports = ->
         posts = [0..1].map (i) -> id_to_record_map['post'+i]
         _g.connection._Archive.where callback
       (records, callback) ->
-        records.should.have.length 0
+        expect(records).to.have.length 0
         _g.connection.User.find(users[0].id).delete callback
       (count, callback) ->
-        count.should.be.equal 1
+        expect(count).to.equal 1
         _g.connection._Archive.where callback
       (records, callback) ->
-        records.should.have.length 3
+        expect(records).to.have.length 3
         records.sort (a, b) ->
           return -1 if a.model < b.model
           return 1 if a.model > b.model

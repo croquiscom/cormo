@@ -1,3 +1,5 @@
+{expect} = require 'chai'
+
 module.exports = () ->
   it 'valid', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -6,19 +8,19 @@ module.exports = () ->
 
   it 'invalid age', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 10 }, (error, user) ->
-      should.exist error
-      error.message.should.be.equal 'too young'
+      expect(error).to.exist
+      expect(error.message).to.equal 'too young'
       done null
 
   it 'invalid email', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27, email: 'invalid' }, (error, user) ->
-      should.exist error
-      error.message.should.be.equal 'invalid email'
+      expect(error).to.exist
+      expect(error.message).to.equal 'invalid email'
       done null
 
   it 'invalid both', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 10, email: 'invalid' }, (error, user) ->
-      should.exist error
+      expect(error).to.exist
       if error.message isnt 'invalid email,too young'
-        error.message.should.be.equal 'too young,invalid email'
+        expect(error.message).to.equal 'too young,invalid email'
       done null

@@ -1,4 +1,5 @@
 require './common'
+{expect} = require 'chai'
 
 _dbs =
   mysql:
@@ -48,9 +49,9 @@ Object.keys(_dbs_not).forEach (db) ->
       _g.connection = new _g.Connection db, _dbs_not[db]
 
     it 'does not support geospatial', (done) ->
-      ( ->
+      expect( ->
         Place = _g.connection.model 'Place',
           name: String
           location: _g.cormo.types.GeoPoint
-      ).should.throw 'this adapter does not support GeoPoint'
+      ).to.throw 'this adapter does not support GeoPoint'
       done null

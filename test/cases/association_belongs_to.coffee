@@ -1,3 +1,5 @@
+{expect} = require 'chai'
+
 module.exports = () ->
   it 'get associated object', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -6,7 +8,7 @@ module.exports = () ->
         return done error if error
         post.user (error, record) ->
           return done error if error
-          user.should.eql record
+          expect(user).to.eql record
           done null
 
   it 'lean option for association', (done) ->
@@ -20,10 +22,10 @@ module.exports = () ->
       (user_id, post_id, callback) ->
         _g.connection.Post.find(post_id).lean().exec (error, post) ->
           return callback error if error
-          post.id.should.equal post_id
-          post.title.should.equal 'first post'
-          post.body.should.equal 'This is the 1st post.'
-          post.user_id.should.equal user_id
-          should.not.exist post.parent_post_id
+          expect(post.id).to.equal post_id
+          expect(post.title).to.equal 'first post'
+          expect(post.body).to.equal 'This is the 1st post.'
+          expect(post.user_id).to.equal user_id
+          expect(post.parent_post_id).to.not.exist
           callback null
     ], done

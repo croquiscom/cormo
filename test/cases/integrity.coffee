@@ -1,3 +1,5 @@
+{expect} = require 'chai'
+
 module.exports = ->
   it 'ignore', (done) ->
     _g.connection.Team.hasMany _g.connection.Event
@@ -18,11 +20,11 @@ module.exports = ->
         event0_id = id_to_record_map.event0.id
         _g.connection.Team.find(team0_id).delete callback
       (count, callback) ->
-        count.should.be.equal 1
+        expect(count).to.equal 1
         _g.connection.Event.find event0_id, callback
       (event0, callback) ->
-        event0.id.should.be.equal event0_id
-        event0.team_id.should.be.equal team0_id
+        expect(event0.id).to.equal event0_id
+        expect(event0.team_id).to.equal team0_id
         callback null
     ], done
 
@@ -45,11 +47,11 @@ module.exports = ->
         event0_id = id_to_record_map.event0.id
         _g.connection.Team.find(team0_id).delete callback
       (count, callback) ->
-        count.should.be.equal 1
+        expect(count).to.equal 1
         _g.connection.Event.find event0_id, callback
       (event0, callback) ->
-        event0.id.should.be.equal event0_id
-        should.not.exist event0.team_id
+        expect(event0.id).to.equal event0_id
+        expect(event0.team_id).to.not.exist
         callback null
     ], done
 
@@ -71,11 +73,11 @@ module.exports = ->
         event0_id = id_to_record_map.event0.id
         _g.connection.Team.find(team0_id).delete callback
       (count, callback) ->
-        count.should.be.equal 1
+        expect(count).to.equal 1
         _g.connection.Event.find event0_id, callback
       (event0, callback) ->
-        event0.id.should.be.equal event0_id
-        should.not.exist event0.team_id
+        expect(event0.id).to.equal event0_id
+        expect(event0.team_id).to.not.exist
         callback null
     ], done
 
@@ -96,14 +98,14 @@ module.exports = ->
       (id_to_record_map, callback) ->
         team0_id = id_to_record_map.team0.id
         _g.connection.Team.find(team0_id).delete (error) ->
-          should.exist error
-          error.message.should.be.equal 'rejected'
+          expect(error).to.exist
+          expect(error.message).to.equal 'rejected'
           callback null
       # not deleted
       (callback) ->
         _g.connection.Team.find team0_id, callback
       (team, callback) ->
-        team.name.should.be.equal 'Croquis'
+        expect(team.name).to.equal 'Croquis'
         callback null
       # make no dependent records
       (callback) ->
@@ -112,7 +114,7 @@ module.exports = ->
       (count, callback) ->
         _g.connection.Team.find(team0_id).delete callback
       (count, callback) ->
-        count.should.be.equal 1
+        expect(count).to.equal 1
         callback null
     ], done
 
@@ -132,14 +134,14 @@ module.exports = ->
       (id_to_record_map, callback) ->
         team0_id = id_to_record_map.team0.id
         _g.connection.Team.find(team0_id).delete (error) ->
-          should.exist error
-          error.message.should.be.equal 'rejected'
+          expect(error).to.exist
+          expect(error.message).to.equal 'rejected'
           callback null
       # not deleted
       (callback) ->
         _g.connection.Team.find team0_id, callback
       (team, callback) ->
-        team.name.should.be.equal 'Croquis'
+        expect(team.name).to.equal 'Croquis'
         callback null
       # make no dependent records
       (callback) ->
@@ -148,7 +150,7 @@ module.exports = ->
       (count, callback) ->
         _g.connection.Team.find(team0_id).delete callback
       (count, callback) ->
-        count.should.be.equal 1
+        expect(count).to.equal 1
         callback null
     ], done
 
@@ -180,16 +182,16 @@ module.exports = ->
         event1_id = id_to_record_map.event1.id
         _g.connection.Team.find(team0_id).delete callback
       (count, callback) ->
-        count.should.be.equal 1
+        expect(count).to.equal 1
         _g.connection.Event.find event1_id, (error) ->
-          should.exist error
-          error.message.should.be.equal 'not found'
+          expect(error).to.exist
+          expect(error.message).to.equal 'not found'
           callback null
       (callback) ->
         _g.connection.Comment.where callback
       (records, callback) ->
-        records.should.have.length 1
-        records[0].content.should.be.equal 'First comment of event2'
+        expect(records).to.have.length 1
+        expect(records[0].content).to.equal 'First comment of event2'
         callback null
     ], done
 
@@ -219,16 +221,16 @@ module.exports = ->
         event0_id = id_to_record_map.event0.id
         _g.connection.Team.find(team0_id).delete callback
       (count, callback) ->
-        count.should.be.equal 1
+        expect(count).to.equal 1
         _g.connection.Event.find event0_id, (error) ->
-          should.exist error
-          error.message.should.be.equal 'not found'
+          expect(error).to.exist
+          expect(error.message).to.equal 'not found'
           callback null
       (callback) ->
         _g.connection.Comment.where callback
       (records, callback) ->
-        records.should.have.length 1
-        records[0].content.should.be.equal 'First comment of event1'
+        expect(records).to.have.length 1
+        expect(records[0].content).to.equal 'First comment of event1'
         callback null
     ], done
 
@@ -262,16 +264,16 @@ module.exports = ->
         comment0_id = id_to_record_map.comment0.id
         _g.connection.Team.find(team0_id).delete callback
       (count, callback) ->
-        count.should.be.equal 1
+        expect(count).to.equal 1
         _g.connection.Event.find event0_id, (error) ->
-          should.exist error
-          error.message.should.be.equal 'not found'
+          expect(error).to.exist
+          expect(error.message).to.equal 'not found'
           callback null
       (callback) ->
         _g.connection.Comment.find comment0_id, callback
       (comment, callback) ->
-        comment.content.should.be.equal 'First comment of event0'
-        should.not.exist comment.event_id
+        expect(comment.content).to.equal 'First comment of event0'
+        expect(comment.event_id).to.not.exist
         callback null
     ], done
 
@@ -307,16 +309,16 @@ module.exports = ->
       (callback) ->
         _g.connection.getInconsistencies callback
       (inconsistencies, callback) ->
-        inconsistencies.should.have.keys 'Event', 'Comment'
+        expect(inconsistencies).to.have.keys 'Event', 'Comment'
 
-        inconsistencies.Event.should.have.length 2
+        expect(inconsistencies.Event).to.have.length 2
         inconsistencies.Event.sort (a, b) -> if a < b then -1 else 1
         events.sort (a, b) -> if a.id < b.id then -1 else 1
-        inconsistencies.Event[0].should.be.equal events[0].id
-        inconsistencies.Event[1].should.be.equal events[1].id
+        expect(inconsistencies.Event[0]).to.equal events[0].id
+        expect(inconsistencies.Event[1]).to.equal events[1].id
 
-        inconsistencies.Comment.should.have.length 1
-        inconsistencies.Comment[0].should.be.equal comments[0].id
+        expect(inconsistencies.Comment).to.have.length 1
+        expect(inconsistencies.Comment[0]).to.equal comments[0].id
 
         callback null
     ], done
@@ -351,10 +353,10 @@ module.exports = ->
       (callback) ->
         _g.connection.getInconsistencies callback
       (inconsistencies, callback) ->
-        inconsistencies.should.have.keys 'Comment'
+        expect(inconsistencies).to.have.keys 'Comment'
 
-        inconsistencies.Comment.should.have.length 1
-        inconsistencies.Comment[0].should.be.equal comments[0].id
+        expect(inconsistencies.Comment).to.have.length 1
+        expect(inconsistencies.Comment[0]).to.equal comments[0].id
 
         callback null
     ], done

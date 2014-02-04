@@ -1,3 +1,5 @@
+{expect} = require 'chai'
+
 _getInvalidID = (id) ->
   if typeof id is 'number'
     # MySQL
@@ -13,35 +15,35 @@ module.exports = () ->
     user = new _g.connection.User()
     user.name = 'John Doe'
     user.age = 27
-    user.should.have.property 'name', 'John Doe'
-    user.should.have.property 'age', 27
+    expect(user).to.have.property 'name', 'John Doe'
+    expect(user).to.have.property 'age', 27
     done null
 
   it 'initialize in constructor', (done) ->
     user = new _g.connection.User name: 'John Doe', age: 27
-    user.should.have.property 'name', 'John Doe'
-    user.should.have.property 'age', 27
+    expect(user).to.have.property 'name', 'John Doe'
+    expect(user).to.have.property 'age', 27
     done null
 
   it 'build method', (done) ->
     user = _g.connection.User.build name: 'John Doe', age: 27
-    user.should.have.property 'name', 'John Doe'
-    user.should.have.property 'age', 27
+    expect(user).to.have.property 'name', 'John Doe'
+    expect(user).to.have.property 'age', 27
     done null
 
   it 'add a new record to the database', (done) ->
     user = new _g.connection.User name: 'John Doe', age: 27
     user.save (error) ->
       return done error if error
-      user.should.have.keys 'id', 'name', 'age'
+      expect(user).to.have.keys 'id', 'name', 'age'
       done null
 
   it 'create method', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
-      user.should.be.an.instanceOf _g.connection.User
-      user.should.have.keys 'id', 'name', 'age'
-      should.exist user.id
+      expect(user).to.be.an.instanceof _g.connection.User
+      expect(user).to.have.keys 'id', 'name', 'age'
+      expect(user.id).to.exist
       done null
 
   it 'find a record', (done) ->
@@ -49,11 +51,11 @@ module.exports = () ->
       return done error if error
       _g.connection.User.find user.id, (error, record) ->
         return done error if error
-        should.exist record
-        record.should.be.an.instanceOf _g.connection.User
-        record.should.have.property 'id', user.id
-        record.should.have.property 'name', user.name
-        record.should.have.property 'age', user.age
+        expect(record).to.exist
+        expect(record).to.be.an.instanceof _g.connection.User
+        expect(record).to.have.property 'id', user.id
+        expect(record).to.have.property 'name', user.name
+        expect(record).to.have.property 'age', user.age
         done null
 
   it 'find non-existing record', (done) ->
@@ -61,27 +63,27 @@ module.exports = () ->
       return done error if error
       id = _getInvalidID user.id
       _g.connection.User.find id, (error) ->
-        should.exist error
-        error.should.be.an.instanceOf Error
-        error.message.should.equal 'not found'
+        expect(error).to.exist
+        expect(error).to.be.an.instanceof Error
+        expect(error.message).to.equal 'not found'
         done null
 
   it 'find undefined', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
       _g.connection.User.find undefined, (error) ->
-        should.exist error
-        error.should.be.an.instanceOf Error
-        error.message.should.equal 'not found'
+        expect(error).to.exist
+        expect(error).to.be.an.instanceof Error
+        expect(error.message).to.equal 'not found'
         done null
 
   it 'find undefined with condition', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
       _g.connection.User.find(undefined).where(age: $gt: 0).exec (error) ->
-        should.exist error
-        error.should.be.an.instanceOf Error
-        error.message.should.equal 'not found'
+        expect(error).to.exist
+        expect(error).to.be.an.instanceof Error
+        expect(error.message).to.equal 'not found'
         done null
 
   it 'update a record', (done) ->
@@ -91,18 +93,18 @@ module.exports = () ->
       _g.connection.User.find user.id, (error, record) ->
         # not yet saved, you will get previous values
         return done error if error
-        should.exist record
-        record.should.have.property 'id', user.id
-        record.should.have.property 'name', 'John Doe'
-        record.should.have.property 'age', 27
+        expect(record).to.exist
+        expect(record).to.have.property 'id', user.id
+        expect(record).to.have.property 'name', 'John Doe'
+        expect(record).to.have.property 'age', 27
         user.save (error) ->
           return done error if error
           _g.connection.User.find user.id, (error, record) ->
             return done error if error
-            should.exist record
-            record.should.have.property 'id', user.id
-            record.should.have.property 'name', 'Bill Smith'
-            record.should.have.property 'age', 27
+            expect(record).to.exist
+            expect(record).to.have.property 'id', user.id
+            expect(record).to.have.property 'name', 'Bill Smith'
+            expect(record).to.have.property 'age', 27
             done null
 
   it 'destroy a record', (done) ->
@@ -110,16 +112,16 @@ module.exports = () ->
       return done error if error
       _g.connection.User.find user.id, (error, record) ->
         return done error if error
-        should.exist record
-        record.should.have.property 'id', user.id
-        record.should.have.property 'name', 'John Doe'
-        record.should.have.property 'age', 27
+        expect(record).to.exist
+        expect(record).to.have.property 'id', user.id
+        expect(record).to.have.property 'name', 'John Doe'
+        expect(record).to.have.property 'age', 27
         user.destroy (error) ->
           return done error if error
           _g.connection.User.find user.id, (error, record) ->
-            should.exist error
-            error.should.be.an.instanceOf Error
-            error.message.should.equal 'not found'
+            expect(error).to.exist
+            expect(error).to.be.an.instanceof Error
+            expect(error.message).to.equal 'not found'
             done null
 
   it 'destroy a new record', (done) ->
@@ -130,22 +132,22 @@ module.exports = () ->
 
   it 'try to create with extra data', (done) ->
     user = new _g.connection.User { id: 1, name: 'John Doe', age: 27, extra: 'extra' }
-    user.should.have.property 'id', null
-    user.should.not.have.property 'extra'
+    expect(user).to.have.property 'id', null
+    expect(user).to.not.have.property 'extra'
     user.id = 1
-    user.should.have.property 'id', null # id is read only
+    expect(user).to.have.property 'id', null # id is read only
     user.extra = 'extra'
-    user.should.have.property 'extra', 'extra'
+    expect(user).to.have.property 'extra', 'extra'
     user.save (error, record) ->
       return done error if error
-      user.should.be.equal record
-      user.should.have.property 'extra', 'extra'
+      expect(user).to.equal record
+      expect(user).to.have.property 'extra', 'extra'
       _g.connection.User.find user.id, (error, record) ->
         return done error if error
-        record.should.have.property 'id', user.id
-        record.should.have.property 'name', user.name
-        record.should.have.property 'age', user.age
-        record.should.not.have.property 'extra'
+        expect(record).to.have.property 'id', user.id
+        expect(record).to.have.property 'name', user.name
+        expect(record).to.have.property 'age', user.age
+        expect(record).to.not.have.property 'extra'
         done null
 
   it 'delete some fields', (done) ->
@@ -155,15 +157,15 @@ module.exports = () ->
       user.age = null
       user.save (error, record) ->
         return done error if error
-        user.should.be.equal record
+        expect(user).to.equal record
         _g.connection.User.find user.id, (error, record) ->
           return done error if error
           if _g.connection.User.eliminate_null
-            record.should.have.keys 'id'
+            expect(record).to.have.keys 'id'
           else
-            record.should.have.keys 'id', 'name', 'age'
-            record.should.have.property 'name', null
-            record.should.have.property 'age', null
+            expect(record).to.have.keys 'id', 'name', 'age'
+            expect(record).to.have.property 'name', null
+            expect(record).to.have.property 'age', null
           done null
 
   it 'find records', (done) ->
@@ -178,10 +180,10 @@ module.exports = () ->
         (callback) -> _g.connection.User.find [users[0].id, users[1].id], callback
         (records, callback) ->
           records.sort (a, b) -> if a.id < b.id then -1 else 1
-          records[0].should.be.an.instanceOf _g.connection.User
-          records[1].should.be.an.instanceOf _g.connection.User
-          records[0].should.eql users[0]
-          records[1].should.eql users[1]
+          expect(records[0]).to.be.an.instanceof _g.connection.User
+          expect(records[1]).to.be.an.instanceof _g.connection.User
+          expect(records[0]).to.eql users[0]
+          expect(records[1]).to.eql users[1]
           callback null
       ], (error) ->
         return done error if error
@@ -196,9 +198,9 @@ module.exports = () ->
       return done error if error
       users.sort (a, b) -> if a.id < b.id then -1 else 1
       _g.connection.User.find [users[2].id, users[1].id, _getInvalidID(users[0].id)], (error, records) ->
-        should.exist error
-        error.should.be.an.instanceOf Error
-        error.message.should.equal 'not found'
+        expect(error).to.exist
+        expect(error).to.be.an.instanceof Error
+        expect(error.message).to.equal 'not found'
         done null
 
   it 'find records duplicate', (done) ->
@@ -213,10 +215,10 @@ module.exports = () ->
         (callback) -> _g.connection.User.find [users[2].id, users[0].id, users[0].id, users[0].id, users[2].id], callback
         (records, callback) ->
           records.sort (a, b) -> if a.id < b.id then -1 else 1
-          records[0].should.be.an.instanceOf _g.connection.User
-          records[1].should.be.an.instanceOf _g.connection.User
-          records[0].should.eql users[0]
-          records[1].should.eql users[2]
+          expect(records[0]).to.be.an.instanceof _g.connection.User
+          expect(records[1]).to.be.an.instanceof _g.connection.User
+          expect(records[0]).to.eql users[0]
+          expect(records[1]).to.eql users[2]
           callback null
       ], (error) ->
         return done error if error
@@ -232,12 +234,12 @@ module.exports = () ->
       _g.async.waterfall [
         (callback) -> _g.connection.User.findPreserve [users[2].id, users[0].id, users[0].id, users[0].id, users[2].id], callback
         (records, callback) ->
-          records.should.have.length 5
-          records[0].should.eql users[2]
-          records[1].should.eql users[0]
-          records[2].should.eql users[0]
-          records[3].should.eql users[0]
-          records[4].should.eql users[2]
+          expect(records).to.have.length 5
+          expect(records[0]).to.eql users[2]
+          expect(records[1]).to.eql users[0]
+          expect(records[2]).to.eql users[0]
+          expect(records[3]).to.eql users[0]
+          expect(records[4]).to.eql users[2]
           callback null
       ], (error) ->
         return done error if error
@@ -251,16 +253,16 @@ module.exports = () ->
     ]
     _g.connection.User.createBulk data, (error, users) ->
       return done error if error
-      should.exist users
-      users.should.be.an.instanceOf Array
-      users.should.have.length 3
+      expect(users).to.exist
+      expect(users).to.be.an.instanceof Array
+      expect(users).to.have.length 3
       _g.async.forEach users, (user, callback) ->
-        user.should.be.an.instanceOf _g.connection.User
-        user.should.have.keys 'id', 'name', 'age'
-        should.exist user.id
+        expect(user).to.be.an.instanceof _g.connection.User
+        expect(user).to.have.keys 'id', 'name', 'age'
+        expect(user.id).to.exist
         _g.connection.User.find user.id, (error, record) ->
           return callback error if error
-          user.should.eql record
+          expect(user).to.eql record
           callback error
       , done
 
@@ -269,32 +271,32 @@ module.exports = () ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
 
-      user.isDirty().should.be.equal false
-      user.getChanged().should.be.eql []
-      should.not.exist user.getPrevious('name')
+      expect(user.isDirty()).to.equal false
+      expect(user.getChanged()).to.eql []
+      expect(user.getPrevious('name')).to.not.exist
 
       user.name = 'Bill Smith'
-      user.isDirty().should.be.equal true
-      user.getChanged().should.be.eql ['name']
-      user.getPrevious('name').should.be.equal 'John Doe'
+      expect(user.isDirty()).to.equal true
+      expect(user.getChanged()).to.eql ['name']
+      expect(user.getPrevious('name')).to.equal 'John Doe'
 
       user.name = 'Alice Jackson'
-      user.isDirty().should.be.equal true
-      user.getChanged().should.be.eql ['name']
-      user.getPrevious('name').should.be.equal 'John Doe'
+      expect(user.isDirty()).to.equal true
+      expect(user.getChanged()).to.eql ['name']
+      expect(user.getPrevious('name')).to.equal 'John Doe'
 
       user.age = 10
-      user.isDirty().should.be.equal true
-      user.getChanged().sort().should.be.eql ['age','name']
-      user.getPrevious('name').should.be.equal 'John Doe'
-      user.getPrevious('age').should.be.equal 27
+      expect(user.isDirty()).to.equal true
+      expect(user.getChanged().sort()).to.eql ['age','name']
+      expect(user.getPrevious('name')).to.equal 'John Doe'
+      expect(user.getPrevious('age')).to.equal 27
 
       user.reset()
-      user.name.should.be.equal 'John Doe'
-      user.age.should.be.equal 27
-      user.isDirty().should.be.equal false
-      user.getChanged().should.be.eql []
-      should.not.exist user.getPrevious('name')
+      expect(user.name).to.equal 'John Doe'
+      expect(user.age).to.equal 27
+      expect(user.isDirty()).to.equal false
+      expect(user.getChanged()).to.eql []
+      expect(user.getPrevious('name')).to.not.exist
 
       done null
 
@@ -303,18 +305,18 @@ module.exports = () ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
       user.name = 'Bill Smith'
-      user.isDirty().should.be.equal true
-      user.getChanged().should.be.eql ['name']
+      expect(user.isDirty()).to.equal true
+      expect(user.getChanged()).to.eql ['name']
       user.save (error) ->
         return done error if error
-        user.isDirty().should.be.equal false
-        user.getChanged().should.be.eql []
+        expect(user.isDirty()).to.equal false
+        expect(user.getChanged()).to.eql []
         done null
 
   it 'get & set', (done) ->
     user = new _g.connection.User name: 'John Doe', age: 27
-    user.get('name').should.be.equal 'John Doe'
-    user.get('age').should.be.equal 27
+    expect(user.get('name')).to.equal 'John Doe'
+    expect(user.get('age')).to.equal 27
     user.set 'name', 'Bill Smith'
-    user.get('name').should.be.equal 'Bill Smith'
+    expect(user.get('name')).to.equal 'Bill Smith'
     done null

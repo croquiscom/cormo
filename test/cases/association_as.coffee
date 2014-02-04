@@ -1,7 +1,9 @@
+{expect} = require 'chai'
+
 _compareComment = (a, b) ->
-  a.should.have.property 'title', b.title
-  a.should.have.property 'body', b.body
-  a.should.have.property 'parent_post_id', b.parent_post_id
+  expect(a).to.have.property 'title', b.title
+  expect(a).to.have.property 'body', b.body
+  expect(a).to.have.property 'parent_post_id', b.parent_post_id
 
 module.exports = () ->
   it 'get sub objects', (done) ->
@@ -13,7 +15,7 @@ module.exports = () ->
           return done error if error
           post.comments (error, comments) ->
             return done error if error
-            comments.should.have.length 2
+            expect(comments).to.have.length 2
             comments.sort (a, b) -> if a.body < b.body then -1 else 1
             _compareComment comments[0], comment1
             _compareComment comments[1], comment2
@@ -26,7 +28,7 @@ module.exports = () ->
         return done error if error
         comment1.parent_post (error, record) ->
           return done error if error
-          post.should.have.property 'id', record.id
-          post.should.have.property 'title', record.title
-          post.should.have.property 'body', record.body
+          expect(post).to.have.property 'id', record.id
+          expect(post).to.have.property 'title', record.title
+          expect(post).to.have.property 'body', record.body
           done null

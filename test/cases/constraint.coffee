@@ -1,3 +1,5 @@
+{expect} = require 'chai'
+
 _createUsers = (User, data, callback) ->
   if typeof data is 'function'
     callback = data
@@ -14,13 +16,13 @@ module.exports = () ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
       _g.connection.User.create { name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, (error, user) ->
-        should.exist error
+        expect(error).to.exist
         # 'duplicated email' or 'duplicated'
-        error.message.should.match /^duplicated( email)?$/
-        should.exist user
-        user.should.have.property 'name', 'Bill Simpson'
-        user.should.have.property 'age', 38
-        user.should.have.property 'email', 'bill@foo.org'
+        expect(error.message).to.match /^duplicated( email)?$/
+        expect(user).to.exist
+        expect(user).to.have.property 'name', 'Bill Simpson'
+        expect(user).to.have.property 'age', 38
+        expect(user).to.have.property 'email', 'bill@foo.org'
         done null
 
   it 'check uniqueness on update by Model::save', (done) ->
@@ -28,36 +30,36 @@ module.exports = () ->
       return done error if error
       users[0].email = 'bill@foo.org'
       users[0].save (error) ->
-        should.exist error
+        expect(error).to.exist
         # 'duplicated email' or 'duplicated'
-        error.message.should.match /^duplicated( email)?$/
+        expect(error.message).to.match /^duplicated( email)?$/
         done null
 
   it 'check uniqueness on update by Model.update', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
       _g.connection.User.find(users[0].id).update email: 'bill@foo.org', (error) ->
-        should.exist error
+        expect(error).to.exist
         # 'duplicated email' or 'duplicated'
-        error.message.should.match /^duplicated( email)?$/
+        expect(error.message).to.match /^duplicated( email)?$/
         done null
 
   it 'required', (done) ->
     _g.async.parallel [
       (callback) ->
         _g.connection.User.create { age: 10, email: 'test1@example.com' }, (error, user) ->
-          should.exist error
-          error.message.should.equal "'name' is required"
+          expect(error).to.exist
+          expect(error.message).to.equal "'name' is required"
           callback null
       (callback) ->
         _g.connection.User.create { name: 'test', email: 'test2@example.com' }, (error, user) ->
-          should.exist error
-          error.message.should.equal "'age' is required"
+          expect(error).to.exist
+          expect(error.message).to.equal "'age' is required"
           callback null
       (callback) ->
         _g.connection.User.create { name: 'test', age: 10 }, (error, user) ->
-          should.exist error
-          error.message.should.equal "'email' is required"
+          expect(error).to.exist
+          expect(error.message).to.equal "'email' is required"
           callback null
     ], (error) ->
       done error
@@ -76,16 +78,16 @@ module.exports = () ->
       return done error if error
       users[0].name = null
       users[0].save (error) ->
-        should.exist error
-        error.message.should.equal "'name' is required"
+        expect(error).to.exist
+        expect(error.message).to.equal "'name' is required"
         done null
 
   it 'required on update by Model.update', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
       _g.connection.User.find(users[0].id).update name: null, (error) ->
-        should.exist error
-        error.message.should.equal "'name' is required"
+        expect(error).to.exist
+        expect(error.message).to.equal "'name' is required"
         done null
 
   it 'required of belongsTo', (done) ->
@@ -94,8 +96,8 @@ module.exports = () ->
         _g.connection.User.create { name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, callback
       (user, callback) ->
         _g.connection.Post.create { title: 'first post', body: 'This is the 1st post.' }, (error, post) ->
-          should.exist error
-          error.message.should.equal "'user_id' is required"
+          expect(error).to.exist
+          expect(error.message).to.equal "'user_id' is required"
           callback null, user
       (user, callback) ->
         _g.connection.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, callback

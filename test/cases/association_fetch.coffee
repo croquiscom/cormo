@@ -1,3 +1,5 @@
+{expect} = require 'chai'
+
 module.exports = ->
   preset_users = undefined
   preset_posts = undefined
@@ -26,25 +28,25 @@ module.exports = ->
         _g.connection.fetchAssociated posts, 'user', (error) ->
           callback error, posts
       (posts, callback) ->
-        posts.should.have.length 3
+        expect(posts).to.have.length 3
 
-        posts[0].title.should.equal 'first post'
-        posts[0].should.have.property 'user'
-        posts[0].user.should.have.keys 'id', 'name', 'age'
-        posts[0].user.id.should.equal preset_users[0].id
-        posts[0].user.name.should.equal 'John Doe'
+        expect(posts[0].title).to.equal 'first post'
+        expect(posts[0]).to.have.property 'user'
+        expect(posts[0].user).to.have.keys 'id', 'name', 'age'
+        expect(posts[0].user.id).to.equal preset_users[0].id
+        expect(posts[0].user.name).to.equal 'John Doe'
 
-        posts[1].title.should.equal 'second post'
-        posts[1].should.have.property 'user'
-        posts[1].user.should.have.keys 'id', 'name', 'age'
-        posts[1].user.id.should.equal preset_users[0].id
-        posts[1].user.name.should.equal 'John Doe'
+        expect(posts[1].title).to.equal 'second post'
+        expect(posts[1]).to.have.property 'user'
+        expect(posts[1].user).to.have.keys 'id', 'name', 'age'
+        expect(posts[1].user.id).to.equal preset_users[0].id
+        expect(posts[1].user.name).to.equal 'John Doe'
 
-        posts[2].title.should.equal 'another post'
-        posts[2].should.have.property 'user'
-        posts[2].user.should.have.keys 'id', 'name', 'age'
-        posts[2].user.id.should.equal preset_users[1].id
-        posts[2].user.name.should.equal 'Bill Smith'
+        expect(posts[2].title).to.equal 'another post'
+        expect(posts[2]).to.have.property 'user'
+        expect(posts[2].user).to.have.keys 'id', 'name', 'age'
+        expect(posts[2].user.id).to.equal preset_users[1].id
+        expect(posts[2].user.name).to.equal 'Bill Smith'
 
         callback null
     ], done
@@ -57,11 +59,11 @@ module.exports = ->
         _g.connection.fetchAssociated post, 'user', (error) ->
           callback error, post
       (post, callback) ->
-        post.title.should.equal 'first post'
-        post.should.have.property 'user'
-        post.user.should.have.keys 'id', 'name', 'age'
-        post.user.id.should.equal preset_users[0].id
-        post.user.name.should.equal 'John Doe'
+        expect(post.title).to.equal 'first post'
+        expect(post).to.have.property 'user'
+        expect(post.user).to.have.keys 'id', 'name', 'age'
+        expect(post.user.id).to.equal preset_users[0].id
+        expect(post.user.name).to.equal 'John Doe'
 
         callback null
     ], done
@@ -74,25 +76,25 @@ module.exports = ->
         _g.connection.fetchAssociated posts, 'user', 'name', (error) ->
           callback error, posts
       (posts, callback) ->
-        posts.should.have.length 3
+        expect(posts).to.have.length 3
 
-        posts[0].title.should.equal 'first post'
-        posts[0].should.have.property 'user'
-        posts[0].user.should.have.keys 'id', 'name'
-        posts[0].user.id.should.equal preset_users[0].id
-        posts[0].user.name.should.equal 'John Doe'
+        expect(posts[0].title).to.equal 'first post'
+        expect(posts[0]).to.have.property 'user'
+        expect(posts[0].user).to.have.keys 'id', 'name'
+        expect(posts[0].user.id).to.equal preset_users[0].id
+        expect(posts[0].user.name).to.equal 'John Doe'
 
-        posts[1].title.should.equal 'second post'
-        posts[1].should.have.property 'user'
-        posts[1].user.should.have.keys 'id', 'name'
-        posts[1].user.id.should.equal preset_users[0].id
-        posts[1].user.name.should.equal 'John Doe'
+        expect(posts[1].title).to.equal 'second post'
+        expect(posts[1]).to.have.property 'user'
+        expect(posts[1].user).to.have.keys 'id', 'name'
+        expect(posts[1].user.id).to.equal preset_users[0].id
+        expect(posts[1].user.name).to.equal 'John Doe'
 
-        posts[2].title.should.equal 'another post'
-        posts[2].should.have.property 'user'
-        posts[2].user.should.have.keys 'id', 'name'
-        posts[2].user.id.should.equal preset_users[1].id
-        posts[2].user.name.should.equal 'Bill Smith'
+        expect(posts[2].title).to.equal 'another post'
+        expect(posts[2]).to.have.property 'user'
+        expect(posts[2].user).to.have.keys 'id', 'name'
+        expect(posts[2].user.id).to.equal preset_users[1].id
+        expect(posts[2].user.name).to.equal 'Bill Smith'
 
         callback null
     ], done
@@ -105,32 +107,32 @@ module.exports = ->
         _g.connection.fetchAssociated users, 'posts', (error) ->
           callback error, users
       (users, callback) ->
-        users.should.have.length 2
+        expect(users).to.have.length 2
 
-        users[0].name.should.equal 'John Doe'
-        users[0].should.have.property 'posts'
-        users[0].posts.should.have.length 2
+        expect(users[0].name).to.equal 'John Doe'
+        expect(users[0]).to.have.property 'posts'
+        expect(users[0].posts).to.have.length 2
         if _g.connection.User.eliminate_null
-          users[0].posts[0].should.have.keys 'id', 'user_id', 'title', 'body'
+          expect(users[0].posts[0]).to.have.keys 'id', 'user_id', 'title', 'body'
         else
-          users[0].posts[0].should.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
-        users[0].posts[0].id.should.equal preset_posts[0].id
-        users[0].posts[0].title.should.equal 'first post'
+          expect(users[0].posts[0]).to.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
+        expect(users[0].posts[0].id).to.equal preset_posts[0].id
+        expect(users[0].posts[0].title).to.equal 'first post'
         if _g.connection.User.eliminate_null
-          users[0].posts[1].should.have.keys 'id', 'user_id', 'title', 'body'
+          expect(users[0].posts[1]).to.have.keys 'id', 'user_id', 'title', 'body'
         else
-          users[0].posts[1].should.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
-        users[0].posts[1].id.should.equal preset_posts[1].id
-        users[0].posts[1].title.should.equal 'second post'
+          expect(users[0].posts[1]).to.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
+        expect(users[0].posts[1].id).to.equal preset_posts[1].id
+        expect(users[0].posts[1].title).to.equal 'second post'
 
-        users[1].name.should.equal 'Bill Smith'
-        users[1].posts.should.have.length 1
+        expect(users[1].name).to.equal 'Bill Smith'
+        expect(users[1].posts).to.have.length 1
         if _g.connection.User.eliminate_null
-          users[1].posts[0].should.have.keys 'id', 'user_id', 'title', 'body'
+          expect(users[1].posts[0]).to.have.keys 'id', 'user_id', 'title', 'body'
         else
-          users[1].posts[0].should.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
-        users[1].posts[0].id.should.equal preset_posts[2].id
-        users[1].posts[0].title.should.equal 'another post'
+          expect(users[1].posts[0]).to.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
+        expect(users[1].posts[0].id).to.equal preset_posts[2].id
+        expect(users[1].posts[0].title).to.equal 'another post'
 
         callback null
     ], done
@@ -143,21 +145,21 @@ module.exports = ->
         _g.connection.fetchAssociated user, 'posts', (error) ->
           callback error, user
       (user, callback) ->
-        user.name.should.equal 'John Doe'
-        user.should.have.property 'posts'
-        user.posts.should.have.length 2
+        expect(user.name).to.equal 'John Doe'
+        expect(user).to.have.property 'posts'
+        expect(user.posts).to.have.length 2
         if _g.connection.User.eliminate_null
-          user.posts[0].should.have.keys 'id', 'user_id', 'title', 'body'
+          expect(user.posts[0]).to.have.keys 'id', 'user_id', 'title', 'body'
         else
-          user.posts[0].should.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
-        user.posts[0].id.should.equal preset_posts[0].id
-        user.posts[0].title.should.equal 'first post'
+          expect(user.posts[0]).to.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
+        expect(user.posts[0].id).to.equal preset_posts[0].id
+        expect(user.posts[0].title).to.equal 'first post'
         if _g.connection.User.eliminate_null
-          user.posts[1].should.have.keys 'id', 'user_id', 'title', 'body'
+          expect(user.posts[1]).to.have.keys 'id', 'user_id', 'title', 'body'
         else
-          user.posts[1].should.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
-        user.posts[1].id.should.equal preset_posts[1].id
-        user.posts[1].title.should.equal 'second post'
+          expect(user.posts[1]).to.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
+        expect(user.posts[1].id).to.equal preset_posts[1].id
+        expect(user.posts[1].title).to.equal 'second post'
 
         callback null
     ], done
@@ -170,23 +172,23 @@ module.exports = ->
         _g.connection.fetchAssociated users, 'posts', 'title', (error) ->
           callback error, users
       (users, callback) ->
-        users.should.have.length 2
+        expect(users).to.have.length 2
 
-        users[0].name.should.equal 'John Doe'
-        users[0].should.have.property 'posts'
-        users[0].posts.should.have.length 2
-        users[0].posts[0].should.have.keys 'id', 'user_id', 'title'
-        users[0].posts[0].id.should.equal preset_posts[0].id
-        users[0].posts[0].title.should.equal 'first post'
-        users[0].posts[1].should.have.keys 'id', 'user_id', 'title'
-        users[0].posts[1].id.should.equal preset_posts[1].id
-        users[0].posts[1].title.should.equal 'second post'
+        expect(users[0].name).to.equal 'John Doe'
+        expect(users[0]).to.have.property 'posts'
+        expect(users[0].posts).to.have.length 2
+        expect(users[0].posts[0]).to.have.keys 'id', 'user_id', 'title'
+        expect(users[0].posts[0].id).to.equal preset_posts[0].id
+        expect(users[0].posts[0].title).to.equal 'first post'
+        expect(users[0].posts[1]).to.have.keys 'id', 'user_id', 'title'
+        expect(users[0].posts[1].id).to.equal preset_posts[1].id
+        expect(users[0].posts[1].title).to.equal 'second post'
 
-        users[1].name.should.equal 'Bill Smith'
-        users[1].posts.should.have.length 1
-        users[1].posts[0].should.have.keys 'id', 'user_id', 'title'
-        users[1].posts[0].id.should.equal preset_posts[2].id
-        users[1].posts[0].title.should.equal 'another post'
+        expect(users[1].name).to.equal 'Bill Smith'
+        expect(users[1].posts).to.have.length 1
+        expect(users[1].posts[0]).to.have.keys 'id', 'user_id', 'title'
+        expect(users[1].posts[0].id).to.equal preset_posts[2].id
+        expect(users[1].posts[0].title).to.equal 'another post'
 
         callback null
     ], done

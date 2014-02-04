@@ -1,4 +1,5 @@
 require './common'
+{expect} = require 'chai'
 
 _dbs =
   mysql:
@@ -33,11 +34,11 @@ Object.keys(_dbs).forEach (db) ->
         return done error if error
         User.find user.id, (error, record) ->
           return done error if error
-          should.exist record
-          record.should.be.an.instanceOf User
-          record.should.have.property 'id', user.id
-          record.should.have.property 'name', user.name
-          record.should.have.property 'age', user.age
+          expect(record).to.exist
+          expect(record).to.be.an.instanceof User
+          expect(record).to.have.property 'id', user.id
+          expect(record).to.have.property 'name', user.name
+          expect(record).to.have.property 'age', user.age
           done null
 
     after (done) ->

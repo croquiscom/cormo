@@ -1,7 +1,9 @@
+{expect} = require 'chai'
+
 _compareUser = (user, expected) ->
-  user.should.have.keys 'id', 'name', 'age'
-  user.name.should.equal expected.name
-  user.age.should.equal expected.age
+  expect(user).to.have.keys 'id', 'name', 'age'
+  expect(user.name).to.equal expected.name
+  expect(user.age).to.equal expected.age
 
 _createUsers = (User, data, callback) ->
   if typeof data is 'function'
@@ -22,7 +24,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where age: 27, (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Alice Jackson', age: 27
         _compareUser users[1], name: 'John Doe', age: 27
@@ -33,7 +35,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where(age: 27).where(name: 'Alice Jackson').exec (error, users) ->
         return done error if error
-        users.should.have.length 1
+        expect(users).to.have.length 1
         _compareUser users[0], name: 'Alice Jackson', age: 27
         done null
 
@@ -43,7 +45,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where { id: target.id }, (error, users) ->
         return done error if error
-        users.should.have.length 1
+        expect(users).to.have.length 1
         _compareUser users[0], target
         done null
 
@@ -52,7 +54,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where age: 27, name: 'Alice Jackson', (error, users) ->
         return done error if error
-        users.should.have.length 1
+        expect(users).to.have.length 1
         _compareUser users[0], name: 'Alice Jackson', age: 27
         done null
 
@@ -61,7 +63,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where $or: [ { age: 32 }, { name: 'John Doe' } ], (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Gina Baker', age: 32
         _compareUser users[1], name: 'John Doe', age: 27
@@ -72,7 +74,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where [ { age: { $gt: 30 } }, { age: { $lte: 45 } } ], (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Bill Smith', age: 45
         _compareUser users[1], name: 'Gina Baker', age: 32
@@ -83,7 +85,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where { name: { $contains: 'smi' } }, (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Bill Smith', age: 45
         _compareUser users[1], name: 'Daniel Smith', age: 8
@@ -94,7 +96,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where age: $in: [ 32, 45, 57 ], (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Bill Smith', age: 45
         _compareUser users[1], name: 'Gina Baker', age: 32
@@ -106,7 +108,7 @@ module.exports = () ->
       users.sort (a, b) -> if a.name < b.name then -1 else 1
       _g.connection.User.where id: $in: [ users[2].id, users[0].id ], (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Alice Jackson', age: 27
         _compareUser users[1], name: 'Daniel Smith', age: 8
@@ -117,7 +119,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where age: [ 32, 45, 57 ], (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Bill Smith', age: 45
         _compareUser users[1], name: 'Gina Baker', age: 32
@@ -125,41 +127,41 @@ module.exports = () ->
 
   it 'count none', (done) ->
     _g.connection.User.count (error, count) ->
-      count.should.equal 0
+      expect(count).to.equal 0
       done null
 
   it 'count all', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
       _g.connection.User.count (error, count) ->
-        count.should.equal 5
+        expect(count).to.equal 5
         done null
 
   it 'count condition', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
       _g.connection.User.count age: 27, (error, count) ->
-        count.should.equal 2
+        expect(count).to.equal 2
         done null
 
   it 'delete all', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
       _g.connection.User.delete (error, count) ->
-        count.should.equal 5
+        expect(count).to.equal 5
         _g.connection.User.where (error, users) ->
           return done error if error
-          users.should.have.length 0
+          expect(users).to.have.length 0
           done null
 
   it 'delete condition', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
       _g.connection.User.delete age: 27, (error, count) ->
-        count.should.equal 2
+        expect(count).to.equal 2
         _g.connection.User.where (error, users) ->
           return done error if error
-          users.should.have.length 3
+          expect(users).to.have.length 3
           users.sort (a, b) -> if a.name < b.name then -1 else 1
           _compareUser users[0], name: 'Bill Smith', age: 45
           _compareUser users[1], name: 'Daniel Smith', age: 8
@@ -173,23 +175,23 @@ module.exports = () ->
         (callback) ->
           _g.connection.User.query().exec (error, users) ->
             return callback error if error
-            users.should.have.length 5
+            expect(users).to.have.length 5
             callback null
         (callback) ->
           _g.connection.User.query().limit(3).exec (error, users) ->
             return callback error if error
-            users.should.have.length 3
+            expect(users).to.have.length 3
             callback null
         (callback) ->
           _g.connection.User.where(age: { $lt: 40 }).exec (error, users) ->
             return callback error if error
-            users.should.have.length 4
+            expect(users).to.have.length 4
             callback null
         (callback) ->
           _g.connection.User.where(age: { $lt: 40 }).limit(1).exec (error, users) ->
             return callback error if error
-            users.should.have.length 1
-            users[0].should.have.property 'name'
+            expect(users).to.have.length 1
+            expect(users[0]).to.have.property 'name'
             if users[0].name is 'Alice Jackson'
               _compareUser users[0], name: 'Alice Jackson', age: 27
             else if users[0].name is 'John Doe'
@@ -209,7 +211,7 @@ module.exports = () ->
         (callback) ->
           _g.connection.User.where(age: { $lt: 40 }).one().exec (error, user) ->
             return callback error if error
-            user.should.have.property 'name'
+            expect(user).to.have.property 'name'
             if user.name is 'Alice Jackson'
               _compareUser user, name: 'Alice Jackson', age: 27
             else if user.name is 'John Doe'
@@ -221,7 +223,7 @@ module.exports = () ->
             callback null
         (callback) ->
           _g.connection.User.where(age: { $lt: 5}).one().exec (error, user) ->
-            should.not.exist user
+            expect(user).to.not.exist
             callback null
       ], (error) ->
         done error
@@ -233,14 +235,14 @@ module.exports = () ->
         (callback) ->
           _g.connection.User.query().order('age').skip(3).exec (error, users) ->
             return callback error if error
-            users.should.have.length 2
+            expect(users).to.have.length 2
             _compareUser users[0], name: 'Gina Baker', age: 32
             _compareUser users[1], name: 'Bill Smith', age: 45
             callback null
         (callback) ->
           _g.connection.User.query().order('age').skip(1).limit(2).exec (error, users) ->
             return callback error if error
-            users.should.have.length 2
+            expect(users).to.have.length 2
             users.sort (a, b) -> if a.name < b.name then -1 else 1
             _compareUser users[0], name: 'Alice Jackson', age: 27
             _compareUser users[1], name: 'John Doe', age: 27
@@ -254,22 +256,22 @@ module.exports = () ->
         (callback) ->
           _g.connection.User.select (error, users) ->
             return callback error if error
-            users[0].should.have.keys 'id', 'name', 'age'
+            expect(users[0]).to.have.keys 'id', 'name', 'age'
             callback null
         (callback) ->
           _g.connection.User.select 'name age address', (error, users) ->
             return callback error if error
-            users[0].should.have.keys 'id', 'name', 'age'
+            expect(users[0]).to.have.keys 'id', 'name', 'age'
             callback null
         (callback) ->
           _g.connection.User.select 'name', (error, users) ->
             return callback error if error
-            users[0].should.have.keys 'id', 'name'
+            expect(users[0]).to.have.keys 'id', 'name'
             callback null
         (callback) ->
           _g.connection.User.select '', (error, users) ->
             return callback error if error
-            users[0].should.have.keys 'id'
+            expect(users[0]).to.have.keys 'id'
             callback null
       ], (error) ->
         done error
@@ -279,7 +281,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.order 'name', (error, users) ->
         return done error if error
-        users.should.have.length 5
+        expect(users).to.have.length 5
         _compareUser users[0], name: 'Alice Jackson', age: 27
         _compareUser users[1], name: 'Bill Smith', age: 45
         _compareUser users[2], name: 'Daniel Smith', age: 8
@@ -287,7 +289,7 @@ module.exports = () ->
         _compareUser users[4], name: 'John Doe', age: 27
         _g.connection.User.order '-name', (error, users) ->
           return done error if error
-          users.should.have.length 5
+          expect(users).to.have.length 5
           _compareUser users[0], name: 'John Doe', age: 27
           _compareUser users[1], name: 'Gina Baker', age: 32
           _compareUser users[2], name: 'Daniel Smith', age: 8
@@ -300,7 +302,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.order 'age', (error, users) ->
         return done error if error
-        users.should.have.length 5
+        expect(users).to.have.length 5
         _compareUser users[0], name: 'Daniel Smith', age: 8
         if users[1].name is 'Alice Jackson'
           _compareUser users[1], name: 'Alice Jackson', age: 27
@@ -312,7 +314,7 @@ module.exports = () ->
         _compareUser users[4], name: 'Bill Smith', age: 45
         _g.connection.User.order '-age', (error, users) ->
           return done error if error
-          users.should.have.length 5
+          expect(users).to.have.length 5
           _compareUser users[0], name: 'Bill Smith', age: 45
           _compareUser users[1], name: 'Gina Baker', age: 32
           if users[2].name is 'Alice Jackson'
@@ -329,7 +331,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.order 'age name', (error, users) ->
         return done error if error
-        users.should.have.length 5
+        expect(users).to.have.length 5
         _compareUser users[0], name: 'Daniel Smith', age: 8
         _compareUser users[1], name: 'Alice Jackson', age: 27
         _compareUser users[2], name: 'John Doe', age: 27
@@ -337,7 +339,7 @@ module.exports = () ->
         _compareUser users[4], name: 'Bill Smith', age: 45
         _g.connection.User.order 'age -name', (error, users) ->
           return done error if error
-          users.should.have.length 5
+          expect(users).to.have.length 5
           _compareUser users[0], name: 'Daniel Smith', age: 8
           _compareUser users[1], name: 'John Doe', age: 27
           _compareUser users[2], name: 'Alice Jackson', age: 27
@@ -350,11 +352,11 @@ module.exports = () ->
       return done error if error
       _g.connection.User.find(user.id).lean().exec (error, record) ->
         return done error if error
-        should.exist record
-        record.should.not.be.an.instanceOf _g.connection.User
-        record.should.have.property 'id', user.id
-        record.should.have.property 'name', user.name
-        record.should.have.property 'age', user.age
+        expect(record).to.exist
+        expect(record).to.not.be.an.instanceof _g.connection.User
+        expect(record).to.have.property 'id', user.id
+        expect(record).to.have.property 'name', user.name
+        expect(record).to.have.property 'age', user.age
         done null
 
   it 'lean option for multiple records', (done) ->
@@ -362,11 +364,11 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where(age: 27).lean().exec (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
-        users[0].should.not.be.an.instanceOf _g.connection.User
+        expect(users[0]).to.not.be.an.instanceof _g.connection.User
         _compareUser users[0], name: 'Alice Jackson', age: 27
-        users[1].should.not.be.an.instanceOf _g.connection.User
+        expect(users[1]).to.not.be.an.instanceof _g.connection.User
         _compareUser users[1], name: 'John Doe', age: 27
         done null
 
@@ -375,11 +377,11 @@ module.exports = () ->
       return done error if error
       _g.connection.User.select('name age').lean().exec (error, users) ->
         return done error if error
-        users.should.have.length 1
+        expect(users).to.have.length 1
         if _g.connection.User.eliminate_null
-          users[0].should.have.keys 'id', 'name'
+          expect(users[0]).to.have.keys 'id', 'name'
         else
-          users[0].should.have.keys 'id', 'name', 'age'
+          expect(users[0]).to.have.keys 'id', 'name', 'age'
         done null
 
   it 'lean option of null value without select', (done) ->
@@ -387,11 +389,11 @@ module.exports = () ->
       return done error if error
       _g.connection.User.query().lean().exec (error, users) ->
         return done error if error
-        users.should.have.length 1
+        expect(users).to.have.length 1
         if _g.connection.User.eliminate_null
-          users[0].should.have.keys 'id', 'name'
+          expect(users[0]).to.have.keys 'id', 'name'
         else
-          users[0].should.have.keys 'id', 'name', 'age'
+          expect(users[0]).to.have.keys 'id', 'name', 'age'
         done null
 
   it 'cache', (done) ->
@@ -401,7 +403,7 @@ module.exports = () ->
       (users, callback) ->
         _g.connection.User.where(age: 27).cache(key: 'user', ttl: 30, refresh: true).exec callback
       (users, callback) ->
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Alice Jackson', age: 27
         _compareUser users[1], name: 'John Doe', age: 27
@@ -410,7 +412,7 @@ module.exports = () ->
         # different conditions, will return cached result
         _g.connection.User.where(age: 8).cache(key: 'user', ttl: 30).exec callback
       (users, callback) ->
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Alice Jackson', age: 27
         _compareUser users[1], name: 'John Doe', age: 27
@@ -419,14 +421,14 @@ module.exports = () ->
         # try ignoring cache
         _g.connection.User.where(age: 8).cache(key: 'user', ttl: 30, refresh: true).exec callback
       (users, callback) ->
-        users.should.have.length 1
+        expect(users).to.have.length 1
         _compareUser users[0], name: 'Daniel Smith', age: 8
         callback null
       (callback) ->
         # different conditions, will return cached result
         _g.connection.User.where(age: 32).cache(key: 'user', ttl: 30).exec callback
       (users, callback) ->
-        users.should.have.length 1
+        expect(users).to.have.length 1
         _compareUser users[0], name: 'Daniel Smith', age: 8
         callback null
       # try after removing cache
@@ -435,7 +437,7 @@ module.exports = () ->
       (callback) ->
         _g.connection.User.where(age: 32).cache(key: 'user', ttl: 30).exec callback
       (users, callback) ->
-        users.should.have.length 1
+        expect(users).to.have.length 1
         _compareUser users[0], name: 'Gina Baker', age: 32
         callback null
     ], done
@@ -445,27 +447,27 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where id: $lt: users[2].id, (error, records) ->
         return done error if error
-        records.should.have.length 2
+        expect(records).to.have.length 2
         _compareUser users[0], records[0]
         _compareUser users[1], records[1]
         _g.connection.User.count id: $lt: users[2].id, (error, count) ->
           return done error if error
-          count.should.equal 2
+          expect(count).to.equal 2
           done null
 
   it 'find undefined & count', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
       _g.connection.User.find(undefined).count (error, count) ->
-        count.should.equal 0
+        expect(count).to.equal 0
         done null
 
   it 'find undefined & delete', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
       _g.connection.User.find(undefined).delete (error, count) ->
-        count.should.equal 0
+        expect(count).to.equal 0
         _g.connection.User.where (error, users) ->
           return done error if error
-          users.should.have.length 5
+          expect(users).to.have.length 5
           done null

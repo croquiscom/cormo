@@ -1,3 +1,5 @@
+{expect} = require 'chai'
+
 _createPlaces = (Place, data, callback) ->
   if typeof data is 'function'
     callback = data
@@ -25,12 +27,12 @@ module.exports = () ->
       return done error if error
       _g.connection.Place.find place.id, (error, record) ->
         return done error if error
-        record.should.have.property 'name', 'Carrier Dome'
-        record.should.have.property 'location'
-        record.location.should.be.an.instanceOf Array
-        record.location.should.have.length 2
-        record.location[0].should.equal -76.136131
-        record.location[1].should.equal 43.036240
+        expect(record).to.have.property 'name', 'Carrier Dome'
+        expect(record).to.have.property 'location'
+        expect(record.location).to.be.an.instanceof Array
+        expect(record.location).to.have.length 2
+        expect(record.location[0]).to.equal -76.136131
+        expect(record.location[1]).to.equal 43.036240
         done null
 
   it 'invalid geopoint', (done) ->
@@ -42,8 +44,8 @@ module.exports = () ->
     ]
     _g.async.forEach data, (item, callback) ->
         _g.connection.Place.create name: 'Carrier Dome', location: item, (error, place) ->
-          error.should.exist
-          error.should.have.property 'message', "'location' is not a geo point"
+          expect(error).to.exist
+          expect(error).to.have.property 'message', "'location' is not a geo point"
           callback null
       , (error) ->
         done error
@@ -69,7 +71,7 @@ module.exports = () ->
           'Sapporo Dome'
         ]
         places = places.map (place) -> place.name
-        places.should.eql expected
+        expect(places).to.eql expected
         done null
 
   it 'near query 2', (done) ->
@@ -84,7 +86,7 @@ module.exports = () ->
           'Anfield Football Stadium'
         ]
         places = places.map (place) -> place.name
-        places.should.eql expected
+        expect(places).to.eql expected
         done null
 
   it 'near query 3', (done) ->
@@ -96,7 +98,7 @@ module.exports = () ->
           'Sapporo Dome'
         ]
         places = places.map (place) -> place.name
-        places.should.eql expected
+        expect(places).to.eql expected
         done null
 
   it 'near query 4', (done) ->
@@ -110,7 +112,7 @@ module.exports = () ->
           'Anfield Football Stadium'
         ]
         places = places.map (place) -> place.name
-        places.should.eql expected
+        expect(places).to.eql expected
         done null
 
   it 'near and condition', (done) ->
@@ -123,5 +125,5 @@ module.exports = () ->
           'Anfield Football Stadium'
         ]
         places = places.map (place) -> place.name
-        places.should.eql expected
+        expect(places).to.eql expected
         done null

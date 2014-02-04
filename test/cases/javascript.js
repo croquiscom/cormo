@@ -1,3 +1,5 @@
+var expect = require('chai').expect;
+
 _createUsers = function (User, data, callback) {
   if (typeof(data)==='function') {
     callback = data;
@@ -18,22 +20,22 @@ module.exports = function () {
     var user = new _g.connection.User();
     user.name = 'John Doe';
     user.age = 27;
-    user.should.have.property('name', 'John Doe');
-    user.should.have.property('age', 27);
+    expect(user).to.have.property('name', 'John Doe');
+    expect(user).to.have.property('age', 27);
     done(null);
   });
 
   it('initialize in constructor', function (done) {
     var user = new _g.connection.User({name: 'John Doe', age: 27});
-    user.should.have.property('name', 'John Doe');
-    user.should.have.property('age', 27);
+    expect(user).to.have.property('name', 'John Doe');
+    expect(user).to.have.property('age', 27);
     done(null);
   });
 
   it('build method', function (done) {
     var user = _g.connection.User.build({name: 'John Doe', age: 27});
-    user.should.have.property('name', 'John Doe');
-    user.should.have.property('age', 27);
+    expect(user).to.have.property('name', 'John Doe');
+    expect(user).to.have.property('age', 27);
     done(null);
   });
 
@@ -43,7 +45,7 @@ module.exports = function () {
       if (error) {
         return done(error);
       }
-      user.should.have.property('id');
+      expect(user).to.have.property('id');
       done(null);
     });
   });
@@ -53,7 +55,7 @@ module.exports = function () {
       if (error) {
         return done(error);
       }
-      user.should.have.property('id');
+      expect(user).to.have.property('id');
       done(null);
     });
   });
@@ -67,12 +69,12 @@ module.exports = function () {
         if (error) {
           return done(error);
         }
-        users.should.have.length(2)
+        expect(users).to.have.length(2)
         users.sort(function (a, b) { return a.name < b.name ? -1 : 1; });
-        users[0].should.have.property('name', 'Alice Jackson');
-        users[0].should.have.property('age', 27);
-        users[1].should.have.property('name', 'John Doe');
-        users[1].should.have.property('age', 27);
+        expect(users[0]).to.have.property('name', 'Alice Jackson');
+        expect(users[0]).to.have.property('age', 27);
+        expect(users[1]).to.have.property('name', 'John Doe');
+        expect(users[1]).to.have.property('age', 27);
         done(null);
       });
     });
@@ -87,9 +89,9 @@ module.exports = function () {
         if (error) {
           return done(error);
         }
-        users.should.have.length(1);
-        users[0].should.have.property('name', 'Alice Jackson');
-        users[0].should.have.property('age', 27);
+        expect(users).to.have.length(1);
+        expect(users[0]).to.have.property('name', 'Alice Jackson');
+        expect(users[0]).to.have.property('age', 27);
         done(null);
       });
     });
@@ -104,12 +106,12 @@ module.exports = function () {
         if (error) {
           return done(error);
         }
-        users.should.have.length(2);
+        expect(users).to.have.length(2);
         users.sort(function (a, b) { return a.name < b.name ? -1 : 1; });
-        users[0].should.have.property('name', 'Gina Baker');
-        users[0].should.have.property('age', 32);
-        users[1].should.have.property('name', 'John Doe');
-        users[1].should.have.property('age', 27);
+        expect(users[0]).to.have.property('name', 'Gina Baker');
+        expect(users[0]).to.have.property('age', 32);
+        expect(users[1]).to.have.property('name', 'John Doe');
+        expect(users[1]).to.have.property('age', 27);
         done(null);
       });
     });

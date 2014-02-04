@@ -1,3 +1,5 @@
+{expect} = require 'chai'
+
 module.exports = ->
   it 'get associated object', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -6,5 +8,5 @@ module.exports = ->
         return done error if error
         user.computer (error, record) ->
           return done error if error
-          computer.should.eql record
+          expect(computer).to.eql record
           done null

@@ -1,3 +1,5 @@
+{expect} = require 'chai'
+
 module.exports = () ->
   it 'number', (done) ->
     data = [
@@ -9,14 +11,14 @@ module.exports = () ->
     _g.async.forEach data, (item, callback) ->
         _g.connection.Type.create { number: item[0] }, (error, type) ->
           if item[1] is null
-            should.exist error
-            error.message.should.be.equal "'number' is not a number"
+            expect(error).to.exist
+            expect(error.message).to.equal "'number' is not a number"
             return callback null
           return callback error if error
-          type.number.should.be.equal item[1]
+          expect(type.number).to.equal item[1]
           _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
-            type.number.should.be.equal item[1]
+            expect(type.number).to.equal item[1]
             callback null
       , (error) ->
         done error
@@ -32,14 +34,14 @@ module.exports = () ->
     _g.async.forEach data, (item, callback) ->
         _g.connection.Type.create { int_c: item[0] }, (error, type) ->
           if item[1] is null
-            should.exist error
-            error.message.should.be.equal "'int_c' is not an integer"
+            expect(error).to.exist
+            expect(error.message).to.equal "'int_c' is not an integer"
             return callback null
           return callback error if error
-          type.int_c.should.be.equal item[1]
+          expect(type.int_c).to.equal item[1]
           _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
-            type.int_c.should.be.equal item[1]
+            expect(type.int_c).to.equal item[1]
             callback null
       , (error) ->
         done error
@@ -56,16 +58,16 @@ module.exports = () ->
     _g.async.forEach data, (item, callback) ->
         _g.connection.Type.create { date: item[0] }, (error, type) ->
           if item[1] is null
-            should.exist error
-            error.message.should.be.equal "'date' is not a date"
+            expect(error).to.exist
+            expect(error.message).to.equal "'date' is not a date"
             return callback null
           return callback error if error
-          new should.Assertion(type.date).be.an.instanceof Date
-          type.date.getTime().should.be.equal item[1]
+          expect(type.date).to.be.an.instanceof Date
+          expect(type.date.getTime()).to.equal item[1]
           _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
-            new should.Assertion(type.date).be.an.instanceof Date
-            type.date.getTime().should.be.equal item[1]
+            expect(type.date).to.be.an.instanceof Date
+            expect(type.date.getTime()).to.equal item[1]
             callback null
       , (error) ->
         done error
@@ -80,14 +82,14 @@ module.exports = () ->
     _g.async.forEach data, (item, callback) ->
         _g.connection.Type.create { boolean: item[0] }, (error, type) ->
           if item[1] is null
-            should.exist error
-            error.message.should.be.equal "'boolean' is not a boolean"
+            expect(error).to.exist
+            expect(error.message).to.equal "'boolean' is not a boolean"
             return callback null
           return callback error if error
-          type.boolean.should.be.equal item[1]
+          expect(type.boolean).to.equal item[1]
           _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
-            type.boolean.should.be.equal item[1]
+            expect(type.boolean).to.equal item[1]
             callback null
       , (error) ->
         done error
@@ -104,15 +106,15 @@ module.exports = () ->
         _g.connection.Type.create { object: item[0] }, (error, type) ->
           return callback error if error
           if typeof item[1] is 'object'
-            type.object.should.be.eql item[1]
+            expect(type.object).to.eql item[1]
           else
-            type.object.should.be.equal item[1]
+            expect(type.object).to.equal item[1]
           _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
             if typeof item[1] is 'object'
-              type.object.should.be.eql item[1]
+              expect(type.object).to.eql item[1]
             else
-              type.object.should.be.equal item[1]
+              expect(type.object).to.equal item[1]
             callback null
       , (error) ->
         done error
@@ -126,14 +128,14 @@ module.exports = () ->
     _g.async.forEach data, (item, callback) ->
         _g.connection.Type.create { int_array: item[0] }, (error, type) ->
           if item[1] is null
-            should.exist error
-            error.message.should.be.equal "'int_array' is not an array"
+            expect(error).to.exist
+            expect(error.message).to.equal "'int_array' is not an array"
             return callback null
           return callback error if error
-          type.int_array.should.be.eql item[1]
+          expect(type.int_array).to.eql item[1]
           _g.connection.Type.find type.id, (error, type) ->
             return callback error if error
-            type.int_array.should.be.eql item[1]
+            expect(type.int_array).to.eql item[1]
             callback null
       , (error) ->
         done error

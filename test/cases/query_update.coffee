@@ -1,7 +1,9 @@
+{expect} = require 'chai'
+
 _compareUser = (user, expected) ->
-  user.should.have.keys 'id', 'name', 'age'
-  user.name.should.equal expected.name
-  user.age.should.equal expected.age
+  expect(user).to.have.keys 'id', 'name', 'age'
+  expect(user.name).to.equal expected.name
+  expect(user.age).to.equal expected.age
 
 _createUsers = (User, data, callback) ->
   if typeof data is 'function'
@@ -22,7 +24,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.update age: 10, (error, count) ->
         return done error if error
-        count.should.equal 5
+        expect(count).to.equal 5
         _g.connection.User.where (error, users) ->
           users.sort (a, b) -> if a.name < b.name then -1 else 1
           _compareUser users[0], name: 'Alice Jackson', age: 10
@@ -37,7 +39,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.update { age: 10 }, age: 27, (error, count) ->
         return done error if error
-        count.should.equal 2
+        expect(count).to.equal 2
         _g.connection.User.where (error, users) ->
           users.sort (a, b) -> if a.name < b.name then -1 else 1
           _compareUser users[0], name: 'Alice Jackson', age: 10
@@ -53,7 +55,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.find(users[2].id).update age: 10, (error, count) ->
         return done error if error
-        count.should.equal 1
+        expect(count).to.equal 1
         _g.connection.User.where (error, users) ->
           users.sort (a, b) -> if a.name < b.name then -1 else 1
           _compareUser users[0], name: 'Alice Jackson', age: 27
@@ -69,7 +71,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.find([users[2].id, users[3].id]).update age: 10, (error, count) ->
         return done error if error
-        count.should.equal 2
+        expect(count).to.equal 2
         _g.connection.User.where (error, users) ->
           users.sort (a, b) -> if a.name < b.name then -1 else 1
           _compareUser users[0], name: 'Alice Jackson', age: 27
@@ -85,7 +87,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.find(undefined).update age: 10, (error, count) ->
         return done error if error
-        count.should.equal 0
+        expect(count).to.equal 0
         _g.connection.User.where (error, users) ->
           users.sort (a, b) -> if a.name < b.name then -1 else 1
           _compareUser users[0], name: 'Alice Jackson', age: 27
@@ -100,10 +102,10 @@ module.exports = () ->
       return done error if error
       _g.connection.User.find(users[2].id).update age: null, (error, count) ->
         return done error if error
-        count.should.equal 1
+        expect(count).to.equal 1
         _g.connection.User.find users[2].id, (error, user) ->
           if _g.connection.User.eliminate_null
-            user.should.have.keys 'id', 'name'
+            expect(user).to.have.keys 'id', 'name'
           else
-            user.should.have.keys 'id', 'name', 'age'
+            expect(user).to.have.keys 'id', 'name', 'age'
           done null

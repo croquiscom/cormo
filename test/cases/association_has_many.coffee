@@ -1,7 +1,9 @@
+{expect} = require 'chai'
+
 _comparePost = (a, b) ->
-  a.should.have.property 'user_id', b.user_id
-  a.should.have.property 'title', b.title
-  a.should.have.property 'body', b.body
+  expect(a).to.have.property 'user_id', b.user_id
+  expect(a).to.have.property 'title', b.title
+  expect(a).to.have.property 'body', b.body
 
 module.exports = () ->
   it 'collection_accessor.build on a new object', (done) ->
@@ -9,17 +11,17 @@ module.exports = () ->
       # create two new objects
       (callback) ->
         user1 = _g.connection.User.build name: 'John Doe', age: 27
-        should.exist user1.posts
+        expect(user1.posts).to.exist
         user2 = _g.connection.User.build name: 'Bill Smith', age: 45
-        should.exist user2.posts
+        expect(user2.posts).to.exist
         callback null, user1, user2
       # check default status
       (user1, user2, callback) ->
         user1.posts (error, posts) ->
-          posts.should.have.length 0
+          expect(posts).to.have.length 0
           return callback error if error
           user2.posts (error, posts) ->
-            posts.should.have.length 0
+            expect(posts).to.have.length 0
             return callback error if error
             callback null, user1.posts, user2.posts
       # call build method and check status
@@ -29,16 +31,16 @@ module.exports = () ->
         posts2.build title: 'third post', body: 'This is the 3rd post.'
         posts1 (error, posts) ->
           return callback error if error
-          posts.should.have.length 2
-          should.not.exist posts[0].user_id
-          posts[0].should.have.property 'title', 'first post'
-          should.not.exist posts[1].user_id
-          posts[1].should.have.property 'title', 'second post'
+          expect(posts).to.have.length 2
+          expect(posts[0].user_id).to.not.exist
+          expect(posts[0]).to.have.property 'title', 'first post'
+          expect(posts[1].user_id).to.not.exist
+          expect(posts[1]).to.have.property 'title', 'second post'
           posts2 (error, posts) ->
             return callback error if error
-            posts.should.have.length 1
-            should.not.exist posts[0].user_id
-            posts[0].should.have.property 'title', 'third post'
+            expect(posts).to.have.length 1
+            expect(posts[0].user_id).to.not.exist
+            expect(posts[0]).to.have.property 'title', 'third post'
             callback null
     ], (error) ->
       done error
@@ -49,18 +51,18 @@ module.exports = () ->
       (callback) ->
         _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user1) ->
           return callback error if error
-          should.exist user1.posts
+          expect(user1.posts).to.exist
           _g.connection.User.create { name: 'Bill Smith', age: 45 }, (error, user2) ->
             return callback error if error
-            should.exist user2.posts
+            expect(user2.posts).to.exist
             callback null, user1, user2
       # check default status
       (user1, user2, callback) ->
         user1.posts (error, posts) ->
-          posts.should.have.length 0
+          expect(posts).to.have.length 0
           return callback error if error
           user2.posts (error, posts) ->
-            posts.should.have.length 0
+            expect(posts).to.have.length 0
             return callback error if error
             callback null, user1, user2, user1.posts, user2.posts
       # call build method and check status
@@ -70,16 +72,16 @@ module.exports = () ->
         posts2.build title: 'third post', body: 'This is the 3rd post.'
         posts1 (error, posts) ->
           return callback error if error
-          posts.should.have.length 2
-          posts[0].should.have.property 'user_id', user1.id
-          posts[0].should.have.property 'title', 'first post'
-          posts[1].should.have.property 'user_id', user1.id
-          posts[1].should.have.property 'title', 'second post'
+          expect(posts).to.have.length 2
+          expect(posts[0]).to.have.property 'user_id', user1.id
+          expect(posts[0]).to.have.property 'title', 'first post'
+          expect(posts[1]).to.have.property 'user_id', user1.id
+          expect(posts[1]).to.have.property 'title', 'second post'
           posts2 (error, posts) ->
             return callback error if error
-            posts.should.have.length 1
-            posts[0].should.have.property 'user_id', user2.id
-            posts[0].should.have.property 'title', 'third post'
+            expect(posts).to.have.length 1
+            expect(posts[0]).to.have.property 'user_id', user2.id
+            expect(posts[0]).to.have.property 'title', 'third post'
             callback null
     ], (error) ->
       done error
@@ -87,14 +89,14 @@ module.exports = () ->
   it 'save object after creating a sub object', (done) ->
     user = _g.connection.User.build name: 'John Doe', age: 27
     post = user.posts.build title: 'first post', body: 'This is the 1st post.'
-    should.not.exist user.id
-    should.not.exist post.id
-    should.not.exist post.user_id
+    expect(user.id).to.not.exist
+    expect(post.id).to.not.exist
+    expect(post.user_id).to.not.exist
     user.save (error) ->
       return done error if error
-      user.should.have.property 'id'
-      post.should.have.property 'id'
-      post.should.have.property 'user_id', user.id
+      expect(user).to.have.property 'id'
+      expect(post).to.have.property 'id'
+      expect(post).to.have.property 'user_id', user.id
       done null
 
   it 'get sub objects', (done) ->
@@ -102,7 +104,7 @@ module.exports = () ->
       _g.connection.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
         _g.connection.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
           user.posts (error, posts) ->
-            posts.should.have.length 2
+            expect(posts).to.have.length 2
             posts.sort (a, b) -> if a.body < b.body then -1 else 1
             _comparePost posts[0], post1
             _comparePost posts[1], post2
@@ -112,16 +114,16 @@ module.exports = () ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       _g.connection.Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post1) ->
         user.posts (error, posts) ->
-          posts.should.have.length 1
+          expect(posts).to.have.length 1
           _comparePost posts[0], post1
           _g.connection.Post.create { title: 'second post', body: 'This is the 2nd post.', user_id: user.id }, (error, post2) ->
             user.posts (error, posts) ->
               # added object is not fetched
-              posts.should.have.length 1
+              expect(posts).to.have.length 1
               _comparePost posts[0], post1
               # ignore cache and force reload
               user.posts true, (error, posts) ->
-                posts.should.have.length 2
+                expect(posts).to.have.length 2
                 posts.sort (a, b) -> if a.body < b.body then -1 else 1
                 _comparePost posts[0], post1
                 _comparePost posts[1], post2

@@ -1,3 +1,5 @@
+{expect} = require 'chai'
+
 module.exports = () ->
   it 'callbacks for a new record', (done) ->
     User = _g.connection.User
@@ -12,7 +14,7 @@ module.exports = () ->
     logs = []
     user = new User name: 'John Doe', age: 27
 
-    logs.should.be.eql [ 'after_initialize1 : John Doe', 'after_initialize2 : John Doe' ]
+    expect(logs).to.eql [ 'after_initialize1 : John Doe', 'after_initialize2 : John Doe' ]
 
     done null
 
@@ -33,7 +35,7 @@ module.exports = () ->
 
       logs = []
       User.find users[0].id, (error, user) ->
-        logs.should.be.eql [ 'after_find1 : John Doe', 'after_find2 : John Doe', 'after_initialize1 : John Doe', 'after_initialize2 : John Doe' ]
+        expect(logs).to.eql [ 'after_find1 : John Doe', 'after_find2 : John Doe', 'after_initialize1 : John Doe', 'after_initialize2 : John Doe' ]
         done null
 
   it 'callbacks for finding records', (done) ->
@@ -53,7 +55,7 @@ module.exports = () ->
 
       logs = []
       User.where age: 27, (error, users) ->
-        logs.should.be.eql [
+        expect(logs).to.eql [
           'after_find1 : John Doe'
           'after_find2 : John Doe'
           'after_initialize1 : John Doe'
@@ -98,7 +100,7 @@ module.exports = () ->
 
     logs = []
     User.create { name: 'John Doe', age: 27 }, (error, user) ->
-      logs.should.be.eql [
+      expect(logs).to.eql [
         'before_validate1 : John Doe'
         'before_validate2 : John Doe'
         'after_validate1 : John Doe'
@@ -149,7 +151,7 @@ module.exports = () ->
       logs = []
       user.name = 'Alice Jackson'
       user.save (error, user) ->
-        logs.should.be.eql [
+        expect(logs).to.eql [
           'before_validate1 : Alice Jackson'
           'before_validate2 : Alice Jackson'
           'after_validate1 : Alice Jackson'
@@ -179,7 +181,7 @@ module.exports = () ->
 
     logs = []
     user.destroy (error, user) ->
-      logs.should.be.eql [
+      expect(logs).to.eql [
         'before_destroy1 : John Doe'
         'before_destroy2 : John Doe'
         'after_destroy1 : John Doe'
@@ -189,7 +191,7 @@ module.exports = () ->
       User.create { name: 'John Doe', age: 27 }, (error, user) ->
         logs = []
         user.destroy (error, user) ->
-          logs.should.be.eql [
+          expect(logs).to.eql [
             'before_destroy1 : John Doe'
             'before_destroy2 : John Doe'
             'after_destroy1 : John Doe'

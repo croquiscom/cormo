@@ -1,12 +1,14 @@
+{expect} = require 'chai'
+
 _compareUser = (user, expected) ->
   if expected.age?
-    user.should.have.keys 'id', 'name', 'age'
-    user.age.should.equal expected.age
+    expect(user).to.have.keys 'id', 'name', 'age'
+    expect(user.age).to.equal expected.age
   else if user.constructor.eliminate_null
-    user.should.have.keys 'id', 'name'
+    expect(user).to.have.keys 'id', 'name'
   else
-    user.should.have.keys 'id', 'name', 'age'
-  user.name.should.equal expected.name
+    expect(user).to.have.keys 'id', 'name', 'age'
+  expect(user.name).to.equal expected.name
 
 _createUsers = (User, data, callback) ->
   if typeof data is 'function'
@@ -27,7 +29,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where age: $not: 27, (error, users) ->
         return done error if error
-        users.should.have.length 3
+        expect(users).to.have.length 3
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Bill Smith', age: 45
         _compareUser users[1], name: 'Daniel Smith', age: 8
@@ -39,7 +41,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where(age: $not: 27).where(name: $not: 'Daniel Smith').exec (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Bill Smith', age: 45
         _compareUser users[1], name: 'Gina Baker'
@@ -51,7 +53,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where { id: $not: target.id }, (error, users) ->
         return done error if error
-        users.should.have.length 4
+        expect(users).to.have.length 4
         done null
 
   it 'not for comparison', (done) ->
@@ -59,12 +61,12 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where age: $gt: 30, (error, users) ->
         return done error if error
-        users.should.have.length 1
+        expect(users).to.have.length 1
         _compareUser users[0], name: 'Bill Smith', age: 45
         # '> 30' != 'not < 30' because of null value
         _g.connection.User.where age: $not: $lt: 30, (error, users) ->
           return done error if error
-          users.should.have.length 2
+          expect(users).to.have.length 2
           users.sort (a, b) -> if a.name < b.name then -1 else 1
           _compareUser users[0], name: 'Bill Smith', age: 45
           _compareUser users[1], name: 'Gina Baker'
@@ -75,7 +77,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where name: $not: $contains: 'smi', (error, users) ->
         return done error if error
-        users.should.have.length 3
+        expect(users).to.have.length 3
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Alice Jackson', age: 27
         _compareUser users[1], name: 'Gina Baker'
@@ -87,7 +89,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where age: $not: $in: [ 27, 45, 57 ], (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Daniel Smith', age: 8
         _compareUser users[1], name: 'Gina Baker'
@@ -99,7 +101,7 @@ module.exports = () ->
       users.sort (a, b) -> if a.name < b.name then -1 else 1
       _g.connection.User.where id: $not: $in: [ users[2].id, users[0].id ], (error, users) ->
         return done error if error
-        users.should.have.length 3
+        expect(users).to.have.length 3
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Bill Smith', age: 45
         _compareUser users[1], name: 'Gina Baker'
@@ -111,7 +113,7 @@ module.exports = () ->
       return done error if error
       _g.connection.User.where age: $not: [ 27, 45, 57 ], (error, users) ->
         return done error if error
-        users.should.have.length 2
+        expect(users).to.have.length 2
         users.sort (a, b) -> if a.name < b.name then -1 else 1
         _compareUser users[0], name: 'Daniel Smith', age: 8
         _compareUser users[1], name: 'Gina Baker'

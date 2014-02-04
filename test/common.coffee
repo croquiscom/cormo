@@ -12,9 +12,6 @@ _g.connection = undefined
 _g.Model.dirty_tracking = Math.floor(Math.random() * 2) isnt 0
 _g.Model.eliminate_null = Math.floor(Math.random() * 2) isnt 0
 
-# 'global.should =' does not work because should module override Object.prototype.should
-Object.defineProperty global, 'should', value: require 'should'
-
 _g.dropModels = (models, callback) ->
   _g.async.forEach models, (model, callback) ->
     return callback null if not model
