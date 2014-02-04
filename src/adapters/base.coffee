@@ -176,3 +176,7 @@ class AdapterBase
   close: ->
 
 module.exports = AdapterBase
+
+if process.env.NODE_ENV is 'test'
+  AdapterBase.wrapError = (msg, cause) ->
+    return new Error msg + ' caused by ' + cause.toString()
