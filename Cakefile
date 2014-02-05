@@ -20,7 +20,7 @@ task 'build', 'Builds JavaScript files from source', ->
 task 'test', 'Runs Mocha tests', (options) ->
   process.env.NODE_ENV = 'test'
   command = './node_modules/.bin/mocha'
-  args = ['-R', options.reporter or 'spec', '--compilers', 'coffee:coffee-script']
+  args = ['-R', options.reporter or 'spec', '--compilers', 'coffee:coffee-script', '-r', 'coffee-script/register']
   args.push '-g', options.grep if options.grep
   spawn command, args, stdio: 'inherit'
 
@@ -28,7 +28,7 @@ task 'test:cov', 'Gets tests coverage', (options) ->
   process.env.NODE_ENV = 'test'
   process.env.TEST_COV = 1
   command = './node_modules/.bin/mocha'
-  args = ['-R', 'html-cov', '--compilers', 'coffee:coffee-script']
+  args = ['-R', 'html-cov', '--compilers', 'coffee:coffee-script', '-r', 'coffee-script/register']
   child = spawn command, args
   cov_html = fs.createWriteStream 'cov.html'
   child.stdout.on 'data', (data) ->
