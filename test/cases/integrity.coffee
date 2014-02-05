@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 module.exports = ->
@@ -8,7 +9,7 @@ module.exports = ->
     team0_id = undefined
     event0_id = undefined
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_team: id: 'team0', name: 'Croquis' }
@@ -35,7 +36,7 @@ module.exports = ->
     team0_id = undefined
     event0_id = undefined
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_team: id: 'team0', name: 'Croquis' }
@@ -62,7 +63,7 @@ module.exports = ->
     team0_id = undefined
     event0_id = undefined
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_team: id: 'team0', name: 'Croquis' }
@@ -87,7 +88,7 @@ module.exports = ->
 
     team0_id = undefined
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_team: id: 'team0', name: 'Croquis' }
@@ -124,7 +125,7 @@ module.exports = ->
 
     team0_id = undefined
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_team: id: 'team0', name: 'Croquis' }
@@ -164,7 +165,7 @@ module.exports = ->
     team0_id = undefined
     event1_id = undefined
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_team: id: 'team0', name: 'Croquis' }
@@ -205,7 +206,7 @@ module.exports = ->
     team0_id = undefined
     event0_id = undefined
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_team: id: 'team0', name: 'Croquis' }
@@ -245,7 +246,7 @@ module.exports = ->
     event0_id = undefined
     comment0_id = undefined
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_team: id: 'team0', name: 'Croquis' }
@@ -287,7 +288,7 @@ module.exports = ->
     _g.connection.Comment.belongsTo _g.connection.Event
     _g.connection.Event.hasMany _g.connection.Comment
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_team: id: 'team0', name: 'Croquis' }
@@ -332,7 +333,7 @@ module.exports = ->
     _g.connection.Comment.belongsTo _g.connection.Event
     _g.connection.Event.hasMany _g.connection.Comment
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_team: id: 'team0', name: 'Croquis' }

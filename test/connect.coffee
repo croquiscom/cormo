@@ -1,23 +1,12 @@
 require './common'
 {expect} = require 'chai'
 
-_dbs =
-  mysql:
-    database: 'test'
-  mongodb:
-    database: 'test'
-  sqlite3:
-    database: __dirname + '/test.sqlite3'
-  sqlite3_memory: {}
-  postgresql:
-    database: 'test'
-  redis:
-    database: 1
+_dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql', 'redis' ]
 
-Object.keys(_dbs).forEach (db) ->
+_dbs.forEach (db) ->
   describe 'connect-' + db, ->
     before (done) ->
-      _g.connection = new _g.Connection db, _dbs[db]
+      _g.connection = new _g.Connection db, _g.db_configs[db]
       User = _g.connection.model 'User',
         name: String
         age: Number
@@ -25,7 +14,7 @@ Object.keys(_dbs).forEach (db) ->
         done null
 
     it 'can process without waiting connected and schemas applied', (done) ->
-      _g.connection = new _g.Connection db, _dbs[db]
+      _g.connection = new _g.Connection db, _g.db_configs[db]
       User = _g.connection.model 'User',
         name: String
         age: Number

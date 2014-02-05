@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 module.exports = ->
@@ -21,7 +22,7 @@ module.exports = ->
         done null
 
   it 'include objects that belong to', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Post.query().include('user').exec callback
       (posts, callback) ->
@@ -49,7 +50,7 @@ module.exports = ->
     ], done
 
   it 'include an object that belongs to', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Post.find(preset_posts[0].id).include('user').exec callback
       (post, callback) ->
@@ -63,7 +64,7 @@ module.exports = ->
     ], done
 
   it 'include objects that belong to with select', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Post.query().include('user', 'name').exec callback
       (posts, callback) ->
@@ -91,7 +92,7 @@ module.exports = ->
     ], done
 
   it 'include objects that have many', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.User.query().include('posts').exec callback
       (users, callback) ->
@@ -126,7 +127,7 @@ module.exports = ->
     ], done
 
   it 'include an object that has many', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.User.find(preset_users[0].id).include('posts').exec callback
       (user, callback) ->
@@ -150,7 +151,7 @@ module.exports = ->
     ], done
 
   it 'include objects that have many with select', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.User.query().include('posts', 'title').exec callback
       (users, callback) ->

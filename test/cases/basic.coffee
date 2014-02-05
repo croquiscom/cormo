@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 _getInvalidID = (id) ->
@@ -169,14 +170,14 @@ module.exports = () ->
           done null
 
   it 'find records', (done) ->
-    _g.async.parallel [
+    async.parallel [
       (callback) -> _g.connection.User.create { name: 'John Doe', age: 27 }, callback
       (callback) -> _g.connection.User.create { name: 'Bill Smith', age: 45 }, callback
       (callback) -> _g.connection.User.create { name: 'Alice Jackson', age: 27 }, callback
     ], (error, users) ->
       return done error if error
       users.sort (a, b) -> if a.id < b.id then -1 else 1
-      _g.async.waterfall [
+      async.waterfall [
         (callback) -> _g.connection.User.find [users[0].id, users[1].id], callback
         (records, callback) ->
           records.sort (a, b) -> if a.id < b.id then -1 else 1
@@ -190,7 +191,7 @@ module.exports = () ->
         done null
 
   it 'find records with non-existing id', (done) ->
-    _g.async.parallel [
+    async.parallel [
       (callback) -> _g.connection.User.create { name: 'John Doe', age: 27 }, callback
       (callback) -> _g.connection.User.create { name: 'Bill Smith', age: 45 }, callback
       (callback) -> _g.connection.User.create { name: 'Alice Jackson', age: 27 }, callback
@@ -204,14 +205,14 @@ module.exports = () ->
         done null
 
   it 'find records duplicate', (done) ->
-    _g.async.parallel [
+    async.parallel [
       (callback) -> _g.connection.User.create { name: 'John Doe', age: 27 }, callback
       (callback) -> _g.connection.User.create { name: 'Bill Smith', age: 45 }, callback
       (callback) -> _g.connection.User.create { name: 'Alice Jackson', age: 27 }, callback
     ], (error, users) ->
       return done error if error
       users.sort (a, b) -> if a.id < b.id then -1 else 1
-      _g.async.waterfall [
+      async.waterfall [
         (callback) -> _g.connection.User.find [users[2].id, users[0].id, users[0].id, users[0].id, users[2].id], callback
         (records, callback) ->
           records.sort (a, b) -> if a.id < b.id then -1 else 1
@@ -225,13 +226,13 @@ module.exports = () ->
         done null
 
   it 'find while preserving order', (done) ->
-    _g.async.parallel [
+    async.parallel [
       (callback) -> _g.connection.User.create { name: 'John Doe', age: 27 }, callback
       (callback) -> _g.connection.User.create { name: 'Bill Smith', age: 45 }, callback
       (callback) -> _g.connection.User.create { name: 'Alice Jackson', age: 27 }, callback
     ], (error, users) ->
       return done error if error
-      _g.async.waterfall [
+      async.waterfall [
         (callback) -> _g.connection.User.findPreserve [users[2].id, users[0].id, users[0].id, users[0].id, users[2].id], callback
         (records, callback) ->
           expect(records).to.have.length 5
@@ -256,7 +257,7 @@ module.exports = () ->
       expect(users).to.exist
       expect(users).to.be.an.instanceof Array
       expect(users).to.have.length 3
-      _g.async.forEach users, (user, callback) ->
+      async.forEach users, (user, callback) ->
         expect(user).to.be.an.instanceof _g.connection.User
         expect(user).to.have.keys 'id', 'name', 'age'
         expect(user.id).to.exist

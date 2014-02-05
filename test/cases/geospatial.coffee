@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 _createPlaces = (Place, data, callback) ->
@@ -42,13 +43,13 @@ module.exports = () ->
       [ -76.136131 ]
       [ -76.136131, 43.036240, 10.59 ]
     ]
-    _g.async.forEach data, (item, callback) ->
-        _g.connection.Place.create name: 'Carrier Dome', location: item, (error, place) ->
-          expect(error).to.exist
-          expect(error).to.have.property 'message', "'location' is not a geo point"
-          callback null
-      , (error) ->
-        done error
+    async.forEach data, (item, callback) ->
+      _g.connection.Place.create name: 'Carrier Dome', location: item, (error, place) ->
+        expect(error).to.exist
+        expect(error).to.have.property 'message', "'location' is not a geo point"
+        callback null
+    , (error) ->
+      done error
 
   it 'near query 1', (done) ->
     _createPlaces _g.connection.Place, (error) ->

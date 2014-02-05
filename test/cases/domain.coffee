@@ -1,6 +1,5 @@
-{expect} = require 'chai'
-
 domain = require 'domain'
+{expect} = require 'chai'
 
 module.exports = () ->
   user = undefined

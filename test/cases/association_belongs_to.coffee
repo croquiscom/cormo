@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 module.exports = () ->
@@ -12,7 +13,7 @@ module.exports = () ->
           done null
 
   it 'lean option for association', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
           return callback error if error

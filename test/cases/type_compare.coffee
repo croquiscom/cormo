@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 module.exports = () ->
@@ -8,7 +9,7 @@ module.exports = () ->
       { number: -8.3 }
       { number: 28.9 }
     ]
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Type.createBulk data, callback
       (records, callback) ->
@@ -34,7 +35,7 @@ module.exports = () ->
       { int_c: -8 }
       { int_c: 28 }
     ]
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Type.createBulk data, callback
       (records, callback) ->
@@ -60,7 +61,7 @@ module.exports = () ->
       { date: '2012/10/14 21:32:54' }
       { date: '2012/10/15 21:32:54' }
     ]
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Type.createBulk data, callback
       (records, callback) ->
@@ -92,7 +93,7 @@ module.exports = () ->
       { boolean: false }
       { boolean: true }
     ]
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Type.createBulk data, callback
       (records, callback) ->
@@ -118,7 +119,7 @@ module.exports = () ->
       { string: 'A' }
       { string: 'K' }
     ]
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Type.createBulk data, callback
       (records, callback) ->

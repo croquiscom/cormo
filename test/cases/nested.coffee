@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 module.exports = () ->
@@ -8,7 +9,7 @@ module.exports = () ->
       first: String
       last: String
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         expect(user).to.have.keys 'id', 'name'
@@ -32,7 +33,7 @@ module.exports = () ->
       first: String
       last: String
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create {}, callback
       (user, callback) -> User.find user.id, callback
       (user, callback) ->
@@ -50,7 +51,7 @@ module.exports = () ->
     User.column 'name.first', String
     User.column 'name.last', String
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         expect(user).to.have.keys 'id', 'name'
@@ -75,7 +76,7 @@ module.exports = () ->
       middle: String
       last: { type: String, required: true }
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create { name: first: 'John', middle: 'F.', last: 'Doe' }, callback
       (user, callback) -> User.find user.id, callback
       (user, callback) ->
@@ -111,7 +112,7 @@ module.exports = () ->
       first: String
       last: String
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) -> User.create { name: first: 'Bill', last: 'Smith' }, callback
       (user, callback) -> User.create { name: first: 'Daniel', last: 'Smith' }, callback
@@ -137,7 +138,7 @@ module.exports = () ->
       first: String
       last: String
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         User.find(user.id).update name: first: 'Bill', (error, count) ->
@@ -161,7 +162,7 @@ module.exports = () ->
       middle: String
       last: { type: String, required: true }
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create { name: first: 'John', middle: 'F.', last: 'Doe' }, callback
       (user, callback) ->
         User.find(user.id).update name: last: null, (error) ->
@@ -178,7 +179,7 @@ module.exports = () ->
       last: String
     User.column 'age', Number
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create name: { first: 'John', last: 'Doe' }, age: 20, callback
       (user, callback) ->
         expect(user).to.have.keys 'id', 'name', 'age'
@@ -200,7 +201,7 @@ module.exports = () ->
       first: String
       last: String
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create name: { first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         user.name = first: 'Bill'
@@ -243,7 +244,7 @@ module.exports = () ->
       first: String
       last: String
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) -> User.select 'name.first', callback
       (users, callback) ->
@@ -261,7 +262,7 @@ module.exports = () ->
       first: String
       last: String
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) -> User.select 'name', callback
       (users, callback) ->
@@ -280,7 +281,7 @@ module.exports = () ->
       first: String
       last: String
 
-    _g.async.waterfall [
+    async.waterfall [
       (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
       (user, callback) ->
         User.find(user.id).update name: null, (error, count) ->

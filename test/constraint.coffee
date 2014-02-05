@@ -1,21 +1,12 @@
 require './common'
 
-_dbs =
-  mysql:
-    database: 'test'
-  mongodb:
-    database: 'test'
-  sqlite3:
-    database: __dirname + '/test.sqlite3'
-  sqlite3_memory: {}
-  postgresql:
-    database: 'test'
+_dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql' ]
 
-Object.keys(_dbs).forEach (db) ->
+_dbs.forEach (db) ->
   describe 'constraint-' + db, ->
     describe '#basic', ->
       before (done) ->
-        _g.connection = new _g.Connection db, _dbs[db]
+        _g.connection = new _g.Connection db, _g.db_configs[db]
 
         if Math.floor Math.random() * 2
           # using CoffeeScript extends keyword
@@ -57,7 +48,7 @@ Object.keys(_dbs).forEach (db) ->
 
     describe '#multicolumn', ->
       before (done) ->
-        _g.connection = new _g.Connection db, _dbs[db]
+        _g.connection = new _g.Connection db, _g.db_configs[db]
 
         if Math.floor Math.random() * 2
           # using CoffeeScript extends keyword

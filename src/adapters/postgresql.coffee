@@ -314,19 +314,19 @@ class PostgreSQLAdapter extends SQLAdapterBase
   connect: (settings, callback) ->
     # connect
     pg.connect
-        host: settings.host
-        port: settings.port
-        user: settings.user
-        password: settings.password
-        database: settings.database
-      , (error, client, done) =>
-        if error?.code is '3D000'
-          return callback new Error 'database does not exist'
-        return callback PostgreSQLAdapter.wrapError 'failed to connect', error if error
+      host: settings.host
+      port: settings.port
+      user: settings.user
+      password: settings.password
+      database: settings.database
+    , (error, client, done) =>
+      if error?.code is '3D000'
+        return callback new Error 'database does not exist'
+      return callback PostgreSQLAdapter.wrapError 'failed to connect', error if error
 
-        @_client = client
-        @_client_done = done
-        return callback null
+      @_client = client
+      @_client_done = done
+      return callback null
 
   ## @override AdapterBase::close
   close: ->

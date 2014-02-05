@@ -1,16 +1,12 @@
 require './common'
 {expect} = require 'chai'
 
-_dbs =
-  mysql:
-    database: 'test'
-  mongodb:
-    database: 'test'
+_dbs = [ 'mysql', 'mongodb' ]
 
-Object.keys(_dbs).forEach (db) ->
+_dbs.forEach (db) ->
   describe 'geospatial-' + db, ->
     before (done) ->
-      _g.connection = new _g.Connection db, _dbs[db]
+      _g.connection = new _g.Connection db, _g.db_configs[db]
 
       if Math.floor Math.random() * 2
         # using CoffeeScript extends keyword
@@ -36,17 +32,12 @@ Object.keys(_dbs).forEach (db) ->
 
     require('./cases/geospatial')()
 
-_dbs_not =
-  sqlite3:
-    database: __dirname + '/test.sqlite3'
-  sqlite3_memory: {}
-  postgresql:
-    database: 'test'
+_dbs_not = [ 'sqlite3', 'sqlite3_memory', 'postgresql' ]
 
-Object.keys(_dbs_not).forEach (db) ->
+_dbs_not.forEach (db) ->
   describe 'geospatial-' + db, ->
     before ->
-      _g.connection = new _g.Connection db, _dbs_not[db]
+      _g.connection = new _g.Connection db, _g.db_configs[db]
 
     it 'does not support geospatial', (done) ->
       expect( ->

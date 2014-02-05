@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 _createUsers = (User, data, callback) ->
@@ -45,7 +46,7 @@ module.exports = () ->
         done null
 
   it 'required', (done) ->
-    _g.async.parallel [
+    async.parallel [
       (callback) ->
         _g.connection.User.create { age: 10, email: 'test1@example.com' }, (error, user) ->
           expect(error).to.exist
@@ -91,7 +92,7 @@ module.exports = () ->
         done null
 
   it 'required of belongsTo', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.User.create { name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, callback
       (user, callback) ->

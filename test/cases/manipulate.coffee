@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 _compareUser = (user, expected) ->
@@ -7,7 +8,7 @@ _compareUser = (user, expected) ->
 
 module.exports = () ->
   it 'create simple', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.User.count callback
       (count, callback) ->
@@ -38,7 +39,7 @@ module.exports = () ->
       done null
 
   it 'create multiple', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_user: name: 'John Doe', age: 27 }
@@ -53,7 +54,7 @@ module.exports = () ->
     ], done
 
   it 'delete all', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_user: name: 'John Doe', age: 27 }
@@ -70,7 +71,7 @@ module.exports = () ->
     ], done
 
   it 'delete some', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_user: name: 'John Doe', age: 27 }
@@ -95,7 +96,7 @@ module.exports = () ->
     ], done
 
   it 'build association', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_user: id: 'user1', name: 'John Doe', age: 27 }
@@ -114,7 +115,7 @@ module.exports = () ->
     ], done
 
   it 'build association by real id', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_user: id: 'user1', name: 'John Doe', age: 27 }
@@ -136,7 +137,7 @@ module.exports = () ->
     ], done
 
   it 'id is not shared between manipulates', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_user: id: 'user1', name: 'John Doe', age: 27 }
@@ -151,7 +152,7 @@ module.exports = () ->
     ], done
 
   it 'deleteAll', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_user: name: 'John Doe', age: 27 }
@@ -182,7 +183,7 @@ module.exports = () ->
     ], done
 
   it 'find record', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_user: name: 'John Doe', age: 27 }

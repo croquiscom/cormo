@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 _compareUser = (archive, expected) ->
@@ -20,7 +21,7 @@ _comparePost = (archive, expected) ->
 module.exports = ->
   it 'basic', (done) ->
     users = undefined
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_user: id: 'user0', name: 'John Doe', age: 27 }
@@ -58,7 +59,7 @@ module.exports = ->
   it 'by integrity', (done) ->
     users = undefined
     posts = undefined
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.manipulate [
           { create_user: id: 'user0', name: 'John Doe', age: 27 }

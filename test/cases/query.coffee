@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 _compareUser = (user, expected) ->
@@ -171,7 +172,7 @@ module.exports = () ->
   it 'limit', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      _g.async.series [
+      async.series [
         (callback) ->
           _g.connection.User.query().exec (error, users) ->
             return callback error if error
@@ -207,7 +208,7 @@ module.exports = () ->
   it 'one', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      _g.async.series [
+      async.series [
         (callback) ->
           _g.connection.User.where(age: { $lt: 40 }).one().exec (error, user) ->
             return callback error if error
@@ -231,7 +232,7 @@ module.exports = () ->
   it 'skip', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      _g.async.series [
+      async.series [
         (callback) ->
           _g.connection.User.query().order('age').skip(3).exec (error, users) ->
             return callback error if error
@@ -252,7 +253,7 @@ module.exports = () ->
   it 'select', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
-      _g.async.series [
+      async.series [
         (callback) ->
           _g.connection.User.select (error, users) ->
             return callback error if error
@@ -397,7 +398,7 @@ module.exports = () ->
         done null
 
   it 'cache', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _createUsers _g.connection.User, callback
       (users, callback) ->

@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 module.exports = ->
@@ -21,7 +22,7 @@ module.exports = ->
         done null
 
   it 'fetch objects that belong to', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Post.where callback
       (posts, callback) ->
@@ -52,7 +53,7 @@ module.exports = ->
     ], done
 
   it 'fetch an object that belongs to', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Post.find preset_posts[0].id, callback
       (post, callback) ->
@@ -69,7 +70,7 @@ module.exports = ->
     ], done
 
   it 'fetch objects that belong to with select', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.Post.where callback
       (posts, callback) ->
@@ -100,7 +101,7 @@ module.exports = ->
     ], done
 
   it 'fetch objects that have many', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.User.where callback
       (users, callback) ->
@@ -138,7 +139,7 @@ module.exports = ->
     ], done
 
   it 'fetch an object that has many', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.User.find preset_users[0].id, callback
       (user, callback) ->
@@ -165,7 +166,7 @@ module.exports = ->
     ], done
 
   it 'fetch objects that have many with select', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       (callback) ->
         _g.connection.User.where callback
       (users, callback) ->

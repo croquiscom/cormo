@@ -246,10 +246,10 @@ class MongoDBAdapter extends AdapterBase
       else
         indexes.push [ index.columns, { name: index.options.name } ]
     async.forEach indexes, (index, callback) ->
-        collection.ensureIndex index[0], index[1], (error) ->
-          callback error
-      , (error) ->
+      collection.ensureIndex index[0], index[1], (error) ->
         callback error
+    , (error) ->
+      callback error
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->

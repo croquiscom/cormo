@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 _comparePost = (a, b) ->
@@ -7,7 +8,7 @@ _comparePost = (a, b) ->
 
 module.exports = () ->
   it 'collection_accessor.build on a new object', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       # create two new objects
       (callback) ->
         user1 = _g.connection.User.build name: 'John Doe', age: 27
@@ -46,7 +47,7 @@ module.exports = () ->
       done error
 
   it 'collection_accessor.build on an existing object', (done) ->
-    _g.async.waterfall [
+    async.waterfall [
       # create two new objects
       (callback) ->
         _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user1) ->

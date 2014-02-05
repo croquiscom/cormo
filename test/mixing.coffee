@@ -2,8 +2,8 @@ require './common'
 
 describe 'mixing several database', ->
   before (done) ->
-    mysql = new _g.Connection 'mysql', database: 'test'
-    mongodb = new _g.Connection 'mongodb', database: 'test'
+    mysql = new _g.Connection 'mysql', _g.db_configs.mysql
+    mongodb = new _g.Connection 'mongodb', _g.db_configs.mongodb
 
     if Math.floor Math.random() * 2
       # using CoffeeScript extends keyword

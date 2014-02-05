@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 module.exports = () ->
@@ -8,7 +9,7 @@ module.exports = () ->
       [ '8a', null ]
       [ 'abc', null ]
     ]
-    _g.async.forEach data, (item, callback) ->
+    async.forEach data, (item, callback) ->
       _g.connection.Type.create (error, type) ->
         return callback error if error
         _g.connection.Type.find(type.id).update number: item[0], (error, count) ->
@@ -33,7 +34,7 @@ module.exports = () ->
       [ '8a', null ]
       [ 'abc', null ]
     ]
-    _g.async.forEach data, (item, callback) ->
+    async.forEach data, (item, callback) ->
       _g.connection.Type.create (error, type) ->
         return callback error if error
         _g.connection.Type.find(type.id).update int_c: item[0], (error, count) ->
@@ -59,7 +60,7 @@ module.exports = () ->
       [ '2012/13/01', null ]
       [ new Date('2013/01/12 03:42:21').getTime(), new Date('2013/01/12 03:42:21').getTime() ]
     ]
-    _g.async.forEach data, (item, callback) ->
+    async.forEach data, (item, callback) ->
       _g.connection.Type.create (error, type) ->
         return callback error if error
         _g.connection.Type.find(type.id).update date: item[0], (error, count) ->
@@ -84,7 +85,7 @@ module.exports = () ->
       [ 'str', null ]
       [ 5, null ]
     ]
-    _g.async.forEach data, (item, callback) ->
+    async.forEach data, (item, callback) ->
       _g.connection.Type.create (error, type) ->
         return callback error if error
         _g.connection.Type.find(type.id).update boolean: item[0], (error, count) ->
@@ -109,7 +110,7 @@ module.exports = () ->
       [ false, false ]
       [ {a: 5, b: ['oh']}, {a: 5, b: ['oh']} ]
     ]
-    _g.async.forEach data, (item, callback) ->
+    async.forEach data, (item, callback) ->
       _g.connection.Type.create (error, type) ->
         return callback error if error
         _g.connection.Type.find(type.id).update object: item[0], (error, count) ->
@@ -131,7 +132,7 @@ module.exports = () ->
       [ 9, null ]
       [ [9,'12.8'], null ]
     ]
-    _g.async.forEach data, (item, callback) ->
+    async.forEach data, (item, callback) ->
       _g.connection.Type.create (error, type) ->
         return callback error if error
         _g.connection.Type.find(type.id).update int_array: item[0], (error, count) ->
