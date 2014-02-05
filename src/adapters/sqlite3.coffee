@@ -190,7 +190,7 @@ class SQLite3Adapter extends SQLAdapterBase
     @_query 'all', "SELECT #{select} FROM #{tableName} WHERE id=? LIMIT 1", id, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       if result?.length is 1
-        if options.return_raw_instance
+        if options.lean
           callback null, @_refineRawInstance model, result[0], options.select
         else
           callback null, @_convertToModelInstance model, result[0], options.select
@@ -238,7 +238,7 @@ class SQLite3Adapter extends SQLAdapterBase
       if options.group_fields
         callback null, result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
       else
-        if options.return_raw_instance
+        if options.lean
           callback null, result.map (record) => @_refineRawInstance model, record, options.select
         else
           callback null, result.map (record) => @_convertToModelInstance model, record, options.select

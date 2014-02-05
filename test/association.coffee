@@ -70,3 +70,5 @@ _dbs.forEach (db) ->
       require('./cases/association_fetch')()
     describe '#include', ->
       require('./cases/association_include')()
+    describe '#include with lean', ->
+      require('./cases/association_include_lean')()

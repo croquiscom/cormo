@@ -2,11 +2,11 @@ async = require 'async'
 {expect} = require 'chai'
 
 _checkPost = (post, title, user_id, user_name, user_age) ->
-  expect(post).to.be.an.instanceof _g.connection.Post
+  expect(post).to.not.be.an.instanceof _g.connection.Post
   expect(post).to.have.property 'title', title
   expect(post).to.have.property 'user'
 
-  expect(post.user).to.be.an.instanceof _g.connection.User
+  expect(post.user).to.not.be.an.instanceof _g.connection.User
   if user_age
     expect(post.user).to.have.keys 'id', 'name', 'age'
   else
@@ -17,13 +17,13 @@ _checkPost = (post, title, user_id, user_name, user_age) ->
     expect(post.user).to.have.property 'age', user_age
 
 _checkUser = (user, name, post_ids, post_titles, has_post_body) ->
-  expect(user).to.be.an.instanceof _g.connection.User
+  expect(user).to.not.be.an.instanceof _g.connection.User
   expect(user).to.have.property 'name', name
   expect(user).to.have.property 'posts'
 
   expect(user.posts).to.have.length post_ids.length
   for post, i in user.posts
-    expect(post).to.be.an.instanceof _g.connection.Post
+    expect(post).to.not.be.an.instanceof _g.connection.Post
     if not has_post_body
       expect(post).to.have.keys 'id', 'user_id', 'title'
     else if _g.connection.User.eliminate_null
@@ -53,13 +53,10 @@ module.exports = ->
         preset_posts = posts
         done null
 
-  it 'fetch objects that belong to', (done) ->
+  it 'include objects that belong to', (done) ->
     async.waterfall [
       (callback) ->
-        _g.connection.Post.where callback
-      (posts, callback) ->
-        _g.connection.fetchAssociated posts, 'user', (error) ->
-          callback error, posts
+        _g.connection.Post.query().lean().include('user').exec callback
       (posts, callback) ->
         expect(posts).to.have.length 3
         _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
@@ -68,25 +65,19 @@ module.exports = ->
         callback null
     ], done
 
-  it 'fetch an object that belongs to', (done) ->
+  it 'include an object that belongs to', (done) ->
     async.waterfall [
       (callback) ->
-        _g.connection.Post.find preset_posts[0].id, callback
-      (post, callback) ->
-        _g.connection.fetchAssociated post, 'user', (error) ->
-          callback error, post
+        _g.connection.Post.find(preset_posts[0].id).lean().include('user').exec callback
       (post, callback) ->
         _checkPost post, 'first post', preset_users[0].id, 'John Doe', 27
         callback null
     ], done
 
-  it 'fetch objects that belong to with select', (done) ->
+  it 'include objects that belong to with select', (done) ->
     async.waterfall [
       (callback) ->
-        _g.connection.Post.where callback
-      (posts, callback) ->
-        _g.connection.fetchAssociated posts, 'user', 'name', (error) ->
-          callback error, posts
+        _g.connection.Post.query().lean().include('user', 'name').exec callback
       (posts, callback) ->
         expect(posts).to.have.length 3
         _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe'
@@ -95,13 +86,10 @@ module.exports = ->
         callback null
     ], done
 
-  it 'fetch objects that have many', (done) ->
+  it 'include objects that have many', (done) ->
     async.waterfall [
       (callback) ->
-        _g.connection.User.where callback
-      (users, callback) ->
-        _g.connection.fetchAssociated users, 'posts', (error) ->
-          callback error, users
+        _g.connection.User.query().lean().include('posts').exec callback
       (users, callback) ->
         expect(users).to.have.length 2
         _checkUser users[0], 'John Doe', [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], true
@@ -109,25 +97,19 @@ module.exports = ->
         callback null
     ], done
 
-  it 'fetch an object that has many', (done) ->
+  it 'include an object that has many', (done) ->
     async.waterfall [
       (callback) ->
-        _g.connection.User.find preset_users[0].id, callback
-      (user, callback) ->
-        _g.connection.fetchAssociated user, 'posts', (error) ->
-          callback error, user
+        _g.connection.User.find(preset_users[0].id).lean().include('posts').exec callback
       (user, callback) ->
         _checkUser user, 'John Doe', [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], true
         callback null
     ], done
 
-  it 'fetch objects that have many with select', (done) ->
+  it 'include objects that have many with select', (done) ->
     async.waterfall [
       (callback) ->
-        _g.connection.User.where callback
-      (users, callback) ->
-        _g.connection.fetchAssociated users, 'posts', 'title', (error) ->
-          callback error, users
+        _g.connection.User.query().lean().include('posts', 'title').exec callback
       (users, callback) ->
         expect(users).to.have.length 2
         _checkUser users[0], 'John Doe', [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], false

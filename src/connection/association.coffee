@@ -252,7 +252,7 @@ class ConnectionAssociation
       return callback error if error
       callback null, result
 
-  _fetchAssociatedBelongsTo: (records, target_model, column, select, callback) ->
+  _fetchAssociatedBelongsTo: (records, target_model, column, select, options, callback) ->
     id_column = column + '_id'
     if Array.isArray records
       id_to_record_map = {}
@@ -265,8 +265,8 @@ class ConnectionAssociation
         return
       ids = Object.keys id_to_record_map
       query = target_model.find(ids)
-      if select
-        query.select select
+      query.select select if select
+      query.lean() if options.lean
       query.exec (error, sub_records) ->
         return callback null if error
         sub_records.forEach (sub_record) ->
@@ -277,8 +277,8 @@ class ConnectionAssociation
       id = records[id_column]
       if id
         query = target_model.find(id)
-        if select
-          query.select select
+        query.select select if select
+        query.lean() if options.lean
         query.exec (error, sub_record) ->
           return callback error if error
           Object.defineProperty records, column, enumerable: true, value: sub_record
@@ -287,7 +287,7 @@ class ConnectionAssociation
         Object.defineProperty records, column, enumerable: true, value: null
         callback null
 
-  _fetchAssociatedHasMany: (records, target_model, foreign_key, column, select, callback) ->
+  _fetchAssociatedHasMany: (records, target_model, foreign_key, column, select, options, callback) ->
     if Array.isArray records
       ids = records.map (record) ->
         Object.defineProperty record, column, enumerable: true, value: []
@@ -295,8 +295,8 @@ class ConnectionAssociation
       cond = {}
       cond[foreign_key] = $in: ids
       query = target_model.where cond
-      if select
-        query.select select + ' ' + foreign_key
+      query.select select + ' ' + foreign_key if select
+      query.lean() if options.lean
       query.exec (error, sub_records) ->
         return callback null if error
         sub_records.forEach (sub_record) ->
@@ -308,8 +308,8 @@ class ConnectionAssociation
       cond = {}
       cond[foreign_key] = records.id
       query = target_model.where cond
-      if select
-        query.select select + ' ' + foreign_key
+      query.select select + ' ' + foreign_key if select
+      query.lean() if options.lean
       query.exec (error, sub_records) ->
         return callback null if error
         sub_records.forEach (sub_record) ->
@@ -321,21 +321,29 @@ class ConnectionAssociation
   # @param {Model|Array<Model>} records
   # @param {String} column
   # @param {String} [select]
+  # @param {Object} [options]
   # @param {Function} callback
   # @param {Error} callback.error
-  fetchAssociated: (records, column, select, callback) ->
+  fetchAssociated: (records, column, select, options, callback) ->
     if typeof select is 'function'
       callback = select
+      options = {}
       select = null
-    
+    else if typeof options is 'function'
+      callback = options
+      options = {}
+      if typeof select is 'object'
+        options = select
+        select = null
+
     record = if Array.isArray records then records[0] else records
     return callback null if not record
-    association = record.constructor._associations[column]
+    association = (options.model or record.constructor)._associations?[column]
     return callback new Error("unknown column '#{column}'") if not association
     if association.type is 'belongsTo'
-      @_fetchAssociatedBelongsTo records, association.target_model, column, select, callback
+      @_fetchAssociatedBelongsTo records, association.target_model, column, select, options, callback
     else if association.type is 'hasMany'
-      @_fetchAssociatedHasMany records, association.target_model, association.foreign_key, column, select, callback
+      @_fetchAssociatedHasMany records, association.target_model, association.foreign_key, column, select, options, callback
     else
       return callback new Error("unknown column '#{column}'")
 

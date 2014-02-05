@@ -155,7 +155,7 @@ class Query
   # Returns raw instances instead of model instances
   # @see Query::exec
   lean: ->
-    @_options.return_raw_instance = true
+    @_options.lean = true
     return @
 
   ##
@@ -221,7 +221,7 @@ class Query
     @_exec options, (error, records) =>
       return callback error if error
       async.forEach @_includes, (include, callback) =>
-        @_connection.fetchAssociated records, include.column, include.select, callback
+        @_connection.fetchAssociated records, include.column, include.select, model: @_model, lean: @_options.lean, callback
       , (error) ->
         callback error, records
 
