@@ -149,11 +149,15 @@ class CommandConsole
     program.help() if argv.indexOf('--help') >= 0 || argv.indexOf('-h') >= 0
     program.parse(argv)
 
-    try
-      cwd = process.cwd()
-      for load in loads
-        console.log "Loading module '#{load}'..."
-        require path.resolve cwd, load
+    cwd = process.cwd()
+    for load in loads
+      console.log "Loading module '#{load}'..."
+      try
+        require load
+      catch e
+        try
+          require path.resolve cwd, load
+        catch e
 
   run: ->
     @runCoffee()
