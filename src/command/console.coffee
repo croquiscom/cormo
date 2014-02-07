@@ -6,6 +6,7 @@ path = require 'path'
 repl = require 'repl'
 vm = require 'vm'
 fs = require 'fs'
+util = require 'util'
 
 Connection = require '../connection'
 Model = require '../model'
@@ -142,10 +143,13 @@ addArgCompleter = (repl) ->
 class CommandConsole
   constructor: (argv) ->
     loads = []
+    @inspect_depth = 2
     @program = program = new commander.Command('cormo')
     program.usage('console [options]')
       .option('-l, --load <path>', 'load specified module')
+      .option('-d, --inspect-depth <depth>', 'specify depth for util.inspect')
       .on('load', (path) -> loads.push path)
+      .on('inspect-depth', (depth) => @inspect_depth = depth)
     program.help() if argv.indexOf('--help') >= 0 || argv.indexOf('-h') >= 0
     program.parse(argv)
 
@@ -195,6 +199,8 @@ class CommandConsole
             return callback prettyErrorMessage e, filename, cmd, true
           callback null, result
         ).run()
+      writer: (object) =>
+        util.inspect object, colors: true, depth: @inspect_depth
     repl.on 'exit', ->
       process.exit 0
     addMultilineHandler repl
