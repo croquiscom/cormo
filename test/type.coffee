@@ -17,6 +17,7 @@ _dbs.forEach (db) ->
           @column 'object', 'object'
           @column 'string', 'string'
           @column 'int_array', ['integer']
+          @column 'recordid_array', ['recordid']
       else
         # using Connection method
         Type = _g.connection.model 'Type',
@@ -27,6 +28,7 @@ _dbs.forEach (db) ->
           object: Object
           string: String
           int_array: [_g.cormo.types.Integer]
+          recordid_array: [_g.cormo.types.RecordID]
 
       _g.dropModels [Type], done
 

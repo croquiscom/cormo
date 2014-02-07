@@ -140,3 +140,15 @@ module.exports = () ->
           callback null
     , (error) ->
       done error
+
+  it 'array of recordid', (done) ->
+      _g.connection.Type.createBulk [ { int_c: 1 }, { int_c: 2 }, { int_c: 3 } ], (error, types) ->
+        return done error if error
+        type_ids = [types[0].id, null, types[1].id, types[2].id, null]
+        _g.connection.Type.create recordid_array: type_ids, (error, type) ->
+          return done error if error
+          expect(type.recordid_array).to.eql type_ids
+          _g.connection.Type.find type.id, (error, type) ->
+            return callback error if error
+            expect(type.recordid_array).to.eql type_ids
+            done null

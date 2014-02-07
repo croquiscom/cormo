@@ -268,7 +268,10 @@ class MongoDBAdapter extends AdapterBase
     return if not value?
     # convert id type
     if column is 'id' or property.type is 'objectid'
-      return _convertValueToObjectID value, column
+      if property.array
+        return value.map (v) -> v and _convertValueToObjectID v, column
+      else
+        return _convertValueToObjectID value, column
     return value
 
   _getModelID: (data) ->
@@ -276,7 +279,10 @@ class MongoDBAdapter extends AdapterBase
 
   valueToModel: (value, column, property) ->
     if property.type is 'objectid'
-      _objectIdToString value
+      if property.array
+        value.map (v) -> v and _objectIdToString v
+      else
+        _objectIdToString value
     else
       value
 
