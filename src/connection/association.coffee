@@ -1,5 +1,6 @@
 _ = require 'underscore'
 async = require 'async'
+console_future = require '../console_future'
 inflector = require '../inflector'
 types = require '../types'
 
@@ -336,15 +337,16 @@ class ConnectionAssociation
         options = select
         select = null
 
-    record = if Array.isArray records then records[0] else records
-    return callback null if not record
-    association = (options.model or record.constructor)._associations?[column]
-    return callback new Error("unknown column '#{column}'") if not association
-    if association.type is 'belongsTo'
-      @_fetchAssociatedBelongsTo records, association.target_model, column, select, options, callback
-    else if association.type is 'hasMany'
-      @_fetchAssociatedHasMany records, association.target_model, association.foreign_key, column, select, options, callback
-    else
-      return callback new Error("unknown column '#{column}'")
+    console_future.execute callback, (callback) =>
+      record = if Array.isArray records then records[0] else records
+      return callback null if not record
+      association = (options.model or record.constructor)._associations?[column]
+      return callback new Error("unknown column '#{column}'") if not association
+      if association.type is 'belongsTo'
+        @_fetchAssociatedBelongsTo records, association.target_model, column, select, options, callback
+      else if association.type is 'hasMany'
+        @_fetchAssociatedHasMany records, association.target_model, association.foreign_key, column, select, options, callback
+      else
+        return callback new Error("unknown column '#{column}'")
 
 module.exports = ConnectionAssociation
