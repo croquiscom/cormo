@@ -203,3 +203,23 @@ module.exports = () ->
         _compareUser users[1], name: 'John Doe', age: 27
         callback null
     ], done
+
+  it 'build array column', (done) ->
+    async.waterfall [
+      (callback) ->
+        _g.connection.manipulate [
+          { create_user: id: 'user1', name: 'John Doe', age: 27 }
+          { create_user: id: 'user2', name: 'Bill Smith', age: 45 }
+          { create_user: id: 'user3', name: 'Alice Jackson', age: 27 }
+          { create_post: title: 'first post', body: 'This is the 1st post.', user_id: 'user1', readers: ['user2', 'user3'] }
+        ], callback
+      (id_to_record_map, callback) ->
+        _g.connection.Post.where (error, posts) ->
+          callback error, [id_to_record_map.user1, id_to_record_map.user2, id_to_record_map.user3], posts
+      (users, posts, callback) ->
+        expect(users).to.have.length 3
+        expect(posts).to.have.length 1
+        expect(posts[0].user_id).to.equal users[0].id
+        expect(posts[0].readers).to.eql [users[1].id, users[2].id]
+        callback null
+    ], done

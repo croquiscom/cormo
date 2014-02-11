@@ -18,6 +18,7 @@ _dbs.forEach (db) ->
           @column 'title', String
           @column 'body', String
           @belongsTo 'user'
+          @column 'readers', [_g.cormo.types.RecordID]
       else
         # using Connection method
         User = _g.connection.model 'User',
@@ -27,6 +28,7 @@ _dbs.forEach (db) ->
         Post = _g.connection.model 'Post',
           title: String
           body: String
+          readers: [_g.cormo.types.RecordID]
 
         User.hasMany Post
         Post.belongsTo User
