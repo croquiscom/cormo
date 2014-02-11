@@ -428,8 +428,11 @@ class MongoDBAdapter extends AdapterBase
         else
           column = order
           dir = 1
-        if options.group_by and column is options.group_by.join(',')
-          column = '_id'
+        if options.group_by
+          if options.group_by.length is 1
+            column = '_id' if column is options.group_by[0]
+          else
+            column = '_id.'+column if options.group_by.indexOf(column)>=0
         orders[column] = dir
     #console.log JSON.stringify conditions
     if options.group_by or options.group_fields
@@ -446,6 +449,8 @@ class MongoDBAdapter extends AdapterBase
           if options.group_by
             if options.group_by.length is 1
               record[options.group_by[0]] = record._id
+            else
+              record[group] = record._id[group] for group in options.group_by
           @_convertToGroupInstance model, record, options.group_by, options.group_fields
     else
       client_options =
