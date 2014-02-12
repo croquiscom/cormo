@@ -217,5 +217,9 @@ class CommandConsole
       for model, modelClass of connection.models
         context[model] = modelClass
     connection.applySchemas()
+    Object.defineProperty context.console, 'inspect_depth',
+      enumrable: true,
+      get: => return @inspect_depth
+      set: (value) => @inspect_depth = value
 
 module.exports = CommandConsole
