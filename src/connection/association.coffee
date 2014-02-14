@@ -261,11 +261,9 @@ class ConnectionAssociation
         id = record[id_column]
         if id
           (id_to_record_map[id] ||= []).push record
-        else if not record.hasOwnProperty column
-          Object.defineProperty record, column, enumerable: true, value: null
         return
       ids = Object.keys id_to_record_map
-      query = target_model.find(ids)
+      query = target_model.where id: ids
       query.select select if select
       query.lean() if options.lean
       query.exec (error, sub_records) ->
@@ -273,6 +271,10 @@ class ConnectionAssociation
         sub_records.forEach (sub_record) ->
           id_to_record_map[sub_record.id].forEach (record) ->
             Object.defineProperty record, column, enumerable: true, value: sub_record
+        records.forEach (record) ->
+          if not record.hasOwnProperty column
+            Object.defineProperty record, column, enumerable: true, value: null
+          return
         callback null
     else
       id = records[id_column]
@@ -281,8 +283,11 @@ class ConnectionAssociation
         query.select select if select
         query.lean() if options.lean
         query.exec (error, sub_record) ->
-          return callback error if error
-          Object.defineProperty records, column, enumerable: true, value: sub_record
+          return callback error if error and error.message isnt 'not found'
+          if not error
+            Object.defineProperty records, column, enumerable: true, value: sub_record
+          else if not records.hasOwnProperty column
+            Object.defineProperty records, column, enumerable: true, value: null
           callback null
       else if not records.hasOwnProperty column
         Object.defineProperty records, column, enumerable: true, value: null

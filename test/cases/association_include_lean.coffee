@@ -141,3 +141,23 @@ module.exports = ->
         _checkUser users[1], 'Bill Smith', [preset_posts[2].id], ['another post'], true
         callback null
     ], done
+
+  it 'invalid id', (done) ->
+    async.waterfall [
+      (callback) ->
+        _g.connection.User.find(preset_users[1].id).delete (error) ->
+          callback error
+      (callback) ->
+        _g.connection.Post.query().lean().include('user').order('id').exec callback
+      (posts, callback) ->
+        expect(posts).to.have.length 3
+        _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
+        _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe', 27
+        _checkPost posts[2], 'another post', null
+        callback null
+      (callback) ->
+        _g.connection.Post.find(preset_posts[2].id).lean().include('user').exec callback
+      (post, callback) ->
+        _checkPost post, 'another post', null
+        callback null
+    ], done
