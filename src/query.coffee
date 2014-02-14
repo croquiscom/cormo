@@ -99,7 +99,7 @@ class Query
   # @return {Query} this
   order: (orders) ->
     if typeof orders is 'string'
-      avaliable_columns = []
+      avaliable_columns = ['id']
       [].push.apply avaliable_columns, Object.keys @_model._schema
       [].push.apply avaliable_columns, Object.keys @_options.group_fields if @_options.group_fields
       orders.split(/\s+/).forEach (order) =>

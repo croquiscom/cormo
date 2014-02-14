@@ -432,6 +432,9 @@ class MongoDBAdapter extends AdapterBase
             column = '_id' if column is options.group_by[0]
           else
             column = '_id.'+column if options.group_by.indexOf(column)>=0
+        else
+          if column is 'id'
+            column = '_id'
         orders[column] = dir
     #console.log JSON.stringify conditions
     if options.group_by or options.group_fields

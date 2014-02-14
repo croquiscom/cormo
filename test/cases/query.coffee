@@ -348,6 +348,25 @@ module.exports = () ->
           _compareUser users[4], name: 'Bill Smith', age: 45
           done null
 
+  it 'order (id)', (done) ->
+    _createUsers _g.connection.User, (error, sources) ->
+      return done error if error
+      sources.sort (a, b) ->
+        return -1 if a < b
+        return 1 if a > b
+        return 0
+      _g.connection.User.order 'id', (error, users) ->
+        return done error if error
+        expect(users).to.have.length 5
+        for i in [0..4]
+          _compareUser users[i], sources[i]
+        _g.connection.User.order '-id', (error, users) ->
+          return done error if error
+          expect(users).to.have.length 5
+          for i in [0..4]
+            _compareUser users[i], sources[4-i]
+          done null
+
   it 'lean option for a single record', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
       return done error if error
