@@ -6,15 +6,18 @@ _checkPost = (post, title, user_id, user_name, user_age) ->
   expect(post).to.have.property 'title', title
   expect(post).to.have.property 'user'
 
-  expect(post.user).to.be.an.instanceof _g.connection.User
-  if user_age
-    expect(post.user).to.have.keys 'id', 'name', 'age'
+  if user_id
+    expect(post.user).to.be.an.instanceof _g.connection.User
+    if user_age
+      expect(post.user).to.have.keys 'id', 'name', 'age'
+    else
+      expect(post.user).to.have.keys 'id', 'name'
+    expect(post.user).to.have.property 'id', user_id
+    expect(post.user).to.have.property 'name', user_name
+    if user_age
+      expect(post.user).to.have.property 'age', user_age
   else
-    expect(post.user).to.have.keys 'id', 'name'
-  expect(post.user).to.have.property 'id', user_id
-  expect(post.user).to.have.property 'name', user_name
-  if user_age
-    expect(post.user).to.have.property 'age', user_age
+    expect(post.user).to.not.exist
 
 _checkUser = (user, name, post_ids, post_titles, has_post_body) ->
   expect(user).to.be.an.instanceof _g.connection.User
@@ -114,5 +117,27 @@ module.exports = ->
         expect(users).to.have.length 2
         _checkUser users[0], 'John Doe', [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], false
         _checkUser users[1], 'Bill Smith', [preset_posts[2].id], ['another post'], false
+        callback null
+    ], done
+
+  it 'null id', (done) ->
+    async.waterfall [
+      (callback) ->
+        _g.connection.Post.find(preset_posts[1].id).update user_id: null, (error) ->
+          callback error
+      (callback) ->
+        _g.connection.Post.query().include('user').order('id').exec callback
+      (posts, callback) ->
+        expect(posts).to.have.length 3
+        _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
+        _checkPost posts[1], 'second post', null
+        _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith', 45
+        callback null
+      (callback) ->
+        _g.connection.User.query().include('posts').order('id').exec callback
+      (users, callback) ->
+        expect(users).to.have.length 2
+        _checkUser users[0], 'John Doe', [preset_posts[0].id], ['first post'], true
+        _checkUser users[1], 'Bill Smith', [preset_posts[2].id], ['another post'], true
         callback null
     ], done
