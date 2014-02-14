@@ -7,8 +7,7 @@ _dbs.forEach (db) ->
     before (done) ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-      if Math.floor Math.random() * 2
-        # using CoffeeScript extends keyword
+      if _g.use_coffeescript_class
         class Type extends _g.Model
           @column 'number', 'number'
           @column 'int_c', 'integer'
@@ -19,7 +18,6 @@ _dbs.forEach (db) ->
           @column 'int_array', ['integer']
           @column 'recordid_array', ['recordid']
       else
-        # using Connection method
         Type = _g.connection.model 'Type',
           number: Number
           int_c: _g.cormo.types.Integer

@@ -7,13 +7,11 @@ _dbs.forEach (db) ->
     before (done) ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-      if Math.floor Math.random() * 2
-        # using CoffeeScript extends keyword
+      if _g.use_coffeescript_class
         class User extends _g.Model
           @column 'name', String
           @column 'age', Number
       else
-        # using Connection method
         User = _g.connection.model 'User',
           name: String
           age: Number

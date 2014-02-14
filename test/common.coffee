@@ -9,6 +9,9 @@ _g.Connection = _g.cormo.Connection
 _g.Model = _g.cormo.Model
 _g.connection = undefined
 
+# whether define models using CoffeeScript extends keyword or Connection::model
+_g.use_coffeescript_class = Math.floor(Math.random() * 2) isnt 0
+
 _g.Model.dirty_tracking = Math.floor(Math.random() * 2) isnt 0
 _g.Model.eliminate_null = Math.floor(Math.random() * 2) isnt 0
 

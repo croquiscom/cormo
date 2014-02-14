@@ -8,8 +8,7 @@ _dbs.forEach (db) ->
       before (done) ->
         _g.connection = new _g.Connection db, _g.db_configs[db]
 
-        if Math.floor Math.random() * 2
-          # using CoffeeScript extends keyword
+        if _g.use_coffeescript_class
           class User extends _g.Model
             @column 'name', { type: String, required: true }
             @column 'age', { type: Number, required: true }
@@ -21,7 +20,6 @@ _dbs.forEach (db) ->
             @column 'body', String
             @belongsTo 'user', required: true
         else
-          # using Connection method
           User = _g.connection.model 'User',
             name: { type: String, required: true }
             age: { type: Number, required: true }
@@ -50,14 +48,12 @@ _dbs.forEach (db) ->
       before (done) ->
         _g.connection = new _g.Connection db, _g.db_configs[db]
 
-        if Math.floor Math.random() * 2
-          # using CoffeeScript extends keyword
+        if _g.use_coffeescript_class
           class Version extends _g.Model
             @column 'major', 'number'
             @column 'minor', 'number'
             @index { major: 1, minor: 1 }, { unique: true }
         else
-          # using Connection method
           Version = _g.connection.model 'Version',
             major: Number
             minor: Number

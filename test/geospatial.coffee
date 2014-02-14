@@ -8,13 +8,11 @@ _dbs.forEach (db) ->
     before (done) ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-      if Math.floor Math.random() * 2
-        # using CoffeeScript extends keyword
+      if _g.use_coffeescript_class
         class Place extends _g.Model
           @column 'name', 'string'
           @column 'location', 'geopoint'
       else
-        # using Connection method
         Place = _g.connection.model 'Place',
           name: String
           location: _g.cormo.types.GeoPoint

@@ -5,8 +5,7 @@ describe 'mixing several database', ->
     mysql = new _g.Connection 'mysql', _g.db_configs.mysql
     mongodb = new _g.Connection 'mongodb', _g.db_configs.mongodb
 
-    if Math.floor Math.random() * 2
-      # using CoffeeScript extends keyword
+    if _g.use_coffeescript_class
       class User extends _g.Model
         @connection mongodb
         @column 'name', String
@@ -21,7 +20,6 @@ describe 'mixing several database', ->
         @hasMany 'comments', type: 'Post', foreign_key: 'parent_post_id'
         @belongsTo 'parent_post', type: 'Post'
     else
-      # using Connection method
       User = mongodb.model 'User',
         name: String
         age: Number
