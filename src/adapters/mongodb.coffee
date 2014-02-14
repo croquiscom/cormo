@@ -277,26 +277,25 @@ class MongoDBAdapter extends AdapterBase
   _getModelID: (data) ->
     _objectIdToString data._id
 
-  valueToModel: (value, column, property) ->
+  valueToModel: (value, property) ->
     if property.type is 'objectid'
       if property.array
         value.map (v) -> v and _objectIdToString v
       else
-        _objectIdToString value
+        value and _objectIdToString value
     else
       value
 
   _refineRawInstance: (model, data, selected_columns) ->
-    selected_columns = Object.keys @_connection.models[model]._schema if not selected_columns
+    dont_eliminate_null = not @_connection.models[model].eliminate_null
+    schema = @_connection.models[model]._schema
+    selected_columns = Object.keys schema if not selected_columns
     id = _objectIdToString data._id
     delete data._id
     for column in selected_columns
-      value = data[column]
-      data[column] = _objectIdToString value if value instanceof ObjectID
+      value = @valueToModel data[column], schema[column]
+      data[column] = value if value? or dont_eliminate_null
     Object.defineProperty data, 'id', configurable: false, enumerable: true, writable: false, value: id
-    if not @_connection.models[model].eliminate_null
-      for column in selected_columns
-        data[column] = null if not data.hasOwnProperty column
     return data
 
   ## @override AdapterBase::create

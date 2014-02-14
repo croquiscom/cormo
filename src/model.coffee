@@ -281,7 +281,7 @@ class Model
         else
           data[property._dbname]
         if value?
-          value = adapter.valueToModel value, column, property
+          value = adapter.valueToModel value, property
         else
           value = null
         if value? or dont_eliminate_null

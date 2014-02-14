@@ -119,7 +119,11 @@ class SQLAdapterBase extends AdapterBase
       return '*'
 
   _refineRawInstance: (model, data, selected_columns) ->
+    schema = @_connection.models[model]._schema
+    selected_columns = Object.keys schema if not selected_columns
     id = @_getModelID(data)
+    for column in selected_columns
+      data[column] = @valueToModel data[column], schema[column]
     Object.defineProperty data, 'id', configurable: false, enumerable: true, writable: false, value: id
     if @_connection.models[model].eliminate_null
       for column of data

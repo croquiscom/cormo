@@ -99,7 +99,7 @@ class MySQLAdapter extends SQLAdapterBase
   _getModelID: (data) ->
     Number data.id
 
-  valueToModel: (value, column, property) ->
+  valueToModel: (value, property) ->
     if property.type is types.Object or property.array
       JSON.parse value
     else if property.type is types.GeoPoint

@@ -58,7 +58,7 @@ class RedisAdapter extends AdapterBase
       else
         value
 
-  valueToModel: (value, column, property) ->
+  valueToModel: (value, property) ->
     switch property.type
       when types.Number, types.Integer
         Number value

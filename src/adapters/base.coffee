@@ -49,7 +49,7 @@ class AdapterBase
   _getModelID: (data) ->
     data.id
 
-  valueToModel: (value, column, property) ->
+  valueToModel: (value, property) ->
     if property.type is types.Object or property.array
       JSON.parse value
     else
@@ -72,7 +72,7 @@ class AdapterBase
       for field in group_by
         property = schema[field]
         if property
-          instance[field] = @valueToModel data[field], field, property
+          instance[field] = @valueToModel data[field], property
     for field, expr of group_fields
       op = Object.keys(expr)[0]
       if op is '$sum'
