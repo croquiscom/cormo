@@ -294,7 +294,10 @@ class MongoDBAdapter extends AdapterBase
     delete data._id
     for column in selected_columns
       value = @valueToModel data[column], schema[column]
-      data[column] = value if value? or dont_eliminate_null
+      if value?
+        data[column] = value
+      else if dont_eliminate_null
+        data[column] = null
     Object.defineProperty data, 'id', configurable: false, enumerable: true, writable: false, value: id
     return data
 

@@ -402,6 +402,7 @@ module.exports = () ->
           expect(users[0]).to.have.keys 'id', 'name'
         else
           expect(users[0]).to.have.keys 'id', 'name', 'age'
+          expect(users[0].age).to.be.null
         done null
 
   it 'lean option of null value without select', (done) ->
@@ -414,6 +415,7 @@ module.exports = () ->
           expect(users[0]).to.have.keys 'id', 'name'
         else
           expect(users[0]).to.have.keys 'id', 'name', 'age'
+          expect(users[0].age).to.be.null
         done null
 
   it 'cache', (done) ->
