@@ -23,3 +23,4 @@ exports.Command = require './command'
 exports.types = require './types'
 
 exports.console_future = require './console_future'
+exports.console_exports = require './console_exports'

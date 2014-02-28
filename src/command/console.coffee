@@ -21,6 +21,8 @@ console_future.execute = (callback, func) ->
   if future
     return future.wait()
 
+console_exports = require '../console_exports'
+
 prettyErrorMessage = coffee.helpers.prettyErrorMessage or (e) -> e
 
 # from CoffeeScript repl.coffee
@@ -216,10 +218,12 @@ class CommandConsole
     if connection
       for model, modelClass of connection.models
         context[model] = modelClass
-    connection.applySchemas()
+      connection.applySchemas()
     Object.defineProperty context.console, 'inspect_depth',
       enumrable: true,
       get: => return @inspect_depth
       set: (value) => @inspect_depth = value
+    for key, object of console_exports
+      context[key] = object
 
 module.exports = CommandConsole
