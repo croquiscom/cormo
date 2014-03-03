@@ -1,5 +1,6 @@
 async = require 'async'
 types = require '../types'
+util = require '../util'
 
 _bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
@@ -56,9 +57,27 @@ class AdapterBase
       value
 
   _refineRawInstance: (model, data, selected_columns) ->
-    id = @_getModelID(data)
-    Object.defineProperty data, 'id', configurable: false, enumerable: true, writable: false, value: id
-    return data
+    dont_eliminate_null = not @_connection.models[model].eliminate_null
+    schema = @_connection.models[model]._schema
+    selected_columns = Object.keys schema if not selected_columns
+    support_nested = @support_nested
+    id = @_getModelID data
+    instance = {}
+    for column in selected_columns
+      property = schema[column]
+      parts = property._parts
+      value = if support_nested
+        util.getPropertyOfPath data, parts
+      else
+        data[property._dbname]
+      if value?
+        value = @valueToModel value, property
+      else
+        value = null
+      if value? or dont_eliminate_null
+        util.setPropertyOfPath instance, parts, value
+    Object.defineProperty instance, 'id', configurable: false, enumerable: true, writable: false, value: id
+    return instance
 
   _convertToModelInstance: (model, data, selected_columns) ->
     id = @_getModelID(data)

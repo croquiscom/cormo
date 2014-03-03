@@ -6,10 +6,10 @@ catch error
 
 ObjectID = mongodb.ObjectID
 
-AdapterBase = require './base'
-types = require '../types'
-async = require 'async'
 _ = require 'underscore'
+AdapterBase = require './base'
+async = require 'async'
+types = require '../types'
 
 _convertValueToObjectID = (value, key) ->
   try
@@ -285,21 +285,6 @@ class MongoDBAdapter extends AdapterBase
         value and _objectIdToString value
     else
       value
-
-  _refineRawInstance: (model, data, selected_columns) ->
-    dont_eliminate_null = not @_connection.models[model].eliminate_null
-    schema = @_connection.models[model]._schema
-    selected_columns = Object.keys schema if not selected_columns
-    id = _objectIdToString data._id
-    delete data._id
-    for column in selected_columns
-      value = @valueToModel data[column], schema[column]
-      if value?
-        data[column] = value
-      else if dont_eliminate_null
-        data[column] = null
-    Object.defineProperty data, 'id', configurable: false, enumerable: true, writable: false, value: id
-    return data
 
   ## @override AdapterBase::create
   create: (model, data, callback) ->

@@ -297,3 +297,22 @@ module.exports = () ->
         #TODO expect(user.name).to.not.exist
         callback null
     ], done
+
+  it 'lean option', (done) ->
+    User = _g.connection.User
+
+    User.column 'name',
+      first: String
+      last: String
+
+    async.waterfall [
+      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
+      (user, callback) -> User.select('name').lean().exec callback
+      (users, callback) ->
+        expect(users).to.have.length 1
+        expect(users[0]).to.have.keys 'id', 'name'
+        expect(users[0].name).to.have.keys 'first', 'last'
+        expect(users[0].name.first).to.eql 'John'
+        expect(users[0].name.last).to.eql 'Doe'
+        callback null
+    ], done
