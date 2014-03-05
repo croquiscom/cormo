@@ -345,7 +345,12 @@ class ConnectionAssociation
     console_future.execute callback, (callback) =>
       record = if Array.isArray records then records[0] else records
       return callback null if not record
-      association = (options.model or record.constructor)._associations?[column]
+      if options.target_model
+        association = type: options.type or 'belongsTo', target_model: options.target_model, foreign_key: options.foreign_key
+      else if options.model
+        association = options.model._associations?[column]
+      else
+        association = record.constructor._associations?[column]
       return callback new Error("unknown column '#{column}'") if not association
       if association.type is 'belongsTo'
         @_fetchAssociatedBelongsTo records, association.target_model, column, select, options, callback
