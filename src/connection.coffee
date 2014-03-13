@@ -2,11 +2,11 @@ EventEmitter = require('events').EventEmitter
 Model = require './model'
 _ = require 'underscore'
 async = require 'async'
+{bindDomain} = require './util'
+Promise = require 'bluebird'
 try
   redis = require 'redis'
 {inspect} = require 'util'
-
-_bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
 ##
 # Manages connection to a database
@@ -62,13 +62,12 @@ class Connection extends EventEmitter
     @_schema_changed = false
 
     @_adapter = require(__dirname + '/adapters/' + adapter_name) @
-    @_adapter.connect settings, _bindDomain (error) =>
-      if error
-        @_adapter = null
-        @emit 'error', error
-        return
+    @_promise_connection = Promise.promisify(@_adapter.connect, @_adapter) settings
+    .then ->
       @connected = true
-      @emit 'connected'
+    .catch (error) ->
+      @_adapter = null
+      Promise.reject error
 
   ##
   # Closes this connection.
@@ -86,19 +85,9 @@ class Connection extends EventEmitter
   model: (name, schema) ->
     return Model.newModel @, name, schema
 
-  _waitingForConnection: (object, method, args) ->
-    return false if @connected
-    @once 'connected', ->
-      method.apply object, args
-    return true
-
-  _waitingForApplyingSchemas: (object, method, args) ->
-    return false if not @_applying_schemas and not @_schema_changed
-    @once 'schemas_applied', ->
-      method.apply object, args
-    if not @_applying_schemas
-      @applySchemas()
-    return true
+  _checkSchemaApplied: ->
+    return Promise.resolve() if not @_applying_schemas and not @_schema_changed
+    return @applySchemas()
 
   _checkArchive: ->
     for model, modelClass of @models
@@ -113,33 +102,32 @@ class Connection extends EventEmitter
   # Applies schemas
   # @param {Function} [callback]
   # @param {Error} callback.error
+  # @return {Promise}
   # @see AdapterBase::applySchema
   applySchemas: (callback) ->
-    return callback? null if not @_schema_changed
+    Promise.resolve().then =>
+      return if not @_schema_changed
 
-    @_applyAssociations()
+      @_applyAssociations()
 
-    if not @_applying_schemas
-      @_applying_schemas = true
+      if not @_applying_schemas
+        @_applying_schemas = true
 
-      @_checkArchive()
+        @_checkArchive()
 
-      callAdapter = =>
-        async.forEach Object.keys(@models), (model, callback) =>
-          modelClass = @models[model]
-          return callback null if not modelClass._schema_changed
-          @_adapter.applySchema model, (error) ->
-            modelClass._schema_changed = false if not error
-            callback error
-        , _bindDomain (error) =>
-          @_applying_schemas = false
-          @_schema_changed = false
-          @emit 'schemas_applied'
-          callback? error
-      return if @_waitingForConnection @, callAdapter, arguments
-      callAdapter()
-    else
-      callback? null
+        @_promise_schema_applied = @_promise_connection.then =>
+          promises = Object.keys(@models).map (model) =>
+            modelClass = @models[model]
+            return Promise.resolve() if not modelClass._schema_changed
+            Promise.promisify(@_adapter.applySchema, @_adapter) model
+            .then ->
+              modelClass._schema_changed = false
+          Promise.all promises
+          .finally =>
+            @_applying_schemas = false
+            @_schema_changed = false
+      return @_promise_schema_applied
+    .nodeify bindDomain callback
 
   ##
   # Logs
@@ -148,11 +136,11 @@ class Connection extends EventEmitter
   # @param {Object} data
   log: (model, type, data) ->
 
-  _connectRedisCache: (callback) ->
+  _connectRedisCache: ->
     if @_redis_cache_client
-      callback null, @_redis_cache_client
+      Promise.resolve @_redis_cache_client
     else if not redis
-      throw new Error('cache needs Redis')
+      Promise.reject new Error('cache needs Redis')
     else
       settings = @_redis_cache_settings
       @_redis_cache_client = client = settings.client or (redis.createClient settings.port or 6379, settings.host or '127.0.0.1')
@@ -162,7 +150,7 @@ class Connection extends EventEmitter
           client.send_anyways = true
           client.select settings.database
           client.send_anyways = false
-      callback null, client
+      Promise.resolve client
 
   inspect: (depth) ->
     inspect @models

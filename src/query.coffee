@@ -1,8 +1,7 @@
 _ = require 'underscore'
 async = require 'async'
-console_future = require './console_future'
-
-_bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
+{bindDomain} = require './util'
+Promise = require 'bluebird'
 
 ##
 # Collects conditions to query
@@ -185,93 +184,94 @@ class Query
     @_includes.push column: column, select: select
     return @
 
-  _exec: (options, callback) ->
+  _exec: (options) ->
     if @_find_single_id and @_conditions.length is 0
       @_connection.log @_name, 'find by id', id: @_id, options: @_options if not options?.skip_log
-      return callback new Error('not found') if not @_id
-      @_adapter.findById @_name, @_id, @_options, _bindDomain (error, record) ->
-        return callback new Error('not found') if error or not record
-        callback null, record
-      return
+      return Promise.reject new Error('not found') if not @_id
+      return Promise.promisify(@_adapter.findById, @_adapter) @_name, @_id, @_options
+      .catch (error) ->
+        Promise.reject new Error('not found')
+      .then (record) ->
+        return Promise.reject new Error('not found') if not record
+        return record
     expected_count = undefined
     if @_id or @_find_single_id
       if Array.isArray @_id
-        return callback null, [] if @_id.length is 0
+        return Promise.resolve [] if @_id.length is 0
         @_conditions.push id: { $in: @_id }
         expected_count = @_id.length
       else
         @_conditions.push id: @_id
         expected_count = 1
     @_connection.log @_name, 'find', conditions: @_conditions, options: @_options if not options?.skip_log
-    @_adapter.find @_name, @_conditions, @_options, _bindDomain (error, records) =>
-      return callback error if error
+    Promise.promisify(@_adapter.find, @_adapter) @_name, @_conditions, @_options
+    .then (records) =>
       if expected_count?
-        return callback new Error('not found') if records.length isnt expected_count
+        return Promise.reject new Error('not found') if records.length isnt expected_count
       if @_preserve_order_ids
         records =  @_preserve_order_ids.map (id) ->
           for record in records
             return record if record.id is id
       if @_options.one
-        return callback new Error('unknown error') if records.length > 1
-        callback null, if records.length is 1 then records[0] else null
+        return Promise.reject new Error('unknown error') if records.length > 1
+        Promise.resolve if records.length is 1 then records[0] else null
       else
-        callback null, records
+        Promise.resolve records
 
-  _execAndInclude: (options, callback) ->
-    @_exec options, (error, records) =>
-      return callback error if error
-      async.forEach @_includes, (include, callback) =>
-        @_connection.fetchAssociated records, include.column, include.select, model: @_model, lean: @_options.lean, callback
-      , (error) ->
-        callback error, records
+  _execAndInclude: (options) ->
+    @_exec options
+    .then (records) =>
+      promises = @_includes.map (include) =>
+        @_connection.fetchAssociated records, include.column, include.select, model: @_model, lean: @_options.lean
+      Promise.all(promises)
+      .then ->
+        records
 
   ##
   # Executes the query
   # @param {Object} [options]
   # @param {Boolean} [options.skip_log=false]
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Model|Array<Model>} callback.records
-  # @return {Query} this
+  # @return {Promise}
   # @see AdapterBase::findById
   # @see AdapterBase::find
   exec: (options, callback) ->
-    return if @_model._waitingForReady @, @exec, arguments
-
     if typeof options is 'function'
       callback = options
       options = {}
 
-    console_future.execute callback, (callback) =>
+    @_model._checkReady().then =>
       if (cache_options = @_options.cache) and (cache_key = cache_options.key)
         # try cache
-        @_model._loadFromCache cache_key, cache_options.refresh, (error, records) =>
-          return callback null, records if not error
+        @_model._loadFromCache cache_key, cache_options.refresh
+        .catch (error) =>
           # no cache, execute query
-          @_execAndInclude options, (error, records) =>
-            return callback error if error
+          @_execAndInclude options
+          .then (records) =>
             # save result to cache
-            @_model._saveToCache cache_key, cache_options.ttl, records, (error) ->
-              callback error, records
+            @_model._saveToCache cache_key, cache_options.ttl, records
+            .then ->
+              records
       else
-        @_execAndInclude options, callback
+        @_execAndInclude options
+    .nodeify bindDomain callback
 
   ##
   # Executes the query as a count operation
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
-  # @return {Query} this
+  # @return {Promise}
   # @see AdapterBase::count
   count: (callback) ->
-    return if @_model._waitingForReady @, @count, arguments
-
-    console_future.execute callback, (callback) =>
+    @_model._checkReady().then =>
       if @_id or @_find_single_id
         @_conditions.push id: @_id
         delete @_id
-      @_connection.log @_name, 'count', conditions: @_conditions
-      @_adapter.count @_name, @_conditions, _bindDomain callback
+      Promise.promisify(@_adapter.count, @_adapter) @_name, @_conditions
+    .nodeify bindDomain callback
 
   _validateAndBuildSaveData: (errors, data, updates, path, object) ->
     model = @_model
@@ -297,104 +297,91 @@ class Query
   ##
   # Executes the query as a update operation
   # @param {Object} updates
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
-  # @return {Query} this
+  # @return {Promise}
   # @see AdapterBase::count
   update: (updates, callback) ->
-    return if @_model._waitingForReady @, @update, arguments
-
-    console_future.execute callback, (callback) =>
+    @_model._checkReady().then =>
       errors = []
       data = {}
       @_validateAndBuildSaveData errors, data, updates, '', updates
       if errors.length > 0
-        return callback new Error errors.join ','
+        return Promise.reject new Error errors.join ','
 
       if @_id or @_find_single_id
         @_conditions.push id: @_id
         delete @_id
       @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
-      @_adapter.updatePartial @_name, data, @_conditions, @_options, _bindDomain callback
+      Promise.promisify(@_adapter.updatePartial, @_adapter) @_name, data, @_conditions, @_options
+    .nodeify bindDomain callback
 
-  _doIntegrityActions: (integrities, ids, callback) ->
-    async.forEach integrities, (integrity, callback) =>
+  _doIntegrityActions: (integrities, ids) ->
+    promises = integrities.map (integrity) =>
       if integrity.type is 'parent_nullify'
         data = {}
         data[integrity.column] = null
         conditions = {}
         conditions[integrity.column] = ids
-        integrity.child.update data, conditions, (error, count) ->
-          callback error
+        integrity.child.update data, conditions
       else if integrity.type is 'parent_restrict'
         conditions = {}
         conditions[integrity.column] = ids
-        integrity.child.count conditions, (error, count) ->
-          return callback error if error
-          return callback new Error 'rejected' if count>0
-          callback null
+        integrity.child.count conditions
+        .then (count) ->
+          Promise.reject new Error 'rejected' if count>0
       else if integrity.type is 'parent_delete'
         conditions = {}
         conditions[integrity.column] = ids
-        integrity.child.delete conditions, (error, count) ->
-          return callback error if error
-          callback null
-      else
-        callback null
-    , callback
+        integrity.child.delete conditions
+    Promise.all promises
 
-  _doArchiveAndIntegrity: (options, callback) ->
+  _doArchiveAndIntegrity: (options) ->
     need_archive = @_model.archive
     integrities = @_model._integrities.filter (integrity) -> integrity.type.substr(0, 7) is 'parent_'
     need_child_archive = integrities.some (integrity) => integrity.child.archive
     need_integrity = need_child_archive or (integrities.length > 0 and not @_adapter.native_integrity)
-    return callback null if not need_archive and not need_integrity
+    return Promise.resolve() if not need_archive and not need_integrity
 
-    async.waterfall [
-      # find all records to be deleted
-      (callback) =>
-        query = @_model.where @_conditions
-        # we need only id field for integrity
-        query.select '' if not need_archive
-        query.exec skip_log: options?.skip_log, callback
-      (records, callback) =>
-        return callback null, records if not need_archive
-        archive_records = records.map (record) => model: @_name, data: record
-        @_connection.models['_Archive'].createBulk archive_records, (error) =>
-          return callback error if error
-          callback null, records
-      (records, callback) =>
-        return callback null if not need_integrity
-        return callback null if records.length is 0
-        ids = records.map (record) -> record.id
-        @_doIntegrityActions integrities, ids, callback
-    ], callback
+    # find all records to be deleted
+    query = @_model.where @_conditions
+    query.select '' if not need_archive # we need only id field for integrity
+    query.exec skip_log: options?.skip_log
+    .then (records) =>
+      return Promise.resolve records if not need_archive
+      archive_records = records.map (record) => model: @_name, data: record
+      @_connection.models['_Archive'].createBulk archive_records
+      .then ->
+        Promise.resolve records
+    .then (records) =>
+      return Promise.resolve() if not need_integrity
+      return Promise.resolve() if records.length is 0
+      ids = records.map (record) -> record.id
+      @_doIntegrityActions integrities, ids
 
   ##
   # Executes the query as a delete operation
   # @param {Object} [options]
   # @param {Boolean} [options.skip_log=false]
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
-  # @return {Query} this
+  # @return {Promise}
   # @see AdapterBase::delete
   delete: (options, callback) ->
-    return if @_model._waitingForReady @, @delete, arguments
-
     if typeof options is 'function'
       callback = options
       options = {}
-
-    console_future.execute callback, (callback) =>
+    @_model._checkReady().then =>
       if @_id or @_find_single_id
         @_conditions.push id: @_id
         delete @_id
       @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log
 
-      @_doArchiveAndIntegrity options, (error) =>
-        return callback error if error
-        @_adapter.delete @_name, @_conditions, _bindDomain callback
+      @_doArchiveAndIntegrity options
+      .then =>
+        Promise.promisify(@_adapter.delete, @_adapter) @_name, @_conditions
+    .nodeify bindDomain callback
 
 module.exports = Query

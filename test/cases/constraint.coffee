@@ -20,10 +20,7 @@ module.exports = () ->
         expect(error).to.exist
         # 'duplicated email' or 'duplicated'
         expect(error.message).to.match /^duplicated( email)?$/
-        expect(user).to.exist
-        expect(user).to.have.property 'name', 'Bill Simpson'
-        expect(user).to.have.property 'age', 38
-        expect(user).to.have.property 'email', 'bill@foo.org'
+        expect(user).to.not.exist
         done null
 
   it 'check uniqueness on update by Model::save', (done) ->

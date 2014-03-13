@@ -1,7 +1,8 @@
 _ = require 'underscore'
 async = require 'async'
-console_future = require '../console_future'
+{bindDomain} = require '../util'
 inflector = require '../inflector'
+Promise = require 'bluebird'
 types = require '../types'
 
 ##
@@ -46,16 +47,20 @@ class ConnectionAssociation
               reload = false
             # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
             # but use getter.__scope for safety
-            self = getter.__scope
-            if (not self[columnCache] or reload) and self.id
-              conditions = {}
-              conditions[foreign_key] = self.id
-              target_model.where conditions, (error, records) ->
-                return callback error if error
-                self[columnCache] = records
-                callback null, records
-            else
-              callback null, self[columnCache] or []
+            Promise.resolve()
+            .then ->
+              self = getter.__scope
+              if (not self[columnCache] or reload) and self.id
+                conditions = {}
+                conditions[foreign_key] = self.id
+                target_model.where conditions
+                .exec()
+                .then (records) ->
+                  self[columnCache] = records
+                  Promise.resolve records
+              else
+                Promise.resolve self[columnCache] or []
+            .nodeify callback
           getter.build = (data) ->
             # @ is getter, so use getter.__scope instead
             self = getter.__scope
@@ -104,18 +109,22 @@ class ConnectionAssociation
               reload = false
             # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
             # but use getter.__scope for safety
-            self = getter.__scope
-            if (not self[columnCache] or reload) and self.id
-              conditions = {}
-              conditions[foreign_key] = self.id
-              target_model.where conditions, (error, records) ->
-                return callback error if error
-                return callback new Error('integrity error') if records.length > 1
-                record = if records.length is 0 then null else records[0]
-                self[columnCache] = record
-                callback null, record
-            else
-              callback null, self[columnCache]
+            Promise.resolve()
+            .then ->
+              self = getter.__scope
+              if (not self[columnCache] or reload) and self.id
+                conditions = {}
+                conditions[foreign_key] = self.id
+                target_model.where conditions
+                .exec()
+                .then (records) ->
+                  return Promise.reject new Error('integrity error') if records.length > 1
+                  record = if records.length is 0 then null else records[0]
+                  self[columnCache] = record
+                  Promise.resolve record
+              else
+                Promise.resolve self[columnCache]
+            .nodeify callback
           getter.__scope = @
           Object.defineProperty @, columnCache, value: null, writable: true
           Object.defineProperty @, columnGetter, value: getter
@@ -154,14 +163,18 @@ class ConnectionAssociation
               reload = false
             # @ is getter.__scope in normal case (this_model_instance.target_model_name()),
             # but use getter.__scope for safety
-            self = getter.__scope
-            if (not self[columnCache] or reload) and self[foreign_key]
-              target_model.find self[foreign_key], (error, record) ->
-                return callback error if error
-                self[columnCache] = record
-                callback null, record
-            else
-              callback null, self[columnCache]
+            Promise.resolve()
+            .then ->
+              self = getter.__scope
+              if (not self[columnCache] or reload) and self[foreign_key]
+                target_model.find self[foreign_key]
+                .exec()
+                .then (record) ->
+                  self[columnCache] = record
+                  Promise.resolve record
+              else
+                Promise.resolve self[columnCache]
+            .nodeify callback
           getter.__scope = @
           Object.defineProperty @, columnCache, value: null, writable: true
           Object.defineProperty @, columnGetter, value: getter
@@ -215,45 +228,46 @@ class ConnectionAssociation
 
   ##
   # Returns inconsistent records against associations
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Object} callback.inconsistencies Hash of model name to Array of RecordIDs
+  # @return {Promise}
   getInconsistencies: (callback) ->
-    return if @_waitingForApplyingSchemas @, @getInconsistencies, arguments
-
-    result = {}
-    async.forEach Object.keys(@models), (model, callback) =>
-      modelClass = @models[model]
-      integrities = modelClass._integrities.filter (integrity) -> integrity.type.substr(0, 7) is 'parent_'
-      if integrities.length > 0
-        modelClass.select '', (error, records) =>
-          ids = records.map (record) -> record.id
-          async.forEach integrities, (integrity, callback) =>
-            query = integrity.child.select ''
-            conditions = {}
-            conditions[integrity.column] = $not: $in: ids
-            query.where(conditions)
-            property = integrity.child._schema[integrity.column]
-            if not property.required
+    @_checkSchemaApplied().then =>
+      result = {}
+      promises = Object.keys(@models).map (model) =>
+        modelClass = @models[model]
+        integrities = modelClass._integrities.filter (integrity) -> integrity.type.substr(0, 7) is 'parent_'
+        if integrities.length > 0
+          modelClass.select ''
+          .exec()
+          .then (records) =>
+            ids = records.map (record) -> record.id
+            sub_promises = integrities.map (integrity) =>
+              query = integrity.child.select ''
               conditions = {}
-              conditions[integrity.column] = $not: null
+              conditions[integrity.column] = $not: $in: ids
               query.where(conditions)
-            query.exec (error, records) ->
-              return callback error if error
-              return callback null if records.length is 0
-              array = result[integrity.child._name] ||= []
-              [].push.apply array, records.map (record) -> record.id
-              _.uniq array
-              callback null
-          , (error) ->
-            callback null
-      else
-        callback null
-    , (error) ->
-      return callback error if error
-      callback null, result
+              property = integrity.child._schema[integrity.column]
+              if not property.required
+                conditions = {}
+                conditions[integrity.column] = $not: null
+                query.where(conditions)
+              query.exec()
+              .then (records) ->
+                if records.length > 0
+                  array = result[integrity.child._name] ||= []
+                  [].push.apply array, records.map (record) -> record.id
+                  _.uniq array
+            Promise.all sub_promises
+        else
+          Promise.resolve()
+      Promise.all promises
+      .then ->
+        Promise.resolve result
+    .nodeify callback
 
-  _fetchAssociatedBelongsTo: (records, target_model, column, select, options, callback) ->
+  _fetchAssociatedBelongsTo: (records, target_model, column, select, options) ->
     id_column = column + '_id'
     if Array.isArray records
       id_to_record_map = {}
@@ -266,8 +280,8 @@ class ConnectionAssociation
       query = target_model.where id: ids
       query.select select if select
       query.lean() if options.lean
-      query.exec (error, sub_records) ->
-        return callback null if error
+      query.exec()
+      .then (sub_records) ->
         sub_records.forEach (sub_record) ->
           id_to_record_map[sub_record.id].forEach (record) ->
             Object.defineProperty record, column, enumerable: true, value: sub_record
@@ -275,25 +289,25 @@ class ConnectionAssociation
           if not record.hasOwnProperty column
             Object.defineProperty record, column, enumerable: true, value: null
           return
-        callback null
+      .catch ->
     else
       id = records[id_column]
       if id
         query = target_model.find(id)
         query.select select if select
         query.lean() if options.lean
-        query.exec (error, sub_record) ->
-          return callback error if error and error.message isnt 'not found'
-          if not error
-            Object.defineProperty records, column, enumerable: true, value: sub_record
-          else if not records.hasOwnProperty column
+        query.exec()
+        .then (sub_record) ->
+          Object.defineProperty records, column, enumerable: true, value: sub_record
+        .catch (error) ->
+          return Promise.reject error if error and error.message isnt 'not found'
+          if not records.hasOwnProperty column
             Object.defineProperty records, column, enumerable: true, value: null
-          callback null
       else if not records.hasOwnProperty column
         Object.defineProperty records, column, enumerable: true, value: null
-        callback null
+        Promise.resolve()
 
-  _fetchAssociatedHasMany: (records, target_model, foreign_key, column, select, options, callback) ->
+  _fetchAssociatedHasMany: (records, target_model, foreign_key, column, select, options) ->
     if Array.isArray records
       ids = records.map (record) ->
         Object.defineProperty record, column, enumerable: true, value: []
@@ -303,12 +317,12 @@ class ConnectionAssociation
       query = target_model.where cond
       query.select select + ' ' + foreign_key if select
       query.lean() if options.lean
-      query.exec (error, sub_records) ->
-        return callback null if error
+      query.exec()
+      .then (sub_records) ->
         sub_records.forEach (sub_record) ->
           records.forEach (record) ->
             record[column].push sub_record if record.id is sub_record[foreign_key]
-        callback null
+      .catch ->
     else
       Object.defineProperty records, column, enumerable: true, value: []
       cond = {}
@@ -316,11 +330,11 @@ class ConnectionAssociation
       query = target_model.where cond
       query.select select + ' ' + foreign_key if select
       query.lean() if options.lean
-      query.exec (error, sub_records) ->
-        return callback null if error
+      query.exec()
+      .then (sub_records) ->
         sub_records.forEach (sub_record) ->
           records[column].push sub_record
-        callback null
+      .catch ->
 
   ##
   # Fetches associated records
@@ -328,8 +342,9 @@ class ConnectionAssociation
   # @param {String} column
   # @param {String} [select]
   # @param {Object} [options]
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
+  # @return {Promise}
   fetchAssociated: (records, column, select, options, callback) ->
     if typeof select is 'function'
       callback = select
@@ -342,21 +357,22 @@ class ConnectionAssociation
         options = select
         select = null
 
-    console_future.execute callback, (callback) =>
+    @_checkSchemaApplied().then =>
       record = if Array.isArray records then records[0] else records
-      return callback null if not record
+      return Promise.resolve() if not record
       if options.target_model
         association = type: options.type or 'belongsTo', target_model: options.target_model, foreign_key: options.foreign_key
       else if options.model
         association = options.model._associations?[column]
       else
         association = record.constructor._associations?[column]
-      return callback new Error("unknown column '#{column}'") if not association
+      return Promise.reject new Error("unknown column '#{column}'") if not association
       if association.type is 'belongsTo'
-        @_fetchAssociatedBelongsTo records, association.target_model, column, select, options, callback
+        @_fetchAssociatedBelongsTo records, association.target_model, column, select, options
       else if association.type is 'hasMany'
-        @_fetchAssociatedHasMany records, association.target_model, association.foreign_key, column, select, options, callback
+        @_fetchAssociatedHasMany records, association.target_model, association.foreign_key, column, select, options
       else
-        return callback new Error("unknown column '#{column}'")
+        Promise.reject new Error("unknown column '#{column}'")
+    .nodeify bindDomain callback
 
 module.exports = ConnectionAssociation

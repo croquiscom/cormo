@@ -1,10 +1,8 @@
 _ = require 'underscore'
 async = require 'async'
-console_future = require '../console_future'
 inflector = require '../inflector'
+Promise = require 'bluebird'
 util = require '../util'
-
-_bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
 ##
 # Model persistence
@@ -16,12 +14,11 @@ class ModelPersistence
   # @param {Object} [data={}]
   # @param {Object} [options]
   # @param {Boolean} [options.skip_log=false]
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Model} callback.record created record
+  # @return {Promise}
   @create: (data, options, callback) ->
-    return if @_waitingForReady @, @create, arguments
-
     if typeof data is 'function'
       callback = data
       data = {}
@@ -29,33 +26,35 @@ class ModelPersistence
     else if typeof options is 'function'
       callback = options
       options = {}
-    console_future.execute callback, (callback) =>
-      @build(data).save options, callback
+    @_checkReady().then =>
+      @build(data).save options
+    .nodeify util.bindDomain callback
 
   ##
   # Creates multiple records and saves them to the database.
   # @param {Array<Object>} data
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Array<Model>} callback.records created records
+  # @return {Promise}
   @createBulk: (data, callback) ->
-    return if @_waitingForReady @, @createBulk, arguments
+    @_checkReady().then =>
+      return Promise.reject new Error 'data is not an array' if not Array.isArray data
 
-    return callback new Error 'data is not an array' if not Array.isArray data
+      return Promise.resolve [] if data.length is 0
 
-    return callback null, [] if data.length is 0
-
-    records = data.map (item) => @build item
-    async.forEach records, (record, callback) ->
-      record.validate callback
-    , (error) =>
-      return callback error if error
-      records.forEach (record) -> record._runCallbacks 'save', 'before'
-      records.forEach (record) -> record._runCallbacks 'create', 'before'
-      @_createBulk records, (error, records) ->
-        records.forEach (record) -> record._runCallbacks 'create', 'after'
-        records.forEach (record) -> record._runCallbacks 'save', 'after'
-        callback error, records
+      records = data.map (item) => @build item
+      promises = records.map (record) ->
+        record.validate()
+      Promise.all promises
+      .then =>
+        records.forEach (record) -> record._runCallbacks 'save', 'before'
+        records.forEach (record) -> record._runCallbacks 'create', 'before'
+        @_createBulk records
+        .finally ->
+          records.forEach (record) -> record._runCallbacks 'create', 'after'
+          records.forEach (record) -> record._runCallbacks 'save', 'after'
+    .nodeify util.bindDomain callback
 
   @_buildSaveDataColumn: (data, model, column, property, allow_null) ->
     adapter = @_adapter
@@ -78,35 +77,30 @@ class ModelPersistence
       data.id = ctor._adapter.idToDB @id
     return data
 
-  _create: (options, callback) ->
-    return if @constructor._waitingForReady @, @_create, arguments
-
+  _create: (options) ->
     try
       data = @_buildSaveData()
     catch e
-      return callback e, @
+      return Promise.reject e
 
     ctor = @constructor
     ctor._connection.log ctor._name, 'create', data if not options?.skip_log
-    ctor._adapter.create ctor._name, data, _bindDomain (error, id) =>
-      return callback error, @ if error
+    Promise.promisify(ctor._adapter.create, ctor._adapter) ctor._name, data
+    .then (id) =>
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
       # save sub objects of each association
       foreign_key = inflector.foreign_key ctor._name
-      async.forEach Object.keys(ctor._associations), (column, callback) =>
-        async.forEach @['__cache_' + column] or [], (sub, callback) ->
+      promises = Object.keys(ctor._associations).map (column) =>
+        sub_promises = (@['__cache_' + column] or []).map (sub) ->
           sub[foreign_key] = id
-          sub.save (error) ->
-            callback error
-        , (error) ->
-          callback error
-      , (error) =>
+          sub.save()
+        Promise.all sub_promises
+      Promise.all promises
+      .finally =>
         @_prev_attributes = {}
-        callback null, @
+      .catch ->
 
-  @_createBulk: (records, callback) ->
-    return if @_waitingForReady @, @_createBulk, arguments
-
+  @_createBulk: (records) ->
     error = undefined
     data_array = records.map (record) ->
       try
@@ -114,23 +108,21 @@ class ModelPersistence
       catch e
         error = e
       return data
-    return callback error, records if error
+    return Promise.reject error if error
 
     @_connection.log @_name, 'createBulk', data_array
-    @_adapter.createBulk @_name, data_array, _bindDomain (error, ids) ->
-      return callback error, records if error
+    Promise.promisify(@_adapter.createBulk, @_adapter) @_name, data_array
+    .then (ids) ->
       records.forEach (record, i) ->
         Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: ids[i]
-      callback null, records
+      Promise.resolve records
 
-  _update: (options, callback) ->
+  _update: (options) ->
     ctor = @constructor
-    return if ctor._waitingForReady @, @_update, arguments
-
     if ctor.dirty_tracking
       # update changed values only
       if not @isDirty()
-        return callback null, @
+        return Promise.resolve()
 
       data = {}
       adapter = ctor._adapter
@@ -139,25 +131,23 @@ class ModelPersistence
         for path of @_prev_attributes
           ctor._buildSaveDataColumn data, @_attributes, path, schema[path], true
       catch e
-        return callback e, @
+        return Promise.reject e
 
       ctor._connection.log ctor._name, 'update', data if not options?.skip_log
-      adapter.updatePartial ctor._name, data, id: @id, {}, _bindDomain (error) =>
-        return callback error, @ if error
+      Promise.promisify(adapter.updatePartial, adapter) ctor._name, data, id: @id, {}
+      .then =>
         @_prev_attributes = {}
-        callback null, @
     else
       # update all
       try
         data = @_buildSaveData()
       catch e
-        return callback e, @
+        return Promise.reject e
       
       ctor._connection.log ctor._name, 'update', data if not options?.skip_log
-      ctor._adapter.update ctor._name, data, _bindDomain (error) =>
-        return callback error, @ if error
+      Promise.promisify(ctor._adapter.update, ctor._adapter) ctor._name, data
+      .then =>
         @_prev_attributes = {}
-        callback null, @
 
   ##
   # Saves data to the database
@@ -167,31 +157,33 @@ class ModelPersistence
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Model} callback.record this
+  # @return {Promise}
   save: (options, callback) ->
     if typeof options is 'function'
       callback = options
       options = {}
-    callback = (->) if typeof callback isnt 'function'
+    @constructor._checkReady().then =>
+      if options?.validate isnt false
+        return @validate()
+        .then =>
+          @save _.extend({}, options, validate: false)
 
-    if options?.validate isnt false
-      @validate (error) =>
-        return callback error if error
-        @save _.extend({}, options, validate: false), callback
-      return
+      @_runCallbacks 'save', 'before'
 
-    @_runCallbacks 'save', 'before'
-
-    if @id
-      @_runCallbacks 'update', 'before'
-      @_update options, (error, record) =>
-        @_runCallbacks 'update', 'after'
-        @_runCallbacks 'save', 'after'
-        callback error, record
-    else
-      @_runCallbacks 'create', 'before'
-      @_create options, (error, record) =>
-        @_runCallbacks 'create', 'after'
-        @_runCallbacks 'save', 'after'
-        callback error, record
+      if @id
+        @_runCallbacks 'update', 'before'
+        @_update options
+        .finally =>
+          @_runCallbacks 'update', 'after'
+          @_runCallbacks 'save', 'after'
+      else
+        @_runCallbacks 'create', 'before'
+        @_create options
+        .finally =>
+          @_runCallbacks 'create', 'after'
+          @_runCallbacks 'save', 'after'
+    .then =>
+      Promise.resolve @
+    .nodeify util.bindDomain callback
 
 module.exports = ModelPersistence

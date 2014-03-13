@@ -30,14 +30,16 @@ _g.dropModels = (models, callback) ->
   , callback
 
 _g.deleteAllRecords = (models, callback) ->
-  async.forEach models, (model, callback) ->
-    return callback null if not model
-    archive = model.archive
-    model.archive = false
-    model.deleteAll (error, count) ->
-      model.archive = archive
-      callback error
-  , callback
+  _g.connection.applySchemas (error) ->
+    return callback error if error
+    async.forEach models, (model, callback) ->
+      return callback null if not model
+      archive = model.archive
+      model.archive = false
+      model.deleteAll (error, count) ->
+        model.archive = archive
+        callback error
+    , callback
 
 _g.db_configs =
   mysql:

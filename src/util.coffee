@@ -3,6 +3,8 @@
 # @module util
 # @namespace cormo
 
+Promise = require 'bluebird'
+
 ##
 # Returns leaf object and last part.
 #
@@ -45,3 +47,14 @@ exports.setPropertyOfPath = (obj, path, value) ->
   [obj, last] = exports.getLeafOfPath obj, path
   obj[last] = value
   return
+
+##
+# Sures a function call in the original domain
+# @memberOf util
+# @param {Function} fn
+# @return {Function}
+exports.bindDomain = (fn) ->
+  if fn and d = process.domain
+    d.bind fn
+  else
+    fn

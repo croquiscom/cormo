@@ -1,4 +1,4 @@
-console_future = require '../console_future'
+{bindDomain} = require '../util'
 Query = require '../query'
 
 ##
@@ -96,16 +96,16 @@ class ModelQuery
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
+  # @return {Promise}
   @count: (condition, callback) ->
     if typeof condition is 'function'
       callback = condition
       condition = null
 
-    console_future.execute callback, (callback) =>
-      callback = (->) if typeof callback isnt 'function'
-      query = new Query @
-      query.where condition
-      query.count callback
+    new Query @
+    .where condition
+    .count()
+    .nodeify bindDomain callback
 
   ##
   # Updates some fields of records that match conditions
@@ -114,16 +114,16 @@ class ModelQuery
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
+  # @return {Promise}
   @update: (updates, condition, callback) ->
     if typeof condition is 'function'
       callback = condition
       condition = null
 
-    console_future.execute callback, (callback) =>
-      callback = (->) if typeof callback isnt 'function'
-      query = new Query @
-      query.where condition
-      query.update updates, callback
+    new Query @
+    .where condition
+    .update updates
+    .nodeify bindDomain callback
 
   ##
   # Deletes records by conditions
@@ -131,15 +131,15 @@ class ModelQuery
   # @param {Function} [callback]
   # @param {Error} callback.error
   # @param {Number} callback.count
+  # @return {Promise}
   @delete: (condition, callback) ->
     if typeof condition is 'function'
       callback = condition
       condition = null
 
-    console_future.execute callback, (callback) =>
-      callback = (->) if typeof callback isnt 'function'
-      query = new Query @
-      query.where condition
-      query.delete callback
+    new Query @
+    .where condition
+    .delete()
+    .nodeify bindDomain callback
 
 module.exports = ModelQuery

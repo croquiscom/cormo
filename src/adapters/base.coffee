@@ -2,8 +2,6 @@ async = require 'async'
 types = require '../types'
 util = require '../util'
 
-_bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
-
 ##
 # Base class for adapters
 # @namespace adapter
@@ -120,7 +118,7 @@ class AdapterBase
 
   _createBulkDefault: (model, data, callback) ->
     async.map data, (item, callback) =>
-      @create model, item, _bindDomain callback
+      @create model, item, util.bindDomain callback
     , callback
 
   ##

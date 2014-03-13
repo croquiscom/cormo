@@ -1,30 +1,33 @@
+{bindDomain} = require '../util'
+Promise = require 'bluebird'
 tableize = require('../inflector').tableize
 
 ##
 # Model cache
 # @namespace model
 class ModelCache
-  @_loadFromCache: (key, refresh, callback) ->
-    return callback 'error' if refresh
-    @_connection._connectRedisCache (error, redis) =>
-      return callback error if error
+  @_loadFromCache: (key, refresh) ->
+    return Promise.reject new Error 'error' if refresh
+    @_connection._connectRedisCache()
+    .then (redis) =>
       key = 'CC.'+tableize(@_name)+':'+key
-      redis.get key, (error, data) ->
-        return callback 'error' if error or not data?
-        callback null, JSON.parse data
+      Promise.promisify(redis.get, redis) key
+    .then (data) ->
+      return Promise.reject new Error 'error' if not data?
+      Promise.resolve JSON.parse data
 
-  @_saveToCache: (key, ttl, data, callback) ->
-    @_connection._connectRedisCache (error, redis) =>
-      return callback error if error
+  @_saveToCache: (key, ttl, data) ->
+    @_connection._connectRedisCache()
+    .then (redis) =>
       key = 'CC.'+tableize(@_name)+':'+key
-      redis.setex key, ttl, JSON.stringify(data), (error) ->
-        callback error
+      Promise.promisify(redis.setex, redis) key, ttl, JSON.stringify(data)
 
   @removeCache: (key, callback) ->
-    @_connection._connectRedisCache (error, redis) =>
-      return callback error if error
+    @_connection._connectRedisCache()
+    .then (redis) =>
       key = 'CC.'+tableize(@_name)+':'+key
-      redis.del key, (error) ->
-        callback null
+      Promise.promisify(redis.del, redis) key
+      .catch (error) ->
+    .nodeify bindDomain callback
 
 module.exports = ModelCache

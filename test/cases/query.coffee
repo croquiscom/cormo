@@ -455,7 +455,8 @@ module.exports = () ->
         callback null
       # try after removing cache
       (callback) ->
-        _g.connection.User.removeCache 'user', callback
+        _g.connection.User.removeCache 'user', (error) ->
+          callback error
       (callback) ->
         _g.connection.User.where(age: 32).cache(key: 'user', ttl: 30).exec callback
       (users, callback) ->

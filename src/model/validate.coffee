@@ -1,3 +1,4 @@
+Promise = require 'bluebird'
 types = require '../types'
 util = require '../util'
 
@@ -55,7 +56,7 @@ class ModelValidate
   # Validates data
   # @param {Function} [callback]
   # @param {Error} callback.error
-  # @return {Boolean}
+  # @return {Promise}
   validate: (callback) ->
     @_runCallbacks 'validate', 'before'
 
@@ -80,12 +81,12 @@ class ModelValidate
         errors.push e.message
     if errors.length > 0
       @_runCallbacks 'validate', 'after'
-      callback? new Error errors.join ','
-      return false
+      Promise.reject new Error errors.join ','
+      .nodeify callback
     else
       @_runCallbacks 'validate', 'after'
-      callback? null
-      return true
+      Promise.resolve()
+      .nodeify callback
 
   ##
   # Adds a validator

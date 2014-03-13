@@ -24,8 +24,8 @@
   },
   "dependencies": {
     "async": "~0.2.10",
+    "bluebird": "~1.1.0",
     "commander": "~2.1.0",
-    "fibers": "~1.0.1",
     "inflect": "~0.3.0",
     "underscore": "~1.5.2"
   },

@@ -1,8 +1,7 @@
 coffee = require 'coffee-script'
 commander = require 'commander'
-Fiber = require 'fibers'
-Future = require 'fibers/future'
 path = require 'path'
+Promise = require 'bluebird'
 repl = require 'repl'
 vm = require 'vm'
 fs = require 'fs'
@@ -11,15 +10,6 @@ util = require 'util'
 Connection = require '../connection'
 Model = require '../model'
 Query = require '../query'
-
-console_future = require '../console_future'
-console_future.execute = (callback, func) ->
-  if typeof callback isnt 'function'
-    future = new Future()
-    callback = future.resolver()
-  func callback
-  if future
-    return future.wait()
 
 console_exports = require '../console_exports'
 
@@ -140,6 +130,35 @@ addArgCompleter = (repl) ->
           rli._refreshLine()
         callback error, result
 
+evalCoffee = (cmd, context, filename, callback) ->
+  cmd = cmd.replace /\uFF00/g, '\n'
+  cmd = cmd.replace /^\(([\s\S]*)\n\)$/m, '$1'
+  return callback null if not cmd
+
+  if /^\s*([a-zA-Z_$][0-9a-zA-Z_$]*)\s=/.test cmd
+    assign_to = RegExp.$1
+
+  Promise.try ->
+    if /[, ]\$$/.test cmd
+      # apply defer if command is ended with '$'
+      defer = Promise.defer()
+      context.$ = defer.callback
+    js = coffee.compile cmd, filename: filename, bare: true
+    result = vm.runInContext js, context, filename
+    if defer
+      delete context.$
+      return defer.promise
+    else if result instanceof Query
+      return result.exec()
+    else
+      return result
+  .then (result) ->
+    if assign_to
+      context[assign_to] = result
+    callback null, result
+  .catch (error) ->
+    callback prettyErrorMessage error, filename, cmd, true
+
 ##
 # CORMO console
 class CommandConsole
@@ -171,36 +190,7 @@ class CommandConsole
   runCoffee: ->
     repl = repl.start
       prompt: 'cormo> '
-      eval: (cmd, context, filename, callback) ->
-        Fiber( ->
-          cmd = cmd.replace /\uFF00/g, '\n'
-          cmd = cmd.replace /^\(([\s\S]*)\n\)$/m, '$1'
-          return callback null if not cmd
-          # apply future if command is ended with '$'
-          use_future = /[, ]\$$/.test cmd
-          if use_future
-            future = new Future()
-            context.$ = future.resolver()
-          if /^\s*([a-zA-Z_$][0-9a-zA-Z_$]*)\s=/.test cmd
-            assign_to = RegExp.$1
-          try
-            js = coffee.compile cmd, filename: filename, bare: true
-            result = vm.runInContext js, context, filename
-            if use_future
-              result = future.wait()
-              if assign_to
-                context[assign_to] = result
-              delete context.$
-            else if result instanceof Query
-              future = new Future()
-              result.exec future.resolver()
-              result = future.wait()
-              if assign_to
-                context[assign_to] = result
-          catch e
-            return callback prettyErrorMessage e, filename, cmd, true
-          callback null, result
-        ).run()
+      eval: evalCoffee
       writer: (object) =>
         util.inspect object, colors: true, depth: @inspect_depth
     repl.on 'exit', ->

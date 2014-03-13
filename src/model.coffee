@@ -1,10 +1,8 @@
 _ = require 'underscore'
-console_future = require './console_future'
+Promise = require 'bluebird'
 tableize = require('./inflector').tableize
 types = require './types'
 util = require './util'
-
-_bindDomain = (fn) -> if d = process.domain then d.bind fn else fn
 
 _pf_isDirty = -> true
 _pf_getChanged = -> []
@@ -131,9 +129,8 @@ class Model
       throw new Error 'Create a Connection before creating a Model'
     @connection Model._Connection.defaultConnection
 
-  @_waitingForReady: (object, method, args) ->
-    return true if @_connection._waitingForApplyingSchemas object, method, args
-    return @_connection._waitingForConnection object, method, args
+  @_checkReady: ->
+    Promise.all [@_connection._checkSchemaApplied(), @_connection._promise_connection]
 
   @_getKeyType: (target_connection = @_connection) ->
     if @_connection is target_connection and target_connection._adapter.key_type_internal
@@ -206,18 +203,18 @@ class Model
 
   ##
   # Drops this model from the database
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
+  # @return {Promise}
   # @see AdapterBase::drop
   @drop: (callback) ->
     # do not need to apply schema before drop, only waiting connection established
-    return if @_connection._waitingForConnection @, @drop, arguments
-
-    console_future.execute callback, (callback) =>
-      @_adapter.drop @_name, _bindDomain (error) =>
-        @_schema_changed = true
-        @_connection._schema_changed = true
-        callback error
+    @_connection._promise_connection.then =>
+      Promise.promisify(@_adapter.drop, @_adapter) @_name
+    .finally =>
+      @_schema_changed = true
+      @_connection._schema_changed = true
+    .nodeify util.bindDomain callback
 
   ##
   # Creates a record.
@@ -398,28 +395,26 @@ class Model
 
   ##
   # Destroys this record (remove from the database)
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
+  # @return {Promise}
   destroy: (callback) ->
-    console_future.execute callback, (callback) =>
-      callback = (->) if typeof callback isnt 'function'
-      @_runCallbacks 'destroy', 'before'
+    @_runCallbacks 'destroy', 'before'
+    Promise.resolve()
+    .then =>
       if @id
-        @constructor.delete { id: @id }, (error, count) =>
-          @_runCallbacks 'destroy', 'after'
-          callback error
-      else
-        @_runCallbacks 'destroy', 'after'
-        callback null
+        @constructor.delete id: @id
+    .finally =>
+      @_runCallbacks 'destroy', 'after'
+    .nodeify util.bindDomain callback
 
   ##
   # Deletes all records from the database
-  # @param {Function} callback
+  # @param {Function} [callback]
   # @param {Error} callback.error
+  # @return {Promise}
   @deleteAll: (callback) ->
-    console_future.execute callback, (callback) =>
-      callback = (->) if typeof callback isnt 'function'
-      @delete callback
+    @delete().nodeify callback
 
   ##
   # Adds a has-many association

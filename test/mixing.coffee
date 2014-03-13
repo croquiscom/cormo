@@ -39,6 +39,10 @@ describe 'mixing several database', ->
       mongodb: mongodb
       User: User
       Post: Post
+      applySchemas: (callback) ->
+        mysql.applySchemas (error) ->
+          return callback error if error
+          mongodb.applySchemas callback
 
     _g.dropModels [User, Post], done
 

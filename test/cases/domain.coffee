@@ -7,7 +7,7 @@ module.exports = () ->
   before (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, record) ->
       user = record
-      done null
+      done error
 
   it 'Model.create', (done) ->
     d = domain.create()
