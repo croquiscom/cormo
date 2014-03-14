@@ -22,4 +22,4 @@ exports.Command = require './command'
 # @memberOf cormo
 exports.types = require './types'
 
-exports.console_exports = require './console_exports'
+exports.console = require './console'
