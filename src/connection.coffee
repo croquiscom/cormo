@@ -1,7 +1,6 @@
 EventEmitter = require('events').EventEmitter
 Model = require './model'
 _ = require 'underscore'
-async = require 'async'
 {bindDomain} = require './util'
 Promise = require 'bluebird'
 try
@@ -61,8 +60,8 @@ class Connection extends EventEmitter
     @_pending_associations = []
     @_schema_changed = false
 
-    @_adapter = require(__dirname + '/adapters/' + adapter_name) @
-    @_promise_connection = Promise.promisify(@_adapter.connect, @_adapter) settings
+    @_adapter = Promise.promisifyAll require(__dirname + '/adapters/' + adapter_name) @
+    @_promise_connection = @_adapter.connectAsync settings
     .then ->
       @connected = true
     .catch (error) ->
@@ -119,7 +118,7 @@ class Connection extends EventEmitter
           promises = Object.keys(@models).map (model) =>
             modelClass = @models[model]
             return Promise.resolve() if not modelClass._schema_changed
-            Promise.promisify(@_adapter.applySchema, @_adapter) model
+            @_adapter.applySchemaAsync model
             .then ->
               modelClass._schema_changed = false
           Promise.all promises

@@ -1,5 +1,4 @@
 _ = require 'underscore'
-async = require 'async'
 {bindDomain} = require './util'
 Promise = require 'bluebird'
 
@@ -188,7 +187,7 @@ class Query
     if @_find_single_id and @_conditions.length is 0
       @_connection.log @_name, 'find by id', id: @_id, options: @_options if not options?.skip_log
       return Promise.reject new Error('not found') if not @_id
-      return Promise.promisify(@_adapter.findById, @_adapter) @_name, @_id, @_options
+      return @_adapter.findByIdAsync @_name, @_id, @_options
       .catch (error) ->
         Promise.reject new Error('not found')
       .then (record) ->
@@ -204,7 +203,7 @@ class Query
         @_conditions.push id: @_id
         expected_count = 1
     @_connection.log @_name, 'find', conditions: @_conditions, options: @_options if not options?.skip_log
-    Promise.promisify(@_adapter.find, @_adapter) @_name, @_conditions, @_options
+    @_adapter.findAsync @_name, @_conditions, @_options
     .then (records) =>
       if expected_count?
         return Promise.reject new Error('not found') if records.length isnt expected_count
@@ -270,7 +269,7 @@ class Query
       if @_id or @_find_single_id
         @_conditions.push id: @_id
         delete @_id
-      Promise.promisify(@_adapter.count, @_adapter) @_name, @_conditions
+      @_adapter.countAsync @_name, @_conditions
     .nodeify bindDomain callback
 
   _validateAndBuildSaveData: (errors, data, updates, path, object) ->
@@ -314,7 +313,7 @@ class Query
         @_conditions.push id: @_id
         delete @_id
       @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
-      Promise.promisify(@_adapter.updatePartial, @_adapter) @_name, data, @_conditions, @_options
+      @_adapter.updatePartialAsync @_name, data, @_conditions, @_options
     .nodeify bindDomain callback
 
   _doIntegrityActions: (integrities, ids) ->
@@ -381,7 +380,7 @@ class Query
 
       @_doArchiveAndIntegrity options
       .then =>
-        Promise.promisify(@_adapter.delete, @_adapter) @_name, @_conditions
+        @_adapter.deleteAsync @_name, @_conditions
     .nodeify bindDomain callback
 
 module.exports = Query

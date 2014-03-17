@@ -1,5 +1,4 @@
 _ = require 'underscore'
-async = require 'async'
 inflector = require '../inflector'
 Promise = require 'bluebird'
 util = require '../util'
@@ -85,7 +84,7 @@ class ModelPersistence
 
     ctor = @constructor
     ctor._connection.log ctor._name, 'create', data if not options?.skip_log
-    Promise.promisify(ctor._adapter.create, ctor._adapter) ctor._name, data
+    ctor._adapter.createAsync ctor._name, data
     .then (id) =>
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
       # save sub objects of each association
@@ -111,7 +110,7 @@ class ModelPersistence
     return Promise.reject error if error
 
     @_connection.log @_name, 'createBulk', data_array
-    Promise.promisify(@_adapter.createBulk, @_adapter) @_name, data_array
+    @_adapter.createBulkAsync @_name, data_array
     .then (ids) ->
       records.forEach (record, i) ->
         Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: ids[i]
@@ -134,7 +133,7 @@ class ModelPersistence
         return Promise.reject e
 
       ctor._connection.log ctor._name, 'update', data if not options?.skip_log
-      Promise.promisify(adapter.updatePartial, adapter) ctor._name, data, id: @id, {}
+      adapter.updatePartialAsync ctor._name, data, id: @id, {}
       .then =>
         @_prev_attributes = {}
     else
@@ -145,7 +144,7 @@ class ModelPersistence
         return Promise.reject e
       
       ctor._connection.log ctor._name, 'update', data if not options?.skip_log
-      Promise.promisify(ctor._adapter.update, ctor._adapter) ctor._name, data
+      ctor._adapter.updateAsync ctor._name, data
       .then =>
         @_prev_attributes = {}
 

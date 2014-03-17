@@ -210,7 +210,7 @@ class Model
   @drop: (callback) ->
     # do not need to apply schema before drop, only waiting connection established
     @_connection._promise_connection.then =>
-      Promise.promisify(@_adapter.drop, @_adapter) @_name
+      @_adapter.dropAsync @_name
     .finally =>
       @_schema_changed = true
       @_connection._schema_changed = true

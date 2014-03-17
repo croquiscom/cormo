@@ -1,5 +1,4 @@
 _ = require 'underscore'
-async = require 'async'
 {bindDomain} = require '../util'
 inflector = require '../inflector'
 Promise = require 'bluebird'

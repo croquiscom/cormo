@@ -11,23 +11,30 @@ class ModelCache
     @_connection._connectRedisCache()
     .then (redis) =>
       key = 'CC.'+tableize(@_name)+':'+key
-      Promise.promisify(redis.get, redis) key
-    .then (data) ->
-      return Promise.reject new Error 'error' if not data?
-      Promise.resolve JSON.parse data
+      new Promise (resolve, reject) ->
+        redis.get key, (error, value) ->
+          return reject error if error
+          resolve value
+    .then (value) ->
+      return Promise.reject new Error 'error' if not value?
+      Promise.resolve JSON.parse value
 
   @_saveToCache: (key, ttl, data) ->
     @_connection._connectRedisCache()
     .then (redis) =>
       key = 'CC.'+tableize(@_name)+':'+key
-      Promise.promisify(redis.setex, redis) key, ttl, JSON.stringify(data)
+      new Promise (resolve, reject) ->
+        redis.setex key, ttl, JSON.stringify(data), (error) ->
+          return reject error if error
+          resolve()
 
   @removeCache: (key, callback) ->
     @_connection._connectRedisCache()
     .then (redis) =>
       key = 'CC.'+tableize(@_name)+':'+key
-      Promise.promisify(redis.del, redis) key
-      .catch (error) ->
+      new Promise (resolve, reject) ->
+        redis.del key, (error, count) ->
+          resolve()
     .nodeify bindDomain callback
 
 module.exports = ModelCache
