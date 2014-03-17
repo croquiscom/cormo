@@ -45,8 +45,8 @@ task 'test:full', 'Runs Mocha full tests', (options) ->
           return if error
 
 task 'test:cov', 'Gets tests coverage', (options) ->
+  process.env.CORMO_COVERAGE = 'true'
   process.env.NODE_ENV = 'test'
-  process.env.TEST_COV = 1
   command = './node_modules/.bin/mocha'
   args = ['-R', 'html-cov', '--compilers', 'coffee:coffee-script', '-r', 'coffee-script/register']
   child = spawn command, args

@@ -32,6 +32,7 @@
   "devDependencies": {
     "benchmark": "~1.0.0",
     "chai": "~1.9.0",
+    "coffee-coverage": "~0.4.2",
     "coffee-script": "~1.7.1",
     "crojsdoc": "~0.6.5",
     "microtime": "~0.5.1",
