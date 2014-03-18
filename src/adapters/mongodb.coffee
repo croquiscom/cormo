@@ -381,9 +381,9 @@ class MongoDBAdapter extends AdapterBase
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       return callback new Error('not found') if not result
       if options.lean
-        callback null, @_refineRawInstance model, result, options.select
+        callback null, @_refineRawInstance model, result, options.select, options.select_raw
       else
-        callback null, @_convertToModelInstance model, result, options.select
+        callback null, @_convertToModelInstance model, result, options.select, options.select_raw
 
   ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->
@@ -455,9 +455,9 @@ class MongoDBAdapter extends AdapterBase
         cursor.toArray (error, result) =>
           return callback MongoDBAdapter.wrapError 'unknown error', error if error
           if options.lean
-            callback null, result.map (record) => @_refineRawInstance model, record, options.select
+            callback null, result.map (record) => @_refineRawInstance model, record, options.select, options.select_raw
           else
-            callback null, result.map (record) => @_convertToModelInstance model, record, options.select
+            callback null, result.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
 
   ## @override AdapterBase::count
   count: (model, conditions, callback) ->

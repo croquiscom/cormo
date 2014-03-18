@@ -303,3 +303,43 @@ module.exports = () ->
         expect(users[0].name.last).to.eql 'Doe'
         callback null
     ], done
+
+  it 'select for null fields', (done) ->
+    User = _g.connection.User
+
+    User.column 'name',
+      first: String
+      last: String
+
+    async.waterfall [
+      (callback) -> User.create {}, (error, user) ->
+        callback error
+      # select sub
+      (callback) -> User.select 'name.first', (error, users) ->
+        return callback error if error
+        expect(users).to.have.length 1
+        expect(users[0]).to.have.keys 'id', 'name'
+        expect(users[0].name).to.eql first: null
+        callback null
+      # select super
+      (callback) -> User.select 'name', (error, users) ->
+        return callback error if error
+        expect(users).to.have.length 1
+        expect(users[0]).to.have.keys 'id', 'name'
+        expect(users[0].name).to.be.null
+        callback null
+      # select sub with lean
+      (callback) -> User.select('name.first').lean().exec (error, users) ->
+        return callback error if error
+        expect(users).to.have.length 1
+        expect(users[0]).to.have.keys 'id', 'name'
+        expect(users[0].name).to.eql first: null
+        callback null
+      # select super with lean
+      (callback) -> User.select('name').lean().exec (error, users) ->
+        return callback error if error
+        expect(users).to.have.length 1
+        expect(users[0]).to.have.keys 'id', 'name'
+        expect(users[0].name).to.be.null
+        callback null
+    ], done

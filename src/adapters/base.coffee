@@ -54,12 +54,9 @@ class AdapterBase
     else
       value
 
-  _refineRawInstance: (model, data, selected_columns) ->
-    schema = @_connection.models[model]._schema
+  setValuesFromDB: (instance, data, schema, selected_columns) ->
     selected_columns = Object.keys schema if not selected_columns
     support_nested = @support_nested
-    id = @_getModelID data
-    instance = {}
     for column in selected_columns
       property = schema[column]
       parts = property._parts
@@ -72,13 +69,22 @@ class AdapterBase
       else
         value = null
       util.setPropertyOfPath instance, parts, value
-    Object.defineProperty instance, 'id', configurable: false, enumerable: true, writable: false, value: id
+
+  _refineRawInstance: (model, data, selected_columns, selected_columns_raw) ->
+    model = @_connection.models[model]
+    instance = {}
+    @setValuesFromDB instance, data, model._schema, selected_columns
+
+    model._collapseNestedNulls instance, selected_columns_raw, null
+
+    Object.defineProperty instance, 'id', configurable: false, enumerable: true, writable: false, value: @_getModelID data
+
     return instance
 
-  _convertToModelInstance: (model, data, selected_columns) ->
+  _convertToModelInstance: (model, data, selected_columns, selected_columns_raw) ->
     id = @_getModelID(data)
     modelClass = @_connection.models[model]
-    return new modelClass data, id, selected_columns
+    return new modelClass data, id, selected_columns, selected_columns_raw
 
   _convertToGroupInstance: (model, data, group_by, group_fields) ->
     instance = {}

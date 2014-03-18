@@ -265,22 +265,10 @@ class Model
     if id = arguments[1]
       # if id exists, this is called from adapter with database record data
       selected_columns = arguments[2]
-      support_nested = adapter.support_nested
-      for column, property of schema
-        if selected_columns and selected_columns.indexOf(column) is -1
-          continue
-        parts = property._parts
-        value = if support_nested
-          util.getPropertyOfPath data, parts
-        else
-          data[property._dbname]
-        if value?
-          value = adapter.valueToModel value, property
-        else
-          value = null
-        util.setPropertyOfPath @, parts, value
+      selected_columns_raw = arguments[3]
+      adapter.setValuesFromDB @, data, schema, selected_columns
 
-      @_collapseNestedNulls selected_columns
+      ctor._collapseNestedNulls @, selected_columns_raw, if ctor.dirty_tracking then @_intermediates
 
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
 
@@ -293,7 +281,7 @@ class Model
           value = null
         util.setPropertyOfPath @, parts, value
 
-      @_collapseNestedNulls()
+      ctor._collapseNestedNulls @, null, if ctor.dirty_tracking then @_intermediates
 
       Object.defineProperty @, 'id', configurable: true, enumerable: true, writable: false, value: null
 
@@ -301,16 +289,15 @@ class Model
 
   ##
   # Set nested object null if all children are null
-  _collapseNestedNulls: (selected_columns) ->
-    ctor = @constructor
-    for path in Object.keys(ctor._intermediate_paths)
-      if selected_columns and selected_columns.indexOf(path) is -1
+  @_collapseNestedNulls: (instance, selected_columns_raw, intermediates) ->
+    for path in Object.keys(@_intermediate_paths)
+      if selected_columns_raw and selected_columns_raw.indexOf(path) is -1
         continue
-      if ctor.dirty_tracking
-        obj = @_intermediates
+      if intermediates
+        obj = intermediates
         last = path
       else
-        [obj, last] = util.getLeafOfPath @, path
+        [obj, last] = util.getLeafOfPath instance, path
       has_non_null = false
       for key, value of obj[last]
         has_non_null = true if value?

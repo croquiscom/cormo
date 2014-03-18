@@ -76,19 +76,24 @@ class Query
   # @return {Query} this
   select: (columns) ->
     @_options.select = null
+    @_options.select_raw = null
     if typeof columns is 'string'
       schema_columns = Object.keys @_model._schema
       intermediate_paths = @_model._intermediate_paths
       select = []
+      select_raw = []
       columns.split(/\s+/).forEach (column) ->
         if schema_columns.indexOf(column) >= 0
           select.push column
+          select_raw.push column
         else if intermediate_paths[column]
           # select all nested columns
+          select_raw.push column
           column += '.'
           schema_columns.forEach (sc) ->
             select.push sc if sc.indexOf(column) is 0
       @_options.select = select
+      @_options.select_raw = select_raw
     return @
 
   ##

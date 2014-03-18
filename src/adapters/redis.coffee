@@ -124,9 +124,9 @@ class RedisAdapter extends AdapterBase
       if result
         result.id = id
         if options.lean
-          callback null, @_refineRawInstance model, result, options.select
+          callback null, @_refineRawInstance model, result, options.select, options.select_raw
         else
-          callback null, @_convertToModelInstance model, result, options.select
+          callback null, @_convertToModelInstance model, result, options.select, options.select_raw
       else
         callback new Error 'not found'
 
@@ -142,9 +142,9 @@ class RedisAdapter extends AdapterBase
       , (error, records) =>
         records = records.filter (record) -> record?
         if options.lean
-          callback null, records.map (record) => @_refineRawInstance model, record, options.select
+          callback null, records.map (record) => @_refineRawInstance model, record, options.select, options.select_raw
         else
-          callback null, records.map (record) => @_convertToModelInstance model, record, options.select
+          callback null, records.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
 
   _delete: (keys, callback) ->
 
