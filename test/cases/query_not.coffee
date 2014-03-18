@@ -4,8 +4,6 @@ _compareUser = (user, expected) ->
   if expected.age?
     expect(user).to.have.keys 'id', 'name', 'age'
     expect(user.age).to.equal expected.age
-  else if user.constructor.eliminate_null
-    expect(user).to.have.keys 'id', 'name'
   else
     expect(user).to.have.keys 'id', 'name', 'age'
   expect(user.name).to.equal expected.name

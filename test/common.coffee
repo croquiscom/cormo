@@ -16,12 +16,8 @@ if process.env.DIRTY_TRACKING
   _g.Model.dirty_tracking = process.env.DIRTY_TRACKING is 'true'
 else
   _g.Model.dirty_tracking = Math.floor(Math.random() * 2) isnt 0
-if process.env.ELIMINATE_NULL
-  _g.Model.eliminate_null = process.env.ELIMINATE_NULL is 'true'
-else
-  _g.Model.eliminate_null = Math.floor(Math.random() * 2) isnt 0
 
-console.log "Run test with dirty_tracking=#{_g.Model.dirty_tracking}, eliminate_null=#{_g.Model.eliminate_null}"
+console.log "Run test with dirty_tracking=#{_g.Model.dirty_tracking}"
 
 _g.dropModels = (models, callback) ->
   async.forEach models, (model, callback) ->

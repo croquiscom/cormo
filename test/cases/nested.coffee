@@ -37,11 +37,8 @@ module.exports = () ->
       (callback) -> User.create {}, callback
       (user, callback) -> User.find user.id, callback
       (user, callback) ->
-        if _g.connection.User.eliminate_null
-          expect(user).to.have.keys 'id'
-        else
-          expect(user).to.have.keys 'id', 'name'
-        #TODO expect(user.name).to.not.exist
+        expect(user).to.have.keys 'id', 'name'
+        expect(user.name).to.be.null
         callback null
     ], done
 
@@ -91,11 +88,9 @@ module.exports = () ->
       (user, callback) -> User.find user.id, callback
       (user, callback) ->
         expect(user).to.have.keys 'id', 'name'
-        if User.eliminate_null
-          expect(user.name).to.have.keys 'first', 'last'
-        else
-          expect(user.name).to.have.keys 'first', 'middle', 'last'
+        expect(user.name).to.have.keys 'first', 'middle', 'last'
         expect(user.name.first).to.eql 'John'
+        expect(user.name.middle).to.null
         expect(user.name.last).to.eql 'Doe'
         callback null
       # missing required field
@@ -186,11 +181,8 @@ module.exports = () ->
         callback null
       (callback) -> User.create age: 20, callback
       (user, callback) ->
-        if User.eliminate_null
-          expect(user).to.have.keys 'id', 'age'
-        else
-          expect(user).to.have.keys 'id', 'name', 'age'
-          expect(user).to.have.property 'name', null
+        expect(user).to.have.keys 'id', 'name', 'age'
+        expect(user.name).to.null
         callback null
     ], done
 
@@ -210,11 +202,9 @@ module.exports = () ->
       (user, callback) -> User.find user.id, callback
       (user, callback) ->
         expect(user).to.have.keys 'id', 'name'
-        if User.eliminate_null
-          expect(user.name).to.have.keys 'first'
-        else
-          expect(user.name).to.have.keys 'first', 'last'
+        expect(user.name).to.have.keys 'first', 'last'
         expect(user.name.first).to.eql 'Bill'
+        expect(user.name.last).to.be.null
         callback null
     ], done
 
@@ -290,11 +280,8 @@ module.exports = () ->
           callback null, user.id
       (id, callback) -> User.find id, callback
       (user, callback) ->
-        if _g.connection.User.eliminate_null
-          expect(user).to.have.keys 'id'
-        else
-          expect(user).to.have.keys 'id', 'name'
-        #TODO expect(user.name).to.not.exist
+        expect(user).to.have.keys 'id', 'name'
+        expect(user.name).to.be.null
         callback null
     ], done
 

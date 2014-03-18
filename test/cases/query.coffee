@@ -398,11 +398,8 @@ module.exports = () ->
       _g.connection.User.select('name age').lean().exec (error, users) ->
         return done error if error
         expect(users).to.have.length 1
-        if _g.connection.User.eliminate_null
-          expect(users[0]).to.have.keys 'id', 'name'
-        else
-          expect(users[0]).to.have.keys 'id', 'name', 'age'
-          expect(users[0].age).to.be.null
+        expect(users[0]).to.have.keys 'id', 'name', 'age'
+        expect(users[0].age).to.be.null
         done null
 
   it 'lean option of null value without select', (done) ->
@@ -411,11 +408,8 @@ module.exports = () ->
       _g.connection.User.query().lean().exec (error, users) ->
         return done error if error
         expect(users).to.have.length 1
-        if _g.connection.User.eliminate_null
-          expect(users[0]).to.have.keys 'id', 'name'
-        else
-          expect(users[0]).to.have.keys 'id', 'name', 'age'
-          expect(users[0].age).to.be.null
+        expect(users[0]).to.have.keys 'id', 'name', 'age'
+        expect(users[0].age).to.be.null
         done null
 
   it 'cache', (done) ->

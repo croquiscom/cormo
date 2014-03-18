@@ -55,7 +55,6 @@ class AdapterBase
       value
 
   _refineRawInstance: (model, data, selected_columns) ->
-    dont_eliminate_null = not @_connection.models[model].eliminate_null
     schema = @_connection.models[model]._schema
     selected_columns = Object.keys schema if not selected_columns
     support_nested = @support_nested
@@ -72,8 +71,7 @@ class AdapterBase
         value = @valueToModel value, property
       else
         value = null
-      if value? or dont_eliminate_null
-        util.setPropertyOfPath instance, parts, value
+      util.setPropertyOfPath instance, parts, value
     Object.defineProperty instance, 'id', configurable: false, enumerable: true, writable: false, value: id
     return instance
 

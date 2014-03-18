@@ -161,12 +161,9 @@ module.exports = () ->
         expect(user).to.equal record
         _g.connection.User.find user.id, (error, record) ->
           return done error if error
-          if _g.connection.User.eliminate_null
-            expect(record).to.have.keys 'id'
-          else
-            expect(record).to.have.keys 'id', 'name', 'age'
-            expect(record).to.have.property 'name', null
-            expect(record).to.have.property 'age', null
+          expect(record).to.have.keys 'id', 'name', 'age'
+          expect(record).to.have.property 'name', null
+          expect(record).to.have.property 'age', null
           done null
 
   it 'find records', (done) ->

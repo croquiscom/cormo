@@ -47,8 +47,6 @@ class Model
   # @type Boolean
   @dirty_tracking: false
 
-  @eliminate_null: false
-
   ##
   # Archives deleted records in the archive table
   @archive: false
@@ -244,7 +242,6 @@ class Model
     ctor = @constructor
     schema = ctor._schema
     adapter = ctor._adapter
-    dont_eliminate_null = not ctor.eliminate_null
 
     Object.defineProperty @, '_prev_attributes', writable: true, value: {}
     if ctor.dirty_tracking
@@ -281,10 +278,9 @@ class Model
           value = adapter.valueToModel value, property
         else
           value = null
-        if value? or dont_eliminate_null
-          util.setPropertyOfPath @, parts, value
+        util.setPropertyOfPath @, parts, value
 
-      @_collapseNestedNulls selected_columns if dont_eliminate_null
+      @_collapseNestedNulls selected_columns
 
       Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
 
@@ -295,10 +291,9 @@ class Model
         value = util.getPropertyOfPath data, parts
         if value is undefined
           value = null
-        if value? or dont_eliminate_null
-          util.setPropertyOfPath @, parts, value
+        util.setPropertyOfPath @, parts, value
 
-      @_collapseNestedNulls() if dont_eliminate_null
+      @_collapseNestedNulls()
 
       Object.defineProperty @, 'id', configurable: true, enumerable: true, writable: false, value: null
 
@@ -362,7 +357,6 @@ class Model
   # @param {} value
   # @return {}
   set: (path, value) ->
-    eliminate_null = @constructor.eliminate_null
     if @_intermediates.hasOwnProperty path
       obj = @_intermediates[path]
       for k of obj
@@ -376,10 +370,7 @@ class Model
       if not @_prev_attributes.hasOwnProperty path
         @_prev_attributes[path] = prev_value
       [obj, last] = util.getLeafOfPath @, parts
-      if eliminate_null
-        @_defineProperty obj, last, path, value? if eliminate_null or prev_value is undefined
-      else if prev_value is undefined
-        @_defineProperty obj, last, path, true
+      @_defineProperty obj, last, path, true
       util.setPropertyOfPath @_attributes, parts, value
       while parts.length > 1
         parts.pop()

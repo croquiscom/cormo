@@ -29,8 +29,6 @@ _checkUser = (user, name, post_ids, post_titles, has_post_body) ->
     expect(post).to.not.be.an.instanceof _g.connection.Post
     if not has_post_body
       expect(post).to.have.keys 'id', 'user_id', 'title'
-    else if _g.connection.User.eliminate_null
-      expect(post).to.have.keys 'id', 'user_id', 'title', 'body'
     else
       expect(post).to.have.keys 'id', 'user_id', 'title', 'body', 'parent_post_id'
     expect(post.id).to.equal post_ids[i]

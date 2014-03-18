@@ -17,10 +17,9 @@ task 'build', 'Builds JavaScript files from source', ->
   compileFiles 'src/model'
   compileFiles 'src/command'
 
-runTest = (options, dirty_tracking, eliminate_null, callback) ->
+runTest = (options, dirty_tracking, callback) ->
   process.env.NODE_ENV = 'test'
   process.env.DIRTY_TRACKING = dirty_tracking
-  process.env.ELIMINATE_NULL = eliminate_null
   command = './node_modules/.bin/mocha'
   args = ['-R', options.reporter or 'spec', '--compilers', 'coffee:coffee-script', '-r', 'coffee-script/register']
   args.push '-g', options.grep if options.grep
@@ -31,18 +30,13 @@ runTest = (options, dirty_tracking, eliminate_null, callback) ->
 
 task 'test', 'Runs Mocha tests', (options) ->
   dirty_tracking = Math.floor(Math.random() * 2) isnt 0
-  eliminate_null = Math.floor(Math.random() * 2) isnt 0
-  runTest options, dirty_tracking, eliminate_null, (error) ->
+  runTest options, dirty_tracking, (error) ->
 
 task 'test:full', 'Runs Mocha full tests', (options) ->
-  runTest options, true, true, (error) ->
+  runTest options, true, (error) ->
     return if error
-    runTest options, true, false, (error) ->
+    runTest options, false, (error) ->
       return if error
-      runTest options, false, true, (error) ->
-        return if error
-        runTest options, false, false, (error) ->
-          return if error
 
 task 'test:cov', 'Gets tests coverage', (options) ->
   process.env.CORMO_COVERAGE = 'true'

@@ -104,8 +104,5 @@ module.exports = () ->
         return done error if error
         expect(count).to.equal 1
         _g.connection.User.find users[2].id, (error, user) ->
-          if _g.connection.User.eliminate_null
-            expect(user).to.have.keys 'id', 'name'
-          else
-            expect(user).to.have.keys 'id', 'name', 'age'
+          expect(user).to.have.keys 'id', 'name', 'age'
           done null
