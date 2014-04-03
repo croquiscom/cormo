@@ -186,5 +186,5 @@ exports.startCoffee = (options) ->
   historyFile = path.join process.env.HOME, '.cormo_history' if process.env.HOME
   addHistory repl_server, historyFile, 10240 if historyFile
   addArgCompleter repl_server
-  setupContext repl_server.context
+  setupContext repl_server.context, options
   return repl_server
