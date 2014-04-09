@@ -280,8 +280,7 @@ class SQLite3Adapter extends SQLAdapterBase
   # Connects to the database
   # @param {Object} settings
   # @param {String} settings.database
-  # @param {Function} callback
-  # @param {Error} callback.error
+  # @nodejscallback
   connect: (settings, callback) ->
     client = new sqlite3.Database settings.database, (error) =>
       return callback SQLite3Adapter.wrapError 'failed to open', error if error

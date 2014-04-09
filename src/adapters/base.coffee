@@ -20,8 +20,7 @@ class AdapterBase
   # Creates tables, alter tables, create indexes, or etc. depending adapters
   # @abstract
   # @param {String} model
-  # @param {Function} callback
-  # @param {Error} callback.error
+  # @nodejscallback
   # @see Connection::applySchemas
   applySchema: (model, callback) -> callback null
 
@@ -29,8 +28,7 @@ class AdapterBase
   # Drops a model from the database
   # @abstract
   # @param {String} model
-  # @param {Function} callback
-  # @param {Error} callback.error
+  # @nodejscallback
   # @see Model.drop
   drop: (model, callback) -> callback new Error 'not implemented'
 
@@ -105,9 +103,8 @@ class AdapterBase
   # @abstract
   # @param {String} model
   # @param {Object} data
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {RecordID} callback.id
+  # @return {RecordID}
+  # @nodejscallback
   create: (model, data, callback) -> callback new Error 'not implemented'
 
   ##
@@ -115,9 +112,8 @@ class AdapterBase
   # @abstract
   # @param {String} model
   # @param {Array<Object>} data
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Array<RecordID>} callback.ids
+  # @return {Array<RecordID>}
+  # @nodejscallback
   createBulk: (model, data, callback) -> callback new Error 'not implemented'
 
   _createBulkDefault: (model, data, callback) ->
@@ -130,8 +126,7 @@ class AdapterBase
   # @abstract
   # @param {String} model
   # @param {Object} data
-  # @param {Function} callback
-  # @param {Error} callback.error
+  # @nodejscallback
   update: (model, data, callback) -> callback new Error 'not implemented'
 
   ##
@@ -141,8 +136,7 @@ class AdapterBase
   # @param {Object} data
   # @param {Object} conditions
   # @param {Object} options
-  # @param {Function} callback
-  # @param {Error} callback.error
+  # @nodejscallback
   updatePartial: (model, data, conditions, options, callback) -> callback new Error 'not implemented'
 
   ##
@@ -151,9 +145,8 @@ class AdapterBase
   # @param {String} model
   # @param {RecordID} id
   # @param {Object} options
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Model} callback.record
+  # @return {Model}
+  # @nodejscallback
   # @throws {Error('not found')}
   # @see Query::exec
   findById: (model, id, options, callback) -> callback new Error 'not implemented'
@@ -164,9 +157,8 @@ class AdapterBase
   # @param {String} model
   # @param {Object} conditions
   # @param {Object} options
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Array<Model>} callback.records
+  # @return {Array<Model>}
+  # @nodejscallback
   # @see Query::exec
   find: (model, conditions, options, callback) -> callback new Error 'not implemented'
 
@@ -175,9 +167,8 @@ class AdapterBase
   # @abstract
   # @param {String} model
   # @param {Object} conditions
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Number} callback.count
+  # @return {Number}
+  # @nodejscallback
   # @see Query::count
   count: (model, conditions, callback) -> callback new Error 'not implemented'
 
@@ -186,9 +177,8 @@ class AdapterBase
   # @abstract
   # @param {String} model
   # @param {Object} conditions
-  # @param {Function} callback
-  # @param {Error} callback.error
-  # @param {Number} callback.count
+  # @return {Number}
+  # @nodejscallback
   # @see Query::delete
   delete: (model, conditions, callback) -> callback new Error 'not implemented'
 

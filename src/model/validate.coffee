@@ -54,9 +54,8 @@ class ModelValidate
 
   ##
   # Validates data
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @return {Promise}
+  # @promise
+  # @nodejscallback
   validate: (callback) ->
     @_runCallbacks 'validate', 'before'
 

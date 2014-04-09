@@ -67,10 +67,9 @@ class ConnectionManipulate
   ##
   # Manipulate data
   # @param {Array<Object>} commands
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Object} callback.id_to_record_map
-  # @return {Promise}
+  # @return {Object}
+  # @promise
+  # @nodejscallback
   manipulate: (commands, callback) ->
     @log '<conn>', 'manipulate', commands
 

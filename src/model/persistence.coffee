@@ -13,10 +13,9 @@ class ModelPersistence
   # @param {Object} [data={}]
   # @param {Object} [options]
   # @param {Boolean} [options.skip_log=false]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Model} callback.record created record
-  # @return {Promise}
+  # @return {Model} created record
+  # @promise
+  # @nodejscallback
   @create: (data, options, callback) ->
     if typeof data is 'function'
       callback = data
@@ -32,10 +31,9 @@ class ModelPersistence
   ##
   # Creates multiple records and saves them to the database.
   # @param {Array<Object>} data
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Array<Model>} callback.records created records
-  # @return {Promise}
+  # @return {Array<Model>} created records
+  # @promise
+  # @nodejscallback
   @createBulk: (data, callback) ->
     @_checkReady().then =>
       return Promise.reject new Error 'data is not an array' if not Array.isArray data
@@ -142,7 +140,7 @@ class ModelPersistence
         data = @_buildSaveData()
       catch e
         return Promise.reject e
-      
+
       ctor._connection.log ctor._name, 'update', data if not options?.skip_log
       ctor._adapter.updateAsync ctor._name, data
       .then =>
@@ -153,10 +151,9 @@ class ModelPersistence
   # @param {Object} [options]
   # @param {Boolean} [options.validate=true]
   # @param {Boolean} [options.skip_log=false]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Model} callback.record this
-  # @return {Promise}
+  # @return {Model} this
+  # @promise
+  # @nodejscallback
   save: (options, callback) ->
     if typeof options is 'function'
       callback = options

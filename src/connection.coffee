@@ -99,9 +99,8 @@ class Connection extends EventEmitter
 
   ##
   # Applies schemas
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @return {Promise}
+  # @promise
+  # @nodejscallback
   # @see AdapterBase::applySchema
   applySchemas: (callback) ->
     Promise.resolve().then =>

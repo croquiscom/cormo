@@ -201,9 +201,8 @@ class Model
 
   ##
   # Drops this model from the database
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @return {Promise}
+  # @promise
+  # @nodejscallback
   # @see AdapterBase::drop
   @drop: (callback) ->
     # do not need to apply schema before drop, only waiting connection established
@@ -373,9 +372,8 @@ class Model
 
   ##
   # Destroys this record (remove from the database)
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @return {Promise}
+  # @promise
+  # @nodejscallback
   destroy: (callback) ->
     @_runCallbacks 'destroy', 'before'
     Promise.resolve()
@@ -388,9 +386,8 @@ class Model
 
   ##
   # Deletes all records from the database
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @return {Promise}
+  # @promise
+  # @nodejscallback
   @deleteAll: (callback) ->
     @delete().nodeify callback
 

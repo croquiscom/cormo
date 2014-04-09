@@ -235,10 +235,9 @@ class Query
   # Executes the query
   # @param {Object} [options]
   # @param {Boolean} [options.skip_log=false]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Model|Array<Model>} callback.records
-  # @return {Promise}
+  # @return {Model|Array<Model>}
+  # @promise
+  # @nodejscallback
   # @see AdapterBase::findById
   # @see AdapterBase::find
   exec: (options, callback) ->
@@ -264,10 +263,9 @@ class Query
 
   ##
   # Executes the query as a count operation
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Number} callback.count
-  # @return {Promise}
+  # @return {Number}
+  # @promise
+  # @nodejscallback
   # @see AdapterBase::count
   count: (callback) ->
     @_model._checkReady().then =>
@@ -301,10 +299,9 @@ class Query
   ##
   # Executes the query as a update operation
   # @param {Object} updates
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Number} callback.count
-  # @return {Promise}
+  # @return {Number}
+  # @promise
+  # @nodejscallback
   # @see AdapterBase::count
   update: (updates, callback) ->
     @_model._checkReady().then =>
@@ -368,10 +365,9 @@ class Query
   # Executes the query as a delete operation
   # @param {Object} [options]
   # @param {Boolean} [options.skip_log=false]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Number} callback.count
-  # @return {Promise}
+  # @return {Number}
+  # @promise
+  # @nodejscallback
   # @see AdapterBase::delete
   delete: (options, callback) ->
     if typeof options is 'function'

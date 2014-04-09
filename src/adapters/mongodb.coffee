@@ -490,8 +490,7 @@ class MongoDBAdapter extends AdapterBase
   # @param {String} [settings.user]
   # @param {String} [settings.password]
   # @param {String} settings.database
-  # @param {Function} callback
-  # @param {Error} callback.error
+  # @nodejscallback
   connect: (settings, callback) ->
     if settings.user or settings.password
       url = "mongodb://#{settings.user}:#{settings.password}@#{settings.host or 'localhost'}:#{settings.port or 27017}/#{settings.database}"

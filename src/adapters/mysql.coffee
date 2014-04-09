@@ -322,8 +322,7 @@ class MySQLAdapter extends SQLAdapterBase
   # @param {String} [settings.user]
   # @param {String} [settings.password]
   # @param {String} settings.database
-  # @param {Function} callback
-  # @param {Error} callback.error
+  # @nodejscallback
   connect: (settings, callback) ->
     # connect
     client = mysql.createConnection

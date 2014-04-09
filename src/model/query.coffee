@@ -93,10 +93,9 @@ class ModelQuery
   ##
   # Counts records by conditions
   # @param {Object} [condition]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Number} callback.count
-  # @return {Promise}
+  # @return {Number}
+  # @promise
+  # @nodejscallback
   @count: (condition, callback) ->
     if typeof condition is 'function'
       callback = condition
@@ -111,10 +110,9 @@ class ModelQuery
   # Updates some fields of records that match conditions
   # @param {Object} updates
   # @param {Object} [condition]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Number} callback.count
-  # @return {Promise}
+  # @return {Number}
+  # @promise
+  # @nodejscallback
   @update: (updates, condition, callback) ->
     if typeof condition is 'function'
       callback = condition
@@ -128,10 +126,9 @@ class ModelQuery
   ##
   # Deletes records by conditions
   # @param {Object} [condition]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Number} callback.count
-  # @return {Promise}
+  # @return {Number}
+  # @promise
+  # @nodejscallback
   @delete: (condition, callback) ->
     if typeof condition is 'function'
       callback = condition

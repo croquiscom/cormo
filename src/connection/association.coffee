@@ -227,10 +227,9 @@ class ConnectionAssociation
 
   ##
   # Returns inconsistent records against associations
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Object} callback.inconsistencies Hash of model name to Array of RecordIDs
-  # @return {Promise}
+  # @return {Object} Hash of model name to Array of RecordIDs
+  # @promise
+  # @nodejscallback
   getInconsistencies: (callback) ->
     @_checkSchemaApplied().then =>
       result = {}
@@ -341,9 +340,8 @@ class ConnectionAssociation
   # @param {String} column
   # @param {String} [select]
   # @param {Object} [options]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @return {Promise}
+  # @promise
+  # @nodejscallback
   fetchAssociated: (records, column, select, options, callback) ->
     if typeof select is 'function'
       callback = select
