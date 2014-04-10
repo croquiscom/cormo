@@ -22,7 +22,7 @@ class Query
   ##
   # Finds a record by id
   # @param {RecordID|Array<RecordID>} id
-  # @return {Query} this
+  # @chainable
   find: (id) ->
     if Array.isArray id
       @_id = _.uniq id
@@ -35,7 +35,7 @@ class Query
   ##
   # Finds records by ids while preserving order.
   # @param {Array<RecordID>} ids
-  # @return {Query} this
+  # @chainable
   findPreserve: (ids) ->
     @_id = _.uniq ids
     @_find_single_id = false
@@ -45,11 +45,13 @@ class Query
   ##
   # Finds records near target
   # @param {Object} target
-  # @return {Query} this
+  # @chainable
   near: (target) ->
     @_options.near = target
     return @
 
+  ##
+  # @private
   _addCondition: (condition) ->
     if @_options.group_fields
       keys = Object.keys condition
@@ -61,7 +63,7 @@ class Query
   ##
   # Finds records by condition
   # @param {Object} condition
-  # @return {Query} this
+  # @chainable
   where: (condition) ->
     if Array.isArray condition
       condition.forEach (cond) =>
@@ -73,7 +75,7 @@ class Query
   ##
   # Selects columns for result
   # @param {String} columns
-  # @return {Query} this
+  # @chainable
   select: (columns) ->
     @_options.select = null
     @_options.select_raw = null
@@ -99,7 +101,7 @@ class Query
   ##
   # Specifies orders of result
   # @param {String} orders
-  # @return {Query} this
+  # @chainable
   order: (orders) ->
     if typeof orders is 'string'
       avaliable_columns = ['id']
@@ -118,7 +120,7 @@ class Query
   # Groups result records
   # @param {String} group_by
   # @param {Object} fields
-  # @return {Query} this
+  # @chainable
   group: (group_by, fields) ->
     @_options.group_by = null
     schema_columns = Object.keys @_model._schema
@@ -132,7 +134,7 @@ class Query
   # Returns only one record (or null if does not exists).
   #
   # This is different from limit(1). limit(1) returns array of length 1 while this returns an instance.
-  # @return {Query} this
+  # @chainable
   one: ->
     @_options.limit = 1
     @_options.one = true
@@ -141,7 +143,7 @@ class Query
   ##
   # Sets limit of query
   # @param {Number} limit
-  # @return {Query} this
+  # @chainable
   limit: (limit) ->
     @_options.limit = limit
     return @
@@ -149,13 +151,14 @@ class Query
   ##
   # Sets skip of query
   # @param {Number} skip
-  # @return {Query} this
+  # @chainable
   skip: (skip) ->
     @_options.skip = skip
     return @
 
   ##
   # Returns raw instances instead of model instances
+  # @chainable
   # @see Query::exec
   lean: ->
     @_options.lean = true
@@ -163,6 +166,7 @@ class Query
 
   ##
   # Same as [[Query::lean]], for backword compatibility
+  # @chainable
   return_raw_instance: @::lean
 
   ##
@@ -176,6 +180,7 @@ class Query
   # @param {String} options.key
   # @param {Number} options.ttl TTL in seconds
   # @param {Boolean} options.refresh don't load from cache if true
+  # @chainable
   cache: (options) ->
     @_options.cache = options
     return @
@@ -184,10 +189,13 @@ class Query
   # Returns associated objects also
   # @param {String} column
   # @param {String} [select]
+  # @chainable
   include: (column, select) ->
     @_includes.push column: column, select: select
     return @
 
+  ##
+  # @private
   _exec: (options) ->
     if @_find_single_id and @_conditions.length is 0
       @_connection.log @_name, 'find by id', id: @_id, options: @_options if not options?.skip_log
@@ -222,6 +230,8 @@ class Query
       else
         Promise.resolve records
 
+  ##
+  # @private
   _execAndInclude: (options) ->
     @_exec options
     .then (records) =>
@@ -275,6 +285,8 @@ class Query
       @_adapter.countAsync @_name, @_conditions
     .nodeify bindDomain callback
 
+  ##
+  # @private
   _validateAndBuildSaveData: (errors, data, updates, path, object) ->
     model = @_model
     schema = model._schema
@@ -338,6 +350,8 @@ class Query
         integrity.child.delete conditions
     Promise.all promises
 
+  ##
+  # @private
   _doArchiveAndIntegrity: (options) ->
     need_archive = @_model.archive
     integrities = @_model._integrities.filter (integrity) -> integrity.type.substr(0, 7) is 'parent_'
