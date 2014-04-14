@@ -1,3 +1,8 @@
+##
+# CORMO console
+# @module console
+# @namespace cormo
+
 coffee = require 'coffee-script'
 fs = require 'fs'
 path = require 'path'
@@ -171,8 +176,15 @@ setupContext = (context, options) ->
   for key, object of exports.public
     context[key] = object
 
+##
+# Members of this object will be imported when a console is started
+# @memberOf console
 exports.public = {}
 
+##
+# Starts a CoffeeScript console
+# @memberOf console
+# @params {Object} options
 exports.startCoffee = (options) ->
   options.inspect_depth or= 2
   repl_server = repl.start

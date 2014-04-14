@@ -159,7 +159,7 @@ Place.query().near(location: [-5, 45]).limit(4).exec (error, places) ->
 
 The MIT License (MIT)
 
-Copyright (c) 2012-2013 Sangmin Yoon &lt;sangmin.yoon@croquis.com&gt;
+Copyright (c) 2012-2014 Sangmin Yoon &lt;sangmin.yoon@croquis.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -166,8 +166,8 @@ class Query
 
   ##
   # Same as [[#Query::lean]], for backword compatibility
+  # @method
   # @chainable
-  # @method return_raw_instance
   return_raw_instance: @::lean
 
   ##

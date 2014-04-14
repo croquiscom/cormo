@@ -5,6 +5,8 @@ path = require 'path'
 ##
 # CORMO console
 class CommandConsole
+  ##
+  # @param argv
   constructor: (argv) ->
     loads = []
     @program = program = new commander.Command('cormo')
@@ -28,10 +30,14 @@ class CommandConsole
         catch e
           console.log e.toString() if e.code isnt 'MODULE_NOT_FOUND'
 
+  ##
+  # Runs this command
   run: ->
-    @runCoffee()
+    @startCoffee()
 
-  runCoffee: ->
+  ##
+  # Starts a CoffeeScript console
+  startCoffee: ->
     cormo_console.startCoffee inspect_depth: @inspect_depth
     .on 'exit', ->
       process.exit 0
