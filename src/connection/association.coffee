@@ -282,10 +282,16 @@ class ConnectionAssociation
       .then (sub_records) ->
         sub_records.forEach (sub_record) ->
           id_to_record_map[sub_record.id].forEach (record) ->
-            Object.defineProperty record, column, enumerable: true, value: sub_record
+            if options.lean
+              record[column] = sub_record
+            else
+              Object.defineProperty record, column, enumerable: true, value: sub_record
         records.forEach (record) ->
           if not record.hasOwnProperty column
-            Object.defineProperty record, column, enumerable: true, value: null
+            if options.lean
+              record[column] = null
+            else
+              Object.defineProperty record, column, enumerable: true, value: null
           return
       .catch ->
     else
@@ -296,19 +302,31 @@ class ConnectionAssociation
         query.lean() if options.lean
         query.exec()
         .then (sub_record) ->
-          Object.defineProperty records, column, enumerable: true, value: sub_record
+          if options.lean
+            records[column] = sub_record
+          else
+            Object.defineProperty records, column, enumerable: true, value: sub_record
         .catch (error) ->
           return Promise.reject error if error and error.message isnt 'not found'
           if not records.hasOwnProperty column
-            Object.defineProperty records, column, enumerable: true, value: null
+            if options.lean
+              records[column] = null
+            else
+              Object.defineProperty records, column, enumerable: true, value: null
       else if not records.hasOwnProperty column
-        Object.defineProperty records, column, enumerable: true, value: null
+        if options.lean
+          records[column] = null
+        else
+          Object.defineProperty records, column, enumerable: true, value: null
         Promise.resolve()
 
   _fetchAssociatedHasMany: (records, target_model, foreign_key, column, select, options) ->
     if Array.isArray records
       ids = records.map (record) ->
-        Object.defineProperty record, column, enumerable: true, value: []
+        if options.lean
+          record[column] = []
+        else
+          Object.defineProperty record, column, enumerable: true, value: []
         record.id
       cond = {}
       cond[foreign_key] = $in: ids
@@ -322,7 +340,10 @@ class ConnectionAssociation
             record[column].push sub_record if record.id is sub_record[foreign_key]
       .catch ->
     else
-      Object.defineProperty records, column, enumerable: true, value: []
+      if options.lean
+        records[column] = []
+      else
+        Object.defineProperty records, column, enumerable: true, value: []
       cond = {}
       cond[foreign_key] = records.id
       query = target_model.where cond

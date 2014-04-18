@@ -412,6 +412,15 @@ module.exports = () ->
         expect(users[0].age).to.be.null
         done null
 
+  it 'id field of lean result can be modified', (done) ->
+    _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      return done error if error
+      _g.connection.User.find(user.id).lean().exec (error, record) ->
+        return done error if error
+        record.id = 'new id'
+        expect(record.id).to.be.equal 'new id'
+        done null
+
   it 'cache', (done) ->
     async.waterfall [
       (callback) ->

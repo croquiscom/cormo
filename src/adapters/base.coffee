@@ -75,7 +75,7 @@ class AdapterBase
 
     model._collapseNestedNulls instance, selected_columns_raw, null
 
-    Object.defineProperty instance, 'id', configurable: false, enumerable: true, writable: false, value: @_getModelID data
+    instance.id = @_getModelID data
 
     return instance
 

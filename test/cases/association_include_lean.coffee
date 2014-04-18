@@ -159,3 +159,23 @@ module.exports = ->
         _checkPost post, 'another post', null
         callback null
     ], done
+
+  it 'modify associated property (belongs to)', (done) ->
+    async.waterfall [
+      (callback) ->
+        _g.connection.Post.find(preset_posts[0].id).lean().include('user').exec callback
+      (post, callback) ->
+        post.user = 'other value'
+        expect(post.user).to.be.equal 'other value'
+        callback null
+    ], done
+
+  it 'modify associated property (has many)', (done) ->
+    async.waterfall [
+      (callback) ->
+        _g.connection.User.find(preset_users[0].id).lean().include('posts').exec callback
+      (user, callback) ->
+        user.posts = 'other value'
+        expect(user.posts).to.be.equal 'other value'
+        callback null
+    ], done
