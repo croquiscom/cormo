@@ -175,6 +175,9 @@ setupContext = (context, options) ->
     set: (value) => options.inspect_depth = value
   for key, object of exports.public
     context[key] = object
+  context.getTimestamp = (object_id) ->
+    new Date parseInt(object_id.substr(0, 8), 16) * 1000
+  return
 
 ##
 # Members of this object will be imported when a console is started
