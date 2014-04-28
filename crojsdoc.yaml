@@ -6,7 +6,6 @@ external-types:
   Class: http://coffeescript.org/#classes
   StringMap: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object
   RedisClient: https://github.com/mranney/node_redis
-  Promise: https://github.com/petkaantonov/bluebird/blob/master/API.md#core
 sources:
   - src
   - guides
