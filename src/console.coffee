@@ -187,7 +187,7 @@ exports.public = {}
 ##
 # Starts a CoffeeScript console
 # @memberOf console
-# @params {Object} options
+# @param {Object} options
 exports.startCoffee = (options) ->
   options.inspect_depth or= 2
   repl_server = repl.start

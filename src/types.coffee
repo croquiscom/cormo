@@ -25,6 +25,7 @@ exports.Integer = 'integer'
 
 ##
 # Represents a two-dimensional point, used in model schemas.
+#
 # This type is supported only in MongoDB and MySQL.
 # @memberOf types
 exports.GeoPoint = 'geopoint'
@@ -36,6 +37,7 @@ exports.Date = 'date'
 
 ##
 # Represents a general object, used in model schemas.
+#
 # A value of this type will be converted to a JSON string
 # if the adapter does not support a general object.
 # @memberOf types
@@ -69,15 +71,15 @@ exports._toCORMOType = (type) ->
 #
 # * String for MongoDB
 # * Integer for MySQL, SQLite3, PostegreSQL
-# @namespace types
+# @namespace ptypes
 class RecordID
 
 ##
 # A pseudo class represents an integer
-# @namespace types
+# @namespace ptypes
 class Integer
 
 ##
 # A pseudo class represents a two-dimensional point
-# @namespace types
+# @namespace ptypes
 class GeoPoint
