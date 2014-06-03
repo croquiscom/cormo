@@ -80,8 +80,12 @@ class SQLite3Adapter extends SQLAdapterBase
 
   ## @override AdapterBase::applySchema
   applySchema: (model, callback) ->
-    # TODO check table existence
-    @_createTable model, callback
+    tableName = @_connection.models[model].tableName
+    @_query 'all', "SELECT name FROM sqlite_master WHERE type='table' AND name='#{tableName}'", (error, result) =>
+      if result?.length != 1
+        @_createTable model, callback
+      else
+        callback null
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->
