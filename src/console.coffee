@@ -78,6 +78,7 @@ addHistory = (repl_server, filename, maxSize) ->
     readFd = fs.openSync filename, 'r'
     buffer = new Buffer(size)
     fs.readSync readFd, buffer, 0, size, stat.size - size
+    fs.closeSync readFd
     # Set the history on the interpreter
     repl_server.rli.history = buffer.toString().split('\n').reverse()
     # If the history file was truncated we should pop off a potential partial line
@@ -95,7 +96,7 @@ addHistory = (repl_server, filename, maxSize) ->
       fs.write fd, "#{code}\n"
       lastLine = code
 
-  repl_server.rli.on 'exit', -> fs.close fd
+  repl_server.rli.on 'close', -> fs.close fd
 
   # Add a command to show the history stack
   repl_server.commands['.history'] =
