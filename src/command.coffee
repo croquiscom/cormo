@@ -9,7 +9,14 @@ class Command
   # @param {Array<String>} argv
   @run: (argv) ->
     command = argv[2]
-    CommandClass = require path.resolve __dirname, 'command', command
+    if not command
+      console.log 'Usage: cormo <command>'
+      return
+    try
+      CommandClass = require path.resolve __dirname, 'command', command
+    catch
+      console.log "Cannot find a CORMO command #{command}"
+      return
     command = new CommandClass argv
     command.run()
 
