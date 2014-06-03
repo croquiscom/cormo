@@ -6,12 +6,14 @@
 $ cormo console
 cormo> 1+1
 2
-cormo> 
+cormo>
 ```
 
 ## Load module
 
 ```coffeescript
+# model.coffee
+
 cormo = require 'cormo'
 
 new cormo.Connection 'mongodb', database: 'test'
@@ -32,6 +34,22 @@ cormo> User.find(user.id).select('name').exec()
   id: '5180f6850c8f82829d000003' }
 ```
 
+## Expose your objects
+
+```coffeescript
+# calc.coffee
+cormo = require 'cormo'
+cormo.console.public.CalcService =
+  add: (a, b) -> a + b
+```
+
+```bash
+$ cormo console -l coffee-script/register -l calc.coffee
+cormo> CalcService.add 1, 2
+3
+```
+
+
 ## Run synchronously
 
 If the evaluated result is a promise, console waits to finish the execution ant returns its result.
@@ -50,4 +68,35 @@ If a method provides only a node-style callback, you can use '$' to execute it s
 ```bash
 cormo> fs.readFile 'model.coffee', 'utf-8', $
 'cormo = require \'./lib\'\n\nnew cormo.Connection \'mongodb\', database: \'test\'\n\nclass User extends cormo.Model\n  @column \'name\', String\n  @column \'age\', Number\n'
+```
+
+# Remote CORMO console
+
+You can run a console server and connect to it via socket.
+
+## Run server
+
+```coffeescript
+# server.coffee
+
+cormo = require 'cormo'
+net = require 'net'
+net.createServer (socket) ->
+  cormo.console.startCoffee socket: socket
+  .on 'exit', ->
+    socket.end()
+.on 'error', (->)
+.listen 3001
+```
+
+```bash
+$ coffee server.coffee
+```
+
+## Connect to a remote CORMO console
+
+```bash
+$ cormo remote-console 3001
+cormo> 1+1
+2
 ```

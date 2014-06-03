@@ -191,6 +191,9 @@ exports.public = {}
 # @param {Object} options
 exports.startCoffee = (options) ->
   options.inspect_depth or= 2
+  if options.socket
+    # Can't get the exact value?
+    options.socket.columns = 100
   repl_server = repl.start
     input: options.socket or process.stdin
     output: options.socket or process.stdout
@@ -198,6 +201,7 @@ exports.startCoffee = (options) ->
     eval: evalCoffee
     writer: (object) ->
       util.inspect object, colors: true, depth: options.inspect_depth
+    terminal: true
   addMultilineHandler repl_server
   historyFile = path.join process.env.HOME, '.cormo_history' if process.env.HOME
   addHistory repl_server, historyFile, 10240 if historyFile
