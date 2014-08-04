@@ -13,7 +13,6 @@ util = require 'util'
 
 Connection = require '../connection'
 Model = require '../model'
-Query = require '../query'
 
 prettyErrorMessage = coffee.helpers.prettyErrorMessage or (e) -> e
 
@@ -151,8 +150,6 @@ evalCoffee = (cmd, context, filename, callback) ->
     if defer
       delete context.$
       return defer.promise
-    else if result instanceof Query
-      return result.exec()
     else
       return result
   .then (result) ->

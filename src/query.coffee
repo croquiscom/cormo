@@ -269,6 +269,14 @@ class Query
     .nodeify bindDomain callback
 
   ##
+  # Executes the query as a promise (.then == .exec().then)
+  # @param {Function} fulfilled
+  # @param {Function} rejected
+  # @promise
+  then: (fulfilled, rejected) ->
+    @exec().then fulfilled, rejected
+
+  ##
   # Executes the query as a count operation
   # @return {Number}
   # @promise

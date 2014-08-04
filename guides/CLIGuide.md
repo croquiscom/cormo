@@ -52,10 +52,10 @@ cormo> CalcService.add 1, 2
 
 ## Run synchronously
 
-If the evaluated result is a promise, console waits to finish the execution ant returns its result.
-All CORMO methods that have a callback returns a promise.
+If the evaluated result is a thenable(i.e. has a then method),
+console waits to finish the execution and returns its result.
 
-If the evaluated result is a [[#Query]], console will call 'exec' and return its result.
+All CORMO methods that have a callback return thenables, and all [[#Query]] are thenables.
 
 ```
 cormo> User.find(user.id).select('name')
