@@ -165,12 +165,6 @@ class Query
     return @
 
   ##
-  # Same as [[#Query::lean]], for backword compatibility
-  # @method
-  # @chainable
-  return_raw_instance: @::lean
-
-  ##
   # Cache result.
   #
   # If cache of key exists, actual query does not performed.
