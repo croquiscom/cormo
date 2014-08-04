@@ -1,6 +1,6 @@
 commander = require 'commander'
 cormo_console = require '../util/console'
-path = require 'path'
+{resolve} = require 'path'
 
 ##
 # CORMO console
@@ -9,14 +9,18 @@ class CommandConsole
   # @param argv
   constructor: (argv) ->
     loads = []
-    @program = program = new commander.Command('cormo')
-    program.usage('console [options]')
-      .option('-l, --load <path>', 'load specified module')
-      .option('-d, --inspect-depth <depth>', 'specify depth for util.inspect')
-      .on('load', (path) -> loads.push path)
-      .on('inspect-depth', (depth) => @inspect_depth = depth)
+    program = new commander.Command('cormo')
+    program.usage 'console [options]'
+    .option '-l, --load <path>', 'load specified module'
+    .option '-d, --inspect-depth <depth>', 'specify depth for util.inspect'
+    .on 'load', (path) ->
+      loads.push path
+    .on 'inspect-depth', (depth) =>
+      @inspect_depth = depth
     program.help() if argv.indexOf('--help') >= 0 || argv.indexOf('-h') >= 0
     program.parse(argv)
+
+    require 'coffee-script/register'
 
     cwd = process.cwd()
     for load in loads
@@ -26,7 +30,7 @@ class CommandConsole
       catch e
         console.log e.toString() if e.code isnt 'MODULE_NOT_FOUND'
         try
-          require path.resolve cwd, load
+          require resolve cwd, load
         catch e
           console.log e.toString() if e.code isnt 'MODULE_NOT_FOUND'
 
