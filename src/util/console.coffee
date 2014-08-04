@@ -11,9 +11,9 @@ repl = require 'repl'
 vm = require 'vm'
 util = require 'util'
 
-Connection = require './connection'
-Model = require './model'
-Query = require './query'
+Connection = require '../connection'
+Model = require '../model'
+Query = require '../query'
 
 prettyErrorMessage = coffee.helpers.prettyErrorMessage or (e) -> e
 

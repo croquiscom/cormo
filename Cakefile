@@ -13,9 +13,10 @@ task 'build', 'Builds JavaScript files from source', ->
     spawn command, args, stdio: 'inherit'
   compileFiles 'src'
   compileFiles 'src/adapters'
+  compileFiles 'src/command'
   compileFiles 'src/connection'
   compileFiles 'src/model'
-  compileFiles 'src/command'
+  compileFiles 'src/util'
 
 runTest = (options, dirty_tracking, callback) ->
   process.env.NODE_ENV = 'test'

@@ -1,6 +1,6 @@
 {bindDomain} = require '../util'
 Promise = require 'bluebird'
-tableize = require('../inflector').tableize
+tableize = require('../util/inflector').tableize
 
 ##
 # Model cache

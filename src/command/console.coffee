@@ -1,5 +1,5 @@
 commander = require 'commander'
-cormo_console = require '../console'
+cormo_console = require '../util/console'
 path = require 'path'
 
 ##

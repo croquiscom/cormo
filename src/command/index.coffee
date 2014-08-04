@@ -13,7 +13,7 @@ class Command
       console.log 'Usage: cormo <command>'
       return
     try
-      CommandClass = require path.resolve __dirname, 'command', command
+      CommandClass = require path.resolve __dirname, '..', 'command', command
     catch
       console.log "Cannot find a CORMO command #{command}"
       return

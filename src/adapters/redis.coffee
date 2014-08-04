@@ -6,7 +6,7 @@ catch error
 
 AdapterBase = require './base'
 types = require '../types'
-tableize = require('../inflector').tableize
+tableize = require('../util/inflector').tableize
 async = require 'async'
 _ = require 'underscore'
 

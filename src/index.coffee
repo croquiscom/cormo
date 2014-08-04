@@ -25,4 +25,4 @@ exports.types = require './types'
 ##
 # Exports [[#console]] module
 # @memberOf cormo
-exports.console = require './console'
+exports.console = require './util/console'

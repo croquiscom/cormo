@@ -1,8 +1,8 @@
 _ = require 'underscore'
 Promise = require 'bluebird'
-tableize = require('./inflector').tableize
-types = require './types'
-util = require './util'
+tableize = require('../util/inflector').tableize
+types = require '../types'
+util = require '../util'
 
 _pf_isDirty = -> true
 _pf_getChanged = -> []
@@ -447,7 +447,7 @@ class Model
     return '\u001b[36m' + "[Model: #{@name}(" + '\u001b[90m' + schema + '\u001b[36m' + ")]" + '\u001b[39m'
 
 _use = (file) ->
-  MixClass = require "./model/#{file}"
+  MixClass = require "./#{file}"
   _.extend Model, MixClass
   _.extend Model::, MixClass::
 _use 'query'

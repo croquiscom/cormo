@@ -1,7 +1,7 @@
 EventEmitter = require('events').EventEmitter
-Model = require './model'
+Model = require '../model'
 _ = require 'underscore'
-{bindDomain} = require './util'
+{bindDomain} = require '../util'
 Promise = require 'bluebird'
 try
   redis = require 'redis'
@@ -60,7 +60,7 @@ class Connection extends EventEmitter
     @_pending_associations = []
     @_schema_changed = false
 
-    @_adapter = Promise.promisifyAll require(__dirname + '/adapters/' + adapter_name) @
+    @_adapter = Promise.promisifyAll require(__dirname + '/../adapters/' + adapter_name) @
     @_promise_connection = @_adapter.connectAsync settings
     .then ->
       @connected = true
@@ -154,7 +154,7 @@ class Connection extends EventEmitter
     inspect @models
 
 _use = (file) ->
-  MixClass = require "./connection/#{file}"
+  MixClass = require "./#{file}"
   _.extend Connection, MixClass
   _.extend Connection::, MixClass::
 _use 'association'

@@ -1,5 +1,5 @@
 _ = require 'underscore'
-inflector = require '../inflector'
+inflector = require '../util/inflector'
 Promise = require 'bluebird'
 util = require '../util'
 

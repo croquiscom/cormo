@@ -1,6 +1,6 @@
 _ = require 'underscore'
 {bindDomain} = require '../util'
-inflector = require '../inflector'
+inflector = require '../util/inflector'
 Promise = require 'bluebird'
 types = require '../types'
 
