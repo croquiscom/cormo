@@ -26,13 +26,16 @@ class CommandConsole
     for load in loads
       console.log "Loading module '#{load}'..."
       try
-        require load
+        path = resolve cwd, load
+        require path
       catch e
-        console.log e.toString() if e.code isnt 'MODULE_NOT_FOUND'
-        try
-          require resolve cwd, load
-        catch e
-          console.log e.toString() if e.code isnt 'MODULE_NOT_FOUND'
+        if e.code is 'MODULE_NOT_FOUND' and RegExp("'" + path + "'$").test e.message
+          try
+            require load
+          catch e
+            console.log e.toString()
+        else
+          console.log e.toString()
 
   ##
   # Runs this command
