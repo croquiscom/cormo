@@ -18,6 +18,7 @@ class Query
     @_options =
       orders: []
       conditions_of_group: []
+      lean: model.lean_query
  
   ##
   # Finds a record by id

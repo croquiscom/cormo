@@ -52,6 +52,10 @@ class Model
   @archive: false
 
   ##
+  # Applies the lean option for all queries for this Model
+  @lean_query: false
+
+  ##
   # @property tableName
   # @type String
   # @static
