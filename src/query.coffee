@@ -159,10 +159,11 @@ class Query
 
   ##
   # Returns raw instances instead of model instances
+  # @param {Boolean} lean=true
   # @chainable
   # @see Query::exec
-  lean: ->
-    @_options.lean = true
+  lean: (lean=true) ->
+    @_options.lean = lean
     return @
 
   ##

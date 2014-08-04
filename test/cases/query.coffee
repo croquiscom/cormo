@@ -511,3 +511,17 @@ module.exports = () ->
         expect(record).to.have.property 'name', user.name
         expect(record).to.have.property 'age', user.age
         done null
+
+  it 'turn off lean option for a query', (done) ->
+    _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
+      return done error if error
+      _g.connection.User.lean_query = true
+      _g.connection.User.find(user.id).lean(false).exec (error, record) ->
+        _g.connection.User.lean_query = false
+        return done error if error
+        expect(record).to.exist
+        expect(record).to.be.an.instanceof _g.connection.User
+        expect(record).to.have.property 'id', user.id
+        expect(record).to.have.property 'name', user.name
+        expect(record).to.have.property 'age', user.age
+        done null
