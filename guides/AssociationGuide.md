@@ -32,12 +32,62 @@ user.posts true, (error, records) ->
   console.log records
 
 # two ways to create an associated object
-Post.create { title: 'first post', body: 'This is the 1st post.', user_id: user.id }, (error, post) ->
+Post.create title: 'first post', body: 'This is the 1st post.', user_id: user.id, (error, post) ->
   console.log post
 
 post = user.posts.build title: 'first post', body: 'This is the 1st post.'
 post.save (error) ->
   console.log error
+```
+```javascript
+var User = connection.model('User', {
+  name: String,
+  age: Number
+});
+
+var Post = connection.model('Post', {
+  title: String,
+  body: String
+});
+
+// one-to-many association
+// this will add 'user_id' to the Post model
+User.hasMany(Post);
+Post.belongsTo(User);
+
+// one-to-many association with 'as'
+// this will add 'parent_post_id' to the Post model
+Post.hasMany(Post, {as: 'comments', foreign_key: 'parent_post_id'});
+Post.belongsTo(Post, {as: 'parent_post'});
+
+// get associated objects
+user.posts(function (error, records) {
+  console.log(records);
+});
+post.user(function (error, record) {
+  console.log(record);
+});
+post.comments(function (error, records) {
+  console.log(records);
+});
+post.parent_post(function (error, record) {
+  console.log(record);
+});
+
+// returned objects are cached, give true to reload
+user.posts(true, function (error, records) {
+  console.log(records);
+});
+
+// two ways to create an associated object
+Post.create({title: 'first post', body: 'This is the 1st post.', user_id: user.id}, function (error, post) {
+  console.log(post);
+});
+
+var post = user.posts.build({title: 'first post', body: 'This is the 1st post.'});
+post.save(function (error) {
+  console.log(error);
+});
 ```
 
 See [[#Model.hasMany]], [[#Model.belongsTo]] for more details.
@@ -62,4 +112,18 @@ User.hasMany Post, integrity: 'delete'
 # no option means no foreign key constraint
 # so there may be a post with invalid user_id
 User.hasMany Post
+```
+```javascript
+// the same as "CREATE TABLE posts ( user_id INT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+User.hasMany(Post, {integrity: 'nullify'});
+
+// the same as "CREATE TABLE posts ( user_id INT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT"
+User.hasMany(Post, {integrity: 'restrict'});
+
+// the same as "CREATE TABLE posts ( user_id INT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+User.hasMany(Post, {integrity: 'delete'});
+
+// no option means no foreign key constraint
+// so there may be a post with invalid user_id
+User.hasMany(Post);
 ```

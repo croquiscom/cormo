@@ -2,7 +2,7 @@
 
 ## Run
 
-```bash
+```
 $ cormo console
 cormo> 1+1
 2
@@ -23,7 +23,7 @@ class User extends cormo.Model
   @column 'age', Number
 ```
 
-```bash
+```
 $ cormo console -l coffee-script/register -l model.coffee
 cormo> user = User.create name: 'croquis.com', age: 2
 { name: 'croquis.com',
@@ -43,7 +43,7 @@ cormo.console.public.CalcService =
   add: (a, b) -> a + b
 ```
 
-```bash
+```
 $ cormo console -l coffee-script/register -l calc.coffee
 cormo> CalcService.add 1, 2
 3
@@ -57,7 +57,7 @@ All CORMO methods that have a callback returns a promise.
 
 If the evaluated result is a [[#Query]], console will call 'exec' and return its result.
 
-```bash
+```
 cormo> User.find(user.id).select('name')
 { name: 'croquis.com',
   id: '5180f6850c8f82829d000003' }
@@ -65,9 +65,9 @@ cormo> User.find(user.id).select('name')
 
 If a method provides only a node-style callback, you can use '$' to execute it synchronously.
 
-```bash
+```
 cormo> fs.readFile 'model.coffee', 'utf-8', $
-'cormo = require \'./lib\'\n\nnew cormo.Connection \'mongodb\', database: \'test\'\n\nclass User extends cormo.Model\n  @column \'name\', String\n  @column \'age\', Number\n'
+'cormo = require \'cormo\'\n\nnew cormo.Connection \'mongodb\', database: \'test\'\n\nclass User extends cormo.Model\n  @column \'name\', String\n  @column \'age\', Number\n'
 ```
 
 # Remote CORMO console
@@ -89,13 +89,13 @@ net.createServer (socket) ->
 .listen 3001
 ```
 
-```bash
+```
 $ coffee server.coffee
 ```
 
 ## Connect to a remote CORMO console
 
-```bash
+```
 $ cormo remote-console 3001
 cormo> 1+1
 2

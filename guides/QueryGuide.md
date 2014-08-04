@@ -4,7 +4,7 @@ and run a query by [[#Query::exec]], [[#Query::count]], [[#Query::update]], or [
 
 Also, [[#ModelQuery]] class has some methods that borrowed from [[#Query]] to run simple queries easily.
 
-```
+```coffeescript
 User.query().where(age: 27).exec (error, users) ->
   console.log users
 
@@ -13,6 +13,19 @@ User.where(age: 27).exec (error, users) ->
 
 User.where age:27, (error, users) ->
   console.log users
+```
+```javascript
+User.query().where({age: 27}).exec(function (error, users) {
+  console.log(users);
+});
+
+User.where({age: 27}).exec(function (error, users) {
+  console.log(users);
+});
+
+User.where({age:27}, function (error, users) {
+  console.log(users);
+});
 ```
 
 # Selection criteria
@@ -128,6 +141,15 @@ User.find 1, (error, user) ->
 User.find [1,2,3], (error, users) ->
   console.log users
 ```
+```javascript
+User.find(1, function (error, user) {
+  console.log(user);
+});
+
+User.find([1,2,3], function (error, users) {
+  console.log(users);
+});
+```
 
 [[#Query::find]] does not return error if any ID is found and does not preserve given order.
 If you want to guarantee that you get all records of IDs and order is preserved,
@@ -136,6 +158,11 @@ use [[#Query::findPreserve]] instead.
 ```coffeescript
 User.findPreserve [2,1,2,3], (error, users) ->
   # users[0].id is 2 and users[1].id is 1 and users[2].id is 2 and users[3].id is 3
+```
+```javascript
+User.findPreserve([2,1,2,3], function (error, users) {
+  // users[0].id is 2 and users[1].id is 1 and users[2].id is 2 and users[3].id is 3
+});
 ```
 
 You can give some options to [[#Query::exec]].
@@ -179,9 +206,14 @@ You can give some options to [[#Query::exec]].
 If you know that there will be only one result (e.x. query on unique column), [[#Query::one]] will be helpful.
 It makes a query return a single instance (or null) instead of array of instances.
 
-```
+```coffeescript
 User.where(age: 27).one().exec (error, user) ->
   console.log user
+```
+```javascript
+User.where({age: 27}).one().exec(function (error, user) {
+  console.log(user);
+});
 ```
 
 # Count records
@@ -219,6 +251,13 @@ To update records, [[#ModelPersistence::save]] and [[#Query::update]] are provid
 User.find 1, (error, user) ->
   user.age = 30
   user.save (error) ->
+```
+```javascript
+User.find(1, function (error, user) {
+  user.age = 30;
+  user.save(function (error) {
+  });
+});
 ```
 
 But [[#ModelPersistence::save]] has some weaknesses.
@@ -260,6 +299,13 @@ But [[#Query::update]] may be more efficient than [[#ModelPersistence::save]] ev
 User.find 1, (error, user) ->
   age = user.age + 1
   User.find(user.id).update age: age, (error, count) ->
+```
+```javascript
+User.find(1, function (error, user) {
+  var age = user.age + 1;
+  User.find(user.id).update({age: age}, function (error, count) {
+  });
+});
 ```
 
 # Delete records

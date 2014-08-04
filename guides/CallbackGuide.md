@@ -24,6 +24,18 @@ class User extends cormo.Model
   @afterCreate ->
     console.log 'created'
 ```
+```javascript
+var User = connection.model('User', {});
+
+User.afterInitialize('onAfterInitialie');
+User.prototype.onAfterInitialie = function () {
+  console.log('initialized');
+};
+
+User.afterCreate(function () {
+  console.log('created');
+});
+```
 
 [[#Model::constructor]] or [[#Model.build]] triggers following callbacks:
 

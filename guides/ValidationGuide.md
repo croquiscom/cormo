@@ -24,5 +24,29 @@ class User extends cormo.Model
 User.create name: 'John Doe', age: 10, email: 'invalid', (error, user) ->
   # error.message will be 'invalid email,too young' or 'too young,invalid email'
 ```
+```javascript
+var User = connection.model('User', {
+  name: String,
+  age: Number,
+  email: String
+});
+
+User.addValidator(function (record) {
+  if (record.age<18) {
+    return 'too young';
+  }
+});
+
+User.addValidator(function (record) {
+  if (record.email && !/^\w+@.+$/.test(record.email)) {
+    throw new Error('invalid email');
+  }
+  return true;
+});
+
+User.create({name: 'John Doe', age: 10, email: 'invalid'}, function (error, user) {
+  // error.message will be 'invalid email,too young' or 'too young,invalid email'
+});
+```
 
 Custom validators are called only when using [[#ModelPersistence::save]].
