@@ -374,6 +374,12 @@ class ConnectionAssociation
       if typeof select is 'object'
         options = select
         select = null
+    else
+      if typeof select is 'object'
+        options = select
+        select = null
+      else if not options?
+        options = {}
 
     @_checkSchemaApplied().then =>
       record = if Array.isArray records then records[0] else records
