@@ -371,11 +371,11 @@ class ConnectionAssociation
     else if typeof options is 'function'
       callback = options
       options = {}
-      if typeof select is 'object'
+      if select? and typeof select is 'object'
         options = select
         select = null
     else
-      if typeof select is 'object'
+      if select? and typeof select is 'object'
         options = select
         select = null
       else if not options?

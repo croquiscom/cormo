@@ -209,3 +209,13 @@ module.exports = ->
         _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe'
         _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe'
         _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith'
+
+  it 'promise api with select null', ->
+    _g.connection.Post.where()
+    .then (posts) ->
+      _g.connection.fetchAssociated posts, 'user', null
+      .then ->
+        expect(posts).to.have.length 3
+        _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
+        _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe', 27
+        _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith', 45
