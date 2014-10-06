@@ -8,7 +8,7 @@ module.exports = () ->
       expect(user).to.have.property 'created_at'
       expect(user).to.have.property 'updated_at'
       expect(user.created_at).to.equal user.updated_at
-      expect(user.created_at).to.be.closeTo now, 10
+      expect(user.created_at?.getTime()).to.be.closeTo now, 10
       done null
 
   it 'updated_at', (done) ->
@@ -23,6 +23,6 @@ module.exports = () ->
           # created_at remains unchanged
           expect(user.created_at).to.equal.created_at
           # updated_at is changed to the current date
-          expect(user.updated_at).to.be.closeTo now, 10
+          expect(user.updated_at?.getTime()).to.be.closeTo now, 10
           done null
       , 50
