@@ -7,7 +7,7 @@ coffee = require 'coffee-script'
 fs = require 'fs'
 path = require 'path'
 Promise = require 'bluebird'
-repl = require 'repl'
+repl = require 'coffee-script/repl'
 vm = require 'vm'
 util = require 'util'
 
@@ -15,94 +15,6 @@ Connection = require '../connection'
 Model = require '../model'
 
 prettyErrorMessage = coffee.helpers.prettyErrorMessage or (e) -> e
-
-# from CoffeeScript repl.coffee
-addMultilineHandler = (repl_server) ->
-  {rli, inputStream, outputStream} = repl_server
-
-  multiline =
-    enabled: off
-    initialPrompt: repl_server.prompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
-    prompt: repl_server.prompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
-    buffer: ''
-
-  # Proxy node's line listener
-  nodeLineListener = rli.listeners('line')[0]
-  rli.removeListener 'line', nodeLineListener
-  rli.on 'line', (cmd) ->
-    if multiline.enabled
-      multiline.buffer += "#{cmd}\n"
-      rli.setPrompt multiline.prompt
-      rli.prompt true
-    else
-      nodeLineListener cmd
-    return
-
-  # Handle Ctrl-v
-  inputStream.on 'keypress', (char, key) ->
-    return unless key and key.ctrl and not key.meta and not key.shift and key.name is 'v'
-    if multiline.enabled
-      # allow arbitrarily switching between modes any time before multiple lines are entered
-      unless multiline.buffer.match /\n/
-        multiline.enabled = not multiline.enabled
-        rli.setPrompt repl_server.prompt
-        rli.prompt true
-        return
-      # no-op unless the current line is empty
-      return if rli.line? and not rli.line.match /^\s*$/
-      # eval, print, loop
-      multiline.enabled = not multiline.enabled
-      rli.line = ''
-      rli.cursor = 0
-      rli.output.cursorTo 0
-      rli.output.clearLine 1
-      # XXX: multiline hack
-      multiline.buffer = multiline.buffer.replace /\n/g, '\uFF00'
-      rli.emit 'line', multiline.buffer
-      multiline.buffer = ''
-    else
-      multiline.enabled = not multiline.enabled
-      rli.setPrompt multiline.initialPrompt
-      rli.prompt true
-    return
-
-# Store and load command history from a file
-addHistory = (repl_server, filename, maxSize) ->
-  lastLine = null
-  try
-    # Get file info and at most maxSize of command history
-    stat = fs.statSync filename
-    size = Math.min maxSize, stat.size
-    # Read last `size` bytes from the file
-    readFd = fs.openSync filename, 'r'
-    buffer = new Buffer(size)
-    fs.readSync readFd, buffer, 0, size, stat.size - size
-    fs.closeSync readFd
-    # Set the history on the interpreter
-    repl_server.rli.history = buffer.toString().split('\n').reverse()
-    # If the history file was truncated we should pop off a potential partial line
-    repl_server.rli.history.pop() if stat.size > maxSize
-    # Shift off the final blank newline
-    repl_server.rli.history.shift() if repl_server.rli.history[0] is ''
-    repl_server.rli.historyIndex = -1
-    lastLine = repl_server.rli.history[0]
-
-  fd = fs.openSync filename, 'a'
-
-  repl_server.rli.addListener 'line', (code) ->
-    if code and code.length and code isnt '.history' and lastLine isnt code
-      # Save the latest command in the file
-      fs.write fd, "#{code}\n"
-      lastLine = code
-
-  repl_server.rli.on 'close', -> fs.close fd
-
-  # Add a command to show the history stack
-  repl_server.commands['.history'] =
-    help: 'Show command history'
-    action: ->
-      repl_server.outputStream.write "#{repl_server.rli.history[..].reverse().join '\n'}\n"
-      repl_server.displayPrompt()
 
 addArgCompleter = (repl_server) ->
   rli = repl_server.rli
@@ -195,13 +107,11 @@ exports.startCoffee = (options) ->
     input: options.socket or process.stdin
     output: options.socket or process.stdout
     prompt: 'cormo> '
+    historyFile: path.join process.env.HOME, '.cormo_history' if process.env.HOME
     eval: evalCoffee
     writer: (object) ->
       util.inspect object, colors: true, depth: options.inspect_depth
     terminal: true
-  addMultilineHandler repl_server
-  historyFile = path.join process.env.HOME, '.cormo_history' if process.env.HOME
-  addHistory repl_server, historyFile, 10240 if historyFile
   addArgCompleter repl_server
   setupContext repl_server.context, options
   return repl_server
