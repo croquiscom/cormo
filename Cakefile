@@ -4,20 +4,6 @@ spawn = require('child_process').spawn
 option '', '--reporter [name]', 'specify the reporter for Mocha to use'
 option '', '--grep [pattern]', 'only run tests matching pattern'
 
-task 'build', 'Builds JavaScript files from source', ->
-  compileFiles = (dir) ->
-    files = fs.readdirSync dir
-    files = ("#{dir}/#{file}" for file in files when file.match /\.coffee$/)
-    command = 'coffee'
-    args = [ '-c', '-o', dir.replace('src', 'lib') ].concat files
-    spawn command, args, stdio: 'inherit'
-  compileFiles 'src'
-  compileFiles 'src/adapters'
-  compileFiles 'src/command'
-  compileFiles 'src/connection'
-  compileFiles 'src/model'
-  compileFiles 'src/util'
-
 runTest = (options, dirty_tracking, callback) ->
   process.env.NODE_ENV = 'test'
   process.env.DIRTY_TRACKING = dirty_tracking
@@ -50,8 +36,3 @@ task 'test:cov', 'Gets tests coverage', (options) ->
     cov_html.write data
   child.on 'exit', ->
     cov_html.end()
-
-task 'doc', 'Make documents', ->
-  command = './node_modules/.bin/crojsdoc'
-  args = []
-  spawn command, args, stdio: 'inherit'

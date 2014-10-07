@@ -18,6 +18,10 @@
   "bin": {
     "cormo": "./bin/cormo"
   },
+  "scripts": {
+    "build": "coffee -c -o lib src",
+    "doc": "node node_modules/.bin/crojsdoc"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/croquiscom/cormo.git"
