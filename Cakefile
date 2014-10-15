@@ -15,6 +15,9 @@ runTest = (options, dirty_tracking, callback) ->
     return callback 'error' if code isnt 0
     callback null
 
+task 'build', 'Builds JavaScript files from source', ->
+  spawn 'npm', ['run', 'build'], stdio: 'inherit'
+
 task 'test', 'Runs Mocha tests', (options) ->
   dirty_tracking = Math.floor(Math.random() * 2) isnt 0
   runTest options, dirty_tracking, (error) ->
@@ -36,3 +39,6 @@ task 'test:cov', 'Gets tests coverage', (options) ->
     cov_html.write data
   child.on 'exit', ->
     cov_html.end()
+
+task 'doc', 'Make documents', ->
+  spawn 'npm', ['run', 'doc'], stdio: 'inherit'
