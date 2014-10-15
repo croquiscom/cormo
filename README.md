@@ -255,6 +255,29 @@ User.hasMany(Post);
 Post.belongsTo(User);
 ```
 
+## Aggregation
+
+```coffeescript
+Order.where price: $lt: 10
+.group null, count: {$sum: 1}, total: {$sum: '$price'}
+.order 'total'
+.exec (error, records) ->
+
+Order.group 'customer', min_price: { $min: '$price' }, max_price: { $max: '$price' }
+.exec (error, records) ->
+```
+```javascript
+Order.where({price: {$lt: 10}})
+.group(null, {count: {$sum: 1}, total: {$sum: '$price'}})
+.order('total')
+.exec(function (error, records) {
+});
+
+Order.group('customer', {min_price: {$min: '$price'}, max_price: {$max: '$price'}})
+.exec(function (error, records) {
+});
+```
+
 ## Geospatial query
 
 ```coffeescript
