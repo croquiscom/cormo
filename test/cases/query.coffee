@@ -525,3 +525,56 @@ module.exports = () ->
         expect(record).to.have.property 'name', user.name
         expect(record).to.have.property 'age', user.age
         done null
+
+  it 'if', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      query = (limit, callback) ->
+        _g.connection.User.query()
+        .if(limit).limit(1).endif()
+        .where(age: 27)
+        .exec callback
+      async.series [
+        (callback) ->
+          query false, (error, users) ->
+            return callback error if error
+            expect(users).to.have.length 2
+            expect(users[0]).to.have.property 'age', 27
+            expect(users[1]).to.have.property 'age', 27
+            callback null
+        (callback) ->
+          query true, (error, users) ->
+            return callback error if error
+            expect(users).to.have.length 1
+            expect(users[0]).to.have.property 'age', 27
+            callback null
+      ], (error) ->
+        done error
+
+  it 'nested if', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      query = (limit, callback) ->
+        _g.connection.User.query()
+        .if(limit)
+          .if(false).where(name: 'Unknown').endif()
+          .limit(1)
+        .endif()
+        .where(age: 27)
+        .exec callback
+      async.series [
+        (callback) ->
+          query false, (error, users) ->
+            return callback error if error
+            expect(users).to.have.length 2
+            expect(users[0]).to.have.property 'age', 27
+            expect(users[1]).to.have.property 'age', 27
+            callback null
+        (callback) ->
+          query true, (error, users) ->
+            return callback error if error
+            expect(users).to.have.length 1
+            expect(users[0]).to.have.property 'age', 27
+            callback null
+      ], (error) ->
+        done error

@@ -13,6 +13,8 @@ class Query
     @_name = model._name
     @_connection = model._connection
     @_adapter = model._connection._adapter
+    @_ifs = []
+    @_current_if = true
     @_conditions = []
     @_includes = []
     @_options =
@@ -25,6 +27,8 @@ class Query
   # @param {RecordID|Array<RecordID>} id
   # @chainable
   find: (id) ->
+    if not @_current_if
+      return @
     if Array.isArray id
       @_id = _.uniq id
       @_find_single_id = false
@@ -38,6 +42,8 @@ class Query
   # @param {Array<RecordID>} ids
   # @chainable
   findPreserve: (ids) ->
+    if not @_current_if
+      return @
     @_id = _.uniq ids
     @_find_single_id = false
     @_preserve_order_ids = ids
@@ -48,6 +54,8 @@ class Query
   # @param {Object} target
   # @chainable
   near: (target) ->
+    if not @_current_if
+      return @
     @_options.near = target
     return @
 
@@ -66,6 +74,8 @@ class Query
   # @param {Object} condition
   # @chainable
   where: (condition) ->
+    if not @_current_if
+      return @
     if Array.isArray condition
       condition.forEach (cond) =>
         @_addCondition cond
@@ -78,6 +88,8 @@ class Query
   # @param {String} columns
   # @chainable
   select: (columns) ->
+    if not @_current_if
+      return @
     @_options.select = null
     @_options.select_raw = null
     if typeof columns is 'string'
@@ -104,6 +116,8 @@ class Query
   # @param {String} orders
   # @chainable
   order: (orders) ->
+    if not @_current_if
+      return @
     if typeof orders is 'string'
       avaliable_columns = ['id']
       [].push.apply avaliable_columns, Object.keys @_model._schema
@@ -123,6 +137,8 @@ class Query
   # @param {Object} fields
   # @chainable
   group: (group_by, fields) ->
+    if not @_current_if
+      return @
     @_options.group_by = null
     schema_columns = Object.keys @_model._schema
     if typeof group_by is 'string'
@@ -137,6 +153,8 @@ class Query
   # This is different from limit(1). limit(1) returns array of length 1 while this returns an instance.
   # @chainable
   one: ->
+    if not @_current_if
+      return @
     @_options.limit = 1
     @_options.one = true
     return @
@@ -146,6 +164,8 @@ class Query
   # @param {Number} limit
   # @chainable
   limit: (limit) ->
+    if not @_current_if
+      return @
     @_options.limit = limit
     return @
 
@@ -154,6 +174,8 @@ class Query
   # @param {Number} skip
   # @chainable
   skip: (skip) ->
+    if not @_current_if
+      return @
     @_options.skip = skip
     return @
 
@@ -163,7 +185,30 @@ class Query
   # @chainable
   # @see Query::exec
   lean: (lean=true) ->
+    if not @_current_if
+      return @
     @_options.lean = lean
+    return @
+
+  ##
+  # Makes a part of the query chain conditional
+  # @param {Boolean} condition
+  # @chainable
+  # @see Query::endif
+  if: (condition) ->
+    @_ifs.push condition
+    @_current_if and= condition
+    return @
+
+  ##
+  # Ends last if
+  # @chainable
+  # @see Query::if
+  endif: ->
+    @_ifs.pop()
+    @_current_if = true
+    for condition in @_ifs
+      @_current_if and= condition
     return @
 
   ##
@@ -179,6 +224,8 @@ class Query
   # @param {Boolean} options.refresh don't load from cache if true
   # @chainable
   cache: (options) ->
+    if not @_current_if
+      return @
     @_options.cache = options
     return @
 
@@ -188,6 +235,8 @@ class Query
   # @param {String} [select]
   # @chainable
   include: (column, select) ->
+    if not @_current_if
+      return @
     @_includes.push column: column, select: select
     return @
 

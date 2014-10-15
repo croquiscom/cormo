@@ -127,6 +127,29 @@ Two or more [[#Query::where]]s mean a logical and.
 If you want find records based on the identifier, use [[#Query::find]] that accepts an ID or an array of IDs.
 It is logically same to '.where(id: &lt;given ID or array of IDs&gt;)'.
 
+## Conditional criteria
+
+If you want to apply different criteria in one query chain, you can use [[#Query::if]], [[#Query::endif]].
+It is helpful such as when you corresspond one REST API to one query.
+
+```coffeescript
+getUsers = (options) ->
+  User.query()
+  .where(age: $gt: 30)
+  .if(options.limit).limit(options.limit).endif()
+  .if(options.fields).select(options.fields).endif()
+  .exec()
+```
+```javascript
+function getUsers(options) {
+  return User.query()
+  .where({age: {$gt: 30}})
+  ["if"](options.limit).limit(options.limit).endif()
+  ["if"](options.fields).select(options.fields).endif()
+  .exec();
+};
+```
+
 # Retrieve records
 
 [[#Query::exec]] retrieves records. 
