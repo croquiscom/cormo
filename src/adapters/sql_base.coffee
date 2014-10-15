@@ -96,6 +96,18 @@ class SQLAdapterBase extends AdapterBase
         return "SUM(#{sub_expr.substr 1})"
       else
         throw new Error "unknown expression '#{JSON.stringify op}'"
+    else if op is '$min'
+      sub_expr = group_expr[op]
+      if sub_expr.substr(0, 1) is '$'
+        return "MIN(#{sub_expr.substr 1})"
+      else
+        throw new Error "unknown expression '#{JSON.stringify op}'"
+    else if op is '$max'
+      sub_expr = group_expr[op]
+      if sub_expr.substr(0, 1) is '$'
+        return "MAX(#{sub_expr.substr 1})"
+      else
+        throw new Error "unknown expression '#{JSON.stringify op}'"
     else
       throw new Error "unknown expression '#{JSON.stringify op}'"
 

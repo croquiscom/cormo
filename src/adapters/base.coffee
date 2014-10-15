@@ -94,7 +94,7 @@ class AdapterBase
           instance[field] = @valueToModel data[field], property
     for field, expr of group_fields
       op = Object.keys(expr)[0]
-      if op is '$sum'
+      if op in ['$sum', '$max', '$min']
         instance[field] = Number data[field]
     return instance
 

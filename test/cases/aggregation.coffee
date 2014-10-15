@@ -72,3 +72,20 @@ module.exports = ->
       expect(records[4]).to.eql customer: 'John Doe', date: new Date('2012/09/23'), count: 1, total: 3
       expect(records[5]).to.eql customer: 'John Doe', date: new Date('2012/12/07'), count: 1, total: 15
       done null
+
+  it 'min/max of all', (done) ->
+    _g.connection.Order.group null, min_price: { $min: '$price' }, max_price: { $max: '$price' }, (error, records) ->
+      return done error if error
+      expect(records).to.have.length 1
+      expect(records[0]).to.eql min_price: 3, max_price: 60
+      done null
+
+  it 'min/max by group', (done) ->
+    _g.connection.Order.group 'customer', min_price: { $min: '$price' }, max_price: { $max: '$price' }, (error, records) ->
+      return done error if error
+      expect(records).to.have.length 3
+      records.sort (a, b) -> if a.customer < b.customer then -1 else 1
+      expect(records[0]).to.eql customer: 'Bill Smith', min_price: 16, max_price: 60
+      expect(records[1]).to.eql customer: 'Daniel Smith', min_price: 6, max_price: 13
+      expect(records[2]).to.eql customer: 'John Doe', min_price: 3, max_price: 20
+      done null
