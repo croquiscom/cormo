@@ -358,6 +358,10 @@ class MongoDBAdapter extends AdapterBase
       conditions = {}
     update_ops = $set: {}, $unset: {}
     @_buildUpdateOps schema, update_ops, data, '', data
+    if Object.keys(update_ops.$set).length is 0
+      delete update_ops.$set
+    if Object.keys(update_ops.$unset).length is 0
+      delete update_ops.$unset
     @_collection(model).update conditions, update_ops, safe: true, multi: true, (error, count) ->
       if error?.code is 11001
         key = error.err.match /index: [\w-.]+\$(\w+)_1/
