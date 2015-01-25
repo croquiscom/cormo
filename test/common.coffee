@@ -37,15 +37,20 @@ _g.deleteAllRecords = (models, callback) ->
         callback error
     , callback
 
-_g.db_configs =
-  mysql:
-    database: 'test'
-  mongodb:
-    database: 'test'
-  sqlite3:
-    database: __dirname + '/test.sqlite3'
-  sqlite3_memory: {}
-  postgresql:
-    database: 'test'
-  redis:
-    database: 1
+if process.env.TRAVIS is 'true'
+  _g.db_configs =
+    mysql:
+      database: 'travis'
+else
+  _g.db_configs =
+    mysql:
+      database: 'test'
+    mongodb:
+      database: 'test'
+    sqlite3:
+      database: __dirname + '/test.sqlite3'
+    sqlite3_memory: {}
+    postgresql:
+      database: 'test'
+    redis:
+      database: 1
