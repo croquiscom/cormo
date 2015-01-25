@@ -335,18 +335,21 @@ class MySQLAdapter extends SQLAdapterBase
 
       @_client = client
 
-      # select database
-      client.query "USE `#{settings.database}`", (error) ->
-        return callback null if not error
+      @_selectDatabase settings, callback
 
-        # create one if not exist
-        if error.code is 'ER_BAD_DB_ERROR'
-          client.query "CREATE DATABASE `#{settings.database}`", (error) ->
-            return callback MySQLAdapter.wrapError 'unknown error', error if error
-            return callback null
-        else
-          msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{settings.database}'" else 'unknown error'
-          callback MySQLAdapter.wrapError msg, error
+  _selectDatabase: (settings, callback) ->
+    # select database
+    @_client.query "USE `#{settings.database}`", (error) =>
+      return callback null if not error
+
+      # create one if not exist
+      if error.code is 'ER_BAD_DB_ERROR'
+        @_client.query "CREATE DATABASE `#{settings.database}`", (error) =>
+          return callback MySQLAdapter.wrapError 'unknown error', error if error
+          @_selectDatabase settings, callback
+      else
+        msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{settings.database}'" else 'unknown error'
+        callback MySQLAdapter.wrapError msg, error
 
   ## @override AdapterBase::close
   close: ->
