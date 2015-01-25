@@ -3,6 +3,7 @@ require './common'
 _dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql' ]
 
 _dbs.forEach (db) ->
+  return if not _g.db_configs[db]
   describe 'aggregation-' + db, ->
     before (done) ->
       _g.connection = new _g.Connection db, _g.db_configs[db]

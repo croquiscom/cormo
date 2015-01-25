@@ -1,5 +1,6 @@
 require './common'
 
+return if not _g.db_configs['mysql'] or not _g.db_configs['mongodb']
 describe 'mixing several database', ->
   before (done) ->
     mysql = new _g.Connection 'mysql', _g.db_configs.mysql

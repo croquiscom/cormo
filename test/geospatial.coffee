@@ -4,6 +4,7 @@ require './common'
 _dbs = [ 'mysql', 'mongodb' ]
 
 _dbs.forEach (db) ->
+  return if not _g.db_configs[db]
   describe 'geospatial-' + db, ->
     before (done) ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
@@ -33,6 +34,7 @@ _dbs.forEach (db) ->
 _dbs_not = [ 'sqlite3', 'sqlite3_memory', 'postgresql' ]
 
 _dbs_not.forEach (db) ->
+  return if not _g.db_configs[db]
   describe 'geospatial-' + db, ->
     before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]

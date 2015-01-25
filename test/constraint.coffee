@@ -3,6 +3,7 @@ require './common'
 _dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql' ]
 
 _dbs.forEach (db) ->
+  return if not _g.db_configs[db]
   describe 'constraint-' + db, ->
     describe '#basic', ->
       before (done) ->
