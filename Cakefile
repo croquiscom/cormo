@@ -8,7 +8,7 @@ runTest = (options, dirty_tracking, callback) ->
   process.env.NODE_ENV = 'test'
   process.env.DIRTY_TRACKING = dirty_tracking
   command = './node_modules/.bin/mocha'
-  args = ['-R', options.reporter or 'spec', '--compilers', 'coffee:coffee-script', '-r', 'coffee-script/register']
+  args = ['-R', options.reporter or 'spec', '--compilers', 'coffee:coffee-script/register']
   args.push '-g', options.grep if options.grep
   child = spawn command, args, stdio: 'inherit'
   child.on 'exit', (code) ->
