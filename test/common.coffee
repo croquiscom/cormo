@@ -41,6 +41,7 @@ if process.env.TRAVIS is 'true'
   _g.db_configs =
     mysql:
       database: 'travis'
+      user: 'travis'
 else
   _g.db_configs =
     mysql:
