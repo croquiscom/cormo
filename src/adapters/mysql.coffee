@@ -310,7 +310,7 @@ class MySQLAdapter extends SQLAdapterBase
         return callback e
     #console.log sql, params
     @_query sql, params, (error, result) ->
-      return callback new Error 'rejected' if error and error.code is 'ER_ROW_IS_REFERENCED_'
+      return callback new Error 'rejected' if error and error.code in ['ER_ROW_IS_REFERENCED_', 'ER_ROW_IS_REFERENCED_2']
       return callback MySQLAdapter.wrapError 'unknown error', error if error or not result?
       callback null, result.affectedRows
 
