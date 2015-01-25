@@ -42,6 +42,8 @@ if process.env.TRAVIS is 'true'
     mysql:
       database: 'travis'
       user: 'travis'
+    mongodb:
+      database: 'travis'
     redis:
       database: 1
 else

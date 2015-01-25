@@ -6,4 +6,5 @@ node_js:
 sudo: false
 
 services:
+  - mongodb
   - redis-server
