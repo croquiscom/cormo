@@ -8,3 +8,6 @@ sudo: false
 services:
   - mongodb
   - redis-server
+
+before_script:
+  - psql -U postgres -c 'create database travis;'
