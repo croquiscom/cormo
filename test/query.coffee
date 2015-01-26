@@ -32,5 +32,7 @@ _dbs.forEach (db) ->
       require('./cases/query')()
     describe '#$not', ->
       require('./cases/query_not')()
+    describe '#null', ->
+      require('./cases/query_null')()
     describe '#update', ->
       require('./cases/query_update')()

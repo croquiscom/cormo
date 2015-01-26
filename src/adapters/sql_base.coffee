@@ -21,7 +21,7 @@ class SQLAdapterBase extends AdapterBase
         params.push value
         return @_param_place_holder params.length
       return "#{key.replace '.', '_'} IN (#{values.join ','})"
-    else if typeof value is 'object' and (keys = Object.keys value).length is 1
+    else if typeof value is 'object' and value isnt null and (keys = Object.keys value).length is 1
       sub_key = keys[0]
       switch sub_key
         when '$not'
@@ -52,6 +52,8 @@ class SQLAdapterBase extends AdapterBase
           value = '%' + value[sub_key] + '%'
         else
           throw new Error "unknown operator '#{sub_key}'"
+    else if value is null
+      return "#{key.replace('.', '_')} IS NULL"
 
     value = new Date value if property_type is types.Date
     params.push value
