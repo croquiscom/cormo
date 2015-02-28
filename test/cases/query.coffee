@@ -351,10 +351,7 @@ module.exports = () ->
   it 'order (id)', (done) ->
     _createUsers _g.connection.User, (error, sources) ->
       return done error if error
-      sources.sort (a, b) ->
-        return -1 if a < b
-        return 1 if a > b
-        return 0
+      sources.sort (a, b) -> if a.id < b.id then -1 else 1
       _g.connection.User.order 'id', (error, users) ->
         return done error if error
         expect(users).to.have.length 5
@@ -471,6 +468,7 @@ module.exports = () ->
   it 'comparison on id', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
+      users.sort (a, b) -> if a.id < b.id then -1 else 1
       _g.connection.User.where id: $lt: users[2].id, (error, records) ->
         return done error if error
         expect(records).to.have.length 2

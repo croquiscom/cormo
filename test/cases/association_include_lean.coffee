@@ -39,17 +39,21 @@ module.exports = ->
   preset_posts = undefined
 
   beforeEach (done) ->
-    _g.connection.User.createBulk [
+    async.mapSeries [
       { name: 'John Doe', age: 27 }
       { name: 'Bill Smith', age: 45 }
-    ], (error, users) ->
+    ], (item, callback) ->
+      _g.connection.User.create item, callback
+    , (error, users) ->
       return done error if error
       preset_users = users
-      _g.connection.Post.createBulk [
+      async.mapSeries [
         { user_id: users[0].id, title: 'first post', body: 'This is the 1st post.' }
         { user_id: users[0].id, title: 'second post', body: 'This is the 2st post.' }
         { user_id: users[1].id, title: 'another post', body: 'This is a post by user1.' }
-      ], (error, posts) ->
+      ], (item, callback) ->
+        _g.connection.Post.create item, callback
+      , (error, posts) ->
         return done error if error
         preset_posts = posts
         done null

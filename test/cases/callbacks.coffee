@@ -1,3 +1,4 @@
+async = require 'async'
 {expect} = require 'chai'
 
 module.exports = () ->
@@ -41,11 +42,13 @@ module.exports = () ->
   it 'callbacks for finding records', (done) ->
     User = _g.connection.User
 
-    User.createBulk [
+    async.mapSeries [
       { name: 'John Doe', age: 27 }
       { name: 'Bill Smith', age: 45 }
       { name: 'Alice Jackson', age: 27 }
-    ], (error, users) ->
+    ], (item, callback) ->
+      _g.connection.User.create item, callback
+    , (error, users) ->
       User.afterFind 'after_find1'
       User::after_find1 = -> logs.push 'after_find1 : ' + @name
       User.afterFind -> logs.push 'after_find2 : ' + @name
