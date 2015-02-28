@@ -157,9 +157,21 @@ class SQLite3Adapter extends SQLAdapterBase
 
   ## @override AdapterBase::createBulk
   createBulk: (model, data, callback) ->
-    # bulk insert supported on 3.7.11,
-    # but sqlite3 module 2.1.5 has 3.7.8
-    @_createBulkDefault model, data, callback
+    tableName = @_connection.models[model].tableName
+    values = []
+    fields = undefined
+    places = []
+    data.forEach (item) =>
+      [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
+      places.push '(' + places_sub + ')'
+    sql = "INSERT INTO #{tableName} (#{fields}) VALUES #{places.join ','}"
+    @_query 'run', sql, values, (error) ->
+      return _processSaveError error, callback if error
+      if id = @lastID
+        id = id - data.length + 1
+        callback null, data.map (item, i) -> id + i
+      else
+        callback new Error 'unexpected result'
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->
