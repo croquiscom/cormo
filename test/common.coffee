@@ -44,6 +44,9 @@ if process.env.TRAVIS is 'true'
       user: 'travis'
     mongodb:
       database: 'travis'
+    sqlite3:
+      database: __dirname + '/test.sqlite3'
+    sqlite3_memory: {}
     postgresql:
       database: 'travis'
       user: 'postgres'
