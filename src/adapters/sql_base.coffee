@@ -8,6 +8,13 @@ class SQLAdapterBase extends AdapterBase
   _param_place_holder: (pos) -> '?'
   _contains_op: 'LIKE'
 
+  _convertValueType: (value, property_type) ->
+    if property_type is types.Date
+      value = new Date value
+    else if property_type is types.Number
+      value = Number value
+    value
+
   _buildWhereSingle: (property, key, value, params) ->
     if key isnt 'id' and not property?
       throw new Error("unknown column '#{key}'")
@@ -55,8 +62,7 @@ class SQLAdapterBase extends AdapterBase
     else if value is null
       return "#{key.replace('.', '_')} IS NULL"
 
-    value = new Date value if property_type is types.Date
-    params.push value
+    params.push @_convertValueType value, property_type
     return key.replace('.', '_') + op + @_param_place_holder params.length
 
   _buildWhere: (schema, conditions, params, conjunction='AND') ->

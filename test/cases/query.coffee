@@ -576,3 +576,11 @@ module.exports = () ->
             callback null
       ], (error) ->
         done error
+
+  it 'invalid number', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.where age: '27a', (error, users) ->
+        return done error if error
+        expect(users).to.have.length 0
+        done null

@@ -39,6 +39,15 @@ class MySQLAdapter extends SQLAdapterBase
   support_geopoint: true
   native_integrity: true
 
+  _convertValueType: (value, property_type) ->
+    if property_type is types.Date
+      value = new Date value
+    else if property_type is types.Number
+      value = Number value
+      if isNaN value
+        value = Number.MAX_VALUE
+    value
+
   ##
   # Creates a MySQL adapter
   constructor: (connection) ->
