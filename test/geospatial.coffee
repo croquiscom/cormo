@@ -1,4 +1,4 @@
-require './common'
+_g = require './common'
 {expect} = require 'chai'
 
 _dbs = [ 'mysql', 'mongodb' ]

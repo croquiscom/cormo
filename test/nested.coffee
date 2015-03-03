@@ -1,4 +1,4 @@
-require './common'
+_g = require './common'
 
 _dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql' ]
 

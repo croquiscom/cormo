@@ -2,7 +2,7 @@
 
 async = require 'async'
 
-global._g = {}
+_g = {}
 
 _g.cormo = require '../index'
 _g.Connection = _g.cormo.Connection
@@ -65,3 +65,5 @@ else
       database: 'test'
     redis:
       database: 1
+
+module.exports = _g

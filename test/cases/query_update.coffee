@@ -1,3 +1,4 @@
+_g = require '../common'
 {expect} = require 'chai'
 
 _compareUser = (user, expected) ->
