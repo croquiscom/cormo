@@ -19,13 +19,13 @@ _dbs.forEach (db) ->
           age: Number
         User.timestamps()
 
-      _g.dropModels [User], done
+      _g.connection.dropAllModels done
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection.User], done
 
     after (done) ->
-      _g.dropModels [_g.connection.User], ->
+      _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null

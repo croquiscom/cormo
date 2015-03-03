@@ -44,14 +44,18 @@ describe 'mixing several database', ->
         mysql.applySchemas (error) ->
           return callback error if error
           mongodb.applySchemas callback
+      dropAllModels: (callback) ->
+        mysql.dropAllModels (error) ->
+          return callback error if error
+          mongodb.dropAllModels callback
 
-    _g.dropModels [User, Post], done
+    _g.connection.dropAllModels done
 
   beforeEach (done) ->
     _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
 
   after (done) ->
-    _g.dropModels [_g.connection.User, _g.connection.Post], ->
+    _g.connection.dropAllModels ->
       _g.connection.mysql.close()
       _g.connection.mongodb.close()
       _g.connection = null

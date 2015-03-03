@@ -32,13 +32,13 @@ _dbs.forEach (db) ->
         User.hasMany Post
         Post.belongsTo User
 
-      _g.dropModels [User, Post], done
+      _g.connection.dropAllModels done
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
 
     after (done) ->
-      _g.dropModels [_g.connection.User, _g.connection.Post], ->
+      _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null

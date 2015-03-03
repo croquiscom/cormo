@@ -32,7 +32,7 @@ _dbs.forEach (db) ->
           done null
 
     after (done) ->
-      _g.dropModels [_g.connection.User], ->
+      _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null

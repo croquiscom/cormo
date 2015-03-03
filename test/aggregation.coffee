@@ -19,7 +19,7 @@ _dbs.forEach (db) ->
           date: Date
           price: Number
 
-      _g.dropModels [Order], done
+      _g.connection.dropAllModels done
 
     beforeEach (done) ->
       _g.connection.manipulate [
@@ -36,7 +36,7 @@ _dbs.forEach (db) ->
       ], done
 
     after (done) ->
-      _g.dropModels [_g.connection.Order], ->
+      _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null

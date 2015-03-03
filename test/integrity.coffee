@@ -17,10 +17,10 @@ _dbs.forEach (db) ->
         @column 'time', Date
       class Comment extends _g.Model
         @column 'content', String
-      _g.dropModels [Comment, Event, Team], done
+      _g.connection.dropAllModels done
 
     after (done) ->
-      _g.dropModels [_g.connection.Comment, _g.connection.Event, _g.connection.Team], ->
+      _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null

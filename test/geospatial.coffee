@@ -18,13 +18,13 @@ _dbs.forEach (db) ->
           name: String
           location: _g.cormo.types.GeoPoint
 
-      _g.dropModels [Place], done
+      _g.connection.dropAllModels done
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection.Place], done
 
     after (done) ->
-      _g.dropModels [_g.connection.Place], ->
+      _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null

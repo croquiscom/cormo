@@ -9,10 +9,10 @@ _dbs.forEach (db) ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
       class User extends _g.Model
         @connection _g.connection
-      _g.dropModels [User], done
+      _g.connection.dropAllModels done
 
     afterEach (done) ->
-      _g.dropModels [_g.connection.User], ->
+      _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null

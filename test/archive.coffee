@@ -20,13 +20,13 @@ _dbs.forEach (db) ->
         @belongsTo 'user'
         @archive: true
 
-      _g.dropModels [Post, User], done
+      _g.connection.dropAllModels done
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection._Archive, _g.connection.Post, _g.connection.User], done
 
     after (done) ->
-      _g.dropModels [_g.connection._Archive, _g.connection.Post, _g.connection.User], ->
+      _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null

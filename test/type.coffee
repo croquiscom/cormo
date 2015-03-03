@@ -29,13 +29,13 @@ _dbs.forEach (db) ->
           int_array: [_g.cormo.types.Integer]
           recordid_array: [_g.cormo.types.RecordID]
 
-      _g.dropModels [Type], done
+      _g.connection.dropAllModels done
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection.Type], done
 
     after (done) ->
-      _g.dropModels [_g.connection.Type], ->
+      _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null

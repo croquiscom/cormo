@@ -46,13 +46,13 @@ _dbs.forEach (db) ->
         User.hasOne Computer
         Computer.belongsTo User
 
-      _g.dropModels [User, Post, Computer], done
+      _g.connection.dropAllModels done
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection.User, _g.connection.Post, _g.connection.Computer], done
 
     after (done) ->
-      _g.dropModels [_g.connection.User, _g.connection.Post, _g.connection.Computer], ->
+      _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null

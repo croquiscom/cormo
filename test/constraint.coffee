@@ -32,13 +32,13 @@ _dbs.forEach (db) ->
             body: String
           Post.belongsTo User, required: true
 
-        _g.dropModels [User, Post], done
+        _g.connection.dropAllModels done
 
       beforeEach (done) ->
         _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
 
       after (done) ->
-        _g.dropModels [_g.connection.User, _g.connection.Post], ->
+        _g.connection.dropAllModels ->
           _g.connection.close()
           _g.connection = null
           done null
@@ -60,13 +60,13 @@ _dbs.forEach (db) ->
             minor: Number
           Version.index { major: 1, minor: 1 }, { unique: true }
 
-        _g.dropModels [Version], done
+        _g.connection.dropAllModels done
 
       beforeEach (done) ->
         _g.deleteAllRecords [_g.connection.Version], done
 
       after (done) ->
-        _g.dropModels [_g.connection.Version], ->
+        _g.connection.dropAllModels ->
           _g.connection.close()
           _g.connection = null
           done null

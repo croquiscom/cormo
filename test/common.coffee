@@ -19,12 +19,6 @@ else
 
 console.log "Run test with dirty_tracking=#{_g.Model.dirty_tracking}"
 
-_g.dropModels = (models, callback) ->
-  async.forEach models, (model, callback) ->
-    return callback null if not model
-    model.drop callback
-  , callback
-
 _g.deleteAllRecords = (models, callback) ->
   _g.connection.applySchemas (error) ->
     return callback error if error

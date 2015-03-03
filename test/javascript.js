@@ -11,7 +11,7 @@ _dbs.forEach(function (db) {
 
       var User = _g.connection.model('User', { name: String, age: Number });
 
-      _g.dropModels([User], done);
+      _g.connection.dropAllModels(done);
     });
 
     beforeEach(function (done) {
@@ -19,7 +19,7 @@ _dbs.forEach(function (db) {
     });
 
     after(function (done) {
-      _g.dropModels([_g.connection.User], done);
+      _g.connection.dropAllModels(done);
     });
 
     require('./cases/javascript')();
