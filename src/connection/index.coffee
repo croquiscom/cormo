@@ -3,6 +3,7 @@ Model = require '../model'
 _ = require 'underscore'
 {bindDomain} = require '../util'
 Promise = require 'bluebird'
+Toposort = require 'toposort-class'
 try
   redis = require 'redis'
 {inspect} = require 'util'
@@ -97,6 +98,24 @@ class Connection extends EventEmitter
           @column 'model', String
           @column 'data', Object
 
+  _getModelNamesByAssociationOrder: ->
+    t = new Toposort()
+    Object.keys(@models).forEach (model) =>
+      t.add model, []
+      modelClass = @models[model]
+      for name, association of modelClass._associations
+        # ignore association with models of other connection
+        if association.target_model._connection isnt @
+          continue
+        # ignore self association
+        if association.target_model is modelClass
+          continue
+        if association.type in ['hasMany', 'hasOne']
+          t.add association.target_model._name, model
+        else if association.type is 'belongsTo'
+          t.add model, association.target_model._name
+    t.sort().reverse()
+
   ##
   # Applies schemas
   # @promise
@@ -114,13 +133,16 @@ class Connection extends EventEmitter
         @_checkArchive()
 
         @_promise_schema_applied = @_promise_connection.then =>
-          promises = Object.keys(@models).map (model) =>
-            modelClass = @models[model]
-            return Promise.resolve() if not modelClass._schema_changed
-            @_adapter.applySchemaAsync model
-            .then ->
-              modelClass._schema_changed = false
-          Promise.all promises
+          current = Promise.resolve()
+          Promise.all @_getModelNamesByAssociationOrder().map (model) =>
+            current = current
+            .then =>
+              modelClass = @models[model]
+              if not modelClass._schema_changed
+                return
+              @_adapter.applySchemaAsync model
+              .then ->
+                modelClass._schema_changed = false
           .finally =>
             @_applying_schemas = false
             @_schema_changed = false

@@ -35,6 +35,7 @@
     "bluebird": "~2.9.13",
     "commander": "~2.6.0",
     "inflect": "~0.3.0",
+    "toposort-class": "^0.3.1",
     "underscore": "~1.8.2"
   },
   "devDependencies": {
