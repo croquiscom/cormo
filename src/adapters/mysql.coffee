@@ -133,16 +133,20 @@ class MySQLAdapter extends SQLAdapterBase
 
   _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
     dbname = property._dbname
+    value = data[dbname]
     if property.type is types.GeoPoint
-      values.push data[dbname][0]
-      values.push data[dbname][1]
+      values.push value[0]
+      values.push value[1]
       if insert
         fields.push dbname
         places.push 'POINT(?,?)'
       else
         fields.push dbname + '=POINT(?,?)'
+    else if value?.$inc
+      values.push value.$inc
+      fields.push dbname + '=' + dbname + '+?'
     else
-      values.push data[dbname]
+      values.push value
       if insert
         fields.push dbname
         places.push '?'

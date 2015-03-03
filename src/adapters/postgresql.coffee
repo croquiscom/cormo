@@ -124,12 +124,17 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
     dbname = property._dbname
-    values.push data[dbname]
-    if insert
-      fields.push dbname
-      places.push '$' + values.length
+    value = data[dbname]
+    if value?.$inc
+      values.push value.$inc
+      fields.push dbname + '=' + dbname + '+$' + values.length
     else
-      fields.push dbname + '=$' + values.length
+      values.push value
+      if insert
+        fields.push dbname
+        places.push '$' + values.length
+      else
+        fields.push dbname + '=$' + values.length
 
   _buildUpdateSet: (model, data, values, insert) ->
     schema = @_connection.models[model]._schema

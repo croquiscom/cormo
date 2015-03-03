@@ -348,7 +348,7 @@ class Query
       property = schema[path+column]
       if property
         try
-          model._validateColumn updates, path+column, property
+          model._validateColumn updates, path+column, property, true
         catch error
           errors.push error
         model._buildSaveDataColumn data, updates, path+column, property, true

@@ -32,7 +32,7 @@ class ModelValidate
           throw "'#{column}' is not a date"
     value
 
-  @_validateColumn: (data, column, property) ->
+  @_validateColumn: (data, column, property, for_update) ->
     [obj, last] = util.getLeafOfPath data, property._parts, false
     value = obj?[last]
     if value?
@@ -45,7 +45,16 @@ class ModelValidate
           # TODO: detail message like 'array of types'
           throw "'#{column}' is not an array"
       else
-        obj[last] = @_validateType column, property.type, value
+        if value.$inc
+          if for_update
+            if property.type in [types.Number, types.Integer]
+              obj[last] = $inc: @_validateType column, property.type, value.$inc
+            else
+              throw "'#{column}' is not a number type"
+          else
+            throw '$inc is allowed only for update method'
+        else
+          obj[last] = @_validateType column, property.type, value
     else
       if property.required
         throw "'#{column}' is required"

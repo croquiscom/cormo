@@ -300,7 +300,7 @@ But [[#ModelPersistence::save]] has some weaknesses.
 <tr>
 <td>User.update { age: 10 }, age: 27, (error, count) -></td>
 <td rowspan='2'>UPDATE users SET age=10 WHERE age=27</td>
-<td rowspan='2'>db.users.update({age: 27}, {age: 10}, {multi: true})</td>
+<td rowspan='2'>db.users.update({age: 27}, {$set: {age: 10}}, {multi: true})</td>
 </tr>
 <tr>
 <td>User.where(age: 27).update age:10, (error, count) -></td>
@@ -309,7 +309,13 @@ But [[#ModelPersistence::save]] has some weaknesses.
 <tr>
 <td>User.find(1).update age: 10, (error, count) -></td>
 <td>UPDATE users SET age=10 WHERE id=1</td>
-<td>db.users.update({_id: 1}, {age: 10}, {multi: true})</td>
+<td>db.users.update({_id: 1}, {$set: {age: 10}}, {multi: true})</td>
+</tr>
+
+<tr>
+<td>User.find(2).update age: $inc: 3, (error, count) -></td>
+<td>UPDATE users SET age=age+3 WHERE id=2</td>
+<td>db.users.update({_id: 2}, {$inc: {age: 3}}, {multi: true})</td>
 </tr>
 
 </tbody></table>

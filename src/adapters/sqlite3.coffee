@@ -119,15 +119,20 @@ class SQLite3Adapter extends SQLAdapterBase
 
   _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
     dbname = property._dbname
-    if property.type is types.Date
-      values.push data[dbname]?.getTime()
+    value = data[dbname]
+    if value?.$inc
+      values.push value.$inc
+      fields.push dbname + '=' + dbname + '+?'
     else
-      values.push data[dbname]
-    if insert
-      fields.push dbname
-      places.push '?'
-    else
-      fields.push dbname + '=?'
+      if property.type is types.Date
+        values.push value?.getTime()
+      else
+        values.push value
+      if insert
+        fields.push dbname
+        places.push '?'
+      else
+        fields.push dbname + '=?'
 
   _buildUpdateSet: (model, data, values, insert) ->
     schema = @_connection.models[model]._schema

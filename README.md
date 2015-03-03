@@ -141,7 +141,9 @@ User.find 1, (error, user) ->
 
 User.find(1).update age: 10, (error, count) ->
 
-User.where(age: 27).update age:10, (error, count) ->
+User.where(age: 27).update age: 10, (error, count) ->
+
+User.where(age: 35).update age: $inc: 3, (error, count) ->
 ```
 ```javascript
 User.find(1, function (error, user) {
@@ -153,7 +155,10 @@ User.find(1, function (error, user) {
 User.find(1).update({age: 10}, function (error, count) {
 });
 
-User.where({age: 27}).update({age:10}, function (error, count) {
+User.where({age: 27}).update({age: 10}, function (error, count) {
+});
+
+User.where({age: 35}).update({age: {$inc: 3}}, function (error, count) {
 });
 ```
 

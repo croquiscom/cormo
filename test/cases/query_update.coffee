@@ -107,3 +107,23 @@ module.exports = () ->
         _g.connection.User.find users[2].id, (error, user) ->
           expect(user).to.have.keys 'id', 'name', 'age'
           done null
+
+  it '$inc', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      users.sort (a, b) -> if a.name < b.name then -1 else 1
+      return done error if error
+      _g.connection.User.find(users[2].id).update age: $inc: 4, (error, count) ->
+        return done error if error
+        expect(count).to.equal 1
+        _g.connection.User.find users[2].id, (error, user) ->
+          _compareUser user, name: 'Daniel Smith', age: 12
+          done null
+
+  it '$inc for non-integer column', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      users.sort (a, b) -> if a.name < b.name then -1 else 1
+      return done error if error
+      _g.connection.User.find(users[2].id).update name: $inc: 4, (error, count) ->
+        expect(error).to.exist
+        expect(error.message).to.equal "'name' is not a number type"
+        return done null
