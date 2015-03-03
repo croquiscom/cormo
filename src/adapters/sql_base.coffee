@@ -7,6 +7,7 @@ types = require '../types'
 class SQLAdapterBase extends AdapterBase
   _param_place_holder: (pos) -> '?'
   _contains_op: 'LIKE'
+  _false_value: 'FALSE'
 
   _convertValueType: (value, property_type) ->
     if property_type is types.Date
@@ -24,6 +25,8 @@ class SQLAdapterBase extends AdapterBase
       key = @_buildGroupExpr property
     op = '='
     if Array.isArray value
+      if value.length is 0
+        return @_false_value
       values = value.map (value) =>
         params.push value
         return @_param_place_holder params.length
@@ -38,6 +41,8 @@ class SQLAdapterBase extends AdapterBase
             return "(NOT (#{@_buildWhereSingle property, key, value[sub_key], params}) OR #{key.replace('.', '_')} IS NULL)"
         when '$in'
           values = value[sub_key]
+          if values.length is 0
+            return @_false_value
           values = values.map (value) =>
             params.push value
             return @_param_place_holder params.length

@@ -127,6 +127,14 @@ module.exports = () ->
         _compareUser users[1], name: 'Gina Baker', age: 32
         done null
 
+  it '$in with an empty array', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.where age: $in: [], (error, users) ->
+        return done error if error
+        expect(users).to.have.length 0
+        done null
+
   it 'count none', (done) ->
     _g.connection.User.count (error, count) ->
       expect(count).to.equal 0

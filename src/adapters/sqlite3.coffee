@@ -37,6 +37,7 @@ _propertyToSQL = (property) ->
 class SQLite3Adapter extends SQLAdapterBase
   key_type: types.Integer
   native_integrity: true
+  _false_value: '0'
 
   ##
   # Creates a SQLite3 adapter
