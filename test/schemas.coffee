@@ -25,13 +25,7 @@ _dbs.forEach (db) ->
 
       _g.connection.applySchemas()
       .then ->
-        _g.connection.Car.drop()
-      .then ->
-        _g.connection.Ace.drop()
-      .then ->
-        _g.connection.Bear.drop()
-      .then ->
-        _g.connection.Dog.drop()
+        _g.connection.dropAllModels()
 
     afterEach ->
       _g.connection.close()

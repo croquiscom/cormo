@@ -114,7 +114,7 @@ class Connection extends EventEmitter
           t.add association.target_model._name, model
         else if association.type is 'belongsTo'
           t.add model, association.target_model._name
-    t.sort().reverse()
+    t.sort()
 
   ##
   # Applies schemas
@@ -134,7 +134,7 @@ class Connection extends EventEmitter
 
         @_promise_schema_applied = @_promise_connection.then =>
           current = Promise.resolve()
-          Promise.all @_getModelNamesByAssociationOrder().map (model) =>
+          Promise.all @_getModelNamesByAssociationOrder().reverse().map (model) =>
             current = current
             .then =>
               modelClass = @models[model]
@@ -147,6 +147,18 @@ class Connection extends EventEmitter
             @_applying_schemas = false
             @_schema_changed = false
       return @_promise_schema_applied
+    .nodeify bindDomain callback
+
+  ##
+  # Drops all model tables
+  # @promise
+  # @nodejscallback
+  dropAllModels: (callback) ->
+    current = Promise.resolve()
+    Promise.all @_getModelNamesByAssociationOrder().map (model) =>
+      current = current
+      .then =>
+        @models[model].drop()
     .nodeify bindDomain callback
 
   ##
