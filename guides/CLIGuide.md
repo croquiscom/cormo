@@ -100,3 +100,29 @@ $ cormo remote-console 3001
 cormo> 1+1
 2
 ```
+
+# Miscellaneous
+
+## console.inspect_depth
+
+You can change the depth option of the util.inspect that the CORMO console uses.
+(The default value is 2)
+
+```
+cormo> a: b: c: d: e: f: 1
+{ a: { b: { c: [Object] } } }
+cormo> console.inspect_depth = 4
+4
+cormo> a: b: c: d: e: f: 1
+{ a: { b: { c: { d: { e: [Object] } } } } }
+```
+
+## console.measureTime
+
+You can measure the execution time of a function using console.measureTime.
+
+```
+cormo> console.measureTime -> User.count()
+measureTime: 193ms
+492
+```

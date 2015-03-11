@@ -87,6 +87,11 @@ setupContext = (context, options) ->
     context[key] = object
   context.getTimestamp = (object_id) ->
     new Date parseInt(object_id.substr(0, 8), 16) * 1000
+  context.console.measureTime = (fn) ->
+    context.console.time 'measureTime'
+    Promise.resolve fn()
+    .tap ->
+      context.console.timeEnd 'measureTime'
   return
 
 ##
