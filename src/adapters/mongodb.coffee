@@ -386,6 +386,11 @@ class MongoDBAdapter extends AdapterBase
     client_options = {}
     if fields
       client_options.fields = fields
+    if options.explain
+      client_options.explain = true
+      return @_collection(model).findOne _id: id, client_options, (error, result) ->
+        return callback error if error
+        callback null, result
     @_collection(model).findOne _id: id, client_options, (error, result) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       return callback new Error('not found') if not result
@@ -442,6 +447,10 @@ class MongoDBAdapter extends AdapterBase
       pipeline.push $sort: orders if orders
       if options.conditions_of_group.length > 0
         pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
+      if options.explain
+        return @_collection(model).aggregate pipeline, explain: true, (error, result) ->
+          return callback error if error
+          callback null, result
       @_collection(model).aggregate pipeline, (error, result) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error
         callback null, result.map (record) =>
@@ -459,6 +468,13 @@ class MongoDBAdapter extends AdapterBase
         client_options.fields = fields
       if orders
         client_options.sort = orders
+      if options.explain
+        client_options.explain = true
+        return @_collection(model).find conditions, client_options, (error, cursor) ->
+          return callback error if error
+          cursor.toArray (error, result) ->
+            return callback error if error
+            callback null, result
       @_collection(model).find conditions, client_options, (error, cursor) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
         cursor.toArray (error, result) =>

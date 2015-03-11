@@ -90,3 +90,9 @@ module.exports = ->
       expect(records[1]).to.eql customer: 'Daniel Smith', min_price: 6, max_price: 13
       expect(records[2]).to.eql customer: 'John Doe', min_price: 3, max_price: 20
       done null
+
+  it 'explain', (done) ->
+    _g.connection.Order.group(null, count: { $sum: 1 }, total: { $sum: '$price' }).explain (error, result) ->
+      return done error if error
+      expect(result).to.not.eql [ {count: 9, total: 155} ]
+      done null

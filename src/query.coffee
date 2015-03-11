@@ -318,6 +318,17 @@ class Query
     .nodeify bindDomain callback
 
   ##
+  # Explains the query
+  # @return {Object}
+  # @promise
+  # @nodejscallback
+  explain: (callback) ->
+    @_options.cache = null
+    @_options.explain = true
+    @_includes = []
+    @exec skip_log: true, callback
+
+  ##
   # Executes the query as a promise (.then == .exec().then)
   # @param {Function} fulfilled
   # @param {Function} rejected

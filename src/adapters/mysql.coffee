@@ -232,6 +232,10 @@ class MySQLAdapter extends SQLAdapterBase
     select = @_buildSelect @_connection.models[model], options.select
     tableName = @_connection.models[model].tableName
     sql = "SELECT #{select} FROM #{tableName} WHERE id=? LIMIT 1"
+    if options.explain
+      return @_query "EXPLAIN #{sql}", id, (error, result) ->
+        return callback error if error
+        callback null, result
     @_query sql, id, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       if result?.length is 1
@@ -284,6 +288,10 @@ class MySQLAdapter extends SQLAdapterBase
     else if options?.skip?
       sql += ' LIMIT 2147483647 OFFSET ' + options.skip
     #console.log sql, params
+    if options.explain
+      return @_query "EXPLAIN #{sql}", params, (error, result) ->
+        return callback error if error
+        callback null, result
     @_query sql, params, (error, result) =>
       #console.log result
       return callback MySQLAdapter.wrapError 'unknown error', error if error

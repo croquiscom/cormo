@@ -593,3 +593,20 @@ module.exports = () ->
         return done error if error
         expect(users).to.have.length 0
         done null
+
+  it 'explain for simple(findById)', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.find(users[0].id).lean().explain (error, result) ->
+        return done error if error
+        expect(result).to.not.eql { id: users[0].id, name: users[0].name, age: users[0].age }
+        done null
+
+  it 'explain for complex(find)', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.where(age: 8).lean().explain (error, result) ->
+        return done error if error
+        id = result?[0]?.id
+        expect(result).to.not.eql [ { id: id, name: 'Daniel Smith', age: 8 } ]
+        done null

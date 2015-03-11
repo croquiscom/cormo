@@ -209,7 +209,12 @@ class SQLite3Adapter extends SQLAdapterBase
   findById: (model, id, options, callback) ->
     select = @_buildSelect @_connection.models[model], options.select
     tableName = @_connection.models[model].tableName
-    @_query 'all', "SELECT #{select} FROM #{tableName} WHERE id=? LIMIT 1", id, (error, result) =>
+    sql = "SELECT #{select} FROM #{tableName} WHERE id=? LIMIT 1"
+    if options.explain
+      return @_query 'all', "EXPLAIN QUERY PLAN #{sql}", id, (error, result) ->
+        return callback error if error
+        callback null, result
+    @_query 'all', sql, id, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       if result?.length is 1
         if options.lean
@@ -255,6 +260,10 @@ class SQLite3Adapter extends SQLAdapterBase
     else if options?.skip?
       sql += ' LIMIT 2147483647 OFFSET ' + options.skip
     #console.log sql, params
+    if options.explain
+      return @_query 'all', "EXPLAIN QUERY PLAN #{sql}", params, (error, result) ->
+        return callback error if error
+        callback null, result
     @_query 'all', sql, params, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       if options.group_fields
