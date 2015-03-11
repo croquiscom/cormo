@@ -14,12 +14,21 @@ class SQLAdapterBase extends AdapterBase
       value = new Date value
     else if property_type is types.Number
       value = Number value
+      if isNaN value
+        value = Number.MAX_VALUE
+    else if property_type is types.Integer
+      value = Number value
+      if isNaN(value) or (value>>0) isnt value
+        value = -2147483648
     value
 
   _buildWhereSingle: (property, key, value, params) ->
-    if key isnt 'id' and not property?
-      throw new Error("unknown column '#{key}'")
-    property_type = property?.type
+    if key is 'id'
+      property_type = @key_type
+    else
+      if not property?
+        throw new Error("unknown column '#{key}'")
+      property_type = property.type
     if property and not property_type
       # group field
       key = @_buildGroupExpr property

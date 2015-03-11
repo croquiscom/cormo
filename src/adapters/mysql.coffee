@@ -39,15 +39,6 @@ class MySQLAdapter extends SQLAdapterBase
   support_geopoint: true
   native_integrity: true
 
-  _convertValueType: (value, property_type) ->
-    if property_type is types.Date
-      value = new Date value
-    else if property_type is types.Number
-      value = Number value
-      if isNaN value
-        value = Number.MAX_VALUE
-    value
-
   ##
   # Creates a MySQL adapter
   constructor: (connection) ->
@@ -229,6 +220,7 @@ class MySQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
+    id = @_convertValueType id, @key_type
     select = @_buildSelect @_connection.models[model], options.select
     tableName = @_connection.models[model].tableName
     sql = "SELECT #{select} FROM #{tableName} WHERE id=? LIMIT 1"

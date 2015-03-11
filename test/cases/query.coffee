@@ -594,6 +594,24 @@ module.exports = () ->
         expect(users).to.have.length 0
         done null
 
+  it 'invalid number(find)', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      return done null if typeof users[0].id is 'string'
+      _g.connection.User.find users[0].id+'a', (error, user) ->
+        expect(error).to.exist
+        expect(error.message).to.equal 'not found'
+        done null
+
+  it 'invalid number(where id:)', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      return done null if typeof users[0].id is 'string'
+      _g.connection.User.where id: users[0].id+'a', (error, users) ->
+        return done error if error
+        expect(users).to.have.length 0
+        done null
+
   it 'explain for simple(findById)', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
