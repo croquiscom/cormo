@@ -80,7 +80,8 @@ setupContext = (context, options) ->
       context[model] = modelClass
     connection.applySchemas()
   Object.defineProperty context.console, 'inspect_depth',
-    enumrable: true,
+    configurable: true
+    enumrable: true
     get: => return options.inspect_depth
     set: (value) => options.inspect_depth = value
   for key, object of exports.public
