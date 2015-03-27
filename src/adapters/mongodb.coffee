@@ -16,38 +16,6 @@ _convertValueToObjectID = (value, key) ->
     new ObjectID value
   catch e
     throw new Error("'#{key}' is not a valid id")
-# speed up version, doesn't work with native_parser
-#  if value?
-#    len = value.length
-#    if len is 24
-#      oid = ''
-#      number = parseInt(value.substr(0, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(2, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(4, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(6, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(8, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(10, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(12, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(14, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(16, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(18, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(20, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      number = parseInt(value.substr(22, 2), 16)
-#      oid += String.fromCharCode number if number>=0 and number<256
-#      if oid.length is 12
-#        return _bsontype: 'ObjectID', id: oid, toString: (-> value), toJSON: (-> value)
-#  throw new Error("'#{key}' is not a valid id")
 
 _objectIdToString = (oid) ->
   oid = oid.id
@@ -222,7 +190,7 @@ class MongoDBAdapter extends AdapterBase
   _collection: (model) ->
     name = @_connection.models[model].tableName
     if not @_collections[name]
-      return @_collections[name] = new mongodb.Collection @_client, _getMongoDBColName name
+      return @_collections[name] = @_client.collection _getMongoDBColName name
     else
       return @_collections[name]
 
@@ -291,7 +259,7 @@ class MongoDBAdapter extends AdapterBase
     @_collection(model).insert data, safe: true, (error, result) ->
       if error?.code is 11000
         column = ''
-        key = error.err.match /index: [\w-.]+\$(\w+)/
+        key = error.message.match /index: [\w-.]+\$(\w+)/
         if key?
           column = key[1]
           key = column.match /(\w+)_1/
@@ -300,7 +268,7 @@ class MongoDBAdapter extends AdapterBase
           column = ' ' + column
         return callback new Error('duplicated' + column)
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      id = _objectIdToString result?[0]?._id
+      id = _objectIdToString result.ops[0]._id
       if id
         delete data._id
         callback null, id
@@ -311,11 +279,11 @@ class MongoDBAdapter extends AdapterBase
   createBulk: (model, data, callback) ->
     @_collection(model).insert data, safe: true, (error, result) ->
       if error?.code is 11000
-        key = error.err.match /index: [\w-.]+\$(\w+)_1/
+        key = error.message.match /index: [\w-.]+\$(\w+)_1/
         return callback new Error('duplicated ' + key?[1])
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       error = undefined
-      ids = result.map (doc) ->
+      ids = result.ops.map (doc) ->
         id = _objectIdToString doc._id
         if id
           delete data._id
@@ -331,7 +299,7 @@ class MongoDBAdapter extends AdapterBase
     delete data.id
     @_collection(model).update { _id: id }, data, safe: true, (error) ->
       if error?.code is 11001
-        key = error.err.match /index: [\w-.]+\$(\w+)_1/
+        key = error.message.match /index: [\w-.]+\$(\w+)_1/
         return callback new Error('duplicated ' + key?[1])
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null
@@ -367,12 +335,12 @@ class MongoDBAdapter extends AdapterBase
       delete update_ops.$unset
     if Object.keys(update_ops.$inc).length is 0
       delete update_ops.$inc
-    @_collection(model).update conditions, update_ops, safe: true, multi: true, (error, count) ->
+    @_collection(model).update conditions, update_ops, safe: true, multi: true, (error, result) ->
       if error?.code is 11001
-        key = error.err.match /index: [\w-.]+\$(\w+)_1/
+        key = error.message.match /index: [\w-.]+\$(\w+)_1/
         return callback new Error('duplicated ' + key?[1])
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null, count
+      callback null, result.result.n
 
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
@@ -503,9 +471,9 @@ class MongoDBAdapter extends AdapterBase
     catch e
       return callback e
     #console.log JSON.stringify conditions
-    @_collection(model).remove conditions, safe: true, (error, count) ->
+    @_collection(model).remove conditions, safe: true, (error, result) ->
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null, count
+      callback null, result.result.n
 
   ##
   # Connects to the database
