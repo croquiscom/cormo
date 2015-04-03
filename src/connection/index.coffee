@@ -69,6 +69,8 @@ class Connection extends EventEmitter
       @_adapter = null
       Promise.reject error
 
+    Object.defineProperty @, 'adapter', get: -> @_adapter
+
   ##
   # Closes this connection.
   # A closed connection can be used no more.
