@@ -348,5 +348,10 @@ class PostgreSQLAdapter extends SQLAdapterBase
       @_client_done = null
     @_client = null
 
+  ##
+  # Exposes pg module's query method
+  query: (sql, values, callback) ->
+    @_client.query sql, values, callback
+
 module.exports = (connection) ->
   new PostgreSQLAdapter connection
