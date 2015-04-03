@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --harmony
 
 var path = require('path');
 require(path.resolve(__dirname, '../index.js')).Command.run(process.argv);

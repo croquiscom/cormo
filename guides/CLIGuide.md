@@ -9,6 +9,18 @@ cormo> 1+1
 cormo>
 ```
 
+If you want to use JavaScript instead of CoffeeScript, give the '--javascript' option.
+'--harmony' option will be enabled.
+
+```
+$ cormo console --javascript
+cormo> [1,2].map(function(v){ return v*2; })
+[ 2, 4 ]
+cormo> [1,2].map(v => v*2)
+[ 2, 4 ]
+cormo>
+```
+
 ## Load module
 
 ```coffeescript
@@ -24,7 +36,7 @@ class User extends cormo.Model
 ```
 
 ```
-$ cormo console -l coffee-script/register -l model.coffee
+$ cormo console -l model.coffee
 cormo> user = User.create name: 'croquis.com', age: 2
 { name: 'croquis.com',
   age: 2,
@@ -44,11 +56,10 @@ cormo.console.public.CalcService =
 ```
 
 ```
-$ cormo console -l coffee-script/register -l calc.coffee
+$ cormo console -l calc.coffee
 cormo> CalcService.add 1, 2
 3
 ```
-
 
 ## Run synchronously
 
