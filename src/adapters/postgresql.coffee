@@ -11,14 +11,14 @@ _ = require 'lodash'
 
 _typeToSQL = (property) ->
   if property.array
-    return 'VARCHAR(255)'
+    return 'JSON'
   switch property.type_class
     when types.String then "VARCHAR(#{property.type.length or 255})"
     when types.Number then 'DOUBLE PRECISION'
     when types.Boolean then 'BOOLEAN'
     when types.Integer then 'INT'
     when types.Date then 'TIMESTAMP WITHOUT TIME ZONE'
-    when types.Object then 'VARCHAR(255)'
+    when types.Object then 'JSON'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property
@@ -105,6 +105,9 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   _getModelID: (data) ->
     Number data.id
+
+  valueToModel: (value, property) ->
+    value
 
   _processSaveError = (tableName, error, callback) ->
     if error.code is '42P01'
