@@ -60,6 +60,20 @@ Currently supported [[#types]]:
 After defining models, you may call [[#Connection::applySchemas]] to apply schemas to the database.
 (It will be called automatically when you run a query.)
 
+## type options
+
+You can give options for types in some adapters.
+
+To specify length for string type in MySQL or PostgreSQL, you should do
+
+```
+@column 'method_1', cormo.types.String(50)
+# or
+@column 'method_2', 'string(50)'
+```
+
+Please note that you must use 'cormo.types.String', not 'String'.
+
 # mixing databases
 
 You can use two or more databases at the same time.
