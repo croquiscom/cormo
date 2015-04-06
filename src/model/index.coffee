@@ -136,9 +136,9 @@ class Model
 
   @_getKeyType: (target_connection = @_connection) ->
     if @_connection is target_connection and target_connection._adapter.key_type_internal
-      target_connection._adapter.key_type_internal
+      new target_connection._adapter.key_type_internal
     else
-      target_connection._adapter.key_type
+      new target_connection._adapter.key_type
 
   ##
   # Adds a column to this model
@@ -148,7 +148,7 @@ class Model
     @_checkConnection()
 
     # nested path
-    if typeof property is 'object' and not Array.isArray(property) and (not property.type or property.type.type)
+    if _.isPlainObject(property) and (not property.type or property.type.type)
       for subcolumn, subproperty of property
         @column path+'.'+subcolumn, subproperty
       return
@@ -161,7 +161,7 @@ class Model
       return
 
     # convert simple type to property object
-    if typeof property is 'function' or typeof property is 'string' or Array.isArray property
+    if not _.isPlainObject property
       property = type: property
 
     if Array.isArray property.type
@@ -169,12 +169,12 @@ class Model
       property.type = property.type[0]
 
     type = types._toCORMOType property.type
-    if type is types.RecordID
+    if type.constructor is types.RecordID
       type = @_getKeyType property.connection
       property.record_id = true
 
     # check supports of GeoPoint
-    if type is types.GeoPoint and not @_adapter.support_geopoint
+    if type.constructor is types.GeoPoint and not @_adapter.support_geopoint
       throw new Error 'this adapter does not support GeoPoint'
 
     parts = path.split '.'
@@ -182,6 +182,7 @@ class Model
       @_intermediate_paths[parts[0..i].join '.'] = 1
 
     property.type = type
+    property.type_class = type.constructor
     property._parts = path.split '.'
     property._dbname = path.replace '.', '_'
 

@@ -6,8 +6,8 @@ util = require '../util'
 # Model validate
 # @namespace model
 class ModelValidate
-  @_validateType: (column, type, value) ->
-    switch type
+  @_validateType: (column, type_class, value) ->
+    switch type_class
       when types.Number
         value = Number value
         if isNaN value
@@ -40,21 +40,21 @@ class ModelValidate
         throw "'#{column}' is not an array" if not Array.isArray value
         try
           for v, i in value
-            value[i] = @_validateType column, property.type, v
+            value[i] = @_validateType column, property.type_class, v
         catch error
           # TODO: detail message like 'array of types'
           throw "'#{column}' is not an array"
       else
         if value.$inc
           if for_update
-            if property.type in [types.Number, types.Integer]
-              obj[last] = $inc: @_validateType column, property.type, value.$inc
+            if property.type_class in [types.Number, types.Integer]
+              obj[last] = $inc: @_validateType column, property.type_class, value.$inc
             else
               throw "'#{column}' is not a number type"
           else
             throw '$inc is allowed only for update method'
         else
-          obj[last] = @_validateType column, property.type, value
+          obj[last] = @_validateType column, property.type_class, value
     else
       if property.required
         throw "'#{column}' is required"

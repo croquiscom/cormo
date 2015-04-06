@@ -9,14 +9,14 @@ class SQLAdapterBase extends AdapterBase
   _contains_op: 'LIKE'
   _false_value: 'FALSE'
 
-  _convertValueType: (value, property_type) ->
-    if property_type is types.Date
+  _convertValueType: (value, property_type_class) ->
+    if property_type_class is types.Date
       value = new Date value
-    else if property_type is types.Number
+    else if property_type_class is types.Number
       value = Number value
       if isNaN value
         value = Number.MAX_VALUE
-    else if property_type is types.Integer
+    else if property_type_class is types.Integer
       value = Number value
       if isNaN(value) or (value>>0) isnt value
         value = -2147483648
@@ -24,12 +24,12 @@ class SQLAdapterBase extends AdapterBase
 
   _buildWhereSingle: (property, key, value, params) ->
     if key is 'id'
-      property_type = @key_type
+      property_type_class = @key_type
     else
       if not property?
         throw new Error("unknown column '#{key}'")
-      property_type = property.type
-    if property and not property_type
+      property_type_class = property.type_class
+    if property and not property_type_class
       # group field
       key = @_buildGroupExpr property
     op = '='
@@ -76,7 +76,7 @@ class SQLAdapterBase extends AdapterBase
     else if value is null
       return "#{key.replace('.', '_')} IS NULL"
 
-    params.push @_convertValueType value, property_type
+    params.push @_convertValueType value, property_type_class
     return key.replace('.', '_') + op + @_param_place_holder params.length
 
   _buildWhere: (schema, conditions, params, conjunction='AND') ->

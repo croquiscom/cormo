@@ -12,7 +12,7 @@ _ = require 'lodash'
 _typeToSQL = (property) ->
   if property.array
     return 'VARCHAR(255)'
-  switch property.type
+  switch property.type_class
     when types.String then 'VARCHAR(255)'
     when types.Number then 'DOUBLE'
     when types.Boolean then 'TINYINT'
@@ -99,11 +99,11 @@ class SQLite3Adapter extends SQLAdapterBase
     Number data.id
 
   valueToModel: (value, property) ->
-    if property.type is types.Object or property.array
+    if property.type_class is types.Object or property.array
       JSON.parse value
-    else if property.type is types.Date
+    else if property.type_class is types.Date
       new Date value
-    else if property.type is types.Boolean
+    else if property.type_class is types.Boolean
       value isnt 0
     else
       value
@@ -124,7 +124,7 @@ class SQLite3Adapter extends SQLAdapterBase
       values.push value.$inc
       fields.push dbname + '=' + dbname + '+?'
     else
-      if property.type is types.Date
+      if property.type_class is types.Date
         values.push value?.getTime()
       else
         values.push value

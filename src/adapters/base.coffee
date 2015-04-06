@@ -36,7 +36,7 @@ class AdapterBase
     value
 
   valueToDB: (value, column, property) ->
-    if property.type is types.Object or property.array
+    if property.type_class is types.Object or property.array
       JSON.stringify value
     else if value?
       value
@@ -47,7 +47,7 @@ class AdapterBase
     data.id
 
   valueToModel: (value, property) ->
-    if property.type is types.Object or property.array
+    if property.type_class is types.Object or property.array
       JSON.parse value
     else
       value

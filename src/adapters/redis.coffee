@@ -46,7 +46,7 @@ class RedisAdapter extends AdapterBase
 
   valueToDB: (value, column, property) ->
     return if not value?
-    switch property.type
+    switch property.type_class
       when types.Number, types.Integer
         value.toString()
       when types.Date
@@ -59,7 +59,7 @@ class RedisAdapter extends AdapterBase
         value
 
   valueToModel: (value, property) ->
-    switch property.type
+    switch property.type_class
       when types.Number, types.Integer
         Number value
       when types.Date

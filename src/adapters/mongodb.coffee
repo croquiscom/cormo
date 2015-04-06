@@ -6,6 +6,8 @@ catch error
 
 ObjectID = mongodb.ObjectID
 
+class CormoTypesObjectId
+
 _ = require 'lodash'
 AdapterBase = require './base'
 async = require 'async'
@@ -61,8 +63,8 @@ _objectIdToString = (oid) ->
 _buildWhereSingle = (property, key, value, not_op) ->
   if key isnt 'id' and not property?
     throw new Error("unknown column '#{key}'")
-  property_type = property?.type
-  is_objectid = key is 'id' or property_type is 'objectid'
+  property_type_class = property?.type_class
+  is_objectid = key is 'id' or property_type_class is CormoTypesObjectId
   if Array.isArray value
     if is_objectid
       value = value.map (v) -> _convertValueToObjectID v, key
@@ -79,7 +81,7 @@ _buildWhereSingle = (property, key, value, not_op) ->
         sub_value = value[sub_key]
         if is_objectid
           sub_value = _convertValueToObjectID sub_value, key
-        else if property_type is types.Date
+        else if property_type_class is types.Date
           sub_value = new Date sub_value
         value = {}
         value[sub_key] = sub_value
@@ -106,7 +108,7 @@ _buildWhereSingle = (property, key, value, not_op) ->
 
   obj = {}
   key = '_id' if key is 'id'
-  value = new Date value if property_type is types.Date
+  value = new Date value if property_type_class is types.Date
   obj[key] = value
   return obj
 
@@ -170,7 +172,7 @@ _buildGroupFields = (group_by, group_fields) ->
 # @namespace adapter
 class MongoDBAdapter extends AdapterBase
   key_type: types.String
-  key_type_internal: 'objectid'
+  key_type_internal: CormoTypesObjectId
   support_geopoint: true
   support_nested: true
 
@@ -204,7 +206,7 @@ class MongoDBAdapter extends AdapterBase
           indexes.push [ column, { unique: true } ]
         else
           indexes.push [ column, { unique: true, sparse: true } ]
-      if property.type is types.GeoPoint
+      if property.type_class is types.GeoPoint
         obj = {}
         obj[column] = '2d'
         indexes.push [ obj ]
@@ -235,7 +237,7 @@ class MongoDBAdapter extends AdapterBase
   valueToDB: (value, column, property) ->
     return if not value?
     # convert id type
-    if column is 'id' or property.type is 'objectid'
+    if column is 'id' or property.type_class is CormoTypesObjectId
       if property.array
         return value.map (v) -> v and _convertValueToObjectID v, column
       else
@@ -246,7 +248,7 @@ class MongoDBAdapter extends AdapterBase
     _objectIdToString data._id
 
   valueToModel: (value, property) ->
-    if property.type is 'objectid'
+    if property.type_class is CormoTypesObjectId
       if property.array
         value.map (v) -> v and _objectIdToString v
       else
