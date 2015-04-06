@@ -11,14 +11,14 @@ _ = require 'lodash'
 
 _typeToSQL = (property) ->
   if property.array
-    return 'VARCHAR(255)'
+    return 'TEXT'
   switch property.type_class
-    when types.String then 'VARCHAR(255)'
+    when types.String then 'TEXT'
     when types.Number then 'DOUBLE'
     when types.Boolean then 'TINYINT'
     when types.Integer then 'INT'
     when types.Date then 'REAL'
-    when types.Object then 'VARCHAR(255)'
+    when types.Object then 'TEXT'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property

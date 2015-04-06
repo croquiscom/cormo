@@ -46,3 +46,5 @@ _dbs.forEach (db) ->
       require('./cases/type_update')()
     describe '#compare', ->
       require('./cases/type_compare')()
+    describe '#options', ->
+      require('./cases/type_options')()

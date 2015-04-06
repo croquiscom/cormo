@@ -175,7 +175,9 @@ class Model
 
     # check supports of GeoPoint
     if type.constructor is types.GeoPoint and not @_adapter.support_geopoint
-      throw new Error 'this adapter does not support GeoPoint'
+      throw new Error 'this adapter does not support GeoPoint type'
+    if type.constructor is types.String and type.length and not @_adapter.support_string_type_with_length
+      throw new Error 'this adapter does not support String type with length'
 
     parts = path.split '.'
     for i in [0...parts.length-1]

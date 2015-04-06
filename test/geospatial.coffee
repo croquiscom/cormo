@@ -44,5 +44,5 @@ _dbs_not.forEach (db) ->
         Place = _g.connection.model 'Place',
           name: String
           location: _g.cormo.types.GeoPoint
-      ).to.throw 'this adapter does not support GeoPoint'
+      ).to.throw 'this adapter does not support GeoPoint type'
       done null

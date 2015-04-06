@@ -13,7 +13,7 @@ _typeToSQL = (property) ->
   if property.array
     return 'VARCHAR(255)'
   switch property.type_class
-    when types.String then 'VARCHAR(255)'
+    when types.String then "VARCHAR(#{property.type.length or 255})"
     when types.Number then 'DOUBLE PRECISION'
     when types.Boolean then 'BOOLEAN'
     when types.Integer then 'INT'
@@ -36,6 +36,7 @@ _propertyToSQL = (property) ->
 # @namespace adapter
 class PostgreSQLAdapter extends SQLAdapterBase
   key_type: types.Integer
+  support_string_type_with_length: true
   native_integrity: true
   _param_place_holder: (pos) -> '$' + pos
   _contains_op: 'ILIKE'

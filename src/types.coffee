@@ -7,6 +7,10 @@
 # Represents a string, used in model schemas.
 # @memberOf types
 exports.String = class CormoTypesString
+  constructor: (length) ->
+    if not(@ instanceof CormoTypesString)
+      return new CormoTypesString length
+    @length = length
 
 ##
 # Represents a double-precision floating-point, used in model schemas.
@@ -56,15 +60,25 @@ exports.RecordID = class CormoTypesRecordID
 exports._toCORMOType = (type) ->
   if typeof type is 'string'
     type = type.toLowerCase()
-  switch type
-    when String,'string' then type = exports.String
-    when Number,'number' then type = exports.Number
-    when Boolean,'boolean' then type = exports.Boolean
-    when 'integer' then type = exports.Integer
-    when 'geopoint' then type = exports.GeoPoint
-    when Date,'date' then type = exports.Date
-    when Object,'object' then type = exports.Object
-    when 'recordid' then type = exports.RecordID
+    if /^string\((\d+)\)$/.test type
+      type = new CormoTypesString(Number(RegExp.$1))
+    else
+      switch type
+        when 'string' then type = exports.String
+        when 'number' then type = exports.Number
+        when 'boolean' then type = exports.Boolean
+        when 'integer' then type = exports.Integer
+        when 'geopoint' then type = exports.GeoPoint
+        when 'date' then type = exports.Date
+        when 'object' then type = exports.Object
+        when 'recordid' then type = exports.RecordID
+  else
+    switch type
+      when String then type = exports.String
+      when Number then type = exports.Number
+      when Boolean then type = exports.Boolean
+      when Date then type = exports.Date
+      when Object then type = exports.Object
   if typeof type is 'function'
     type = new type()
   type
