@@ -1,4 +1,4 @@
-_ = require 'underscore'
+_ = require 'lodash'
 inflector = require '../util/inflector'
 Promise = require 'bluebird'
 util = require '../util'

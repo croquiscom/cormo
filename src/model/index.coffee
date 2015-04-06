@@ -1,4 +1,4 @@
-_ = require 'underscore'
+_ = require 'lodash'
 Promise = require 'bluebird'
 tableize = require('../util/inflector').tableize
 types = require '../types'

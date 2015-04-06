@@ -8,7 +8,7 @@ AdapterBase = require './base'
 types = require '../types'
 tableize = require('../util/inflector').tableize
 async = require 'async'
-_ = require 'underscore'
+_ = require 'lodash'
 
 ##
 # Adapter for Redis

@@ -1,6 +1,6 @@
 EventEmitter = require('events').EventEmitter
 Model = require '../model'
-_ = require 'underscore'
+_ = require 'lodash'
 {bindDomain} = require '../util'
 Promise = require 'bluebird'
 Toposort = require 'toposort-class'

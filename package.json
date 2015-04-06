@@ -35,8 +35,8 @@
     "bluebird": "^2.9.15",
     "commander": "^2.7.1",
     "inflect": "^0.3.0",
-    "toposort-class": "^0.3.1",
-    "underscore": "^1.8.2"
+    "lodash": "^3.6.0",
+    "toposort-class": "^0.3.1"
   },
   "devDependencies": {
     "benchmark": "^1.0.0",

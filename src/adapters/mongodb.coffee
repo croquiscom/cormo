@@ -6,7 +6,7 @@ catch error
 
 ObjectID = mongodb.ObjectID
 
-_ = require 'underscore'
+_ = require 'lodash'
 AdapterBase = require './base'
 async = require 'async'
 types = require '../types'

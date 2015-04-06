@@ -1,4 +1,4 @@
-_ = require 'underscore'
+_ = require 'lodash'
 {bindDomain} = require '../util'
 inflector = require '../util/inflector'
 Promise = require 'bluebird'

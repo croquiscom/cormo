@@ -7,7 +7,7 @@ catch e
 SQLAdapterBase = require './sql_base'
 types = require '../types'
 async = require 'async'
-_ = require 'underscore'
+_ = require 'lodash'
 
 _typeToSQL = (property) ->
   if property.array
