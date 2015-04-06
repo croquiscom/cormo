@@ -16,8 +16,12 @@ module.exports = () ->
       TypeOptionsString1.create col: '01234', (error, record) ->
         expect(error).to.be.null
         TypeOptionsString1.create col: '0123456789', (error, record) ->
-          expect(error).to.exist
-          done null
+          return done null if error
+          # MySQL non-strict mode accepts long string
+          TypeOptionsString1.find record.id, (error, result) ->
+            return done error if error
+            expect(result.col).to.eql '01234'
+            done null
 
   it 'string length(string)', (done) ->
     try
@@ -32,5 +36,9 @@ module.exports = () ->
       TypeOptionsString2.create col: '01234', (error, record) ->
         expect(error).to.be.null
         TypeOptionsString2.create col: '0123456789', (error, record) ->
-          expect(error).to.exist
-          done null
+          return done null if error
+          # MySQL non-strict mode accepts long string
+          TypeOptionsString2.find record.id, (error, result) ->
+            return done error if error
+            expect(result.col).to.eql '01234'
+            done null
