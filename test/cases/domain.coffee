@@ -1,4 +1,4 @@
-_g = require '../common'
+_g = require '../support/common'
 domain = require 'domain'
 {expect} = require 'chai'
 

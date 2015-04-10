@@ -1,4 +1,4 @@
-_g = require './common'
+_g = require './support/common'
 {expect} = require 'chai'
 
 _dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql', 'redis' ]

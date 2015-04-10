@@ -1,4 +1,4 @@
-var _g = require('../common');
+var _g = require('../support/common');
 var expect = require('chai').expect;
 
 _createUsers = function (User, data, callback) {

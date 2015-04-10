@@ -4,7 +4,7 @@ async = require 'async'
 
 _g = {}
 
-_g.cormo = require '../index'
+_g.cormo = require '../..'
 _g.Connection = _g.cormo.Connection
 _g.Model = _g.cormo.Model
 _g.connection = undefined

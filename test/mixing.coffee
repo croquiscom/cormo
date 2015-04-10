@@ -1,4 +1,4 @@
-_g = require './common'
+_g = require './support/common'
 
 return if not _g.db_configs['mysql'] or not _g.db_configs['mongodb']
 describe 'mixing several database', ->

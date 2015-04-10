@@ -1,4 +1,4 @@
-var _g = require('./common');
+var _g = require('./support/common');
 
 _dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql' ];
 _dbs.forEach(function (db) {

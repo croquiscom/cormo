@@ -1,4 +1,4 @@
-_g = require '../common'
+_g = require '../support/common'
 async = require 'async'
 {expect} = require 'chai'
 
