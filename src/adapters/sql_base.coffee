@@ -8,6 +8,7 @@ class SQLAdapterBase extends AdapterBase
   _param_place_holder: (pos) -> '?'
   _contains_op: 'LIKE'
   _false_value: 'FALSE'
+  _escape_ch: '"'
 
   _convertValueType: (value, property_type_class) ->
     if property_type_class is types.Date
@@ -31,7 +32,9 @@ class SQLAdapterBase extends AdapterBase
       property_type_class = property.type_class
     if property and not property_type_class
       # group field
-      key = @_buildGroupExpr property
+      column = @_buildGroupExpr property
+    else
+      column = @_escape_ch + key.replace('.', '_') + @_escape_ch
     op = '='
     if Array.isArray value
       if value.length is 0
@@ -39,15 +42,15 @@ class SQLAdapterBase extends AdapterBase
       values = value.map (value) =>
         params.push value
         return @_param_place_holder params.length
-      return "#{key.replace '.', '_'} IN (#{values.join ','})"
+      return "#{column} IN (#{values.join ','})"
     else if typeof value is 'object' and value isnt null and (keys = Object.keys value).length is 1
       sub_key = keys[0]
       switch sub_key
         when '$not'
           if value[sub_key] is null
-            return "NOT #{key.replace('.', '_')} IS NULL"
+            return "NOT #{column} IS NULL"
           else
-            return "(NOT (#{@_buildWhereSingle property, key, value[sub_key], params}) OR #{key.replace('.', '_')} IS NULL)"
+            return "(NOT (#{@_buildWhereSingle property, key, value[sub_key], params}) OR #{column} IS NULL)"
         when '$in'
           values = value[sub_key]
           if values.length is 0
@@ -55,7 +58,7 @@ class SQLAdapterBase extends AdapterBase
           values = values.map (value) =>
             params.push value
             return @_param_place_holder params.length
-          return "#{key.replace '.', '_'} IN (#{values.join ','})"
+          return "#{column} IN (#{values.join ','})"
         when '$gt'
           op = '>'
           value = value[sub_key]
@@ -74,10 +77,10 @@ class SQLAdapterBase extends AdapterBase
         else
           throw new Error "unknown operator '#{sub_key}'"
     else if value is null
-      return "#{key.replace('.', '_')} IS NULL"
+      return "#{column} IS NULL"
 
     params.push @_convertValueType value, property_type_class
-    return key.replace('.', '_') + op + @_param_place_holder params.length
+    return column + op + @_param_place_holder params.length
 
   _buildWhere: (schema, conditions, params, conjunction='AND') ->
     if Array.isArray conditions
@@ -145,7 +148,8 @@ class SQLAdapterBase extends AdapterBase
     if select
       if select.length>0
         schema = model_class._schema
-        select = select.map (column) -> schema[column]._dbname
+        escape_ch = @_escape_ch
+        select = select.map (column) -> "#{escape_ch}#{schema[column]._dbname}#{escape_ch}"
         return 'id,' + select.join ','
       else
         return 'id'

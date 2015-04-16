@@ -56,24 +56,23 @@ class SQLite3Adapter extends SQLAdapterBase
     for column, property of model_class._schema
       column_sql = _propertyToSQL property
       if column_sql
-        sql.push property._dbname + ' ' + column_sql
+        sql.push "\"#{property._dbname}\" #{column_sql}"
     for integrity in model_class._integrities
       if integrity.type is 'child_nullify'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE SET NULL"
+        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE SET NULL"
       else if integrity.type is 'child_restrict'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE RESTRICT"
+        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE RESTRICT"
       else if integrity.type is 'child_delete'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE CASCADE"
-    sql = "CREATE TABLE #{tableName} ( #{sql.join ','} )"
+        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE CASCADE"
+    sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
     @_query 'run', sql, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       async.forEach model_class._indexes, (index, callback) =>
         columns = []
         for column, order of index.columns
-          order = if order is -1 then 'DESC' else 'ASC'
-          columns.push column + ' ' + order
+          columns.push "\"#{column}\" #{if order is -1 then 'DESC' else 'ASC'}"
         unique = if index.options.unique then 'UNIQUE ' else ''
-        sql = "CREATE #{unique}INDEX #{index.options.name} ON #{tableName} (#{columns.join ','})"
+        sql = "CREATE #{unique}INDEX \"#{index.options.name}\" ON \"#{tableName}\" (#{columns.join ','})"
         @_query 'run', sql, callback
       , (error) ->
         return callback SQLite3Adapter.wrapError 'unknown error', error if error
@@ -91,7 +90,7 @@ class SQLite3Adapter extends SQLAdapterBase
   ## @override AdapterBase::drop
   drop: (model, callback) ->
     tableName = @_connection.models[model].tableName
-    @_query 'run', "DROP TABLE IF EXISTS #{tableName}", (error) ->
+    @_query 'run', "DROP TABLE IF EXISTS \"#{tableName}\"", (error) ->
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       callback null
 
@@ -122,17 +121,17 @@ class SQLite3Adapter extends SQLAdapterBase
     value = data[dbname]
     if value?.$inc
       values.push value.$inc
-      fields.push dbname + '=' + dbname + '+?'
+      fields.push "\"#{dbname}\"=\"#{dbname}\"+?"
     else
       if property.type_class is types.Date
         values.push value?.getTime()
       else
         values.push value
       if insert
-        fields.push dbname
+        fields.push "\"#{dbname}\""
         places.push '?'
       else
-        fields.push dbname + '=?'
+        fields.push "\"#{dbname}\"=?"
 
   _buildUpdateSet: (model, data, values, insert) ->
     schema = @_connection.models[model]._schema
@@ -156,7 +155,7 @@ class SQLite3Adapter extends SQLAdapterBase
     tableName = @_connection.models[model].tableName
     values = []
     [ fields, places ] = @_buildUpdateSet model, data, values, true
-    sql = "INSERT INTO #{tableName} (#{fields}) VALUES (#{places})"
+    sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES (#{places})"
     @_query 'run', sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null, @lastID
@@ -170,7 +169,7 @@ class SQLite3Adapter extends SQLAdapterBase
     data.forEach (item) =>
       [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
       places.push '(' + places_sub + ')'
-    sql = "INSERT INTO #{tableName} (#{fields}) VALUES #{places.join ','}"
+    sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES #{places.join ','}"
     @_query 'run', sql, values, (error) ->
       return _processSaveError error, callback if error
       if id = @lastID
@@ -185,7 +184,7 @@ class SQLite3Adapter extends SQLAdapterBase
     values = []
     [ fields ] = @_buildUpdateSet model, data, values
     values.push data.id
-    sql = "UPDATE #{tableName} SET #{fields} WHERE id=?"
+    sql = "UPDATE \"#{tableName}\" SET #{fields} WHERE id=?"
     @_query 'run', sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null
@@ -195,7 +194,7 @@ class SQLite3Adapter extends SQLAdapterBase
     tableName = @_connection.models[model].tableName
     values = []
     [ fields ] = @_buildPartialUpdateSet model, data, values
-    sql = "UPDATE #{tableName} SET #{fields}"
+    sql = "UPDATE \"#{tableName}\" SET #{fields}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
@@ -209,7 +208,7 @@ class SQLite3Adapter extends SQLAdapterBase
   findById: (model, id, options, callback) ->
     select = @_buildSelect @_connection.models[model], options.select
     tableName = @_connection.models[model].tableName
-    sql = "SELECT #{select} FROM #{tableName} WHERE id=? LIMIT 1"
+    sql = "SELECT #{select} FROM \"#{tableName}\" WHERE id=? LIMIT 1"
     if options.explain
       return @_query 'all', "EXPLAIN QUERY PLAN #{sql}", id, (error, result) ->
         return callback error if error
@@ -234,7 +233,7 @@ class SQLite3Adapter extends SQLAdapterBase
       select = @_buildSelect @_connection.models[model], options.select
     tableName = @_connection.models[model].tableName
     params = []
-    sql = "SELECT #{select} FROM #{tableName}"
+    sql = "SELECT #{select} FROM \"#{tableName}\""
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
@@ -250,9 +249,9 @@ class SQLite3Adapter extends SQLAdapterBase
     if options?.orders.length > 0
       orders = options.orders.map (order) ->
         if order[0] is '-'
-          return order[1..] + ' DESC'
+          return "\"#{order[1..]}\" DESC"
         else
-          return order + ' ASC'
+          return "\"#{order}\" ASC"
       sql += ' ORDER BY ' + orders.join ','
     if options?.limit?
       sql += ' LIMIT ' + options.limit
@@ -278,7 +277,7 @@ class SQLite3Adapter extends SQLAdapterBase
   count: (model, conditions, callback) ->
     params = []
     tableName = @_connection.models[model].tableName
-    sql = "SELECT COUNT(*) AS count FROM #{tableName}"
+    sql = "SELECT COUNT(*) AS count FROM \"#{tableName}\""
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
@@ -294,7 +293,7 @@ class SQLite3Adapter extends SQLAdapterBase
   delete: (model, conditions, callback) ->
     params = []
     tableName = @_connection.models[model].tableName
-    sql = "DELETE FROM #{tableName}"
+    sql = "DELETE FROM \"#{tableName}\""
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params

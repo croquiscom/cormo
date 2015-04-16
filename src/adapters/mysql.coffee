@@ -39,6 +39,7 @@ class MySQLAdapter extends SQLAdapterBase
   support_geopoint: true
   support_string_type_with_length: true
   native_integrity: true
+  _escape_ch: '`'
 
   ##
   # Creates a MySQL adapter
@@ -57,22 +58,21 @@ class MySQLAdapter extends SQLAdapterBase
     for column, property of model_class._schema
       column_sql = _propertyToSQL property
       if column_sql
-        sql.push property._dbname + ' ' + column_sql
+        sql.push "`#{property._dbname}` #{column_sql}"
     for index in model_class._indexes
       columns = []
       for column, order of index.columns
-        order = if order is -1 then 'DESC' else 'ASC'
-        columns.push column + ' ' + order
+        columns.push "`#{column}` #{if order is -1 then 'DESC' else 'ASC'}"
       unique = if index.options.unique then 'UNIQUE ' else ''
-      sql.push "#{unique}INDEX #{index.options.name} (#{columns.join ','})"
+      sql.push "#{unique}INDEX `#{index.options.name}` (#{columns.join ','})"
     for integrity in model_class._integrities
       if integrity.type is 'child_nullify'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE SET NULL"
+        sql.push "FOREIGN KEY (`#{integrity.column}`) REFERENCES `#{integrity.parent.tableName}`(id) ON DELETE SET NULL"
       else if integrity.type is 'child_restrict'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE RESTRICT"
+        sql.push "FOREIGN KEY (`#{integrity.column}`) REFERENCES `#{integrity.parent.tableName}`(id) ON DELETE RESTRICT"
       else if integrity.type is 'child_delete'
-        sql.push "FOREIGN KEY (#{integrity.column}) REFERENCES #{integrity.parent.tableName}(id) ON DELETE CASCADE"
-    sql = "CREATE TABLE #{tableName} ( #{sql.join ','} )"
+        sql.push "FOREIGN KEY (`#{integrity.column}`) REFERENCES `#{integrity.parent.tableName}`(id) ON DELETE CASCADE"
+    sql = "CREATE TABLE `#{tableName}` ( #{sql.join ','} )"
     @_query sql, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
@@ -84,7 +84,7 @@ class MySQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::applySchema
   applySchema: (model, callback) ->
     tableName = @_connection.models[model].tableName
-    @_query "SHOW COLUMNS FROM #{tableName}", (error, columns) =>
+    @_query "SHOW COLUMNS FROM `#{tableName}`", (error, columns) =>
       if error?.code is 'ER_NO_SUCH_TABLE'
         @_createTable model, callback
       else
@@ -93,7 +93,7 @@ class MySQLAdapter extends SQLAdapterBase
   ## @override AdapterBase::drop
   drop: (model, callback) ->
     tableName = @_connection.models[model].tableName
-    @_query "DROP TABLE IF EXISTS #{tableName}", (error) ->
+    @_query "DROP TABLE IF EXISTS `#{tableName}`", (error) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
 
@@ -130,20 +130,20 @@ class MySQLAdapter extends SQLAdapterBase
       values.push value[0]
       values.push value[1]
       if insert
-        fields.push dbname
+        fields.push "`#{dbname}`"
         places.push 'POINT(?,?)'
       else
-        fields.push dbname + '=POINT(?,?)'
+        fields.push "`#{dbname}`=POINT(?,?)"
     else if value?.$inc
       values.push value.$inc
-      fields.push dbname + '=' + dbname + '+?'
+      fields.push "`#{dbname}`=`#{dbname}`+?"
     else
       values.push value
       if insert
-        fields.push dbname
+        fields.push "`#{dbname}`"
         places.push '?'
       else
-        fields.push dbname + '=?'
+        fields.push "`#{dbname}`=?"
 
   _buildUpdateSet: (model, data, values, insert) ->
     schema = @_connection.models[model]._schema
@@ -167,7 +167,7 @@ class MySQLAdapter extends SQLAdapterBase
     tableName = @_connection.models[model].tableName
     values = []
     [ fields, places ] = @_buildUpdateSet model, data, values, true
-    sql = "INSERT INTO #{tableName} (#{fields}) VALUES (#{places})"
+    sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES (#{places})"
     @_query sql, values, (error, result) ->
       return _processSaveError error, callback if error
       if id = result?.insertId
@@ -184,7 +184,7 @@ class MySQLAdapter extends SQLAdapterBase
     data.forEach (item) =>
       [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
       places.push '(' + places_sub + ')'
-    sql = "INSERT INTO #{tableName} (#{fields}) VALUES #{places.join ','}"
+    sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES #{places.join ','}"
     @_query sql, values, (error, result) ->
       return _processSaveError error, callback if error
       if id = result?.insertId
@@ -198,7 +198,7 @@ class MySQLAdapter extends SQLAdapterBase
     values = []
     [ fields ] = @_buildUpdateSet model, data, values
     values.push data.id
-    sql = "UPDATE #{tableName} SET #{fields} WHERE id=?"
+    sql = "UPDATE `#{tableName}` SET #{fields} WHERE id=?"
     @_query sql, values, (error) ->
       return _processSaveError error, callback if error
       callback null
@@ -208,7 +208,7 @@ class MySQLAdapter extends SQLAdapterBase
     tableName = @_connection.models[model].tableName
     values = []
     [ fields ] = @_buildPartialUpdateSet model, data, values
-    sql = "UPDATE #{tableName} SET #{fields}"
+    sql = "UPDATE `#{tableName}` SET #{fields}"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
@@ -224,7 +224,7 @@ class MySQLAdapter extends SQLAdapterBase
     id = @_convertValueType id, @key_type
     select = @_buildSelect @_connection.models[model], options.select
     tableName = @_connection.models[model].tableName
-    sql = "SELECT #{select} FROM #{tableName} WHERE id=? LIMIT 1"
+    sql = "SELECT #{select} FROM `#{tableName}` WHERE id=? LIMIT 1"
     if options.explain
       return @_query "EXPLAIN #{sql}", id, (error, result) ->
         return callback error if error
@@ -248,12 +248,12 @@ class MySQLAdapter extends SQLAdapterBase
     else
       select = @_buildSelect @_connection.models[model], options.select
     if options.near? and field = Object.keys(options.near)[0]
-      order_by = "#{field}_distance"
+      order_by = "`#{field}_distance`"
       location = options.near[field]
-      select += ",GLENGTH(LINESTRING(#{field},POINT(#{location[0]},#{location[1]}))) AS #{field}_distance"
+      select += ",GLENGTH(LINESTRING(`#{field}`,POINT(#{location[0]},#{location[1]}))) AS `#{field}_distance`"
     params = []
     tableName = @_connection.models[model].tableName
-    sql = "SELECT #{select} FROM #{tableName}"
+    sql = "SELECT #{select} FROM `#{tableName}`"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
@@ -269,9 +269,9 @@ class MySQLAdapter extends SQLAdapterBase
     if options?.orders.length > 0 or order_by
       orders = options.orders.map (order) ->
         if order[0] is '-'
-          return order[1..] + ' DESC'
+          return "`#{order[1..]}` DESC"
         else
-          return order + ' ASC'
+          return "`#{order}` ASC"
       if order_by
         orders.push order_by
       sql += ' ORDER BY ' + orders.join ','
@@ -300,7 +300,7 @@ class MySQLAdapter extends SQLAdapterBase
   count: (model, conditions, callback) ->
     params = []
     tableName = @_connection.models[model].tableName
-    sql = "SELECT COUNT(*) AS count FROM #{tableName}"
+    sql = "SELECT COUNT(*) AS count FROM `#{tableName}`"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
@@ -316,7 +316,7 @@ class MySQLAdapter extends SQLAdapterBase
   delete: (model, conditions, callback) ->
     params = []
     tableName = @_connection.models[model].tableName
-    sql = "DELETE FROM #{tableName}"
+    sql = "DELETE FROM `#{tableName}`"
     if conditions.length > 0
       try
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params

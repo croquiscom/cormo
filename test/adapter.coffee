@@ -1,6 +1,6 @@
 _g = require './support/common'
 
-_dbs = [ 'mysql', 'postgresql' ]
+_dbs = [ 'mysql', 'postgresql', 'sqlite3' ]
 
 _dbs.forEach (db) ->
   return if not _g.db_configs[db]
