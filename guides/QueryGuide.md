@@ -76,10 +76,15 @@ Two or more [[#Query::where]]s mean a logical and.
 </tr>
 
 <tr>
-<td>Containing some text in case insensitive</td>
+<td rowspan='2'>Containing some text in case insensitive</td>
 <td>name: { $contains: 'smi' }</td>
 <td>name LIKE '%smi%'</td>
 <td>{ name: /smi/i }</td>
+</tr>
+<tr>
+<td>name: { $contains: ['smi', 'doe'] }</td>
+<td>name LIKE '%smi%' OR name LIKE '%doe%'</td>
+<td>{ name: { $in: [/smi/i, /doe/i] } }</td>
 </tr>
 
 <tr>
@@ -93,7 +98,7 @@ Two or more [[#Query::where]]s mean a logical and.
 </tr>
 
 <tr>
-<td rowspan='6'>Logical not</td>
+<td rowspan='7'>Logical not</td>
 <td>age: $not: 27</td>
 <td>NOT (age=27) OR age IS NULL</td>
 <td>{ age: { $ne: 27 } }</td>
@@ -107,6 +112,11 @@ Two or more [[#Query::where]]s mean a logical and.
 <td>name: $not: $contains: 'smi'</td>
 <td>NOT (name LIKE '%smi%') OR name IS NULL</td>
 <td>{ name: { $not: /smi/i } }</td>
+</tr>
+<tr>
+<td>name: $not: $contains: ['smi', 'doe']</td>
+<td>NOT (name LIKE '%smi%' OR name LIKE '%doe%') OR name IS NULL</td>
+<td>{ name: { $nin: [/smi/i, /doe/i] } }</td>
 </tr>
 <tr>
 <td>age: $not: $in: [ 10, 20, 30 ]</td>

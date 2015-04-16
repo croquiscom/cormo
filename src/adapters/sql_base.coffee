@@ -73,7 +73,15 @@ class SQLAdapterBase extends AdapterBase
           value = value[sub_key]
         when '$contains'
           op = ' ' + @_contains_op + ' '
-          value = '%' + value[sub_key] + '%'
+          values = value[sub_key]
+          if not Array.isArray values
+            values = [values]
+          if values.length is 0
+            return @_false_value
+          values = values.map (value) =>
+            params.push '%' + value + '%'
+            return column + op + @_param_place_holder params.length
+          return "(#{values.join ' OR '})"
         else
           throw new Error "unknown operator '#{sub_key}'"
     else if value is null

@@ -83,6 +83,18 @@ module.exports = () ->
         _compareUser users[2], name: 'John Doe', age: 27
         done null
 
+  it 'not contains multiple', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.where name: $not: $contains: ['baker', 'doe'], (error, users) ->
+        return done error if error
+        expect(users).to.have.length 3
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        _compareUser users[0], name: 'Alice Jackson', age: 27
+        _compareUser users[1], name: 'Bill Smith', age: 45
+        _compareUser users[2], name: 'Daniel Smith', age: 8
+        done null
+
   it 'not $in', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error

@@ -89,7 +89,16 @@ _buildWhereSingle = (property, key, value, not_op) ->
         key = '_id' if key is 'id'
         return _.object [key], [value]
       when '$contains'
-        value = new RegExp value[sub_key], 'i'
+        if Array.isArray value[sub_key]
+          value = value[sub_key].map (v) ->
+            new RegExp v, 'i'
+          if not_op
+            value = $nin: value
+            not_op = false
+          else
+            value = $in: value
+        else
+          value = new RegExp value[sub_key], 'i'
       when '$in'
         if is_objectid
           value[sub_key] = value[sub_key].map (v) -> _convertValueToObjectID v, key
