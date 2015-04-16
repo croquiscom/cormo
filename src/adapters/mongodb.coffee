@@ -300,7 +300,7 @@ class MongoDBAdapter extends AdapterBase
     id = data.id
     delete data.id
     @_collection(model).update { _id: id }, data, safe: true, (error) ->
-      if error?.code is 11001
+      if error?.code in [11001, 11000]
         key = error.message.match /index: [\w-.]+\$(\w+)_1/
         return callback new Error('duplicated ' + key?[1])
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
@@ -338,7 +338,7 @@ class MongoDBAdapter extends AdapterBase
     if Object.keys(update_ops.$inc).length is 0
       delete update_ops.$inc
     @_collection(model).update conditions, update_ops, safe: true, multi: true, (error, result) ->
-      if error?.code is 11001
+      if error?.code in [11001, 11000]
         key = error.message.match /index: [\w-.]+\$(\w+)_1/
         return callback new Error('duplicated ' + key?[1])
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
