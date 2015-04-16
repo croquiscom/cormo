@@ -1,4 +1,4 @@
-Currently, CORMO supports only near query of 2D location in MongoDB and MySQL.
+Currently, CORMO supports only near query of 2D location in MongoDB, MySQL and PostgreSQL.
 
 ```coffeescript
 class Place extends cormo.Model

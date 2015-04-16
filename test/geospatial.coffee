@@ -1,7 +1,7 @@
 _g = require './support/common'
 {expect} = require 'chai'
 
-_dbs = [ 'mysql', 'mongodb' ]
+_dbs = [ 'mysql', 'mongodb', 'postgresql' ]
 
 _dbs.forEach (db) ->
   return if not _g.db_configs[db]
@@ -31,7 +31,7 @@ _dbs.forEach (db) ->
 
     require('./cases/geospatial')()
 
-_dbs_not = [ 'sqlite3', 'sqlite3_memory', 'postgresql' ]
+_dbs_not = [ 'sqlite3', 'sqlite3_memory' ]
 
 _dbs_not.forEach (db) ->
   return if not _g.db_configs[db]

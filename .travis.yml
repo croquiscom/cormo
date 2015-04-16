@@ -10,7 +10,7 @@ services:
   - redis-server
 
 before_script:
-  - psql -U postgres -c 'create database travis;'
+  - psql -U postgres -c 'create extension postgis; create database travis;'
 
 addons:
   postgresql: 9.3

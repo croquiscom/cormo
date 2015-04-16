@@ -53,7 +53,7 @@ Currently supported [[#types]]:
 * [[#types.Integer]] ('integer')
 * [[#types.Date]] ('date', Date)
 * [[#types.GeoPoint]] ('geopoint')
-    * MySQL, MonogoDB only
+    * MySQL, MonogoDB, PostgreSQL only
 * [[#types.Object]] ('object', Object)
     * Objects are stored as a JSON string in SQL adapters.
 

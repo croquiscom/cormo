@@ -17,6 +17,7 @@ _typeToSQL = (property) ->
     when types.Number then 'DOUBLE PRECISION'
     when types.Boolean then 'BOOLEAN'
     when types.Integer then 'INT'
+    when types.GeoPoint then 'GEOMETRY(POINT)'
     when types.Date then 'TIMESTAMP WITHOUT TIME ZONE'
     when types.Object then 'JSON'
 
@@ -36,6 +37,7 @@ _propertyToSQL = (property) ->
 # @namespace adapter
 class PostgreSQLAdapter extends SQLAdapterBase
   key_type: types.Integer
+  support_geopoint: true
   support_string_type_with_length: true
   native_integrity: true
   _param_place_holder: (pos) -> '$' + pos
@@ -125,10 +127,35 @@ class PostgreSQLAdapter extends SQLAdapterBase
       error = PostgreSQLAdapter.wrapError 'unknown error', error
     callback error
 
+  _buildSelect: (model_class, select) ->
+    if not select
+      select = Object.keys(model_class._schema)
+    if select.length>0
+      schema = model_class._schema
+      escape_ch = @_escape_ch
+      select = select.map (column) ->
+        property = schema[column]
+        column = escape_ch + schema[column]._dbname + escape_ch
+        if property.type_class is types.GeoPoint
+          "ARRAY[ST_X(#{column}), ST_Y(#{column})] AS #{column}"
+        else
+          column
+      return 'id,' + select.join ','
+    else
+      return 'id'
+
   _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
     dbname = property._dbname
     value = data[dbname]
-    if value?.$inc
+    if property.type_class is types.GeoPoint
+      values.push value[0]
+      values.push value[1]
+      if insert
+        fields.push "\"#{dbname}\""
+        places.push "ST_Point($#{values.length-1}, $#{values.length})"
+      else
+        fields.push "\"#{dbname}\"=ST_Point($#{values.length-1}, $#{values.length})"
+    else if value?.$inc
       values.push value.$inc
       fields.push "\"#{dbname}\"=\"#{dbname}\"+$#{values.length}"
     else
@@ -242,6 +269,10 @@ class PostgreSQLAdapter extends SQLAdapterBase
       select = @_buildGroupFields options.group_by, options.group_fields
     else
       select = @_buildSelect @_connection.models[model], options.select
+    if options.near? and field = Object.keys(options.near)[0]
+      order_by = "\"#{field}_distance\""
+      location = options.near[field]
+      select += ",ST_Distance(\"#{field}\",ST_Point(#{location[0]},#{location[1]})) AS \"#{field}_distance\""
     params = []
     tableName = @_connection.models[model].tableName
     sql = "SELECT #{select} FROM \"#{tableName}\""
@@ -257,12 +288,14 @@ class PostgreSQLAdapter extends SQLAdapterBase
         sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
       catch e
         return callback e
-    if options?.orders.length > 0
+    if options?.orders.length > 0 or order_by
       orders = options.orders.map (order) ->
         if order[0] is '-'
           return "\"#{order[1..]}\" DESC"
         else
           return "\"#{order}\" ASC"
+      if order_by
+        orders.push order_by
       sql += ' ORDER BY ' + orders.join ','
     if options?.limit?
       sql += ' LIMIT ' + options.limit
