@@ -11,21 +11,25 @@ exports.String = class CormoTypesString
     if not(@ instanceof CormoTypesString)
       return new CormoTypesString length
     @length = length
+  toString: -> if @length then "string(#{@length})" else 'string'
 
 ##
 # Represents a double-precision floating-point, used in model schemas.
 # @memberOf types
 exports.Number = class CormoTypesNumber
+  toString: -> 'number'
 
 ##
 # Represents a boolean, used in model schemas.
 # @memberOf types
 exports.Boolean = class CormoTypesBoolean
+  toString: -> 'boolean'
 
 ##
 # Represents a 32bit integer, used in model schemas.
 # @memberOf types
 exports.Integer = class CormoTypesInteger
+  toString: -> 'integer'
 
 ##
 # Represents a two-dimensional point, used in model schemas.
@@ -33,11 +37,13 @@ exports.Integer = class CormoTypesInteger
 # This type is supported only in MongoDB and MySQL.
 # @memberOf types
 exports.GeoPoint = class CormoTypesGeoPoint
+  toString: -> 'geopoint'
 
 ##
 # Represents a date, used in model schemas.
 # @memberOf types
 exports.Date = class CormoTypesDate
+  toString: -> 'date'
 
 ##
 # Represents a general object, used in model schemas.
@@ -46,11 +52,13 @@ exports.Date = class CormoTypesDate
 # if the adapter does not support a general object.
 # @memberOf types
 exports.Object = class CormoTypesObject
+  toString: -> 'object'
 
 ##
 # Represents a record id, used in model schemas.
 # @memberOf types
 exports.RecordID = class CormoTypesRecordID
+  toString: -> 'recordid'
 
 ##
 # Converts JavaScript built-in class to CORMO type
