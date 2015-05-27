@@ -90,7 +90,7 @@ evalCoffee = (cmd, context, filename, callback) ->
       defer = Promise.defer()
       context.$ = defer.callback
     js = coffee.compile cmd, filename: filename, bare: true
-    result = vm.runInThisContext js, filename
+    result = vm.runInContext js, context, filename
     if defer
       delete context.$
       return defer.promise
@@ -123,7 +123,6 @@ exports.startCoffee = (options) ->
     writer: (object) ->
       util.inspect object, colors: true, depth: options.inspect_depth
     terminal: true
-    useGlobal: true
   addArgCompleterCoffee repl_server
   setupContext repl_server.context, options
   return repl_server
@@ -234,7 +233,6 @@ exports.startJS = (options) ->
     writer: (object) ->
       util.inspect object, colors: true, depth: options.inspect_depth
     terminal: true
-    useGlobal: true
   repl_server.eval = evalJS repl_server.eval
   historyFile = path.join process.env.HOME, '.cormo_history_js' if process.env.HOME
   historyMaxInputSize = 10240
