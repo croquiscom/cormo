@@ -82,6 +82,8 @@ evalCoffee = (cmd, context, filename, callback) ->
   if /^\s*([a-zA-Z_$][0-9a-zA-Z_$]*)\s=/.test cmd
     assign_to = RegExp.$1
 
+  @.rli.pause()
+
   Promise.try ->
     if /[, ]\$$/.test cmd
       # apply defer if command is ended with '$'
@@ -94,11 +96,13 @@ evalCoffee = (cmd, context, filename, callback) ->
       return defer.promise
     else
       return result
-  .then (result) ->
+  .then (result) =>
     if assign_to
       context[assign_to] = result
+    @.rli.resume()
     callback null, result
-  .catch (error) ->
+  .catch (error) =>
+    @.rli.resume()
     callback prettyErrorMessage error, filename, cmd, true
 
 ##
@@ -170,15 +174,19 @@ evalJS = (originalEval) ->
   (cmd, context, filename, callback) ->
     if /^\s*([a-zA-Z_$][0-9a-zA-Z_$]*)\s=/.test cmd
       assign_to = RegExp.$1
-    originalEval cmd, context, filename, (error, result) ->
+    @.rli.pause()
+    originalEval cmd, context, filename, (error, result) =>
       if error
+        @.rli.resume()
         return callback error
       Promise.resolve result
-      .then (result) ->
+      .then (result) =>
         if assign_to
           context[assign_to] = result
+        @.rli.resume()
         callback null, result
-      .catch (error) ->
+      .catch (error) =>
+        @.rli.resume()
         callback error
 
 addArgCompleterJS = (repl_server) ->
