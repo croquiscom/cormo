@@ -42,6 +42,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
   native_integrity: true
   _param_place_holder: (pos) -> '$' + pos
   _contains_op: 'ILIKE'
+  _regexp_op: '~*'
 
   ##
   # Creates a PostgreSQL adapter

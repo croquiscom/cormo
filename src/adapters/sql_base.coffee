@@ -7,6 +7,7 @@ types = require '../types'
 class SQLAdapterBase extends AdapterBase
   _param_place_holder: (pos) -> '?'
   _contains_op: 'LIKE'
+  _regexp_op: 'REGEXP'
   _false_value: 'FALSE'
   _escape_ch: '"'
 
@@ -84,6 +85,11 @@ class SQLAdapterBase extends AdapterBase
           return "(#{values.join ' OR '})"
         else
           throw new Error "unknown operator '#{sub_key}'"
+    else if value instanceof RegExp
+      if not @_regexp_op
+        throw new Error 'regular expression is not supported'
+      op = ' ' + @_regexp_op + ' '
+      value = value.source
     else if value is null
       return "#{column} IS NULL"
 

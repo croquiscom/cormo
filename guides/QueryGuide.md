@@ -88,6 +88,18 @@ Two or more [[#Query::where]]s mean a logical and.
 </tr>
 
 <tr>
+<td rowspan='2'>Regular expression</td>
+<td>name: /smi/</td>
+<td>name REGEXP 'smi'</td>
+<td>{ name: /smi/i }</td>
+</tr>
+<tr>
+<td>name: /smi|doe/</td>
+<td>name REGEXP 'smi|doe'</td>
+<td>{ name: /smi|doe/i }</td>
+</tr>
+
+<tr>
 <td rowspan='2'>Matches any of an array</td>
 <td>age: { $in: [ 10, 20, 30 ] }</td>
 <td rowspan='2'>age IN (10,20,30)</td>

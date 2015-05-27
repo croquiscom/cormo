@@ -146,6 +146,34 @@ module.exports = () ->
         expect(users).to.have.length 0
         done null
 
+  it 'basic regular expression', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.where { name: /smi/ }, (error, users) ->
+        if error
+          if error.message is 'regular expression is not supported'
+            return done null
+          return done error
+        expect(users).to.have.length 2
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        _compareUser users[0], name: 'Bill Smith', age: 45
+        _compareUser users[1], name: 'Daniel Smith', age: 8
+        done null
+
+  it 'complex regular expression', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.where { name: /l{2}|n$/ }, (error, users) ->
+        if error
+          if error.message is 'regular expression is not supported'
+            return done null
+          return done error
+        expect(users).to.have.length 2
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        _compareUser users[0], name: 'Alice Jackson', age: 27
+        _compareUser users[1], name: 'Bill Smith', age: 45
+        done null
+
   it 'count none', (done) ->
     _g.connection.User.count (error, count) ->
       expect(count).to.equal 0

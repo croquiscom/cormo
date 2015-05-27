@@ -106,6 +106,9 @@ _buildWhereSingle = (property, key, value, not_op) ->
         throw new Error "unknown operator '#{sub_key}'"
     if not_op
       value = $not: value
+  else if value instanceof RegExp
+    if not value.ignoreCase
+      value = new RegExp value.source, 'i'
   else
     if is_objectid and value?
       value = _convertValueToObjectID value, key
