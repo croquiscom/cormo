@@ -132,6 +132,7 @@ class Model
     @connection Model._Connection.defaultConnection
 
   @_checkReady: ->
+    @_checkConnection()
     Promise.all [@_connection._checkSchemaApplied(), @_connection._promise_connection]
 
   @_getKeyType: (target_connection = @_connection) ->

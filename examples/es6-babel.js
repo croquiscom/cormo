@@ -7,10 +7,11 @@ import co from "co";
 const connection = new Connection('mysql', {database: 'test'});
 
 class User extends Model {
+  static initialize() {
+    this.column('name', {type:String, required:true});
+    this.column('age', Number);
+  }
 };
-
-User.column('name', {type:String, required:true});
-User.column('age', Number);
 
 co(function* () {
   const user = yield User.create({name: 'croquis', age: 3});

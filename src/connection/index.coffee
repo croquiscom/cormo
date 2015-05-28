@@ -88,8 +88,16 @@ class Connection extends EventEmitter
     return Model.newModel @, name, schema
 
   _checkSchemaApplied: ->
+    @_initializeModels()
     return Promise.resolve() if not @_applying_schemas and not @_schema_changed
     return @applySchemas()
+
+  _initializeModels: ->
+    for model, modelClass of @models
+      if modelClass.initialize and not modelClass._initialize_called
+        modelClass.initialize()
+        modelClass._initializeModels = true
+    return
 
   _checkArchive: ->
     for model, modelClass of @models
@@ -99,6 +107,7 @@ class Connection extends EventEmitter
           @archive: false
           @column 'model', String
           @column 'data', Object
+    return
 
   _getModelNamesByAssociationOrder: ->
     t = new Toposort()
@@ -125,6 +134,7 @@ class Connection extends EventEmitter
   # @see AdapterBase::applySchema
   applySchemas: (callback) ->
     Promise.resolve().then =>
+      @_initializeModels()
       return if not @_schema_changed
 
       @_applyAssociations()
