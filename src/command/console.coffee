@@ -1,6 +1,7 @@
 commander = require 'commander'
 cormo_console = require '../util/console'
 {resolve} = require 'path'
+net = require 'net'
 
 ##
 # CORMO console
@@ -13,11 +14,14 @@ class CommandConsole
     program.usage 'console [options]'
     .option '-l, --load <path>', 'load specified module'
     .option '-d, --inspect-depth <depth>', 'specify depth for util.inspect'
+    .option '-s, --serve <port>', 'serve console at port'
     .option '--javascript', 'using JavaScript instead of CoffeeScript'
     .on 'load', (path) ->
       loads.push path
     .on 'inspect-depth', (depth) =>
       @inspect_depth = depth
+    .on 'serve', (port) =>
+      @serve_port = port
     .on 'javascript', =>
       @language = 'javascript'
     program.help() if argv.indexOf('--help') >= 0 || argv.indexOf('-h') >= 0
@@ -51,6 +55,12 @@ class CommandConsole
   ##
   # Starts a CoffeeScript console
   startCoffee: ->
+    if @serve_port
+      server = net.createServer (socket) =>
+        cormo_console.startCoffee inspect_depth: @inspect_depth, socket: socket
+        .on 'exit', ->
+          socket.end()
+      .listen @serve_port
     cormo_console.startCoffee inspect_depth: @inspect_depth
     .on 'exit', ->
       process.exit 0
@@ -58,6 +68,12 @@ class CommandConsole
   ##
   # Starts a JavaScript console
   startJS: ->
+    if @serve_port
+      server = net.createServer (socket) =>
+        cormo_console.startJS inspect_depth: @inspect_depth, socket: socket
+        .on 'exit', ->
+          socket.end()
+      .listen @serve_port
     cormo_console.startJS inspect_depth: @inspect_depth
     .on 'exit', ->
       process.exit 0
