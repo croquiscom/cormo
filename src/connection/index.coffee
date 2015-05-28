@@ -63,9 +63,9 @@ class Connection extends EventEmitter
 
     @_adapter = Promise.promisifyAll require(__dirname + '/../adapters/' + adapter_name) @
     @_promise_connection = @_adapter.connectAsync settings
-    .then ->
+    .then =>
       @connected = true
-    .catch (error) ->
+    .catch (error) =>
       @_adapter = null
       Promise.reject error
 
