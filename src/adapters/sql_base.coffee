@@ -170,4 +170,26 @@ class SQLAdapterBase extends AdapterBase
     else
       return '*'
 
+  ## @override AdapterBase::upsert
+  upsert: (model, data, conditions, options, callback) ->
+    @updatePartial model, data, conditions, options, (error, count) =>
+      return callback error if error
+      return callback null if count > 0
+
+      insert_data = {}
+      for key, value of data
+        if value?.$inc
+          insert_data[key] = value.$inc
+        else
+          insert_data[key] = value
+      for condition in conditions
+        for key, value of condition
+          insert_data[key] = value
+      @create model, insert_data, (error) =>
+        return callback null if not error
+        return callback error if not /duplicated/.test error.message
+
+        @updatePartial model, data, conditions, options, (error, count) =>
+          callback error
+
 module.exports = SQLAdapterBase

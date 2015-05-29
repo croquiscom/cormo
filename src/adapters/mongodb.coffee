@@ -347,6 +347,32 @@ class MongoDBAdapter extends AdapterBase
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null, result.result.n
 
+  ## @override AdapterBase::upsert
+  upsert: (model, data, conditions, options, callback) ->
+    schema = @_connection.models[model]._schema
+    try
+      conditions = _buildWhere schema, conditions
+    catch e
+      return callback e
+    if not conditions
+      conditions = {}
+    update_ops = $set: {}, $unset: {}, $inc: {}
+    for key, value of conditions
+      update_ops.$set[key] = value
+    @_buildUpdateOps schema, update_ops, data, '', data
+    if Object.keys(update_ops.$set).length is 0
+      delete update_ops.$set
+    if Object.keys(update_ops.$unset).length is 0
+      delete update_ops.$unset
+    if Object.keys(update_ops.$inc).length is 0
+      delete update_ops.$inc
+    @_collection(model).update conditions, update_ops, safe: true, upsert: true, (error, result) ->
+      if error?.code in [11001, 11000]
+        key = error.message.match /index: [\w-.]+\$(\w+)_1/
+        return callback new Error('duplicated ' + key?[1])
+      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      callback null
+
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
     if options.select

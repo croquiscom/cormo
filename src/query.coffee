@@ -395,6 +395,28 @@ class Query
       @_adapter.updatePartialAsync @_name, data, @_conditions, @_options
     .nodeify bindDomain callback
 
+  ##
+  # Executes the query as an insert or update operation
+  # @param {Object} updates
+  # @return {Number}
+  # @promise
+  # @nodejscallback
+  # @see AdapterBase::count
+  upsert: (updates, callback) ->
+    @_model._checkReady().then =>
+      errors = []
+      data = {}
+      @_validateAndBuildSaveData errors, data, updates, '', updates
+      if errors.length > 0
+        return Promise.reject new Error errors.join ','
+
+      if @_id or @_find_single_id
+        @_conditions.push id: @_id
+        delete @_id
+      @_connection.log @_name, 'upsert', data: data, conditions: @_conditions, options: @_options
+      @_adapter.upsertAsync @_name, data, @_conditions, @_options
+    .nodeify bindDomain callback
+
   _doIntegrityActions: (integrities, ids) ->
     promises = integrities.map (integrity) =>
       if integrity.type is 'parent_nullify'

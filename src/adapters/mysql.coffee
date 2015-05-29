@@ -219,6 +219,30 @@ class MySQLAdapter extends SQLAdapterBase
       return callback MySQLAdapter.wrapError 'unknown error' if not result?
       callback null, result.affectedRows
 
+  ## @override AdapterBase::upsert
+  upsert: (model, data, conditions, options, callback) ->
+    tableName = @_connection.models[model].tableName
+
+    insert_data = {}
+    for key, value of data
+      if value?.$inc
+        insert_data[key] = value.$inc
+      else
+        insert_data[key] = value
+    for condition in conditions
+      for key, value of condition
+        insert_data[key] = value
+    values = []
+    [ fields, places ] = @_buildUpdateSet model, insert_data, values, true
+    sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES (#{places})"
+
+    [ fields ] = @_buildPartialUpdateSet model, data, values
+    sql += " ON DUPLICATE KEY UPDATE #{fields}"
+
+    @_query sql, values, (error, result) ->
+      return _processSaveError error, callback if error
+      callback null
+
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->
     id = @_convertValueType id, @key_type

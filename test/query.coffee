@@ -10,11 +10,11 @@ _dbs.forEach (db) ->
 
       if _g.use_coffeescript_class
         class User extends _g.Model
-          @column 'name', String
+          @column 'name', type: String, unique: true
           @column 'age', Number
       else
         User = _g.connection.model 'User',
-          name: String
+          name: type: String, unique: true
           age: Number
 
       _g.connection.dropAllModels done
@@ -36,3 +36,5 @@ _dbs.forEach (db) ->
       require('./cases/query_null')()
     describe '#update', ->
       require('./cases/query_update')()
+    describe '#upsert', ->
+      require('./cases/query_upsert')()

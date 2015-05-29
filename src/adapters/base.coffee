@@ -140,6 +140,16 @@ class AdapterBase
   updatePartial: (model, data, conditions, options, callback) -> callback new Error 'not implemented'
 
   ##
+  # Updates some fields of records that match conditions or inserts a new record
+  # @abstract
+  # @param {String} model
+  # @param {Object} data
+  # @param {Object} conditions
+  # @param {Object} options
+  # @nodejscallback
+  upsert: (model, data, conditions, options, callback) -> callback new Error 'not implemented'
+
+  ##
   # Finds a record by id
   # @abstract
   # @param {String} model
