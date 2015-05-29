@@ -347,7 +347,7 @@ class Query
       if @_id or @_find_single_id
         @_conditions.push id: @_id
         delete @_id
-      @_adapter.countAsync @_name, @_conditions
+      @_adapter.countAsync @_name, @_conditions, @_options
     .nodeify bindDomain callback
 
   ##

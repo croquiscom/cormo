@@ -321,7 +321,7 @@ class MySQLAdapter extends SQLAdapterBase
           callback null, result.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
 
   ## @override AdapterBase::count
-  count: (model, conditions, callback) ->
+  count: (model, conditions, options, callback) ->
     params = []
     tableName = @_connection.models[model].tableName
     sql = "SELECT COUNT(*) AS count FROM `#{tableName}`"
@@ -330,10 +330,18 @@ class MySQLAdapter extends SQLAdapterBase
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
       catch e
         return callback e
+    if options.group_by
+      sql += ' GROUP BY ' + options.group_by.join ','
+      if options.conditions_of_group.length > 0
+        try
+          sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
+        catch e
+          return callback e
+      sql = "SELECT COUNT(*) AS count FROM (#{sql}) _sub"
     #console.log sql, params
     @_query sql, params, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
-      return callback error 'unknown error' if result?.length isnt 1
+      return callback new Error 'unknown error' if result?.length isnt 1
       callback null, Number(result[0].count)
 
   ## @override AdapterBase::delete

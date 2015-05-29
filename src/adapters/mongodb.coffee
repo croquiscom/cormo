@@ -484,15 +484,28 @@ class MongoDBAdapter extends AdapterBase
             callback null, result.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
 
   ## @override AdapterBase::count
-  count: (model, conditions, callback) ->
+  count: (model, conditions, options, callback) ->
     try
       conditions = _buildWhere @_connection.models[model]._schema, conditions
     catch e
       return callback e
     #console.log JSON.stringify conditions
-    @_collection(model).count conditions, (error, count) =>
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null, count
+    if options.group_by or options.group_fields
+      pipeline = []
+      if conditions
+        pipeline.push $match: conditions
+      pipeline.push $group: _buildGroupFields options.group_by, options.group_fields
+      if options.conditions_of_group.length > 0
+        pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
+      pipeline.push $group: _id: null, count: $sum: 1
+      @_collection(model).aggregate pipeline, (error, result) =>
+        return callback MongoDBAdapter.wrapError 'unknown error', error if error
+        return callback new Error 'unknown error' if result?.length isnt 1
+        callback null, result[0].count
+    else
+      @_collection(model).count conditions, (error, count) =>
+        return callback MongoDBAdapter.wrapError 'unknown error', error if error
+        callback null, count
 
   ## @override AdapterBase::delete
   delete: (model, conditions, callback) ->

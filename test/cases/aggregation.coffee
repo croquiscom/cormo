@@ -96,3 +96,21 @@ module.exports = ->
       return done error if error
       expect(result).to.not.eql [ {count: 9, total: 155} ]
       done null
+
+  it 'count of group', (done) ->
+    _g.connection.Order.group('customer').count (error, count) ->
+      return done error if error
+      expect(count).to.eql 3
+      done null
+
+  it 'count of group with condition on group column', (done) ->
+    _g.connection.Order.where(customer: $contains: 'smi').group('customer').count (error, count) ->
+      return done error if error
+      expect(count).to.eql 2
+      done null
+
+  it 'count of group with condition on aggregated column', (done) ->
+    _g.connection.Order.group('customer', count: { $sum: 1 }).where(count: $gte: 3).count (error, count) ->
+      return done error if error
+      expect(count).to.eql 2
+      done null

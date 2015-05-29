@@ -177,10 +177,11 @@ class AdapterBase
   # @abstract
   # @param {String} model
   # @param {Object} conditions
+  # @param {Object} options
   # @return {Number}
   # @nodejscallback
   # @see Query::count
-  count: (model, conditions, callback) -> callback new Error 'not implemented'
+  count: (model, conditions, options, callback) -> callback new Error 'not implemented'
 
   ##
   # Deletes records from the database
