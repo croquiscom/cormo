@@ -10,17 +10,23 @@ _dbs.forEach (db) ->
 
       if _g.use_coffeescript_class
         class User extends _g.Model
+          @column 'name', String
+          @column 'age', Number
+        class UserUnique extends _g.Model
           @column 'name', type: String, unique: true
           @column 'age', Number
       else
         User = _g.connection.model 'User',
+          name: String
+          age: Number
+        UserUnique = _g.connection.model 'UserUnique',
           name: type: String, unique: true
           age: Number
 
       _g.connection.dropAllModels done
 
     beforeEach (done) ->
-      _g.deleteAllRecords [_g.connection.User], done
+      _g.deleteAllRecords [_g.connection.User,_g.connection.UserUnique], done
 
     after (done) ->
       _g.connection.dropAllModels ->
