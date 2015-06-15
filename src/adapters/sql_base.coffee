@@ -1,5 +1,6 @@
 AdapterBase = require './base'
 types = require '../types'
+_ = require 'lodash'
 
 ##
 # Base class for SQL adapters
@@ -85,9 +86,7 @@ class SQLAdapterBase extends AdapterBase
           return "(#{values.join ' OR '})"
         else
           throw new Error "unknown operator '#{sub_key}'"
-    else if value?.constructor?.name is 'RegExp'
-      # 'value instanceof RegExp' does not work on the CORMO console because contexts are different
-      # so I used constructor.name
+    else if _.isRegExp value
       if not @_regexp_op
         throw new Error 'regular expression is not supported'
       op = ' ' + @_regexp_op + ' '
