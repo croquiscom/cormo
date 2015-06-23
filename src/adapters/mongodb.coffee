@@ -544,5 +544,10 @@ class MongoDBAdapter extends AdapterBase
       @_client.close()
     @_client = null
 
+  ##
+  # Exposes mongodb module's a collection object
+  collection: (model) ->
+    @_collection model
+
 module.exports = (connection) ->
   new MongoDBAdapter connection
