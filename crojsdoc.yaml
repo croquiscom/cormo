@@ -3,6 +3,7 @@ quite: true
 files: true
 external-types:
   EventEmitter: http://nodejs.org/api/events.html#events_class_events_eventemitter
+  Readable: https://nodejs.org/api/stream.html#stream_class_stream_readable
   Class: http://coffeescript.org/#classes
   StringMap: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object
   RedisClient: https://github.com/mranney/node_redis

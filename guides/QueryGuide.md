@@ -261,6 +261,26 @@ User.where({age: 27}).one().exec(function (error, user) {
 });
 ```
 
+## Stream the result
+
+If the result has many records, you can use Node.js stream API to reduce memory usage.
+
+```coffeescript
+count = 0
+User.where(age: 27).stream()
+.on 'data', (user) ->
+  count++
+.on 'end', ->
+```
+```javascript
+count = 0;
+User.where({age: 27}).stream()
+.on('data', function (user) {
+  count++;
+}).on('end', function () {
+});
+```
+
 # Count records
 
 [[#Query::count]] returns the count of records.
