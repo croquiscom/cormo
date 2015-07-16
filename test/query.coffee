@@ -44,3 +44,5 @@ _dbs.forEach (db) ->
       require('./cases/query_update')()
     describe '#upsert', ->
       require('./cases/query_upsert')()
+    describe '#stream', ->
+      require('./cases/query_stream')()

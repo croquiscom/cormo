@@ -4,10 +4,14 @@ catch e
   console.log 'Install pg module to use this adapter'
   process.exit 1
 
+try
+  QueryStream = require 'pg-query-stream'
+
 SQLAdapterBase = require './sql_base'
 types = require '../types'
 async = require 'async'
 _ = require 'lodash'
+stream = require 'stream'
 
 _typeToSQL = (property) ->
   if property.array
@@ -264,8 +268,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       else
         callback new Error 'not found'
 
-  ## @override AdapterBase::find
-  find: (model, conditions, options, callback) ->
+  _buildSqlForFind: (model, conditions, options) ->
     if options.group_by or options.group_fields
       select = @_buildGroupFields options.group_by, options.group_fields
     else
@@ -278,17 +281,11 @@ class PostgreSQLAdapter extends SQLAdapterBase
     tableName = @_connection.models[model].tableName
     sql = "SELECT #{select} FROM \"#{tableName}\""
     if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-      catch e
-        return callback e
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     if options.group_by
       sql += ' GROUP BY ' + options.group_by.join ','
     if options.conditions_of_group.length > 0
-      try
-        sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
-      catch e
-        return callback e
+      sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
     if options?.orders.length > 0 or order_by
       orders = options.orders.map (order) ->
         if order[0] is '-'
@@ -304,6 +301,14 @@ class PostgreSQLAdapter extends SQLAdapterBase
     else if options?.skip?
       sql += ' LIMIT ALL OFFSET ' + options.skip
     #console.log sql, params
+    [sql, params]
+
+  ## @override AdapterBase::find
+  find: (model, conditions, options, callback) ->
+    try
+      [sql, params] = @_buildSqlForFind model, conditions, options
+    catch e
+      return callback e
     if options.explain
       return @_query "EXPLAIN #{sql}", params, (error, result) ->
         return callback error if error
@@ -318,6 +323,28 @@ class PostgreSQLAdapter extends SQLAdapterBase
           callback null, rows.map (record) => @_refineRawInstance model, record, options.select, options.select_raw
         else
           callback null, rows.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
+
+  ## @override AdapterBase::stream
+  stream: (model, conditions, options, callback) ->
+    if not QueryStream
+      console.log 'Install pg-query-stream module to use stream'
+      process.exit 1
+    try
+      [sql, params] = @_buildSqlForFind model, conditions, options
+    catch e
+      readable = new stream.Readable objectMode: true
+      readable._read = ->
+        readable.emit 'error', e
+      return readable
+    transformer = new stream.Transform objectMode: true
+    transformer._transform = (record, encoding, callback) =>
+      transformer.push @_convertToModelInstance model, record, options.select, options.select_raw
+      callback()
+    @_client.query new QueryStream sql, params
+    .on 'error', (error) ->
+      transformer.emit 'error', error
+    .pipe transformer
+    transformer
 
   ## @override AdapterBase::count
   count: (model, conditions, options, callback) ->

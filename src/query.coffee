@@ -1,6 +1,7 @@
 _ = require 'lodash'
 {bindDomain} = require './util'
 Promise = require 'bluebird'
+stream = require 'stream'
 
 ##
 # Collects conditions to query
@@ -316,6 +317,25 @@ class Query
       else
         @_execAndInclude options
     .nodeify bindDomain callback
+
+  ##
+  # Executes the query and returns a readable stream
+  # @param {Object} [options]
+  # @param {Boolean} [options.skip_log=false]
+  # @return {Readable}
+  # @see AdapterBase::findById
+  # @see AdapterBase::find
+  stream: ->
+    transformer = new stream.Transform objectMode: true
+    transformer._transform = (chunk, encoding, callback) ->
+      @push chunk
+      callback()
+    @_model._checkReady().then =>
+      @_adapter.stream(@_name, @_conditions, @_options)
+      .on 'error', (error) ->
+        transformer.emit 'error', error
+      .pipe transformer
+    transformer
 
   ##
   # Explains the query

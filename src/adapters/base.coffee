@@ -1,4 +1,5 @@
 async = require 'async'
+stream = require 'stream'
 types = require '../types'
 util = require '../util'
 
@@ -171,6 +172,20 @@ class AdapterBase
   # @nodejscallback
   # @see Query::exec
   find: (model, conditions, options, callback) -> callback new Error 'not implemented'
+
+  ##
+  # Streams matching records
+  # @abstract
+  # @param {String} model
+  # @param {Object} conditions
+  # @param {Object} options
+  # @return {Readable}
+  # @see Query::stream
+  stream: (model, conditions, options) ->
+    readable = new stream.Readable objectMode: true
+    readable._read = ->
+      readable.emit 'error', new Error 'not implemented'
+    readable
 
   ##
   # Counts records

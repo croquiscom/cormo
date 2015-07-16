@@ -11,6 +11,7 @@ class CormoTypesObjectId
 _ = require 'lodash'
 AdapterBase = require './base'
 async = require 'async'
+stream = require 'stream'
 types = require '../types'
 
 _convertValueToObjectID = (value, key) ->
@@ -409,15 +410,11 @@ class MongoDBAdapter extends AdapterBase
       else
         callback null, @_convertToModelInstance model, result, options.select, options.select_raw
 
-  ## @override AdapterBase::find
-  find: (model, conditions, options, callback) ->
+  _buildConditionsForFind: (model, conditions, options) ->
     if options.select
       fields = {}
       options.select.forEach (column) -> fields[column] = 1
-    try
-      conditions = _buildWhere @_connection.models[model]._schema, conditions
-    catch e
-      return callback e
+    conditions = _buildWhere @_connection.models[model]._schema, conditions
     if options.near? and field = Object.keys(options.near)[0]
       # MongoDB fails if $near is mixed with $and
       keys = Object.keys conditions if conditions
@@ -448,6 +445,21 @@ class MongoDBAdapter extends AdapterBase
           if column is 'id'
             column = '_id'
         orders[column] = dir
+    client_options =
+      limit: options.limit
+      skip: options.skip
+    if fields
+      client_options.fields = fields
+    if orders
+      client_options.sort = orders
+    [conditions, fields, orders, client_options]
+
+  ## @override AdapterBase::find
+  find: (model, conditions, options, callback) ->
+    try
+      [conditions, fields, orders, client_options] = @_buildConditionsForFind model, conditions, options
+    catch e
+      return callback e
     #console.log JSON.stringify conditions
     if options.group_by or options.group_fields
       pipeline = []
@@ -471,13 +483,6 @@ class MongoDBAdapter extends AdapterBase
               record[group] = record._id[group] for group in options.group_by
           @_convertToGroupInstance model, record, options.group_by, options.group_fields
     else
-      client_options =
-        limit: options.limit
-        skip: options.skip
-      if fields
-        client_options.fields = fields
-      if orders
-        client_options.sort = orders
       if options.explain
         client_options.explain = true
         return @_collection(model).find conditions, client_options, (error, cursor) ->
@@ -493,6 +498,26 @@ class MongoDBAdapter extends AdapterBase
             callback null, result.map (record) => @_refineRawInstance model, record, options.select, options.select_raw
           else
             callback null, result.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
+
+  ## @override AdapterBase::stream
+  stream: (model, conditions, options) ->
+    try
+      [conditions, fields, orders, client_options] = @_buildConditionsForFind model, conditions, options
+    catch e
+      readable = new stream.Readable objectMode: true
+      readable._read = ->
+        readable.emit 'error', e
+      return readable
+    transformer = new stream.Transform objectMode: true
+    transformer._transform = (record, encoding, callback) =>
+      transformer.push @_convertToModelInstance model, record, options.select, options.select_raw
+      callback()
+    @_collection(model).find conditions, client_options, (error, cursor) ->
+      return transformer.emit 'error', MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
+      cursor.on 'error', (error) ->
+        transformer.emit 'error', error
+      .pipe transformer
+    transformer
 
   ## @override AdapterBase::count
   count: (model, conditions, options, callback) ->
