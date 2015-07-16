@@ -282,6 +282,17 @@ class MongoDBAdapter extends AdapterBase
 
   ## @override AdapterBase::create
   createBulk: (model, data, callback) ->
+    if data.length > 1000
+      chunks = []
+      i = 0
+      while i < data.length
+        chunks.push data.slice i, i+1000
+        i += 1000
+      async.map chunks, (chunk, callback) =>
+        @createBulk model, chunk, callback
+      , (error, records_list) ->
+        return callback error if error
+        callback null, _.flatten records_list
     @_collection(model).insert data, safe: true, (error, result) ->
       if error?.code is 11000
         key = error.message.match /index: [\w-.]+\$(\w+)_1/

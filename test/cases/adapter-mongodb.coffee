@@ -3,6 +3,16 @@ _g = require '../support/common'
 {ObjectId} = require 'mongodb'
 
 module.exports = () ->
+  describe 'issues', ->
+    it 'insert more than 1000', (done) ->
+      class Simple extends _g.Model
+        @column 'value', Number
+      _g.connection.Simple.createBulk [1..1500].map((i) -> value: i), (error, records) ->
+        return done error if error
+        for i in [1..1500]
+          expect(records[i-1]).to.have.property 'value', i
+        done null
+
   describe 'collection', ->
     it 'find', (done) ->
       class User extends _g.Model
