@@ -294,6 +294,7 @@ class MongoDBAdapter extends AdapterBase
       , (error, records_list) ->
         return callback error if error
         callback null, _.flatten records_list
+      return
     @_collection(model).insert data, safe: true, (error, result) ->
       if error?.code is 11000
         key = error.message.match /index: [\w-.]+\$(\w+)_1/
