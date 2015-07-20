@@ -7,6 +7,8 @@ Toposort = require 'toposort-class'
 try
   redis = require 'redis'
 {inspect} = require 'util'
+try
+  deasync = require 'deasync'
 
 ##
 # Manages connection to a database
@@ -160,6 +162,12 @@ class Connection extends EventEmitter
             @_schema_changed = false
       return @_promise_schema_applied
     .nodeify bindDomain callback
+
+  ##
+  # Applies schemas synchronously
+  # @method
+  # @see Connection::applySchemas
+  applySchemasSync: deasync? @::applySchemas
 
   ##
   # Drops all model tables
