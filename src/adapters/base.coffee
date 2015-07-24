@@ -17,13 +17,20 @@ class AdapterBase
     return error
 
   ##
-  # Applies schema.
-  # Creates tables, alter tables, create indexes, or etc. depending adapters
+  # Returns current schemas.
+  # @abstract
+  # @return {Object}
+  # @returnprop {Object} tables
+  # @nodejscallback
+  # @see Connection::applySchemas
+  getSchemas: (callback) -> callback null, tables: []
+
+  ## Creates a table.
   # @abstract
   # @param {String} model
   # @nodejscallback
   # @see Connection::applySchemas
-  applySchema: (model, callback) -> callback null
+  createTable: (model, callback) -> callback null
 
   ##
   # Drops a model from the database

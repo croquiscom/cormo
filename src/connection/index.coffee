@@ -147,12 +147,14 @@ class Connection extends EventEmitter
         @_checkArchive()
 
         @_promise_schema_applied = @_promise_connection.then =>
-          current = Promise.resolve()
-          Promise.all @_getModelNamesByAssociationOrder().reverse().map (model) =>
-            current = current
-            .then =>
-              modelClass = @models[model]
-              @_adapter.applySchemaAsync model
+          return @_adapter.getSchemasAsync()
+          .then (current) =>
+            tables_commands = for model, modelClass of @models
+              if current.tables[modelClass.tableName]
+                console.log model, 'exist'
+              else
+                @_adapter.createTableAsync model
+            Promise.all tables_commands
           .finally =>
             @_applying_schemas = false
             @_schema_changed = false

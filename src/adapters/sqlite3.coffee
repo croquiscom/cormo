@@ -28,8 +28,6 @@ _propertyToSQL = (property) ->
       type += ' NOT NULL'
     else
       type += ' NULL'
-    if property.unique
-      type += ' UNIQUE'
     return type
 
 ##
@@ -50,7 +48,54 @@ class SQLite3Adapter extends SQLAdapterBase
     #console.log 'SQLite3Adapter:', sql
     @_client[method].apply @_client, [].slice.call arguments, 1
 
-  _createTable: (model, callback) ->
+  _getTables: (callback) ->
+    @_query 'all', "SELECT name FROM sqlite_master WHERE type='table'", (error, tables) =>
+      return callback error if error
+      tables = tables.map (table) ->
+        table.name
+      callback null, tables
+
+  _getSchema: (table, callback) ->
+    @_query 'all', "PRAGMA table_info(`#{table}`)", (error, columns) ->
+      return callback error if error
+      schema = {}
+      for column in columns
+        type = if /^varchar\((\d*)\)/i.test column.type
+          new types.String(RegExp.$1)
+        else if /^double/i.test column.type
+          new types.Number()
+        else if /^tinyint/i.test column.type
+          new types.Boolean()
+        else if /^int/i.test column.type
+          new types.Integer()
+        else if /^real/i.test column.type
+          new types.Date()
+        else if /^text/i.test column.type
+          new types.Object()
+        schema[column.name] = type: type, required: column.notnull is 1
+      callback null, schema
+
+  ## @override AdapterBase::getSchemas
+  getSchemas: (callback) ->
+    async.auto
+      get_tables: (callback) =>
+        @_getTables callback
+      get_table_schemas: ['get_tables', (callback, results) =>
+        table_schemas = {}
+        async.each results.get_tables, (table, callback) =>
+          @_getSchema table, (error, schema) ->
+            return callback error if error
+            table_schemas[table] = schema
+            callback null
+        , (error) ->
+          return callback error if error
+          callback null, table_schemas
+      ]
+    , (error, results) ->
+      callback error, tables: results.get_table_schemas
+
+  ## @override AdapterBase::createTable
+  createTable: (model, callback) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
     sql = []
@@ -59,35 +104,10 @@ class SQLite3Adapter extends SQLAdapterBase
       column_sql = _propertyToSQL property
       if column_sql
         sql.push "\"#{property._dbname}\" #{column_sql}"
-    for integrity in model_class._integrities
-      if integrity.type is 'child_nullify'
-        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE SET NULL"
-      else if integrity.type is 'child_restrict'
-        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE RESTRICT"
-      else if integrity.type is 'child_delete'
-        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE CASCADE"
     sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
     @_query 'run', sql, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      async.forEach model_class._indexes, (index, callback) =>
-        columns = []
-        for column, order of index.columns
-          columns.push "\"#{column}\" #{if order is -1 then 'DESC' else 'ASC'}"
-        unique = if index.options.unique then 'UNIQUE ' else ''
-        sql = "CREATE #{unique}INDEX \"#{index.options.name}\" ON \"#{tableName}\" (#{columns.join ','})"
-        @_query 'run', sql, callback
-      , (error) ->
-        return callback SQLite3Adapter.wrapError 'unknown error', error if error
-        callback null
-
-  ## @override AdapterBase::applySchema
-  applySchema: (model, callback) ->
-    tableName = @_connection.models[model].tableName
-    @_query 'all', "SELECT name FROM sqlite_master WHERE type='table' AND name='#{tableName}'", (error, result) =>
-      if result?.length != 1
-        @_createTable model, callback
-      else
-        callback null
+      callback null
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->

@@ -9,8 +9,9 @@ try
 
 SQLAdapterBase = require './sql_base'
 types = require '../types'
-async = require 'async'
+
 _ = require 'lodash'
+async = require 'async'
 stream = require 'stream'
 
 _typeToSQL = (property) ->
@@ -32,8 +33,6 @@ _propertyToSQL = (property) ->
       type += ' NOT NULL'
     else
       type += ' NULL'
-    if property.unique
-      type += ' UNIQUE'
     return type
 
 ##
@@ -58,7 +57,56 @@ class PostgreSQLAdapter extends SQLAdapterBase
     @_client.query sql, data, (error, result) ->
       callback error, result
 
-  _createTable: (model, callback) ->
+  _getTables: (callback) ->
+    @_query "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = 'public' AND table_type = 'BASE TABLE'", null, (error, result) ->
+      return callback error if error
+      tables = result.rows.map (table) ->
+        table.table_name
+      callback null, tables
+
+  _getSchema: (table, callback) ->
+    @_query "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1", [table], (error, result) =>
+      return callback error if error
+      schema = {}
+      for column in result.rows
+        type = if column.data_type is 'character varying'
+          new types.String(column.character_maximum_length)
+        else if column.data_type is 'double precision'
+          new types.Number()
+        else if column.data_type is 'boolean'
+          new types.Boolean()
+        else if column.data_type is 'integer'
+          new types.Integer()
+        else if column.data_type is 'USER-DEFINED' and column.udt_schema is 'public' and column.udt_name is 'geometry'
+          new types.GeoPoint()
+        else if column.data_type is 'timestamp without time zone'
+          new types.Date()
+        else if column.data_type is 'json'
+          new types.Object()
+        schema[column.column_name] = type: type, required: column.is_nullable is 'NO'
+      callback null, schema
+
+  ## @override AdapterBase::getSchemas
+  getSchemas: (callback) ->
+    async.auto
+      get_tables: (callback) =>
+        @_getTables callback
+      get_table_schemas: ['get_tables', (callback, results) =>
+        table_schemas = {}
+        async.each results.get_tables, (table, callback) =>
+          @_getSchema table, (error, schema) ->
+            return callback error if error
+            table_schemas[table] = schema
+            callback null
+        , (error) ->
+          return callback error if error
+          callback null, table_schemas
+      ]
+    , (error, results) ->
+      callback error, tables: results.get_table_schemas
+
+  ## @override AdapterBase::createTable
+  createTable: (model, callback) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
     sql = []
@@ -67,40 +115,10 @@ class PostgreSQLAdapter extends SQLAdapterBase
       column_sql = _propertyToSQL property
       if column_sql
         sql.push "\"#{property._dbname}\" #{column_sql}"
-    for integrity in model_class._integrities
-      if integrity.type is 'child_nullify'
-        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE SET NULL"
-      else if integrity.type is 'child_restrict'
-        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE RESTRICT"
-      else if integrity.type is 'child_delete'
-        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE CASCADE"
     sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
     @_query sql, null, (error) =>
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
-      async.forEach model_class._indexes, (index, callback) =>
-        columns = []
-        for column, order of index.columns
-          columns.push "\"#{column}\" #{if order is -1 then 'DESC' else 'ASC'}"
-        unique = if index.options.unique then 'UNIQUE ' else ''
-        sql = "CREATE #{unique}INDEX \"#{index.options.name}\" ON \"#{tableName}\" (#{columns.join ','})"
-        @_query sql, null, callback
-      , (error) ->
-        return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
-        callback null
-
-  _alterTable: (model, columns, callback) ->
-    # TODO
-    callback null
-
-  ## @override AdapterBase::applySchema
-  applySchema: (model, callback) ->
-    tableName = @_connection.models[model].tableName
-    @_query "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1", [tableName], (error, result) =>
-      columns = result?.rows
-      if error or columns.length is 0
-        @_createTable model, callback
-      else
-        @_alterTable model, columns, callback
+      callback null
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->

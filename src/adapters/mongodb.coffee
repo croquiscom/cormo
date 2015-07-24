@@ -202,29 +202,6 @@ class MongoDBAdapter extends AdapterBase
     else
       return @_collections[name]
 
-  ## @override AdapterBase::applySchema
-  applySchema: (model, callback) ->
-    collection = @_collection(model)
-    indexes = []
-    for column, property of @_connection.models[model]._schema
-      if property.unique
-        if property.required
-          indexes.push [ column, { unique: true } ]
-        else
-          indexes.push [ column, { unique: true, sparse: true } ]
-      if property.type_class is types.GeoPoint
-        indexes.push [ _.object [column], ['2d'] ]
-    for index in @_connection.models[model]._indexes
-      if index.options.unique
-        indexes.push [ index.columns, { name: index.options.name, unique: true, sparse: true } ]
-      else
-        indexes.push [ index.columns, { name: index.options.name } ]
-    async.forEach indexes, (index, callback) ->
-      collection.ensureIndex index[0], index[1], (error) ->
-        callback error
-    , (error) ->
-      callback error
-
   ## @override AdapterBase::drop
   drop: (model, callback) ->
     name = @_connection.models[model].tableName

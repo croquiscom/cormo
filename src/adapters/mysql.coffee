@@ -6,7 +6,9 @@ catch e
 
 SQLAdapterBase = require './sql_base'
 types = require '../types'
+
 _ = require 'lodash'
+async = require 'async'
 stream = require 'stream'
 
 _typeToSQL = (property) ->
@@ -28,8 +30,6 @@ _propertyToSQL = (property) ->
       type += ' NOT NULL'
     else
       type += ' NULL'
-    if property.unique
-      type += ' UNIQUE'
     return type
 
 ##
@@ -51,7 +51,57 @@ class MySQLAdapter extends SQLAdapterBase
     #console.log 'MySQLAdapter:', sql
     @_client.query sql, data, callback
 
-  _createTable: (model, callback) ->
+  _getTables: (callback) ->
+    @_query "SHOW TABLES", (error, tables) ->
+      return callback error if error
+      tables = tables.map (table) ->
+        key = Object.keys(table)[0]
+        table[key]
+      callback null, tables
+
+  _getSchema: (table, callback) ->
+    @_query "SHOW COLUMNS FROM `#{table}`", (error, columns) ->
+      return callback error if error
+      schema = {}
+      for column in columns
+        type = if /^varchar\((\d*)\)/i.test column.Type
+          new types.String(RegExp.$1)
+        else if /^double/i.test column.Type
+          new types.Number()
+        else if /^tinyint\(1\)/i.test column.Type
+          new types.Boolean()
+        else if /^int/i.test column.Type
+          new types.Integer()
+        else if /^point/i.test column.Type
+          new types.GeoPoint()
+        else if /^datetime/i.test column.Type
+          new types.Date()
+        else if /^text/i.test column.Type
+          new types.Object()
+        schema[column.Field] = type: type, required: column.Null is 'NO'
+      callback null, schema
+
+  ## @override AdapterBase::getSchemas
+  getSchemas: (callback) ->
+    async.auto
+      get_tables: (callback) =>
+        @_getTables callback
+      get_table_schemas: ['get_tables', (callback, results) =>
+        table_schemas = {}
+        async.each results.get_tables, (table, callback) =>
+          @_getSchema table, (error, schema) ->
+            return callback error if error
+            table_schemas[table] = schema
+            callback null
+        , (error) ->
+          return callback error if error
+          callback null, table_schemas
+      ]
+    , (error, results) ->
+      callback error, tables: results.get_table_schemas
+
+  ## @override AdapterBase::createTable
+  createTable: (model, callback) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
     sql = []
@@ -60,36 +110,10 @@ class MySQLAdapter extends SQLAdapterBase
       column_sql = _propertyToSQL property
       if column_sql
         sql.push "`#{property._dbname}` #{column_sql}"
-    for index in model_class._indexes
-      columns = []
-      for column, order of index.columns
-        columns.push "`#{column}` #{if order is -1 then 'DESC' else 'ASC'}"
-      unique = if index.options.unique then 'UNIQUE ' else ''
-      sql.push "#{unique}INDEX `#{index.options.name}` (#{columns.join ','})"
-    for integrity in model_class._integrities
-      if integrity.type is 'child_nullify'
-        sql.push "FOREIGN KEY (`#{integrity.column}`) REFERENCES `#{integrity.parent.tableName}`(id) ON DELETE SET NULL"
-      else if integrity.type is 'child_restrict'
-        sql.push "FOREIGN KEY (`#{integrity.column}`) REFERENCES `#{integrity.parent.tableName}`(id) ON DELETE RESTRICT"
-      else if integrity.type is 'child_delete'
-        sql.push "FOREIGN KEY (`#{integrity.column}`) REFERENCES `#{integrity.parent.tableName}`(id) ON DELETE CASCADE"
     sql = "CREATE TABLE `#{tableName}` ( #{sql.join ','} )"
     @_query sql, (error, result) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
-
-  _alterTable: (model, columns, callback) ->
-    # TODO
-    callback null
-
-  ## @override AdapterBase::applySchema
-  applySchema: (model, callback) ->
-    tableName = @_connection.models[model].tableName
-    @_query "SHOW COLUMNS FROM `#{tableName}`", (error, columns) =>
-      if error?.code is 'ER_NO_SUCH_TABLE'
-        @_createTable model, callback
-      else
-        @_alterTable model, columns, callback
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->
