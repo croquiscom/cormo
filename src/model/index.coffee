@@ -117,7 +117,6 @@ class Model
     Object.defineProperty @, '_associations', value: {}
     Object.defineProperty @, '_validators', value: []
     Object.defineProperty @, '_name', value: name
-    Object.defineProperty @, '_schema_changed', writable: true, value: true
     Object.defineProperty @, '_schema', value: {}
     Object.defineProperty @, '_intermediate_paths', value: {}
     Object.defineProperty @, '_indexes', value: []
@@ -191,7 +190,6 @@ class Model
 
     @_schema[path] = property
 
-    @_schema_changed = true
     @_connection._schema_changed = true
 
   ##
@@ -217,7 +215,6 @@ class Model
     @_connection._promise_connection.then =>
       @_adapter.dropAsync @_name
     .finally =>
-      @_schema_changed = true
       @_connection._schema_changed = true
     .nodeify util.bindDomain callback
 

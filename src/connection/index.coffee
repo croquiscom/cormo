@@ -152,11 +152,7 @@ class Connection extends EventEmitter
             current = current
             .then =>
               modelClass = @models[model]
-              if not modelClass._schema_changed
-                return
               @_adapter.applySchemaAsync model
-              .then ->
-                modelClass._schema_changed = false
           .finally =>
             @_applying_schemas = false
             @_schema_changed = false
