@@ -32,6 +32,18 @@ class AdapterBase
   # @see Connection::applySchemas
   createTable: (model, callback) -> callback null
 
+  ## Creates an index.
+  # @abstract
+  # @param {String} model
+  # @param {Object} index
+  # @param {Object} index.columns
+  # @param {Object} index.options
+  # @param {String} index.options.name
+  # @param {Boolean} index.options.unique
+  # @nodejscallback
+  # @see Connection::applySchemas
+  createIndex: (model, index, callback) -> callback null
+
   ##
   # Drops a model from the database
   # @abstract

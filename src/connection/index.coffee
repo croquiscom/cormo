@@ -148,13 +148,18 @@ class Connection extends EventEmitter
 
         @_promise_schema_applied = @_promise_connection.then =>
           return @_adapter.getSchemasAsync()
-          .then (current) =>
-            tables_commands = for model, modelClass of @models
-              if current.tables[modelClass.tableName]
-                console.log model, 'exist'
-              else
-                @_adapter.createTableAsync model
+          .tap (current) =>
+            tables_commands = []
+            for model, modelClass of @models
+              if not current.tables[modelClass.tableName]
+                tables_commands.push @_adapter.createTableAsync model
             Promise.all tables_commands
+          .tap (current) =>
+            indexes_commands = []
+            for model, modelClass of @models
+              for index in modelClass._indexes
+                indexes_commands.push @_adapter.createIndexAsync model, index
+            Promise.all indexes_commands
           .finally =>
             @_applying_schemas = false
             @_schema_changed = false

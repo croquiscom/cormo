@@ -202,6 +202,28 @@ class MongoDBAdapter extends AdapterBase
     else
       return @_collections[name]
 
+  ## @override AdapterBase::createTable
+  createTable: (model, callback) ->
+    collection = @_collection(model)
+    indexes = []
+    for column, property of @_connection.models[model]._schema
+      if property.type_class is types.GeoPoint
+        indexes.push [ _.object [column], ['2d'] ]
+    async.forEach indexes, (index, callback) ->
+      collection.ensureIndex index[0], index[1], (error) ->
+        callback error
+    , (error) ->
+      callback error
+
+  ## @override AdapterBase::createIndex
+  createIndex: (model, index, callback) ->
+    collection = @_collection(model)
+    if index.options.unique and not index.options.required
+      index.options.sparse = true
+    collection.ensureIndex index.columns, index.options, (error) ->
+      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      callback null
+
   ## @override AdapterBase::drop
   drop: (model, callback) ->
     name = @_connection.models[model].tableName
@@ -237,20 +259,18 @@ class MongoDBAdapter extends AdapterBase
     else
       value
 
+  _processSaveError = (error, callback) ->
+    if error?.code in [11001, 11000]
+      key = error.message.match /index: [\w-.]+\$(\w+)(_1)?/
+      error = new Error('duplicated ' + key?[1])
+    else
+      error = MongoDBAdapter.wrapError 'unknown error', error
+    callback error
+
   ## @override AdapterBase::create
   create: (model, data, callback) ->
     @_collection(model).insert data, safe: true, (error, result) ->
-      if error?.code is 11000
-        column = ''
-        key = error.message.match /index: [\w-.]+\$(\w+)/
-        if key?
-          column = key[1]
-          key = column.match /(\w+)_1/
-          if key?
-            column = key[1]
-          column = ' ' + column
-        return callback new Error('duplicated' + column)
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      return _processSaveError error, callback if error
       id = _objectIdToString result.ops[0]._id
       if id
         delete data._id
@@ -273,10 +293,7 @@ class MongoDBAdapter extends AdapterBase
         callback null, _.flatten records_list
       return
     @_collection(model).insert data, safe: true, (error, result) ->
-      if error?.code is 11000
-        key = error.message.match /index: [\w-.]+\$(\w+)_1/
-        return callback new Error('duplicated ' + key?[1])
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      return _processSaveError error, callback if error
       error = undefined
       ids = result.ops.map (doc) ->
         id = _objectIdToString doc._id
@@ -293,10 +310,7 @@ class MongoDBAdapter extends AdapterBase
     id = data.id
     delete data.id
     @_collection(model).update { _id: id }, data, safe: true, (error) ->
-      if error?.code in [11001, 11000]
-        key = error.message.match /index: [\w-.]+\$(\w+)_1/
-        return callback new Error('duplicated ' + key?[1])
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      return _processSaveError error, callback if error
       callback null
 
   _buildUpdateOps: (schema, update_ops, data, path, object) ->
@@ -331,10 +345,7 @@ class MongoDBAdapter extends AdapterBase
     if Object.keys(update_ops.$inc).length is 0
       delete update_ops.$inc
     @_collection(model).update conditions, update_ops, safe: true, multi: true, (error, result) ->
-      if error?.code in [11001, 11000]
-        key = error.message.match /index: [\w-.]+\$(\w+)_1/
-        return callback new Error('duplicated ' + key?[1])
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      return _processSaveError error, callback if error
       callback null, result.result.n
 
   ## @override AdapterBase::upsert
@@ -357,10 +368,7 @@ class MongoDBAdapter extends AdapterBase
     if Object.keys(update_ops.$inc).length is 0
       delete update_ops.$inc
     @_collection(model).update conditions, update_ops, safe: true, upsert: true, (error, result) ->
-      if error?.code in [11001, 11000]
-        key = error.message.match /index: [\w-.]+\$(\w+)_1/
-        return callback new Error('duplicated ' + key?[1])
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
+      return _processSaveError error, callback if error
       callback null
 
   ## @override AdapterBase::findById
