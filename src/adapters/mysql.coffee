@@ -124,8 +124,22 @@ class MySQLAdapter extends SQLAdapterBase
       columns.push "`#{column}` #{if order is -1 then 'DESC' else 'ASC'}"
     unique = if index.options.unique then 'UNIQUE ' else ''
     sql = "CREATE #{unique}INDEX `#{index.options.name}` ON `#{tableName}` (#{columns.join ','})"
-    @_query sql, (error, result) ->
+    @_query sql, (error) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
+      callback null
+
+  ## @override AdapterBase::createForeignKey
+  createForeignKey: (model, column, type, references, callback) ->
+    model_class = @_connection.models[model]
+    tableName = model_class.tableName
+    action = switch type
+      when 'nullify' then 'SET NULL'
+      when 'restrict' then 'RESTRICT'
+      when 'delete' then 'CASCADE'
+    sql = "ALTER TABLE `#{tableName}` ADD FOREIGN KEY (`#{column}`) REFERENCES `#{references.tableName}`(id) ON DELETE #{action}"
+    @_query sql, (error) ->
+      if error
+        return callback MySQLAdapter.wrapError 'unknown error', error
       callback null
 
   ## @override AdapterBase::drop

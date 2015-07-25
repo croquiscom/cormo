@@ -44,6 +44,16 @@ class AdapterBase
   # @see Connection::applySchemas
   createIndex: (model, index, callback) -> callback null
 
+  ## Creates a foreign key.
+  # @abstract
+  # @param {String} model
+  # @param {String} column
+  # @param {String} type
+  # @param {Class<Model>} references
+  # @nodejscallback
+  # @see Connection::applySchemas
+  createForeignKey: (model, column, type, references, callback) -> callback null
+
   ##
   # Drops a model from the database
   # @abstract

@@ -160,6 +160,17 @@ class Connection extends EventEmitter
               for index in modelClass._indexes
                 indexes_commands.push @_adapter.createIndexAsync model, index
             Promise.all indexes_commands
+          .tap (current) =>
+            foreign_keys_commands = []
+            for model, modelClass of @models
+              for integrity in modelClass._integrities
+                if integrity.type is 'child_nullify'
+                  foreign_keys_commands.push @_adapter.createForeignKeyAsync model, integrity.column, 'nullify', integrity.parent
+                else if integrity.type is 'child_restrict'
+                  foreign_keys_commands.push @_adapter.createForeignKeyAsync model, integrity.column, 'restrict', integrity.parent
+                else if integrity.type is 'child_delete'
+                  foreign_keys_commands.push @_adapter.createForeignKeyAsync model, integrity.column, 'delete', integrity.parent
+            Promise.all foreign_keys_commands
           .finally =>
             @_applying_schemas = false
             @_schema_changed = false

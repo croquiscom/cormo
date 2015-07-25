@@ -133,6 +133,20 @@ class PostgreSQLAdapter extends SQLAdapterBase
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       callback null
 
+  ## @override AdapterBase::createForeignKey
+  createForeignKey: (model, column, type, references, callback) ->
+    model_class = @_connection.models[model]
+    tableName = model_class.tableName
+    action = switch type
+      when 'nullify' then 'SET NULL'
+      when 'restrict' then 'RESTRICT'
+      when 'delete' then 'CASCADE'
+    sql = "ALTER TABLE \"#{tableName}\" ADD FOREIGN KEY (\"#{column}\") REFERENCES \"#{references.tableName}\"(id) ON DELETE #{action}"
+    @_query sql, null, (error) ->
+      if error
+        return callback MySQLAdapter.wrapError 'unknown error', error
+      callback null
+
   ## @override AdapterBase::drop
   drop: (model, callback) ->
     tableName = @_connection.models[model].tableName
