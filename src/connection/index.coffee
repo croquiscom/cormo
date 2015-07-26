@@ -131,10 +131,18 @@ class Connection extends EventEmitter
 
   ##
   # Applies schemas
+  # @param {Object} [options]
+  # @param {Boolean} [options.verbose=false]
   # @promise
   # @nodejscallback
   # @see AdapterBase::applySchema
-  applySchemas: (callback) ->
+  applySchemas: (options, callback) ->
+    if typeof options is 'function'
+      callback = options
+      options = {}
+    else if not options
+      options = {}
+
     Promise.resolve().then =>
       @_initializeModels()
       return if not @_schema_changed
@@ -146,12 +154,15 @@ class Connection extends EventEmitter
 
         @_checkArchive()
 
+        console.log 'Applying schemas' if options.verbose
+
         @_promise_schema_applied = @_promise_connection.then =>
           return @_adapter.getSchemasAsync()
           .tap (current) =>
             tables_commands = []
             for model, modelClass of @models
               if not current.tables[modelClass.tableName]
+                console.log "Creating table #{modelClass.tableName}" if options.verbose
                 tables_commands.push @_adapter.createTableAsync model
             Promise.all tables_commands
           .tap (current) =>
@@ -159,6 +170,7 @@ class Connection extends EventEmitter
             for model, modelClass of @models
               for index in modelClass._indexes
                 if not current.indexes?[modelClass.tableName]?[index.options.name]
+                  console.log "Creating index on #{modelClass.tableName} #{Object.keys(index.columns)}" if options.verbose
                   indexes_commands.push @_adapter.createIndexAsync model, index
             Promise.all indexes_commands
           .tap (current) =>
@@ -175,9 +187,11 @@ class Connection extends EventEmitter
                 if type
                   current_foreign_key = current.foreign_keys?[modelClass.tableName]?[integrity.column]
                   if not (current_foreign_key and current_foreign_key is integrity.parent.tableName)
+                    console.log "Adding foreign key #{modelClass.tableName}.#{integrity.column} to #{integrity.parent.tableName}" if options.verbose
                     foreign_keys_commands.push @_adapter.createForeignKeyAsync model, integrity.column, type, integrity.parent
             Promise.all foreign_keys_commands
           .finally =>
+            console.log 'Applying schemas done' if options.verbose
             @_applying_schemas = false
             @_schema_changed = false
       return @_promise_schema_applied
