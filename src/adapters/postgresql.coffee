@@ -86,6 +86,16 @@ class PostgreSQLAdapter extends SQLAdapterBase
         schema[column.column_name] = type: type, required: column.is_nullable is 'NO'
       callback null, schema
 
+  _getIndexes: (callback) ->
+    # see http://stackoverflow.com/a/2213199/3239514
+    @_query "SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name FROM pg_class t, pg_class i, pg_index ix, pg_attribute a WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND a.attnum = ANY(ix.indkey)", null, (error, result) ->
+      return callback error if error
+      indexes = {}
+      for row in result.rows
+        indexes_of_table = indexes[row.table_name] or= {}
+        (indexes_of_table[row.index_name] or= {})[row.column_name] = 1
+      callback null, indexes
+
   ## @override AdapterBase::getSchemas
   getSchemas: (callback) ->
     async.auto
@@ -102,8 +112,10 @@ class PostgreSQLAdapter extends SQLAdapterBase
           return callback error if error
           callback null, table_schemas
       ]
+      get_indexes: (callback) =>
+        @_getIndexes callback
     , (error, results) ->
-      callback error, tables: results.get_table_schemas
+      callback error, tables: results.get_table_schemas, indexes: results.get_indexes
 
   ## @override AdapterBase::createTable
   createTable: (model, callback) ->

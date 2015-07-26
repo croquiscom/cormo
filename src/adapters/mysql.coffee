@@ -81,6 +81,15 @@ class MySQLAdapter extends SQLAdapterBase
         schema[column.Field] = type: type, required: column.Null is 'NO'
       callback null, schema
 
+  _getIndexes: (callback) ->
+    @_query "SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX", [@_database], (error, rows) ->
+      return callback error if error
+      indexes = {}
+      for row in rows
+        indexes_of_table = indexes[row.TABLE_NAME] or= {}
+        (indexes_of_table[row.INDEX_NAME] or= {})[row.COLUMN_NAME] = 1
+      callback null, indexes
+
   ## @override AdapterBase::getSchemas
   getSchemas: (callback) ->
     async.auto
@@ -97,8 +106,10 @@ class MySQLAdapter extends SQLAdapterBase
           return callback error if error
           callback null, table_schemas
       ]
+      get_indexes: (callback) =>
+        @_getIndexes callback
     , (error, results) ->
-      callback error, tables: results.get_table_schemas
+      callback error, tables: results.get_table_schemas, indexes: results.get_indexes
 
   ## @override AdapterBase::createTable
   createTable: (model, callback) ->
@@ -448,11 +459,12 @@ class MySQLAdapter extends SQLAdapterBase
       port: settings.port
       user: settings.user
       password: settings.password
+    @_database = settings.database
     client.connect (error) =>
       if error
         client.end()
         return callback MySQLAdapter.wrapError 'failed to connect', error
-      @_createDatabase client, settings, (error) =>
+      @_createDatabase client, (error) =>
         client.end()
         return callback error if error
         @_client = mysql.createPool
@@ -464,17 +476,17 @@ class MySQLAdapter extends SQLAdapterBase
         callback null
 
   # create database if not exist
-  _createDatabase: (client, settings, callback) ->
+  _createDatabase: (client, callback) ->
     # check database existence
-    client.query "USE `#{settings.database}`", (error) =>
+    client.query "USE `#{@_database}`", (error) =>
       return callback null if not error
 
       if error.code is 'ER_BAD_DB_ERROR'
-        client.query "CREATE DATABASE `#{settings.database}`", (error) =>
+        client.query "CREATE DATABASE `#{@_database}`", (error) =>
           return callback MySQLAdapter.wrapError 'unknown error', error if error
-          @_createDatabase client, settings, callback
+          @_createDatabase client, callback
       else
-        msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{settings.database}'" else 'unknown error'
+        msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{@_database}'" else 'unknown error'
         callback MySQLAdapter.wrapError msg, error
 
   ## @override AdapterBase::close

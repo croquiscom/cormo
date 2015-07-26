@@ -208,6 +208,8 @@ class Model
       options.name = Object.keys(columns).join('_')
     @_indexes.push columns: columns, options: options
 
+    @_connection._schema_changed = true
+
   ##
   # Drops this model from the database
   # @promise

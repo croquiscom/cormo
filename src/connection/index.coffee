@@ -158,7 +158,8 @@ class Connection extends EventEmitter
             indexes_commands = []
             for model, modelClass of @models
               for index in modelClass._indexes
-                indexes_commands.push @_adapter.createIndexAsync model, index
+                if not current.indexes?[modelClass.tableName]?[index.options.name]
+                  indexes_commands.push @_adapter.createIndexAsync model, index
             Promise.all indexes_commands
           .tap (current) =>
             foreign_keys_commands = []

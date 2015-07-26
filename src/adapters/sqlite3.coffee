@@ -75,6 +75,20 @@ class SQLite3Adapter extends SQLAdapterBase
         schema[column.name] = type: type, required: column.notnull is 1
       callback null, schema
 
+  _getIndexes: (table, callback) ->
+    @_query 'all', "PRAGMA index_list(`#{table}`)", (error, rows) =>
+      return callback error if error
+      indexes = {}
+      async.each rows, (row, callback) =>
+        indexes[row.name] or= {}
+        @_query 'all', "PRAGMA index_info(`#{row.name}`)", (error, columns) ->
+          return callback error if error
+          for column in columns
+            indexes[row.name][column.name] = 1
+          callback null
+      , (error) ->
+        callback error, indexes
+
   ## @override AdapterBase::getSchemas
   getSchemas: (callback) ->
     async.auto
@@ -91,8 +105,19 @@ class SQLite3Adapter extends SQLAdapterBase
           return callback error if error
           callback null, table_schemas
       ]
+      get_indexes: ['get_tables', (callback, results) =>
+        all_indexes = {}
+        async.each results.get_tables, (table, callback) =>
+          @_getIndexes table, (error, indexes) ->
+            return callback error if error
+            all_indexes[table] = indexes
+            callback null
+        , (error) ->
+          return callback error if error
+          callback null, all_indexes
+      ]
     , (error, results) ->
-      callback error, tables: results.get_table_schemas
+      callback error, tables: results.get_table_schemas, indexes: results.get_indexes
 
   ## @override AdapterBase::createTable
   createTable: (model, callback) ->
