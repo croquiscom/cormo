@@ -90,6 +90,15 @@ class MySQLAdapter extends SQLAdapterBase
         (indexes_of_table[row.INDEX_NAME] or= {})[row.COLUMN_NAME] = 1
       callback null, indexes
 
+  _getForeignKeys: (callback) ->
+    @_query "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME IS NOT NULL", [], (error, rows) ->
+      return callback error if error
+      foreign_keys = {}
+      for row in rows
+        foreign_keys_of_table = foreign_keys[row.TABLE_NAME] or= {}
+        foreign_keys_of_table[row.COLUMN_NAME] = row.REFERENCED_TABLE_NAME
+      callback null, foreign_keys
+
   ## @override AdapterBase::getSchemas
   getSchemas: (callback) ->
     async.auto
@@ -108,8 +117,10 @@ class MySQLAdapter extends SQLAdapterBase
       ]
       get_indexes: (callback) =>
         @_getIndexes callback
+      get_foreign_keys: (callback) =>
+        @_getForeignKeys callback
     , (error, results) ->
-      callback error, tables: results.get_table_schemas, indexes: results.get_indexes
+      callback error, tables: results.get_table_schemas, indexes: results.get_indexes, foreign_keys: results.get_foreign_keys
 
   ## @override AdapterBase::createTable
   createTable: (model, callback) ->

@@ -165,12 +165,17 @@ class Connection extends EventEmitter
             foreign_keys_commands = []
             for model, modelClass of @models
               for integrity in modelClass._integrities
+                type = ''
                 if integrity.type is 'child_nullify'
-                  foreign_keys_commands.push @_adapter.createForeignKeyAsync model, integrity.column, 'nullify', integrity.parent
+                  type = 'nullify'
                 else if integrity.type is 'child_restrict'
-                  foreign_keys_commands.push @_adapter.createForeignKeyAsync model, integrity.column, 'restrict', integrity.parent
+                  type = 'restrict'
                 else if integrity.type is 'child_delete'
-                  foreign_keys_commands.push @_adapter.createForeignKeyAsync model, integrity.column, 'delete', integrity.parent
+                  type = 'delete'
+                if type
+                  current_foreign_key = current.foreign_keys?[modelClass.tableName]?[integrity.column]
+                  if not (current_foreign_key and current_foreign_key is integrity.parent.tableName)
+                    foreign_keys_commands.push @_adapter.createForeignKeyAsync model, integrity.column, type, integrity.parent
             Promise.all foreign_keys_commands
           .finally =>
             @_applying_schemas = false

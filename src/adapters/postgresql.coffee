@@ -96,6 +96,16 @@ class PostgreSQLAdapter extends SQLAdapterBase
         (indexes_of_table[row.index_name] or= {})[row.column_name] = 1
       callback null, indexes
 
+  _getForeignKeys: (callback) ->
+    # see http://stackoverflow.com/a/1152321/3239514
+    @_query "SELECT tc.table_name AS table_name, kcu.column_name AS column_name, ccu.table_name AS referenced_table_name FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name WHERE constraint_type = 'FOREIGN KEY'", null, (error, result) ->
+      return callback error if error
+      foreign_keys = {}
+      for row in result.rows
+        foreign_keys_of_table = foreign_keys[row.table_name] or= {}
+        foreign_keys_of_table[row.column_name] = row.referenced_table_name
+      callback null, foreign_keys
+
   ## @override AdapterBase::getSchemas
   getSchemas: (callback) ->
     async.auto
@@ -114,8 +124,10 @@ class PostgreSQLAdapter extends SQLAdapterBase
       ]
       get_indexes: (callback) =>
         @_getIndexes callback
+      get_foreign_keys: (callback) =>
+        @_getForeignKeys callback
     , (error, results) ->
-      callback error, tables: results.get_table_schemas, indexes: results.get_indexes
+      callback error, tables: results.get_table_schemas, indexes: results.get_indexes, foreign_keys: results.get_foreign_keys
 
   ## @override AdapterBase::createTable
   createTable: (model, callback) ->
