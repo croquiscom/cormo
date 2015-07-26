@@ -42,7 +42,7 @@ if process.env.TRAVIS is 'true'
       database: __dirname + '/test.sqlite3'
     sqlite3_memory: {}
     postgresql:
-      database: 'travis'
+      database: 'travis_ci_test'
       user: 'postgres'
     redis:
       database: 1
