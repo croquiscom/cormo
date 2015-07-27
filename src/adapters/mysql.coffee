@@ -133,6 +133,8 @@ class MySQLAdapter extends SQLAdapterBase
       if column_sql
         sql.push "`#{property._dbname}` #{column_sql}"
     sql = "CREATE TABLE `#{tableName}` ( #{sql.join ','} )"
+    sql += " DEFAULT CHARSET=#{@_settings.charset or 'utf8'}"
+    sql += " COLLATE=#{@_settings.collation or 'utf8_unicode_ci'}"
     @_query sql, (error) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
@@ -471,6 +473,8 @@ class MySQLAdapter extends SQLAdapterBase
   # @param {String} [settings.user]
   # @param {String} [settings.password]
   # @param {String} settings.database
+  # @param {String} [settings.charset='utf8']
+  # @param {String} [settings.collation='utf8_unicode_ci']
   # @nodejscallback
   connect: (settings, callback) ->
     # connect
@@ -480,6 +484,7 @@ class MySQLAdapter extends SQLAdapterBase
       user: settings.user
       password: settings.password
     @_database = settings.database
+    @_settings = settings
     client.connect (error) =>
       if error
         client.end()
