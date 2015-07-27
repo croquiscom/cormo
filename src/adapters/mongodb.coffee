@@ -202,6 +202,54 @@ class MongoDBAdapter extends AdapterBase
     else
       return @_collections[name]
 
+  _getTables: (callback) ->
+    @_client.listCollections().toArray (error, collections) ->
+      return callback error if error
+      tables = collections.map (collection) ->
+        collection.name
+      return callback null, tables
+
+  _getSchema: (table, callback) ->
+    callback null, {}
+
+  _getIndexes: (table, callback) ->
+    return @_client.collection(table).listIndexes().toArray (error, rows) ->
+      return callback error if error
+      indexes = {}
+      for row in rows
+        indexes[row.name] = row.key
+      return callback null, indexes
+
+  ## @override AdapterBase::getSchemas
+  getSchemas: (callback) ->
+    async.auto
+      get_tables: (callback) =>
+        @_getTables callback
+      get_table_schemas: ['get_tables', (callback, results) =>
+        table_schemas = {}
+        async.each results.get_tables, (table, callback) =>
+          @_getSchema table, (error, schema) ->
+            return callback error if error
+            table_schemas[table] = schema
+            callback null
+        , (error) ->
+          return callback error if error
+          callback null, table_schemas
+      ]
+      get_indexes: ['get_tables', (callback, results) =>
+        all_indexes = {}
+        async.each results.get_tables, (table, callback) =>
+          @_getIndexes table, (error, indexes) ->
+            return callback error if error
+            all_indexes[table] = indexes
+            callback null
+        , (error) ->
+          return callback error if error
+          callback null, all_indexes
+      ]
+    , (error, results) ->
+      callback error, tables: results.get_table_schemas, indexes: results.get_indexes
+
   ## @override AdapterBase::createTable
   createTable: (model, callback) ->
     collection = @_collection(model)
@@ -218,9 +266,12 @@ class MongoDBAdapter extends AdapterBase
   ## @override AdapterBase::createIndex
   createIndex: (model, index, callback) ->
     collection = @_collection(model)
+    options =
+      name: index.options.name
+      unique: index.options.unique
     if index.options.unique and not index.options.required
-      index.options.sparse = true
-    collection.ensureIndex index.columns, index.options, (error) ->
+      options.sparse = true
+    collection.ensureIndex index.columns, options, (error) ->
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       callback null
 
