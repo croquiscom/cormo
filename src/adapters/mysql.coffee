@@ -91,7 +91,7 @@ class MySQLAdapter extends SQLAdapterBase
       callback null, indexes
 
   _getForeignKeys: (callback) ->
-    @_query "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME IS NOT NULL", [], (error, rows) ->
+    @_query "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME IS NOT NULL AND CONSTRAINT_SCHEMA = ?", [@_database], (error, rows) ->
       return callback error if error
       foreign_keys = {}
       for row in rows
