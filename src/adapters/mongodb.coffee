@@ -210,7 +210,7 @@ class MongoDBAdapter extends AdapterBase
       return callback null, tables
 
   _getSchema: (table, callback) ->
-    callback null, {}
+    callback null, 'NO SCHEMA'
 
   _getIndexes: (table, callback) ->
     return @_client.collection(table).listIndexes().toArray (error, rows) ->
