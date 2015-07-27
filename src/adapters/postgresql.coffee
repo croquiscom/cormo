@@ -144,6 +144,15 @@ class PostgreSQLAdapter extends SQLAdapterBase
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       callback null
 
+  ## @override AdapterBase::addColumn
+  addColumn: (model, column_property, callback) ->
+    model_class = @_connection.models[model]
+    tableName = model_class.tableName
+    sql = "ALTER TABLE \"#{tableName}\" ADD COLUMN \"#{column_property._dbname}\" #{_propertyToSQL column_property}"
+    @_query sql, null, (error) ->
+      return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
+      callback null
+
   ## @override AdapterBase::createIndex
   createIndex: (model, index, callback) ->
     model_class = @_connection.models[model]

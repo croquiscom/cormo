@@ -159,6 +159,14 @@ class Connection extends EventEmitter
         @_promise_schema_applied = @_promise_connection.then =>
           return @_adapter.getSchemasAsync()
           .tap (current) =>
+            add_columns_commands = []
+            for model, modelClass of @models
+              for column, property of modelClass._schema
+                if current.tables?[modelClass.tableName] and not current.tables?[modelClass.tableName]?[property._dbname]
+                  console.log "Adding column #{column} to #{modelClass.tableName}" if options.verbose
+                  add_columns_commands.push @_adapter.addColumnAsync model, property
+            Promise.all add_columns_commands
+          .tap (current) =>
             tables_commands = []
             for model, modelClass of @models
               if not current.tables[modelClass.tableName]

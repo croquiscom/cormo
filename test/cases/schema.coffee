@@ -49,3 +49,22 @@ module.exports = () ->
       _g.connection.applySchemas (error) ->
         return done error if error
         done null
+
+  it 'add column', (done) ->
+    class User extends _g.Model
+      @column 'name', String
+      @column 'age', Number
+
+    _g.connection.applySchemas (error) ->
+      return done error if error
+
+      User.column 'address', String
+
+      User.create { name: 'John Doe', age: 27, address: 'Moon' }, (error, user1) ->
+        return done error if error
+
+        User.find user1.id, (error, user2) ->
+          return done error if error
+          expect(user2).to.have.keys 'id', 'name', 'age', 'address'
+          expect(user2.address).to.eql 'Moon'
+          done null

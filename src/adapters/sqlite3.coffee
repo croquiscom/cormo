@@ -137,7 +137,16 @@ class SQLite3Adapter extends SQLAdapterBase
       else if integrity.type is 'child_delete'
         sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE CASCADE"
     sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
-    @_query 'run', sql, (error, result) =>
+    @_query 'run', sql, (error) =>
+      return callback SQLite3Adapter.wrapError 'unknown error', error if error
+      callback null
+
+  ## @override AdapterBase::addColumn
+  addColumn: (model, column_property, callback) ->
+    model_class = @_connection.models[model]
+    tableName = model_class.tableName
+    sql = "ALTER TABLE \"#{tableName}\" ADD COLUMN \"#{column_property._dbname}\" #{_propertyToSQL column_property}"
+    @_query 'run', sql, (error) ->
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       callback null
 

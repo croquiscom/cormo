@@ -32,6 +32,14 @@ class AdapterBase
   # @see Connection::applySchemas
   createTable: (model, callback) -> callback null
 
+  ## Adds a column to a table
+  # @abstract
+  # @param {String} model
+  # @param {Object} column_property
+  # @nodejscallback
+  # @see Connection::applySchemas
+  addColumn: (model, column_property, callback) -> callback null
+
   ## Creates an index.
   # @abstract
   # @param {String} model

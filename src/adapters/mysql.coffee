@@ -133,7 +133,16 @@ class MySQLAdapter extends SQLAdapterBase
       if column_sql
         sql.push "`#{property._dbname}` #{column_sql}"
     sql = "CREATE TABLE `#{tableName}` ( #{sql.join ','} )"
-    @_query sql, (error, result) ->
+    @_query sql, (error) ->
+      return callback MySQLAdapter.wrapError 'unknown error', error if error
+      callback null
+
+  ## @override AdapterBase::addColumn
+  addColumn: (model, column_property, callback) ->
+    model_class = @_connection.models[model]
+    tableName = model_class.tableName
+    sql = "ALTER TABLE `#{tableName}` ADD COLUMN `#{column_property._dbname}` #{_propertyToSQL column_property}"
+    @_query sql, (error) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
 
