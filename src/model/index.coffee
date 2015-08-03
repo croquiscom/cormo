@@ -333,7 +333,7 @@ class Model
   ##
   # Returns the current value of the column of the given path
   # @param {String} path
-  # @return {}
+  # @return {*}
   get: (path) ->
     if @_intermediates.hasOwnProperty path
       @_intermediates[path]
@@ -343,15 +343,15 @@ class Model
   ##
   # Returns the original value of the column of the given path
   # @param {String} path
-  # @return {}
+  # @return {*}
   getPrevious: (path) ->
     @_prev_attributes[path]
 
   ##
   # Changes the value of the column of the given path
   # @param {String} path
-  # @param {} value
-  # @return {}
+  # @param {*} value
+  # @return {*}
   set: (path, value) ->
     if @_intermediates.hasOwnProperty path
       obj = @_intermediates[path]
