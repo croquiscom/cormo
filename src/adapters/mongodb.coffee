@@ -15,6 +15,8 @@ stream = require 'stream'
 types = require '../types'
 
 _convertValueToObjectID = (value, key) ->
+  if not value?
+    return null
   try
     new ObjectID value
   catch e
@@ -111,7 +113,7 @@ _buildWhereSingle = (property, key, value, not_op) ->
     if not value.ignoreCase
       value = new RegExp value.source, 'i'
   else
-    if is_objectid and value?
+    if is_objectid
       value = _convertValueToObjectID value, key
     if not_op
       value = $ne: value
