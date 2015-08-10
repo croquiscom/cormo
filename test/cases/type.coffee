@@ -74,6 +74,28 @@ module.exports = () ->
     , (error) ->
       done error
 
+  it 'date with fractional seconds', (done) ->
+    data = [
+      [ '2012/10/12 21:32:54.123', new Date('2012/10/12 21:32:54.123').getTime() ]
+      [ '2012/10/12 21:32:54.619', new Date('2012/10/12 21:32:54.619').getTime() ]
+    ]
+    async.forEach data, (item, callback) ->
+      _g.connection.Type.create { date: item[0] }, (error, type) ->
+        if item[1] is null
+          expect(error).to.exist
+          expect(error.message).to.equal "'date' is not a date"
+          return callback null
+        return callback error if error
+        expect(type.date).to.be.an.instanceof Date
+        expect(type.date.getTime()).to.equal item[1]
+        _g.connection.Type.find type.id, (error, type) ->
+          return callback error if error
+          expect(type.date).to.be.an.instanceof Date
+          expect(type.date.getTime()).to.equal item[1]
+          callback null
+    , (error) ->
+      done error
+
   it 'boolean', (done) ->
     data = [
       [ true, true ]

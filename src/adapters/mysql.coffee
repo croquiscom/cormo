@@ -20,7 +20,7 @@ _typeToSQL = (property) ->
     when types.Boolean then 'BOOLEAN'
     when types.Integer then 'INT'
     when types.GeoPoint then 'POINT'
-    when types.Date then 'DATETIME'
+    when types.Date then 'DATETIME(3)'
     when types.Object then 'TEXT'
 
 _propertyToSQL = (property) ->
