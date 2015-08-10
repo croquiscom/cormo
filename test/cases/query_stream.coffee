@@ -31,3 +31,19 @@ module.exports = () ->
         done null
       .on 'error', (error) ->
         done error
+
+  it 'lean option', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      count = 0
+      _g.connection.User.where(age: 27).lean().stream()
+      .on 'data', (user) ->
+        count++
+        expect(user).to.not.be.an.instanceof _g.connection.User
+        expect(user).to.have.keys 'id', 'name', 'age'
+        expect(user.age).to.eql 27
+      .on 'end', ->
+        expect(count).to.eql 2
+        done null
+      .on 'error', (error) ->
+        done error

@@ -106,21 +106,18 @@ class AdapterBase
         value = null
       util.setPropertyOfPath instance, parts, value
 
-  _refineRawInstance: (model, data, selected_columns, selected_columns_raw) ->
-    model = @_connection.models[model]
-    instance = {}
-    @setValuesFromDB instance, data, model._schema, selected_columns
-
-    model._collapseNestedNulls instance, selected_columns_raw, null
-
-    instance.id = @_getModelID data
-
-    return instance
-
-  _convertToModelInstance: (model, data, selected_columns, selected_columns_raw) ->
-    id = @_getModelID(data)
-    modelClass = @_connection.models[model]
-    return new modelClass data, id, selected_columns, selected_columns_raw
+  _convertToModelInstance: (model, data, options) ->
+    if options.lean
+      model = @_connection.models[model]
+      instance = {}
+      @setValuesFromDB instance, data, model._schema, options.select
+      model._collapseNestedNulls instance, options.select_raw, null
+      instance.id = @_getModelID data
+      return instance
+    else
+      id = @_getModelID(data)
+      modelClass = @_connection.models[model]
+      return new modelClass data, id, options.select, options.select_raw
 
   _convertToGroupInstance: (model, data, group_by, group_fields) ->
     instance = {}

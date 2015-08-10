@@ -341,10 +341,7 @@ class MySQLAdapter extends SQLAdapterBase
     @_query sql, id, (error, result) =>
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       if result?.length is 1
-        if options.lean
-          callback null, @_refineRawInstance model, result[0], options.select, options.select_raw
-        else
-          callback null, @_convertToModelInstance model, result[0], options.select, options.select_raw
+        callback null, @_convertToModelInstance model, result[0], options
       else if result?.length > 1
         callback new Error 'unknown error'
       else
@@ -401,10 +398,7 @@ class MySQLAdapter extends SQLAdapterBase
       if options.group_fields
         callback null, result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
       else
-        if options.lean
-          callback null, result.map (record) => @_refineRawInstance model, record, options.select, options.select_raw
-        else
-          callback null, result.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
+        callback null, result.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options) ->
@@ -417,7 +411,7 @@ class MySQLAdapter extends SQLAdapterBase
       return readable
     transformer = new stream.Transform objectMode: true
     transformer._transform = (record, encoding, callback) =>
-      transformer.push @_convertToModelInstance model, record, options.select, options.select_raw
+      transformer.push @_convertToModelInstance model, record, options
       callback()
     @_query(sql, params).stream()
     .on 'error', (error) ->

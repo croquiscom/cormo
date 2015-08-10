@@ -123,10 +123,7 @@ class RedisAdapter extends AdapterBase
       return callback RedisAdapter.wrapError 'unknown error', error if error
       if result
         result.id = id
-        if options.lean
-          callback null, @_refineRawInstance model, result, options.select, options.select_raw
-        else
-          callback null, @_convertToModelInstance model, result, options.select, options.select_raw
+        callback null, @_convertToModelInstance model, result, options
       else
         callback new Error 'not found'
 
@@ -141,10 +138,7 @@ class RedisAdapter extends AdapterBase
           callback null, result
       , (error, records) =>
         records = records.filter (record) -> record?
-        if options.lean
-          callback null, records.map (record) => @_refineRawInstance model, record, options.select, options.select_raw
-        else
-          callback null, records.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
+        callback null, records.map (record) => @_convertToModelInstance model, record, options
 
   _delete: (keys, callback) ->
 

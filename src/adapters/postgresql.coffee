@@ -337,10 +337,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       rows = result?.rows
       return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
       if rows?.length is 1
-        if options.lean
-          callback null, @_refineRawInstance model, rows[0], options.select, options.select_raw
-        else
-          callback null, @_convertToModelInstance model, rows[0], options.select, options.select_raw
+        callback null, @_convertToModelInstance model, rows[0], options
       else if rows?.length > 1
         callback new Error 'unknown error'
       else
@@ -397,10 +394,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       if options.group_fields
         callback null, rows.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
       else
-        if options.lean
-          callback null, rows.map (record) => @_refineRawInstance model, record, options.select, options.select_raw
-        else
-          callback null, rows.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
+        callback null, rows.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options, callback) ->
@@ -416,7 +410,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
       return readable
     transformer = new stream.Transform objectMode: true
     transformer._transform = (record, encoding, callback) =>
-      transformer.push @_convertToModelInstance model, record, options.select, options.select_raw
+      transformer.push @_convertToModelInstance model, record, options
       callback()
     @_client.query new QueryStream sql, params
     .on 'error', (error) ->

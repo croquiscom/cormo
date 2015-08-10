@@ -292,10 +292,7 @@ class SQLite3Adapter extends SQLAdapterBase
     @_query 'all', sql, id, (error, result) =>
       return callback SQLite3Adapter.wrapError 'unknown error', error if error
       if result?.length is 1
-        if options.lean
-          callback null, @_refineRawInstance model, result[0], options.select, options.select_raw
-        else
-          callback null, @_convertToModelInstance model, result[0], options.select, options.select_raw
+        callback null, @_convertToModelInstance model, result[0], options
       else if result?.length > 1
         callback new Error 'unknown error'
       else
@@ -345,10 +342,7 @@ class SQLite3Adapter extends SQLAdapterBase
       if options.group_fields
         callback null, result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
       else
-        if options.lean
-          callback null, result.map (record) => @_refineRawInstance model, record, options.select, options.select_raw
-        else
-          callback null, result.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
+        callback null, result.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options) ->
@@ -363,7 +357,7 @@ class SQLite3Adapter extends SQLAdapterBase
     readable._read = ->
     @_client.each sql, params, (error, record) =>
       return readable.emit 'error', error if error
-      readable.push @_convertToModelInstance model, record, options.select, options.select_raw
+      readable.push @_convertToModelInstance model, record, options
     , ->
       readable.push null
     readable

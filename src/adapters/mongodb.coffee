@@ -442,10 +442,7 @@ class MongoDBAdapter extends AdapterBase
     @_collection(model).findOne _id: id, client_options, (error, result) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
       return callback new Error('not found') if not result
-      if options.lean
-        callback null, @_refineRawInstance model, result, options.select, options.select_raw
-      else
-        callback null, @_convertToModelInstance model, result, options.select, options.select_raw
+      callback null, @_convertToModelInstance model, result, options
 
   _buildConditionsForFind: (model, conditions, options) ->
     if options.select
@@ -531,10 +528,7 @@ class MongoDBAdapter extends AdapterBase
         return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
         cursor.toArray (error, result) =>
           return callback MongoDBAdapter.wrapError 'unknown error', error if error
-          if options.lean
-            callback null, result.map (record) => @_refineRawInstance model, record, options.select, options.select_raw
-          else
-            callback null, result.map (record) => @_convertToModelInstance model, record, options.select, options.select_raw
+          callback null, result.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options) ->
@@ -547,7 +541,7 @@ class MongoDBAdapter extends AdapterBase
       return readable
     transformer = new stream.Transform objectMode: true
     transformer._transform = (record, encoding, callback) =>
-      transformer.push @_convertToModelInstance model, record, options.select, options.select_raw
+      transformer.push @_convertToModelInstance model, record, options
       callback()
     @_collection(model).find conditions, client_options, (error, cursor) ->
       return transformer.emit 'error', MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
