@@ -11,7 +11,7 @@ _ = require 'lodash'
 async = require 'async'
 stream = require 'stream'
 
-_typeToSQL = (property) ->
+_typeToSQL = (property, support_fractional_seconds) ->
   if property.array
     return 'TEXT'
   switch property.type_class
@@ -20,11 +20,12 @@ _typeToSQL = (property) ->
     when types.Boolean then 'BOOLEAN'
     when types.Integer then 'INT'
     when types.GeoPoint then 'POINT'
-    when types.Date then 'DATETIME(3)'
+    when types.Date
+      if support_fractional_seconds then 'DATETIME(3)' else 'DATETIME'
     when types.Object then 'TEXT'
 
-_propertyToSQL = (property) ->
-  type = _typeToSQL property
+_propertyToSQL = (property, support_fractional_seconds) ->
+  type = _typeToSQL property, support_fractional_seconds
   if type
     if property.required
       type += ' NOT NULL'
@@ -129,7 +130,7 @@ class MySQLAdapter extends SQLAdapterBase
     sql = []
     sql.push 'id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY'
     for column, property of model_class._schema
-      column_sql = _propertyToSQL property
+      column_sql = _propertyToSQL property, @support_fractional_seconds
       if column_sql
         sql.push "`#{property._dbname}` #{column_sql}"
     sql = "CREATE TABLE `#{tableName}` ( #{sql.join ','} )"
@@ -143,7 +144,7 @@ class MySQLAdapter extends SQLAdapterBase
   addColumn: (model, column_property, callback) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
-    sql = "ALTER TABLE `#{tableName}` ADD COLUMN `#{column_property._dbname}` #{_propertyToSQL column_property}"
+    sql = "ALTER TABLE `#{tableName}` ADD COLUMN `#{column_property._dbname}` #{_propertyToSQL column_property, @support_fractional_seconds}"
     @_query sql, (error) ->
       return callback MySQLAdapter.wrapError 'unknown error', error if error
       callback null
@@ -484,15 +485,19 @@ class MySQLAdapter extends SQLAdapterBase
         client.end()
         return callback MySQLAdapter.wrapError 'failed to connect', error
       @_createDatabase client, (error) =>
-        client.end()
-        return callback error if error
-        @_client = mysql.createPool
-          host: settings.host
-          port: settings.port
-          user: settings.user
-          password: settings.password
-          database: settings.database
-        callback null
+        if error
+          client.end()
+          return callback error
+        @_checkFeatures client, (error) =>
+          client.end()
+          return callback error if error
+          @_client = mysql.createPool
+            host: settings.host
+            port: settings.port
+            user: settings.user
+            password: settings.password
+            database: settings.database
+          callback null
 
   # create database if not exist
   _createDatabase: (client, callback) ->
@@ -507,6 +512,17 @@ class MySQLAdapter extends SQLAdapterBase
       else
         msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{@_database}'" else 'unknown error'
         callback MySQLAdapter.wrapError msg, error
+
+  _checkFeatures: (client, callback) ->
+    client.query "CREATE TABLE _temp (date DATETIME(10))", (error) =>
+      if error.code is 'ER_PARSE_ERROR'
+        # MySQL 5.6.4 below does not support fractional seconds
+        @support_fractional_seconds = false
+      else if error.code is 'ER_TOO_BIG_PRECISION'
+        @support_fractional_seconds = true
+      else
+        return callback error
+      callback null
 
   ## @override AdapterBase::close
   close: ->

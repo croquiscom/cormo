@@ -75,6 +75,9 @@ module.exports = () ->
       done error
 
   it 'date with fractional seconds', (done) ->
+    if not _g.connection.adapter.support_fractional_seconds
+      return done null
+
     data = [
       [ '2012/10/12 21:32:54.123', new Date('2012/10/12 21:32:54.123').getTime() ]
       [ '2012/10/12 21:32:54.619', new Date('2012/10/12 21:32:54.619').getTime() ]

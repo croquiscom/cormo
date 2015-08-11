@@ -7,6 +7,8 @@ util = require '../util'
 # Base class for adapters
 # @namespace adapter
 class AdapterBase
+  support_fractional_seconds: true
+
   ##
   # Wraps adapter specific errors
   # @param {String} msg CORMO's error message
