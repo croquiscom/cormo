@@ -45,7 +45,7 @@ class ModelValidate
           # TODO: detail message like 'array of types'
           throw "'#{column}' is not an array"
       else
-        if value.$inc
+        if value.$inc?
           if for_update
             if property.type_class in [types.Number, types.Integer]
               obj[last] = $inc: @_validateType column, property.type_class, value.$inc

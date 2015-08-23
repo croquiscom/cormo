@@ -220,7 +220,7 @@ class MySQLAdapter extends SQLAdapterBase
         places.push 'POINT(?,?)'
       else
         fields.push "`#{dbname}`=POINT(?,?)"
-    else if value?.$inc
+    else if value?.$inc?
       values.push value.$inc
       fields.push "`#{dbname}`=`#{dbname}`+?"
     else
@@ -311,7 +311,7 @@ class MySQLAdapter extends SQLAdapterBase
 
     insert_data = {}
     for key, value of data
-      if value?.$inc
+      if value?.$inc?
         insert_data[key] = value.$inc
       else
         insert_data[key] = value

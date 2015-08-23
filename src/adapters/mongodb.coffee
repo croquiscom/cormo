@@ -371,7 +371,7 @@ class MongoDBAdapter extends AdapterBase
       property = schema[path+column]
       if property
         if value?
-          if value.$inc
+          if value.$inc?
             update_ops.$inc[path+column] = value.$inc
           else
             update_ops.$set[path+column] = value

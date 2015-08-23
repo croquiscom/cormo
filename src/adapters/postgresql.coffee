@@ -238,7 +238,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
         places.push "ST_Point($#{values.length-1}, $#{values.length})"
       else
         fields.push "\"#{dbname}\"=ST_Point($#{values.length-1}, $#{values.length})"
-    else if value?.$inc
+    else if value?.$inc?
       values.push value.$inc
       fields.push "\"#{dbname}\"=\"#{dbname}\"+$#{values.length}"
     else

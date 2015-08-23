@@ -8,6 +8,7 @@ util = require '../util'
 # @namespace adapter
 class AdapterBase
   support_fractional_seconds: true
+  support_upsert: true
 
   ##
   # Wraps adapter specific errors

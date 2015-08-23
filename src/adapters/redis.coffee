@@ -14,6 +14,7 @@ _ = require 'lodash'
 # Adapter for Redis
 # @namespace adapter
 class RedisAdapter extends AdapterBase
+  support_upsert: false
   key_type: types.Integer
 
   _getKeys: (table, conditions, callback) ->

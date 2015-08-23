@@ -179,7 +179,7 @@ class SQLAdapterBase extends AdapterBase
 
       insert_data = {}
       for key, value of data
-        if value?.$inc
+        if value?.$inc?
           insert_data[key] = value.$inc
         else
           insert_data[key] = value

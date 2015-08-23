@@ -195,7 +195,7 @@ class SQLite3Adapter extends SQLAdapterBase
   _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
     dbname = property._dbname
     value = data[dbname]
-    if value?.$inc
+    if value?.$inc?
       values.push value.$inc
       fields.push "\"#{dbname}\"=\"#{dbname}\"+?"
     else
