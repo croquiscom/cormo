@@ -470,6 +470,7 @@ class MySQLAdapter extends SQLAdapterBase
   # @param {String} settings.database
   # @param {String} [settings.charset='utf8']
   # @param {String} [settings.collation='utf8_unicode_ci']
+  # @param {Number} [settings.pool_size=10]
   # @nodejscallback
   connect: (settings, callback) ->
     # connect
@@ -497,6 +498,7 @@ class MySQLAdapter extends SQLAdapterBase
             user: settings.user
             password: settings.password
             database: settings.database
+            connectionLimit: settings.pool_size or 10
           callback null
 
   # create database if not exist
