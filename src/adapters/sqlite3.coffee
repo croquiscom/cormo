@@ -175,7 +175,10 @@ class SQLite3Adapter extends SQLAdapterBase
 
   valueToModel: (value, property) ->
     if property.type_class is types.Object or property.array
-      JSON.parse value
+      try
+        JSON.parse value
+      catch
+        null
     else if property.type_class is types.Date
       new Date value
     else if property.type_class is types.Boolean
@@ -421,6 +424,16 @@ class SQLite3Adapter extends SQLAdapterBase
     if @_client
       @_client.close()
     @_client = null
+
+  ##
+  # Exposes sqlite3 module's run method
+  run: ->
+    @_client.run.apply @_client, arguments
+
+  ##
+  # Exposes sqlite3 module's all method
+  all: ->
+    @_client.all.apply @_client, arguments
 
 module.exports = (connection) ->
   new SQLite3Adapter connection

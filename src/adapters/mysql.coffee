@@ -188,7 +188,10 @@ class MySQLAdapter extends SQLAdapterBase
 
   valueToModel: (value, property) ->
     if property.type_class is types.Object or property.array
-      JSON.parse value
+      try
+        JSON.parse value
+      catch
+        null
     else if property.type_class is types.GeoPoint
       [value.x, value.y]
     else if property.type_class is types.Boolean
@@ -534,8 +537,8 @@ class MySQLAdapter extends SQLAdapterBase
 
   ##
   # Exposes mysql module's query method
-  query: (sql, values, callback) ->
-    @_client.query sql, values, callback
+  query: ->
+    @_client.query.apply @_client, arguments
 
 module.exports = (connection) ->
   new MySQLAdapter connection

@@ -23,3 +23,18 @@ module.exports = () ->
             return done error if error
             expect(count).to.eql 2
             done null
+
+    it '#5 invalid json value', (done) ->
+      class Test extends _g.Model
+        @column 'name', String
+        @column 'object', type: Object, required: true
+        @column 'array', type: [String], required: true
+      _g.connection.applySchemas ->
+        _g.connection.adapter.run "INSERT INTO tests (name, object, array) VALUES ('croquis', '', '')", (error) ->
+          return done error if error
+          Test.where().lean(true).exec (error, records) ->
+            return done error if error
+            expect(records).to.eql [
+              { id: records[0].id, name: 'croquis', object: null, array: null }
+            ]
+            done null

@@ -24,6 +24,20 @@ module.exports = () ->
             expect(count).to.eql 2
             done null
 
+    it '#5 invalid json value', (done) ->
+      class Test extends _g.Model
+        @column 'name', String
+      Test.create name: 'croquis', (error) ->
+        return done error if error
+        Test.column 'object', type: Object, required: true
+        Test.column 'array', type: [String], required: true
+        Test.where().lean(true).exec (error, records) ->
+          return done error if error
+          expect(records).to.eql [
+            { id: records[0].id, name: 'croquis', object: null, array: null }
+          ]
+          done null
+
   describe 'query', ->
     it 'basic', (done) ->
       class User extends _g.Model
