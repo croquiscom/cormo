@@ -32,28 +32,28 @@
   },
   "dependencies": {
     "async": "^1.4.2",
-    "bluebird": "^2.9.34",
+    "bluebird": "^2.10.1",
     "commander": "^2.8.1",
     "inflect": "^0.3.0",
     "lodash": "^3.10.1",
-    "toposort-class": "^0.3.1"
+    "toposort-class": "^1.0.1"
   },
   "devDependencies": {
     "benchmark": "^1.0.0",
-    "chai": "^3.2.0",
-    "coffee-coverage": "^0.6.2",
-    "coffee-script": "^1.9.3",
+    "chai": "^3.3.0",
+    "coffee-coverage": "^0.6.3",
+    "coffee-script": "^1.10.0",
     "crojsdoc": "^0.8.15",
     "microtime": "^2.0.0",
-    "mocha": "^2.2.5",
-    "mongodb": "^2.0.40",
-    "mysql": "^2.8.0",
-    "pg": "^4.4.1",
+    "mocha": "^2.3.3",
+    "mongodb": "^2.0.43",
+    "mysql": "^2.9.0",
+    "pg": "^4.4.2",
     "pg-query-stream": "^0.7.0",
-    "redis": "^0.12.1",
-    "sqlite3": "^3.0.10"
+    "redis": "^2.0.0",
+    "sqlite3": "^3.1.0"
   },
   "optionalDependencies": {
-    "deasync": "^0.1.0"
+    "deasync": "^0.1.2"
   }
 }
