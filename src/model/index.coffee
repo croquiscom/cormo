@@ -186,7 +186,7 @@ class Model
     property.type = type
     property.type_class = type.constructor
     property._parts = path.split '.'
-    property._dbname = path.replace '.', '_'
+    property._dbname = path.replace /\./g, '_'
 
     @_schema[path] = property
 

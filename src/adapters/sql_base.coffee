@@ -36,7 +36,7 @@ class SQLAdapterBase extends AdapterBase
       # group field
       column = @_buildGroupExpr property
     else
-      column = @_escape_ch + key.replace('.', '_') + @_escape_ch
+      column = @_escape_ch + key.replace(/\./g, '_') + @_escape_ch
     op = '='
     if Array.isArray value
       if value.length is 0
