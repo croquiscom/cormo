@@ -47,34 +47,18 @@ class CommandConsole
   ##
   # Runs this command
   run: ->
-    if @language is 'javascript'
-      @startJS()
-    else
-      @startCoffee()
+    @startConsole if @language is 'javascript' then 'JS' else 'Coffee'
 
   ##
-  # Starts a CoffeeScript console
-  startCoffee: ->
+  # Starts a console
+  startConsole: (type) ->
     if @serve_port
       server = net.createServer (socket) =>
-        cormo_console.startCoffee inspect_depth: @inspect_depth, socket: socket
+        cormo_console['start'+type] inspect_depth: @inspect_depth, socket: socket
         .on 'exit', ->
           socket.end()
       .listen @serve_port
-    cormo_console.startCoffee inspect_depth: @inspect_depth
-    .on 'exit', ->
-      process.exit 0
-
-  ##
-  # Starts a JavaScript console
-  startJS: ->
-    if @serve_port
-      server = net.createServer (socket) =>
-        cormo_console.startJS inspect_depth: @inspect_depth, socket: socket
-        .on 'exit', ->
-          socket.end()
-      .listen @serve_port
-    cormo_console.startJS inspect_depth: @inspect_depth
+    cormo_console['start'+type] inspect_depth: @inspect_depth
     .on 'exit', ->
       process.exit 0
 
