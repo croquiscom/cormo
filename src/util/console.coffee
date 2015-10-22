@@ -15,6 +15,15 @@ util = require 'util'
 Connection = require '../connection'
 Model = require '../model'
 
+repl_servers = []
+
+addReplServer = (repl_server) ->
+  repl_server.on 'exit', ->
+    pos = repl_servers.indexOf repl_server
+    if pos >= 0
+      repl_servers.splice pos, 1
+  repl_servers.push repl_server
+
 setupContext = (context, options) ->
   context.Connection = Connection
   context.Model = Model
@@ -125,6 +134,7 @@ exports.startCoffee = (options) ->
     terminal: true
   addArgCompleterCoffee repl_server
   setupContext repl_server.context, options
+  addReplServer repl_server
   return repl_server
 
 # copied from coffee-script's repl.coffee
@@ -240,4 +250,10 @@ exports.startJS = (options) ->
   addHistoryJS repl_server, historyFile, historyMaxInputSize if historyFile
   addArgCompleterJS repl_server
   setupContext repl_server.context, options
+  addReplServer repl_server
   return repl_server
+
+exports.resetupContext = ->
+  for repl_server in repl_servers
+    for key, object of exports.public
+      repl_server.context[key] = object
