@@ -453,7 +453,7 @@ class Model
       options: options
 
   @inspect: (depth) ->
-    schema = Object.keys(@_schema).sort().map((column) => return "#{column}: #{@_schema[column].type}").join(', ')
+    schema = Object.keys(@_schema or {}).sort().map((column) => return "#{column}: #{@_schema[column].type}").join(', ')
     return '\u001b[36m' + "[Model: #{@name}(" + '\u001b[90m' + schema + '\u001b[36m' + ")]" + '\u001b[39m'
 
 _use = (file) ->
