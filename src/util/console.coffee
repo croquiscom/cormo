@@ -138,6 +138,7 @@ addHistoryJS = (repl, filename, maxSize) ->
     readFd = fs.openSync filename, 'r'
     buffer = new Buffer(size)
     fs.readSync readFd, buffer, 0, size, stat.size - size
+    fs.close readFd
     # Set the history on the interpreter
     repl.rli.history = buffer.toString().split('\n').reverse()
     # If the history file was truncated we should pop off a potential partial line
@@ -155,7 +156,7 @@ addHistoryJS = (repl, filename, maxSize) ->
       fs.write fd, "#{code}\n"
       lastLine = code
 
-  repl.rli.on 'exit', -> fs.close fd
+  repl.on 'exit', -> fs.close fd
 
   # Add a command to show the history stack
   repl.commands[getCommandId(repl, 'history')] =
