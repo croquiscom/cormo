@@ -99,7 +99,7 @@ evalCoffee = (cmd, context, filename, callback) ->
       defer = Promise.defer()
       context.$ = defer.callback
     js = coffee.compile cmd, filename: filename, bare: true
-    result = vm.runInContext js, context, filename
+    result = vm.runInContext js, context, filename: filename, displayErrors: false
     if defer
       delete context.$
       return defer.promise
