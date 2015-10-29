@@ -74,7 +74,7 @@ module.exports = ->
       expect(records[5]).to.eql customer: 'John Doe', date: new Date('2012/12/07'), count: 1, total: 15
       done null
 
-  it 'group by multiple columns (limit)', (done) ->
+  it 'limit for group', (done) ->
     _g.connection.Order.group('customer date', count: { $sum: 1 }, total: { $sum: '$price' }).order('customer date').limit(2).exec (error, records) ->
       return done error if error
       expect(records).to.have.length 2

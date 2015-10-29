@@ -505,6 +505,7 @@ class MongoDBAdapter extends AdapterBase
       pipeline.push $sort: orders if orders
       if options.conditions_of_group.length > 0
         pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
+      pipeline.push $limit: options.limit if options.limit
       if options.explain
         return @_collection(model).aggregate pipeline, explain: true, (error, result) ->
           return callback error if error
