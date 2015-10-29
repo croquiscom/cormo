@@ -74,6 +74,14 @@ module.exports = ->
       expect(records[5]).to.eql customer: 'John Doe', date: new Date('2012/12/07'), count: 1, total: 15
       done null
 
+  it 'group by multiple columns (limit)', (done) ->
+    _g.connection.Order.group('customer date', count: { $sum: 1 }, total: { $sum: '$price' }).order('customer date').limit(2).exec (error, records) ->
+      return done error if error
+      expect(records).to.have.length 2
+      expect(records[0]).to.eql customer: 'Bill Smith', date: new Date('2012/02/03'), count: 2, total: 76
+      expect(records[1]).to.eql customer: 'Daniel Smith', date: new Date('2012/01/19'), count: 1, total: 6
+      done null
+
   it 'min/max of all', (done) ->
     _g.connection.Order.group null, min_price: { $min: '$price' }, max_price: { $max: '$price' }, (error, records) ->
       return done error if error
