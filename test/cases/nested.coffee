@@ -344,3 +344,30 @@ module.exports = () ->
         expect(users[0].name).to.be.null
         callback null
     ], done
+
+  it 'order', (done) ->
+    User = _g.connection.User
+
+    User.column 'name',
+      first: String
+      last: String
+
+    async.waterfall [
+      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
+      (user, callback) -> User.create { name: first: 'Bill', last: 'Smith' }, callback
+      (user, callback) -> User.create { name: first: 'Alice', last: 'Jackson' }, callback
+      (user, callback) -> User.create { name: first: 'Gina', last: 'Baker' }, callback
+      (user, callback) -> User.create { name: first: 'Daniel', last: 'Smith' }, callback
+      (user, callback) -> User.where().order('name.first').exec callback
+      (users, callback) ->
+        expect(users).to.have.length 5
+        expect(users[0]).to.have.keys 'id', 'name'
+        expect(users[0].name).to.have.keys 'first', 'last'
+        expect(users[0].name.first).to.eql 'Alice'
+        expect(users[0].name.last).to.eql 'Jackson'
+        expect(users[1]).to.have.keys 'id', 'name'
+        expect(users[1].name).to.have.keys 'first', 'last'
+        expect(users[1].name.first).to.eql 'Bill'
+        expect(users[1].name.last).to.eql 'Smith'
+        callback null
+    ], done

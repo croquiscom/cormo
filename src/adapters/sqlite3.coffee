@@ -316,11 +316,17 @@ class SQLite3Adapter extends SQLAdapterBase
     if options.conditions_of_group.length > 0
       sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
     if options?.orders.length > 0
+      model_class = @_connection.models[model]
+      schema = model_class._schema
       orders = options.orders.map (order) ->
         if order[0] is '-'
-          return "\"#{order[1..]}\" DESC"
+          column = order[1..]
+          order = 'DESC'
         else
-          return "\"#{order}\" ASC"
+          column = order
+          order = 'ASC'
+        column = schema[column]?._dbname or column
+        return "\"#{column}\" #{order}"
       sql += ' ORDER BY ' + orders.join ','
     if options?.limit?
       sql += ' LIMIT ' + options.limit
