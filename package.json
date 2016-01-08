@@ -31,8 +31,8 @@
     "node": ">= 0.10"
   },
   "dependencies": {
-    "async": "^1.4.2",
-    "bluebird": "^2.10.2",
+    "async": "^1.5.2",
+    "bluebird": "^3.1.1",
     "coffee-script": "^1.10.0",
     "commander": "^2.9.0",
     "inflect": "^0.3.0",
@@ -40,20 +40,20 @@
     "toposort-class": "^1.0.1"
   },
   "devDependencies": {
-    "benchmark": "^1.0.0",
-    "chai": "^3.4.0",
-    "coffee-coverage": "^0.6.3",
+    "benchmark": "^2.0.0",
+    "chai": "^3.4.1",
+    "coffee-coverage": "^0.7.0",
     "crojsdoc": "^0.8.15",
     "microtime": "^2.0.0",
-    "mocha": "^2.3.3",
-    "mongodb": "^2.0.46",
-    "mysql": "^2.9.0",
+    "mocha": "^2.3.4",
+    "mongodb": "^2.1.3",
+    "mysql": "^2.10.0",
     "pg": "^4.4.3",
-    "pg-query-stream": "^0.7.0",
-    "redis": "^2.2.5",
-    "sqlite3": "^3.1.0"
+    "pg-query-stream": "^1.0.0",
+    "redis": "^2.4.2",
+    "sqlite3": "^3.1.1"
   },
   "optionalDependencies": {
-    "deasync": "^0.1.3"
+    "deasync": "^0.1.4"
   }
 }
