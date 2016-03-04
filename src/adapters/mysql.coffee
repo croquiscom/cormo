@@ -488,6 +488,7 @@ class MySQLAdapter extends SQLAdapterBase
       port: settings.port
       user: settings.user
       password: settings.password
+      charset: settings.charset
     @_database = settings.database
     @_settings = settings
     client.connect (error) =>
@@ -506,6 +507,7 @@ class MySQLAdapter extends SQLAdapterBase
             port: settings.port
             user: settings.user
             password: settings.password
+            charset: settings.charset
             database: settings.database
             connectionLimit: settings.pool_size or 10
           callback null
