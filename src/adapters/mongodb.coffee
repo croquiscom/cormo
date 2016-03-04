@@ -86,11 +86,11 @@ _buildWhereSingle = (property, key, value, not_op) ->
           sub_value = _convertValueToObjectID sub_value, key
         else if property_type_class is types.Date
           sub_value = new Date sub_value
-        value = _.object [sub_key], [sub_value]
+        value = _.zipObject [sub_key], [sub_value]
         if not_op
           value = $not: value
         key = '_id' if key is 'id'
-        return _.object [key], [value]
+        return _.zipObject [key], [value]
       when '$contains'
         if Array.isArray value[sub_key]
           value = value[sub_key].map (v) ->
@@ -120,7 +120,7 @@ _buildWhereSingle = (property, key, value, not_op) ->
 
   key = '_id' if key is 'id'
   value = new Date value if property_type_class is types.Date
-  return _.object [key], [value]
+  return _.zipObject [key], [value]
 
 _buildWhere = (schema, conditions, conjunction='$and') ->
   if Array.isArray conditions
@@ -159,7 +159,7 @@ _buildWhere = (schema, conditions, conjunction='$and') ->
       after_count = keys.length
       if before_count is after_count and not _.some(keys, (key) -> key.substr(0, 1) is '$')
         return obj
-    return _.object [conjunction], [subs]
+    return _.zipObject [conjunction], [subs]
 
 _buildGroupFields = (group_by, group_fields) ->
   group = {}
@@ -258,7 +258,7 @@ class MongoDBAdapter extends AdapterBase
     indexes = []
     for column, property of @_connection.models[model]._schema
       if property.type_class is types.GeoPoint
-        indexes.push [ _.object [column], ['2d'] ]
+        indexes.push [ _.zipObject [column], ['2d'] ]
     async.forEach indexes, (index, callback) ->
       collection.ensureIndex index[0], index[1], (error) ->
         callback error

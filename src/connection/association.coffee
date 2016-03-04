@@ -50,7 +50,7 @@ class ConnectionAssociation
             .then ->
               self = getter.__scope
               if (not self[columnCache] or reload) and self.id
-                target_model.where _.object [foreign_key], [self.id]
+                target_model.where _.zipObject [foreign_key], [self.id]
                 .exec()
                 .then (records) ->
                   self[columnCache] = records
@@ -110,7 +110,7 @@ class ConnectionAssociation
             .then ->
               self = getter.__scope
               if (not self[columnCache] or reload) and self.id
-                target_model.where _.object [foreign_key], [self.id]
+                target_model.where _.zipObject [foreign_key], [self.id]
                 .exec()
                 .then (records) ->
                   return Promise.reject new Error('integrity error') if records.length > 1
@@ -239,10 +239,10 @@ class ConnectionAssociation
             ids = records.map (record) -> record.id
             sub_promises = integrities.map (integrity) =>
               query = integrity.child.select ''
-              query.where _.object [integrity.column], [$not: $in: ids]
+              query.where _.zipObject [integrity.column], [$not: $in: ids]
               property = integrity.child._schema[integrity.column]
               if not property.required
-                query.where _.object [integrity.column], [$not: null]
+                query.where _.zipObject [integrity.column], [$not: null]
               query.exec()
               .then (records) ->
                 if records.length > 0
@@ -320,7 +320,7 @@ class ConnectionAssociation
         else
           Object.defineProperty record, column, enumerable: true, value: []
         record.id
-      query = target_model.where _.object [foreign_key], [$in: ids]
+      query = target_model.where _.zipObject [foreign_key], [$in: ids]
       query.select select + ' ' + foreign_key if select
       query.lean() if options.lean
       query.exec()
@@ -334,7 +334,7 @@ class ConnectionAssociation
         records[column] = []
       else
         Object.defineProperty records, column, enumerable: true, value: []
-      query = target_model.where _.object [foreign_key], [records.id]
+      query = target_model.where _.zipObject [foreign_key], [records.id]
       query.select select + ' ' + foreign_key if select
       query.lean() if options.lean
       query.exec()

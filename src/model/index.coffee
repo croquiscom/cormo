@@ -191,7 +191,7 @@ class Model
     @_schema[path] = property
 
     if property.unique
-      @_indexes.push columns: _.zipObject([[property._dbname, 1]]), options: name: property._dbname, unique: true, required: property.required
+      @_indexes.push columns: _.zipObject([property._dbname], [1]), options: name: property._dbname, unique: true, required: property.required
 
     @_connection._schema_changed = true
 

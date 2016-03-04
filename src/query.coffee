@@ -440,13 +440,13 @@ class Query
   _doIntegrityActions: (integrities, ids) ->
     promises = integrities.map (integrity) =>
       if integrity.type is 'parent_nullify'
-        integrity.child.update _.object([integrity.column], [null]), _.object([integrity.column], [ids])
+        integrity.child.update _.zipObject([integrity.column], [null]), _.zipObject([integrity.column], [ids])
       else if integrity.type is 'parent_restrict'
-        integrity.child.count _.object [integrity.column], [ids]
+        integrity.child.count _.zipObject [integrity.column], [ids]
         .then (count) ->
           Promise.reject new Error 'rejected' if count>0
       else if integrity.type is 'parent_delete'
-        integrity.child.delete _.object [integrity.column], [ids]
+        integrity.child.delete _.zipObject [integrity.column], [ids]
     Promise.all promises
 
   ##
