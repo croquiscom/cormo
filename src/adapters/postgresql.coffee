@@ -111,7 +111,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
     async.auto
       get_tables: (callback) =>
         @_getTables callback
-      get_table_schemas: ['get_tables', (callback, results) =>
+      get_table_schemas: ['get_tables', (results, callback) =>
         table_schemas = {}
         async.each results.get_tables, (table, callback) =>
           @_getSchema table, (error, schema) ->

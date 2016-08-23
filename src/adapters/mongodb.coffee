@@ -189,7 +189,7 @@ class MongoDBAdapter extends AdapterBase
     async.auto
       get_tables: (callback) =>
         @_getTables callback
-      get_table_schemas: ['get_tables', (callback, results) =>
+      get_table_schemas: ['get_tables', (results, callback) =>
         table_schemas = {}
         async.each results.get_tables, (table, callback) =>
           @_getSchema table, (error, schema) ->
@@ -200,7 +200,7 @@ class MongoDBAdapter extends AdapterBase
           return callback error if error
           callback null, table_schemas
       ]
-      get_indexes: ['get_tables', (callback, results) =>
+      get_indexes: ['get_tables', (results, callback) =>
         all_indexes = {}
         async.each results.get_tables, (table, callback) =>
           @_getIndexes table, (error, indexes) ->
