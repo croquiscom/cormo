@@ -23,45 +23,7 @@ _convertValueToObjectID = (value, key) ->
     throw new Error("'#{key}' is not a valid id")
 
 _objectIdToString = (oid) ->
-  oid = oid.id
-  str = ''
-  value = oid.charCodeAt 0
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 1
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 2
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 3
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 4
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 5
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 6
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 7
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 8
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 9
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 10
-  str += '0' if value < 16
-  str += value.toString(16)
-  value = oid.charCodeAt 11
-  str += '0' if value < 16
-  str += value.toString(16)
-  return str
+  return oid.toString()
 
 _buildWhereSingle = (property, key, value, not_op) ->
   if key isnt 'id' and not property?
