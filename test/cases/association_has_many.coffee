@@ -100,6 +100,7 @@ module.exports = () ->
       expect(post).to.have.property 'id'
       expect(post).to.have.property 'user_id', user.id
       done null
+    return
 
   it 'get sub objects', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -111,6 +112,7 @@ module.exports = () ->
             _comparePost posts[0], post1
             _comparePost posts[1], post2
             done null
+    return
 
   it 'sub objects are cached', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -130,3 +132,4 @@ module.exports = () ->
                 _comparePost posts[0], post1
                 _comparePost posts[1], post2
                 done null
+    return

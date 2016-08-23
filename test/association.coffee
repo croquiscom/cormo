@@ -47,15 +47,18 @@ _dbs.forEach (db) ->
         Computer.belongsTo User
 
       _g.connection.dropAllModels done
+      return
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection.User, _g.connection.Post, _g.connection.Computer], done
+      return
 
     after (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     describe '#hasMany', ->
       require('./cases/association_has_many')()

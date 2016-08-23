@@ -22,6 +22,7 @@ _createPlaces = (Place, data, callback) ->
     ]
   data.sort -> 0.5 - Math.random() # random sort
   Place.createBulk data, callback
+  return
 
 module.exports = () ->
   it 'valid geopoint', (done) ->
@@ -36,6 +37,7 @@ module.exports = () ->
         expect(record.location[0]).to.equal -76.136131
         expect(record.location[1]).to.equal 43.036240
         done null
+    return
 
   it 'invalid geopoint', (done) ->
     data = [

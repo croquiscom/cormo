@@ -12,6 +12,7 @@ module.exports = () ->
         for i in [1..1500]
           expect(records[i-1]).to.have.property 'value', i
         done null
+      return
 
   describe 'collection', ->
     it 'find', (done) ->
@@ -35,3 +36,4 @@ module.exports = () ->
             expect(result[0]).to.eql _id: new ObjectId(users[0].id), name: users[0].name, age: users[0].age
             expect(result[1]).to.eql _id: new ObjectId(users[2].id), name: users[2].name, age: users[2].age
             done null
+      return

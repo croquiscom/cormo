@@ -8,11 +8,13 @@ _dbs.forEach (db) ->
     before (done) ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
       _g.connection.dropAllModels done
+      return
 
     after (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     require('./cases/schema')()

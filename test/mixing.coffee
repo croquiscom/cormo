@@ -50,9 +50,11 @@ describe 'mixing several database', ->
           mongodb.dropAllModels callback
 
     _g.connection.dropAllModels done
+    return
 
   beforeEach (done) ->
     _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
+    return
 
   after (done) ->
     _g.connection.dropAllModels ->
@@ -60,6 +62,7 @@ describe 'mixing several database', ->
       _g.connection.mongodb.close()
       _g.connection = null
       done null
+    return
 
   describe '#hasMany', ->
     require('./cases/association_has_many')()

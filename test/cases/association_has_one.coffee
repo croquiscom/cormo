@@ -11,3 +11,4 @@ module.exports = ->
           return done error if error
           expect(computer).to.eql record
           done null
+    return

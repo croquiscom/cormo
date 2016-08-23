@@ -19,6 +19,7 @@ _createUsers = (User, data, callback) ->
     ]
   data.sort -> 0.5 - Math.random() # random sort
   User.createBulk data, callback
+  return
 
 module.exports = () ->
   it 'simple where', (done) ->
@@ -178,6 +179,7 @@ module.exports = () ->
     _g.connection.User.count (error, count) ->
       expect(count).to.equal 0
       done null
+    return
 
   it 'count all', (done) ->
     _createUsers _g.connection.User, (error, users) ->
@@ -423,6 +425,7 @@ module.exports = () ->
         expect(record).to.have.property 'name', user.name
         expect(record).to.have.property 'age', user.age
         done null
+    return
 
   it 'lean option for multiple records', (done) ->
     _createUsers _g.connection.User, (error, users) ->
@@ -446,6 +449,7 @@ module.exports = () ->
         expect(users[0]).to.have.keys 'id', 'name', 'age'
         expect(users[0].age).to.be.null
         done null
+    return
 
   it 'lean option of null value without select', (done) ->
     _g.connection.User.createBulk [ { name: 'Gina Baker' } ], (error, users) ->
@@ -456,6 +460,7 @@ module.exports = () ->
         expect(users[0]).to.have.keys 'id', 'name', 'age'
         expect(users[0].age).to.be.null
         done null
+    return
 
   it 'id field of lean result can be modified', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -465,6 +470,7 @@ module.exports = () ->
         record.id = 'new id'
         expect(record.id).to.be.equal 'new id'
         done null
+    return
 
   it 'cache', (done) ->
     async.waterfall [
@@ -557,6 +563,7 @@ module.exports = () ->
         expect(record).to.have.property 'name', user.name
         expect(record).to.have.property 'age', user.age
         done null
+    return
 
   it 'turn off lean option for a query', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -571,6 +578,7 @@ module.exports = () ->
         expect(record).to.have.property 'name', user.name
         expect(record).to.have.property 'age', user.age
         done null
+    return
 
   it 'if', (done) ->
     _createUsers _g.connection.User, (error, users) ->

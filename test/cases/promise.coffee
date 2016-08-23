@@ -20,6 +20,7 @@ module.exports = () ->
       done null
     .catch (error) ->
       done error
+    return
 
   it 'Model::save (create)', (done) ->
     new _g.connection.User name: 'John Doe', age: 27
@@ -29,6 +30,7 @@ module.exports = () ->
       done null
     .catch (error) ->
       done error
+    return
 
   it 'Model.find', (done) ->
     _g.connection.User.create name: 'John Doe', age: 27
@@ -45,6 +47,7 @@ module.exports = () ->
       done null
     .catch (error) ->
       done error
+    return
 
   it 'Model.find error', (done) ->
     _g.connection.User.create name: 'John Doe', age: 27
@@ -59,6 +62,7 @@ module.exports = () ->
       expect(error).to.be.an.instanceof Error
       expect(error.message).to.equal 'not found'
       done null
+    return
 
   it 'Model::save (update)', (done) ->
     _g.connection.User.create name: 'John Doe', age: 27
@@ -85,3 +89,4 @@ module.exports = () ->
       done null
     .catch (error) ->
       done error
+    return

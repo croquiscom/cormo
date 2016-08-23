@@ -45,7 +45,7 @@
     "coffee-coverage": "^1.0.1",
     "crojsdoc": "^0.8.16",
     "microtime": "^2.1.1",
-    "mocha": "^2.5.3",
+    "mocha": "^3.0.2",
     "mongodb": "^2.2.7",
     "mysql": "^2.10.2",
     "pg": "^4.5.5",

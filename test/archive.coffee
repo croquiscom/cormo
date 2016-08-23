@@ -21,14 +21,17 @@ _dbs.forEach (db) ->
         @archive: true
 
       _g.connection.dropAllModels done
+      return
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection._Archive, _g.connection.Post, _g.connection.User], done
+      return
 
     after (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     require('./cases/archive')()

@@ -22,6 +22,7 @@ module.exports = () ->
             return done error if error
             expect(result.col).to.eql '01234'
             done null
+    return
 
   it 'string length(string)', (done) ->
     try
@@ -42,3 +43,4 @@ module.exports = () ->
             return done error if error
             expect(result.col).to.eql '01234'
             done null
+    return

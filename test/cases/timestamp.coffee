@@ -11,6 +11,7 @@ module.exports = () ->
       expect(user.created_at).to.equal user.updated_at
       expect(user.created_at?.getTime()).to.be.closeTo now, 10
       done null
+    return
 
   it 'updated_at', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -27,3 +28,4 @@ module.exports = () ->
           expect(user.updated_at?.getTime()).to.be.closeTo now, 10
           done null
       , 50
+    return

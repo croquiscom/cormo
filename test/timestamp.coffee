@@ -20,14 +20,17 @@ _dbs.forEach (db) ->
         User.timestamps()
 
       _g.connection.dropAllModels done
+      return
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection.User], done
+      return
 
     after (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     require('./cases/timestamp')()

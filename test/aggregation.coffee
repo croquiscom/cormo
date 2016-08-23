@@ -20,6 +20,7 @@ _dbs.forEach (db) ->
           price: Number
 
       _g.connection.dropAllModels done
+      return
 
     beforeEach (done) ->
       _g.connection.manipulate [
@@ -34,11 +35,13 @@ _dbs.forEach (db) ->
         { create_order: customer: 'Daniel Smith', date: '2012/04/23', price: 13 }
         { create_order: customer: 'Daniel Smith', date: '2012/04/23', price: 11 }
       ], done
+      return
 
     after (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     require('./cases/aggregation')()

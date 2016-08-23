@@ -9,6 +9,7 @@ module.exports = () ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, record) ->
       user = record
       done error
+    return
 
   it 'Model.create', (done) ->
     d = domain.create()
@@ -16,6 +17,7 @@ module.exports = () ->
       _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
         expect(d).to.equal process.domain or 'no domain'
         done null
+    return
 
   it 'Model.find', (done) ->
     d = domain.create()
@@ -23,6 +25,7 @@ module.exports = () ->
       _g.connection.User.find user.id, (error, record) ->
         expect(d).to.equal process.domain or 'no domain'
         done null
+    return
 
   it 'Model::save', (done) ->
     d = domain.create()
@@ -32,6 +35,7 @@ module.exports = () ->
         user.save (error) ->
           expect(d).to.equal process.domain or 'no domain'
           done null
+    return
 
   it 'Model::destroy', (done) ->
     d = domain.create()
@@ -40,6 +44,7 @@ module.exports = () ->
         user.destroy (error) ->
           expect(d).to.equal process.domain or 'no domain'
           done null
+    return
 
   it 'Model.where', (done) ->
     d = domain.create()
@@ -47,6 +52,7 @@ module.exports = () ->
       _g.connection.User.where age: 27, (error, users) ->
         expect(d).to.equal process.domain or 'no domain'
         done null
+    return
 
   it 'Model.count', (done) ->
     d = domain.create()
@@ -54,3 +60,4 @@ module.exports = () ->
       _g.connection.User.count (error, count) ->
         expect(d).to.equal process.domain or 'no domain'
         done null
+    return

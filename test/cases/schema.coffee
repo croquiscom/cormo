@@ -6,6 +6,7 @@ module.exports = () ->
   afterEach (done) ->
     _g.connection.dropAllModels ->
       done null
+    return
 
   it 'add index', (done) ->
     class User extends _g.Model
@@ -34,6 +35,7 @@ module.exports = () ->
               expect(error.message).to.match /^duplicated( age)?$/
               expect(user3).to.not.exist
               done null
+    return
 
   it 'applySchemas successes if an index already exist', (done) ->
     class User extends _g.Model
@@ -49,6 +51,7 @@ module.exports = () ->
       _g.connection.applySchemas (error) ->
         return done error if error
         done null
+    return
 
   it 'add column', (done) ->
     class User extends _g.Model
@@ -68,3 +71,4 @@ module.exports = () ->
           expect(user2).to.have.keys 'id', 'name', 'age', 'address'
           expect(user2.address).to.eql 'Moon'
           done null
+    return

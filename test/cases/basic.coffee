@@ -39,6 +39,7 @@ module.exports = () ->
       return done error if error
       expect(user).to.have.keys 'id', 'name', 'age'
       done null
+    return
 
   it 'create method', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -47,6 +48,7 @@ module.exports = () ->
       expect(user).to.have.keys 'id', 'name', 'age'
       expect(user.id).to.exist
       done null
+    return
 
   it 'find a record', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -59,6 +61,7 @@ module.exports = () ->
         expect(record).to.have.property 'name', user.name
         expect(record).to.have.property 'age', user.age
         done null
+    return
 
   it 'find non-existing record', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -69,6 +72,7 @@ module.exports = () ->
         expect(error).to.be.an.instanceof Error
         expect(error.message).to.equal 'not found'
         done null
+    return
 
   it 'find undefined', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -78,6 +82,7 @@ module.exports = () ->
         expect(error).to.be.an.instanceof Error
         expect(error.message).to.equal 'not found'
         done null
+    return
 
   it 'find undefined with condition', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -87,6 +92,7 @@ module.exports = () ->
         expect(error).to.be.an.instanceof Error
         expect(error.message).to.equal 'not found'
         done null
+    return
 
   it 'update a record', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -108,6 +114,7 @@ module.exports = () ->
             expect(record).to.have.property 'name', 'Bill Smith'
             expect(record).to.have.property 'age', 27
             done null
+    return
 
   it 'destroy a record', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -125,12 +132,14 @@ module.exports = () ->
             expect(error).to.be.an.instanceof Error
             expect(error.message).to.equal 'not found'
             done null
+    return
 
   it 'destroy a new record', (done) ->
     user = _g.connection.User.build name: 'John Doe', age: 27
     user.destroy (error) ->
       return done error if error
       done null
+    return
 
   it 'try to create with extra data', (done) ->
     user = new _g.connection.User { id: 1, name: 'John Doe', age: 27, extra: 'extra' }
@@ -151,6 +160,7 @@ module.exports = () ->
         expect(record).to.have.property 'age', user.age
         expect(record).to.not.have.property 'extra'
         done null
+    return
 
   it 'delete some fields', (done) ->
     _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
@@ -166,6 +176,7 @@ module.exports = () ->
           expect(record).to.have.property 'name', null
           expect(record).to.have.property 'age', null
           done null
+    return
 
   it 'find records', (done) ->
     async.parallel [
@@ -264,6 +275,7 @@ module.exports = () ->
           expect(user).to.eql record
           callback error
       , done
+    return
 
   it 'dirty', (done) ->
     return done null if not _g.connection.User.dirty_tracking
@@ -298,6 +310,7 @@ module.exports = () ->
       expect(user.getPrevious('name')).to.not.exist
 
       done null
+    return
 
   it 'dirty after save', (done) ->
     return done null if not _g.connection.User.dirty_tracking
@@ -311,6 +324,7 @@ module.exports = () ->
         expect(user.isDirty()).to.equal false
         expect(user.getChanged()).to.eql []
         done null
+    return
 
   it 'get & set', (done) ->
     user = new _g.connection.User name: 'John Doe', age: 27

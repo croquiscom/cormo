@@ -12,6 +12,7 @@ module.exports = () ->
           return done error if error
           expect(user).to.eql record
           done null
+    return
 
   it 'lean option for association', (done) ->
     async.waterfall [

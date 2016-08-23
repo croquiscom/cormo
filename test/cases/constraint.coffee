@@ -12,6 +12,7 @@ _createUsers = (User, data, callback) ->
       { name: 'Gina Baker', age: 32, email: 'gina@example.com', facebook_id: '4' }
     ]
   User.createBulk data, callback
+  return
 
 module.exports = () ->
   it 'unique', (done) ->
@@ -71,6 +72,7 @@ module.exports = () ->
       _g.connection.User.create { name: 'test', age: 10, email: 'test2@example.com' }, (error, user) ->
         return done error if error
         done null
+    return
 
   it 'required on update by Model::save', (done) ->
     _createUsers _g.connection.User, (error, users) ->

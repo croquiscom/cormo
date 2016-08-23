@@ -11,11 +11,13 @@ _dbs.forEach (db) ->
         @column 'name', String
         @column 'age', Number
       _g.connection.dropAllModels done
+      return
 
     after (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     require('./cases/callbacks')()

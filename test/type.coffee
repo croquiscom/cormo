@@ -30,15 +30,18 @@ _dbs.forEach (db) ->
           recordid_array: [_g.cormo.types.RecordID]
 
       _g.connection.dropAllModels done
+      return
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection.Type], done
+      return
 
     after (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     describe '#basic', ->
       require('./cases/type')()

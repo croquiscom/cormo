@@ -21,6 +21,7 @@ _createUsers = (User, data, callback) ->
     ]
   data.sort -> 0.5 - Math.random() # random sort
   User.createBulk data, callback
+  return
 
 module.exports = () ->
   it 'simple not', (done) ->

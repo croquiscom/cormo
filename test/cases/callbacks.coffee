@@ -39,6 +39,7 @@ module.exports = () ->
       User.find users[0].id, (error, user) ->
         expect(logs).to.eql [ 'after_find1 : John Doe', 'after_find2 : John Doe', 'after_initialize1 : John Doe', 'after_initialize2 : John Doe' ]
         done null
+    return
 
   it 'callbacks for finding records', (done) ->
     User = _g.connection.User
@@ -119,6 +120,7 @@ module.exports = () ->
         'after_save2 : John Doe'
       ]
       done null
+    return
 
   it 'callbacks for updating a record', (done) ->
     User = _g.connection.User
@@ -170,6 +172,7 @@ module.exports = () ->
           'after_save2 : Alice Jackson'
         ]
         done null
+    return
 
   it 'callbacks for destroying a record', (done) ->
     User = _g.connection.User
@@ -202,3 +205,4 @@ module.exports = () ->
             'after_destroy2 : John Doe'
           ]
           done null
+    return

@@ -38,6 +38,7 @@ module.exports = () ->
       expect(error).to.be.an.instanceof Error
       expect(error.message).to.equal 'model Account does not exist'
       done null
+    return
 
   it 'create multiple', (done) ->
     async.waterfall [

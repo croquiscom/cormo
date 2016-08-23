@@ -23,6 +23,7 @@ module.exports = () ->
             return done error if error
             expect(count).to.eql 2
             done null
+      return
 
     it '#5 invalid json value', (done) ->
       class Test extends _g.Model
@@ -37,6 +38,7 @@ module.exports = () ->
             { id: records[0].id, name: 'croquis', object: null, array: null }
           ]
           done null
+      return
 
   describe 'query', ->
     it 'basic', (done) ->
@@ -58,3 +60,4 @@ module.exports = () ->
           expect(rows[0]).to.eql id: users[0].id, name: users[0].name, age: users[0].age
           expect(rows[1]).to.eql id: users[2].id, name: users[2].name, age: users[2].age
           done null
+      return

@@ -9,9 +9,11 @@ _dbs.forEach (db) ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
       _g.connection.dropAllModels done
+      return
 
     afterEach (done) ->
       _g.connection.dropAllModels done
+      return
 
     after ->
       _g.connection.close()

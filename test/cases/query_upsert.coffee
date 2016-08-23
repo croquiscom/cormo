@@ -14,6 +14,7 @@ _createUserUniques = (UserUnique, data, callback) ->
       { name: 'Bill Smith', age: 45 }
     ]
   UserUnique.createBulk data, callback
+  return
 
 module.exports = () ->
   it 'insert new', (done) ->

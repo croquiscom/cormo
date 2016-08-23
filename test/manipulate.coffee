@@ -33,14 +33,17 @@ _dbs.forEach (db) ->
         Post.belongsTo User
 
       _g.connection.dropAllModels done
+      return
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
+      return
 
     after (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     require('./cases/manipulate')()

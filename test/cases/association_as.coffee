@@ -21,6 +21,7 @@ module.exports = () ->
             _compareComment comments[0], comment1
             _compareComment comments[1], comment2
             done null
+    return
 
   it 'get associated object', (done) ->
     _g.connection.Post.create { title: 'my post', body: 'This is a my post.' }, (error, post) ->
@@ -33,3 +34,4 @@ module.exports = () ->
           expect(post).to.have.property 'title', record.title
           expect(post).to.have.property 'body', record.body
           done null
+    return

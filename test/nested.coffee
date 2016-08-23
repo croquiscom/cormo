@@ -10,11 +10,13 @@ _dbs.forEach (db) ->
       class User extends _g.Model
         @connection _g.connection
       _g.connection.dropAllModels done
+      return
 
     afterEach (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     require('./cases/nested')()

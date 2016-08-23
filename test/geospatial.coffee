@@ -19,15 +19,18 @@ _dbs.forEach (db) ->
           location: _g.cormo.types.GeoPoint
 
       _g.connection.dropAllModels done
+      return
 
     beforeEach (done) ->
       _g.deleteAllRecords [_g.connection.Place], done
+      return
 
     after (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     require('./cases/geospatial')()
 

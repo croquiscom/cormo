@@ -18,11 +18,13 @@ _dbs.forEach (db) ->
       class Comment extends _g.Model
         @column 'content', String
       _g.connection.dropAllModels done
+      return
 
     after (done) ->
       _g.connection.dropAllModels ->
         _g.connection.close()
         _g.connection = null
         done null
+      return
 
     require('./cases/integrity')()

@@ -22,6 +22,7 @@ _dbs.forEach (db) ->
           expect(record).to.have.property 'name', user.name
           expect(record).to.have.property 'age', user.age
           done null
+      return
 
     it 'association order', ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
@@ -49,3 +50,4 @@ _dbs.forEach (db) ->
         _g.connection.close()
         _g.connection = null
         done null
+      return

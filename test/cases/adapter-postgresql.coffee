@@ -23,6 +23,7 @@ module.exports = () ->
             return done error if error
             expect(count).to.eql 2
             done null
+      return
 
   describe 'query', ->
     it 'basic', (done) ->
@@ -44,3 +45,4 @@ module.exports = () ->
           expect(result.rows[0]).to.eql id: users[0].id, name: users[0].name, age: users[0].age
           expect(result.rows[1]).to.eql id: users[2].id, name: users[2].name, age: users[2].age
           done null
+      return
