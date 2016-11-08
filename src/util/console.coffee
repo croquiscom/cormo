@@ -86,6 +86,8 @@ addArgCompleterCoffee = (repl_server) ->
 prettyErrorMessage = coffee.helpers.prettyErrorMessage or (e) -> e
 
 evalCoffee = (cmd, context, filename, callback) ->
+  if filename is 'repl' and cmd.substr(0, 6) is 'try { ' and cmd.substr(cmd.length-15) is ' } catch (e) {}'
+    cmd = "try #{cmd.substr(6, cmd.length-21)} catch"
   cmd = cmd.replace /\uFF00/g, '\n'
   cmd = cmd.replace /^\(([\s\S]*)\n\)$/m, '$1'
   return callback null if not cmd
