@@ -64,6 +64,8 @@ _buildWhereSingle = (property, key, value, not_op) ->
             value = $in: value
         else
           value = new RegExp value[sub_key], 'i'
+      when '$startswith'
+        value = new RegExp '^'+value[sub_key], 'i'
       when '$in'
         if is_objectid
           value[sub_key] = value[sub_key].map (v) -> _convertValueToObjectID v, key

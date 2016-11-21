@@ -105,6 +105,15 @@ module.exports = () ->
         _compareUser users[1], name: 'John Doe', age: 27
         done null
 
+  it 'startswith', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.where { name: { $startswith: 'd' } }, (error, users) ->
+        return done error if error
+        expect(users).to.have.length 1
+        _compareUser users[0], name: 'Daniel Smith', age: 8
+        done null
+
   it '$in', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error
