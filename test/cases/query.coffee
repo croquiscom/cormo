@@ -114,6 +114,17 @@ module.exports = () ->
         _compareUser users[0], name: 'Daniel Smith', age: 8
         done null
 
+  it 'endswith', (done) ->
+    _createUsers _g.connection.User, (error, users) ->
+      return done error if error
+      _g.connection.User.where { name: { $endswith: 'h' } }, (error, users) ->
+        return done error if error
+        expect(users).to.have.length 2
+        users.sort (a, b) -> if a.name < b.name then -1 else 1
+        _compareUser users[0], name: 'Bill Smith', age: 45
+        _compareUser users[1], name: 'Daniel Smith', age: 8
+        done null
+
   it '$in', (done) ->
     _createUsers _g.connection.User, (error, users) ->
       return done error if error

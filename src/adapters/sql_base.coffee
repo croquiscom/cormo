@@ -89,6 +89,11 @@ class SQLAdapterBase extends AdapterBase
           value = value[sub_key]
           params.push value + '%'
           return column + op + @_param_place_holder params.length
+        when '$endswith'
+          op = ' ' + @_contains_op + ' '
+          value = value[sub_key]
+          params.push '%' + value
+          return column + op + @_param_place_holder params.length
         else
           throw new Error "unknown operator '#{sub_key}'"
     else if _.isRegExp value

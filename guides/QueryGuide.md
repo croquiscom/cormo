@@ -95,6 +95,13 @@ Two or more [[#Query::where]]s mean a logical and.
 </tr>
 
 <tr>
+<td>Ends with some text in case insensitive</td>
+<td>name: { $endswith: 'smi' }</td>
+<td>name LIKE '%smi'</td>
+<td>{ name: /smi$/i }</td>
+</tr>
+
+<tr>
 <td rowspan='2'>Regular expression</td>
 <td>name: /smi/</td>
 <td>name REGEXP 'smi'</td>
