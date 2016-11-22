@@ -7,8 +7,7 @@ coffee = require 'coffee-script'
 fs = require 'fs'
 path = require 'path'
 Promise = require 'bluebird'
-repl_coffee = require 'coffee-script/repl'
-repl_js = require 'repl'
+repl = require 'repl'
 vm = require 'vm'
 util = require 'util'
 
@@ -54,6 +53,49 @@ setupContext = (context, options) ->
 # Members of this object will be imported when a console is started
 # @memberOf console
 exports.public = {}
+
+# copied from coffee-script's repl.coffee
+addHistory = (repl, filename, maxSize) ->
+  lastLine = null
+  try
+    # Get file info and at most maxSize of command history
+    stat = fs.statSync filename
+    size = Math.min maxSize, stat.size
+    # Read last `size` bytes from the file
+    readFd = fs.openSync filename, 'r'
+    buffer = new Buffer(size)
+    fs.readSync readFd, buffer, 0, size, stat.size - size
+    fs.closeSync readFd
+    # Set the history on the interpreter
+    repl.rli.history = buffer.toString().split('\n').reverse()
+    # If the history file was truncated we should pop off a potential partial line
+    repl.rli.history.pop() if stat.size > maxSize
+    # Shift off the final blank newline
+    repl.rli.history.shift() if repl.rli.history[0] is ''
+    repl.rli.historyIndex = -1
+    lastLine = repl.rli.history[0]
+
+  fd = fs.openSync filename, 'a'
+
+  repl.rli.addListener 'line', (code) ->
+    if code and code.length and code isnt '.history' and code isnt '.exit' and lastLine isnt code
+      # Save the latest command in the file
+      fs.writeSync fd, "#{code}\n"
+      lastLine = code
+
+  repl.on 'exit', -> fs.closeSync fd
+
+  # Add a command to show the history stack
+  repl.commands[getCommandId(repl, 'history')] =
+    help: 'Show command history'
+    action: ->
+      repl.outputStream.write "#{repl.rli.history[..].reverse().join '\n'}\n"
+      repl.displayPrompt()
+
+getCommandId = (repl, commandName) ->
+  # Node 0.11 changed API, a command such as '.help' is now stored as 'help'
+  commandsHaveLeadingDot = repl.commands['.help']?
+  if commandsHaveLeadingDot then ".#{commandName}" else commandName
 
 addArgCompleterCoffee = (repl_server) ->
   rli = repl_server.rli
@@ -139,62 +181,21 @@ exports.startCoffee = (options) ->
   if options.socket
     # Can't get the exact value?
     options.socket.columns = 100
-  repl_server = repl_coffee.start
+  repl_server = repl.start
     input: options.socket or process.stdin
     output: options.socket or process.stdout
     prompt: 'cormo> '
-    historyFile: path.join process.env.HOME, '.cormo_history' if process.env.HOME
     eval: evalCoffee
     writer: (object) ->
       util.inspect object, colors: true, depth: options.inspect_depth
     terminal: true
+  historyFile = path.join process.env.HOME, '.cormo_history' if process.env.HOME
+  historyMaxInputSize = 10240
+  addHistory repl_server, historyFile, historyMaxInputSize if historyFile
   addArgCompleterCoffee repl_server
   setupContext repl_server.context, options
   addReplServer repl_server
   return repl_server
-
-# copied from coffee-script's repl.coffee
-addHistoryJS = (repl, filename, maxSize) ->
-  lastLine = null
-  try
-    # Get file info and at most maxSize of command history
-    stat = fs.statSync filename
-    size = Math.min maxSize, stat.size
-    # Read last `size` bytes from the file
-    readFd = fs.openSync filename, 'r'
-    buffer = new Buffer(size)
-    fs.readSync readFd, buffer, 0, size, stat.size - size
-    fs.close readFd
-    # Set the history on the interpreter
-    repl.rli.history = buffer.toString().split('\n').reverse()
-    # If the history file was truncated we should pop off a potential partial line
-    repl.rli.history.pop() if stat.size > maxSize
-    # Shift off the final blank newline
-    repl.rli.history.shift() if repl.rli.history[0] is ''
-    repl.rli.historyIndex = -1
-    lastLine = repl.rli.history[0]
-
-  fd = fs.openSync filename, 'a'
-
-  repl.rli.addListener 'line', (code) ->
-    if code and code.length and code isnt '.history' and lastLine isnt code
-      # Save the latest command in the file
-      fs.write fd, "#{code}\n"
-      lastLine = code
-
-  repl.on 'exit', -> fs.close fd
-
-  # Add a command to show the history stack
-  repl.commands[getCommandId(repl, 'history')] =
-    help: 'Show command history'
-    action: ->
-      repl.outputStream.write "#{repl.rli.history[..].reverse().join '\n'}\n"
-      repl.displayPrompt()
-
-getCommandId = (repl, commandName) ->
-  # Node 0.11 changed API, a command such as '.help' is now stored as 'help'
-  commandsHaveLeadingDot = repl.commands['.help']?
-  if commandsHaveLeadingDot then ".#{commandName}" else commandName
 
 evalJS = (originalEval) ->
   (cmd, context, filename, callback) ->
@@ -268,7 +269,7 @@ exports.startJS = (options) ->
   if options.socket
     # Can't get the exact value?
     options.socket.columns = 100
-  repl_server = repl_js.start
+  repl_server = repl.start
     input: options.socket or process.stdin
     output: options.socket or process.stdout
     prompt: 'cormo> '
@@ -278,7 +279,7 @@ exports.startJS = (options) ->
   repl_server.eval = evalJS repl_server.eval
   historyFile = path.join process.env.HOME, '.cormo_history_js' if process.env.HOME
   historyMaxInputSize = 10240
-  addHistoryJS repl_server, historyFile, historyMaxInputSize if historyFile
+  addHistory repl_server, historyFile, historyMaxInputSize if historyFile
   addArgCompleterJS repl_server
   setupContext repl_server.context, options
   addReplServer repl_server
