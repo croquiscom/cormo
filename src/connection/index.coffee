@@ -198,8 +198,9 @@ class Connection extends EventEmitter
                   current_foreign_key = current.foreign_keys?[modelClass.tableName]?[integrity.column]
                   if not (current_foreign_key and current_foreign_key is integrity.parent.tableName)
                     console.log "Adding foreign key #{modelClass.tableName}.#{integrity.column} to #{integrity.parent.tableName}" if options.verbose
-                    foreign_keys_commands.push @_adapter.createForeignKeyAsync model, integrity.column, type, integrity.parent
-            Promise.all foreign_keys_commands
+                    foreign_keys_commands.push [model, integrity.column, type, integrity.parent]
+            Promise.each foreign_keys_commands, (args) =>
+              @_adapter.createForeignKeyAsync.apply @_adapter, args
           .finally =>
             console.log 'Applying schemas done' if options.verbose
             @_applying_schemas = false
