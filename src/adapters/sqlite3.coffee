@@ -20,6 +20,7 @@ _typeToSQL = (property) ->
     when types.Integer then 'INT'
     when types.Date then 'REAL'
     when types.Object then 'TEXT'
+    when types.Text then 'TEXT'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property

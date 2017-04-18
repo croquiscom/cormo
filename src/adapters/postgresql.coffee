@@ -25,6 +25,7 @@ _typeToSQL = (property) ->
     when types.GeoPoint then 'GEOMETRY(POINT)'
     when types.Date then 'TIMESTAMP WITHOUT TIME ZONE'
     when types.Object then 'JSON'
+    when types.Text then 'TEXT'
 
 _propertyToSQL = (property) ->
   type = _typeToSQL property
@@ -83,6 +84,8 @@ class PostgreSQLAdapter extends SQLAdapterBase
           new types.Date()
         else if column.data_type is 'json'
           new types.Object()
+        else if column.data_type is 'text'
+          new types.Text()
         schema[column.column_name] = type: type, required: column.is_nullable is 'NO'
       callback null, schema
 
