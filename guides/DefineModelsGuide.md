@@ -56,6 +56,8 @@ Currently supported [[#types]]:
     * MySQL, MonogoDB, PostgreSQL only
 * [[#types.Object]] ('object', Object)
     * Objects are stored as a JSON string in SQL adapters.
+* [[#types.Text]] ('text')
+    * Use for long string content in SQL adapters.
 
 After defining models, you may call [[#Connection::applySchemas]] to apply schemas to the database.
 (It will be called automatically when you run a query.)
