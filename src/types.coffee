@@ -61,7 +61,7 @@ exports.RecordID = class CormoTypesRecordID
   toString: -> 'recordid'
 
 ##
-# Represents a record id, used in model schemas.
+# Represents a text, used in model schemas.
 # @memberOf types
 exports.Text = class CormoTypesText
   toString: -> 'text'
