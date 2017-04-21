@@ -145,3 +145,36 @@ module.exports = () ->
         expect(records[1].string).to.equal 'A'
         callback null
     ], done
+  
+  it 'compare text', (done) ->
+    data = [
+      { text: '1' }
+      { text: 'a' }
+      { text: 'A' }
+      { text: 'K' }
+    ]
+    async.waterfall [
+      (callback) ->
+        _g.connection.Type.createBulk data, callback
+      (records, callback) ->
+        _g.connection.Type.where text: 'a', callback
+      (records, callback) ->
+        # some adapters(currently, MySQL) may do case insensitive comparison.
+        # skip test for now
+        return done null if records.length is 2
+
+        expect(records).to.have.length 1
+        expect(records[0].text).to.equal 'a'
+        callback null
+      (callback) ->
+        _g.connection.Type.where { text: $lt: 'D' }, callback
+      (records, callback) ->
+        if process.env.TRAVIS is 'true' and records.length is 3
+          # This fails on Travis Server PostgreSQL. Maybe locale problem? Anyway, skip this for now
+          return callback null
+        expect(records).to.have.length 2
+        records.sort (a, b) -> if a.text < b.text then -1 else 1
+        expect(records[0].text).to.equal '1'
+        expect(records[1].text).to.equal 'A'
+        callback null
+    ], done

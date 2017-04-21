@@ -61,6 +61,12 @@ exports.RecordID = class CormoTypesRecordID
   toString: -> 'recordid'
 
 ##
+# Represents a text, used in model schemas.
+# @memberOf types
+exports.Text = class CormoTypesText
+  toString: -> 'text'
+
+##
 # Converts JavaScript built-in class to CORMO type
 # @private
 # @param {Function|String} type
@@ -80,6 +86,7 @@ exports._toCORMOType = (type) ->
         when 'date' then type = exports.Date
         when 'object' then type = exports.Object
         when 'recordid' then type = exports.RecordID
+        when 'text' then type = exports.Text
   else
     switch type
       when String then type = exports.String

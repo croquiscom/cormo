@@ -23,6 +23,7 @@ _typeToSQL = (property, support_fractional_seconds) ->
     when types.Date
       if support_fractional_seconds then 'DATETIME(3)' else 'DATETIME'
     when types.Object then 'TEXT'
+    when types.Text then 'TEXT'
 
 _propertyToSQL = (property, support_fractional_seconds) ->
   type = _typeToSQL property, support_fractional_seconds
