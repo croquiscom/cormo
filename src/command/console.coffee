@@ -21,13 +21,13 @@ class CommandConsole
     .option '-d, --inspect-depth <depth>', 'specify depth for util.inspect'
     .option '-s, --serve <port>', 'serve console at port'
     .option '--javascript', 'using JavaScript instead of CoffeeScript'
-    .on 'load', (path) ->
+    .on 'option:load', (path) ->
       loads.push path
-    .on 'inspect-depth', (depth) =>
+    .on 'option:inspect-depth', (depth) =>
       @inspect_depth = depth
-    .on 'serve', (port) =>
+    .on 'option:serve', (port) =>
       @serve_port = port
-    .on 'javascript', =>
+    .on 'option:javascript', =>
       @language = 'javascript'
     program.help() if argv.indexOf('--help') >= 0 || argv.indexOf('-h') >= 0
     program.parse(argv)
