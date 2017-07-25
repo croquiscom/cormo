@@ -22,11 +22,11 @@ class ConnectionManipulate
     model.where(data).delete skip_log: true
 
   _manipulateDeleteAllModels: ->
-    promises = Object.keys(@models).map (model) =>
-      return Promise.resolve() if model is '_Archive'
+    Promise.each Object.keys(@models), (model) =>
+      if model is '_Archive'
+        return
       model = @models[model]
       model.where().delete skip_log: true
-    Promise.all promises
 
   _manipulateDropModel: (model) ->
     model = inflector.camelize model
@@ -72,53 +72,51 @@ class ConnectionManipulate
 
     @_checkSchemaApplied().then =>
       id_to_record_map = {}
-      commands = [commands] if not Array.isArray commands
-      current = Promise.resolve()
-      promises = commands.map (command) =>
-        current = current
-        .then =>
-          if typeof command is 'object'
-            key = Object.keys command
-            if key.length is 1
-              key = key[0]
-              data = command[key]
-            else
-              key = undefined
-          else if typeof command is 'string'
-            key = command
-          if not key
-            Promise.reject new Error('invalid command: '+JSON.stringify(command))
-          else if key.substr(0, 7) is 'create_'
-            model = key.substr 7
-            id = data.id
-            delete data.id
-            @_manipulateConvertIds id_to_record_map, model, data
-            @_manipulateCreate model, data
-            .then (record) ->
-              id_to_record_map[id] = record if id
-          else if key.substr(0, 7) is 'delete_'
-            model = key.substr 7
-            @_manipulateDelete model, data
-          else if key is 'deleteAll'
-            @_manipulateDeleteAllModels()
-          else if key.substr(0, 5) is 'drop_'
-            model = key.substr 5
-            @_manipulateDropModel model
-          else if key is 'dropAll'
-            @_manipulateDropAllModels()
-          else if key.substr(0, 5) is 'find_'
-            model = key.substr 5
-            id = data.id
-            delete data.id
-            return callback null if not id
-            @_manipulateFind model, data
-            .then (records) ->
-              id_to_record_map[id] = records
+      if not Array.isArray commands
+        commands = [commands]
+      Promise.each commands, (command) =>
+        if typeof command is 'object'
+          key = Object.keys command
+          if key.length is 1
+            key = key[0]
+            data = command[key]
           else
-            Promise.reject new Error('unknown command: '+key)
-      Promise.all promises
+            key = undefined
+        else if typeof command is 'string'
+          key = command
+        if not key
+          Promise.reject new Error('invalid command: '+JSON.stringify(command))
+        else if key.substr(0, 7) is 'create_'
+          model = key.substr 7
+          id = data.id
+          delete data.id
+          @_manipulateConvertIds id_to_record_map, model, data
+          @_manipulateCreate model, data
+          .then (record) ->
+            id_to_record_map[id] = record if id
+        else if key.substr(0, 7) is 'delete_'
+          model = key.substr 7
+          @_manipulateDelete model, data
+        else if key is 'deleteAll'
+          @_manipulateDeleteAllModels()
+        else if key.substr(0, 5) is 'drop_'
+          model = key.substr 5
+          @_manipulateDropModel model
+        else if key is 'dropAll'
+          @_manipulateDropAllModels()
+        else if key.substr(0, 5) is 'find_'
+          model = key.substr 5
+          id = data.id
+          delete data.id
+          if not id
+            return
+          @_manipulateFind model, data
+          .then (records) ->
+            id_to_record_map[id] = records
+        else
+          Promise.reject new Error('unknown command: '+key)
       .then ->
-        Promise.resolve id_to_record_map
+        id_to_record_map
     .nodeify bindDomain callback
 
 module.exports = ConnectionManipulate
