@@ -1,26 +1,28 @@
-/// <reference path="../../cormo.d.ts" />
+import * as cormo from '../..';
 
-declare var process;
-
-import cormo = require("cormo");
-
-var connection = new cormo.Connection('mysql', {database: 'test'});
+const connection = new cormo.Connection('mysql', {database: 'test'});
 
 class User extends cormo.Model {
   static initialize() {
     this.column('name', {type:String, required:true});
     this.column('age', Number);
   }
+
+  name: string;
+  age: number;
 }
 
-User.create({name: 'croquis', age: 3})
-.then(function (user: User) {
-  console.log(user);
-}).then(function () {
-  return User.where();
-}).then(function (users: Array<User>) {
-  console.log(users);
-}).then(() => {
+async function run() {
+  const user = await User.create<User>({name: 'croquis', age: 3})
+  console.log(user.name);
+
+  const users = await User.where<User[]>();
+  for (const user of users) {
+    console.log(`name - ${user.name}, age - ${user.age}`);
+  }
+}
+
+run().then(() => {
   console.log("Done");
   process.exit(0);
 });
