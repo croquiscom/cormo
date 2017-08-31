@@ -32,6 +32,8 @@ interface AdapterSettingsSQLite3 {
 interface AdapterSettingsSQLite3Memory {
 }
 
+type ManipulateCommand = string | object;
+
 export class Connection {
   constructor(adapater_name: 'mongodb', settings: AdapterSettingsMongoDB);
   constructor(adapater_name: 'mysql', settings: AdapterSettingsMySQL);
@@ -41,11 +43,57 @@ export class Connection {
   constructor(adapater_name: string, settings: object);
   applySchemas(options?: { verbose?: boolean }): PromiseLike<void>;
   applySchemasSync(options?: { verbose?: boolean }): void;
+  dropAllModels(): PromiseLike<void>;
+  manipulate(commands: ManipulateCommand[]): PromiseLike<{[id: string]: any}>;
 }
 
-type ModelColumnType = StringConstructor | 'string' | NumberConstructor | 'number'
-        | DateConstructor | 'date' | BooleanConstructor | 'boolean'
-        | ObjectConstructor | 'object'
+interface CormoTypesString {
+  (length: number | undefined): CormoTypesString
+}
+
+interface CormoTypesNumber {
+}
+
+interface CormoTypesBoolean {
+}
+
+interface CormoTypesInteger {
+}
+
+interface CormoTypesGeoPoint {
+}
+
+interface CormoTypesDate {
+}
+
+interface CormoTypesObject {
+}
+
+interface CormoTypesRecordID {
+}
+
+interface CormoTypesText {
+}
+
+interface CormoTypes {
+  String: CormoTypesString;
+  Number: CormoTypesNumber;
+  Boolean: CormoTypesBoolean;
+  Integer: CormoTypesInteger;
+  GeoPoint: CormoTypesGeoPoint;
+  Date: CormoTypesDate;
+  Object: CormoTypesObject;
+  RecordID: CormoTypesRecordID;
+  Text: CormoTypesText;
+}
+
+type ModelColumnType = StringConstructor | 'string' | CormoTypesString
+        | NumberConstructor | 'number' | CormoTypesNumber
+        | BooleanConstructor | 'boolean' | CormoTypesBoolean
+        | 'integer' | CormoTypesInteger | 'geopoint' | CormoTypesGeoPoint
+        | DateConstructor | 'date' | CormoTypesDate
+        | ObjectConstructor | 'object' | CormoTypesObject
+        | 'recordid' | CormoTypesRecordID | 'text' | CormoTypesText
 
 interface ModelColumnProperty {
   type: ModelColumnType;
@@ -55,11 +103,20 @@ interface ModelColumnProperty {
 
 type RecordID = number | string;
 
+type Integrity = 'ignore' | 'nullify' | 'restrict' | 'delete'
+
 export class Model {
   static lean_query: boolean;
 
   static connection(connection: Connection, name?: string): void;
   static column(path: string, property: ModelColumnType | ModelColumnProperty): void;
+  static index(columns: {[column: string]: 1 | -1}, options?: { name?: string, unique?: boolean})
+  static drop(): PromiseLike<void>;
+  static deleteAll(): PromiseLike<void>;
+
+  static hasMany(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, integrity?: Integrity})
+  static hasOne(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, integrity?: Integrity})
+  static belongsTo(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, required?: boolean})
 
   static create<T>(data?: T): PromiseLike<T>;
 
@@ -87,3 +144,5 @@ export class Query<T> implements PromiseLike<T> {
   upsert(updates: object): PromiseLike<number>;
   delete(): PromiseLike<number>;
 }
+
+export const types: CormoTypes
