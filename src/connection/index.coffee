@@ -98,7 +98,7 @@ class Connection extends EventEmitter
     for model, modelClass of @models
       if modelClass.initialize and not modelClass._initialize_called
         modelClass.initialize()
-        modelClass._initializeModels = true
+        modelClass._initialize_called = true
     return
 
   _checkArchive: ->
