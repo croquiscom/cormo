@@ -118,27 +118,49 @@ export class Model {
   static hasOne(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, integrity?: Integrity})
   static belongsTo(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, required?: boolean})
 
-  static create<T>(data?: T): PromiseLike<T>;
+  static create<T, U extends T>(this: { new(): T }, data?: U): PromiseLike<T>;
 
-  static query<T>(): Query<T>;
-  static find<T>(id: RecordID | RecordID[]): Query<T|T[]>;
-  static findPreserve<T>(id: RecordID[]): Query<T[]>;
-  static where<T>(condition?: object): Query<T>;
+  static query<T>(this: { new(): T }): QueryArray<T>;
+  static find<T>(this: { new(): T }, id: RecordID): QuerySingle<T>;
+  static find<T>(this: { new(): T }, id: RecordID[]): QueryArray<T>;
+  static findPreserve<T>(this: { new(): T }, id: RecordID[]): QueryArray<T>;
+  static where<T>(this: { new(): T }, condition?: object): QueryArray<T>;
 }
 
-export class Query<T> implements PromiseLike<T> {
-  find(id: RecordID | RecordID[]): this;
-  findPreserve(id: RecordID[]): this;
-  where(condition: object): this;
-  select(columns: string): this;
-  order(orders: string): this;
-  group(group_by: string, fields: object): this;
-  one(): this;
-  limit(limit: number): this;
-  skip(skip: number); this;
+export interface QuerySingle<T> extends PromiseLike<T> {
+  find(id: RecordID): QuerySingle<T>;
+  find(id: RecordID[]): QueryArray<T>;
+  findPreserve(id: RecordID[]): QueryArray<T>;
+  where(condition: object): QuerySingle<T>;
+  select(columns: string): QuerySingle<T>;
+  order(orders: string): QuerySingle<T>;
+  group(group_by: string, fields: object): QuerySingle<T>;
+  one(): QuerySingle<T>;
+  limit(limit: number): QuerySingle<T>;
+  skip(skip: number): QuerySingle<T>;
 
   exec(): PromiseLike<T>;
   then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2>;
+  count(): PromiseLike<number>;
+  update(updates: object): PromiseLike<number>;
+  upsert(updates: object): PromiseLike<number>;
+  delete(): PromiseLike<number>;
+}
+
+export interface QueryArray<T> extends PromiseLike<T[]> {
+  find(id: RecordID): QuerySingle<T>;
+  find(id: RecordID[]): QueryArray<T>;
+  findPreserve(id: RecordID[]): QueryArray<T>;
+  where(condition: object): QueryArray<T>;
+  select(columns: string): QueryArray<T>;
+  order(orders: string): QueryArray<T>;
+  group(group_by: string, fields: object): QueryArray<T>;
+  one(): QuerySingle<T>;
+  limit(limit: number): QueryArray<T>;
+  skip(skip: number): QueryArray<T>;
+
+  exec(): PromiseLike<T[]>;
+  then<TResult1 = T[], TResult2 = never>(onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2>;
   count(): PromiseLike<number>;
   update(updates: object): PromiseLike<number>;
   upsert(updates: object): PromiseLike<number>;

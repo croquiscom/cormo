@@ -9,17 +9,24 @@ class User extends cormo.Model {
   }
 
   name: string;
-  age: number;
+  age?: number;
 }
 
 async function run() {
-  const user = await User.create<User>({name: 'croquis', age: 3})
+  const user = await User.create({name: 'croquis'})
   console.log(user.name);
 
-  const users = await User.where<User[]>();
+  await User.create({name: 'foobar', age: 5});
+
+  const users = await User.where();
   for (const user of users) {
     console.log(`name - ${user.name}, age - ${user.age}`);
   }
+
+  const foobar = await User.where({age: 5}).select('name').one() as {name: string};
+  console.log(`name of age 5 is ${foobar.name}`);
+
+  await User.drop();
 }
 
 run().then(() => {
