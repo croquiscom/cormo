@@ -119,6 +119,7 @@ export class Model {
   static belongsTo(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, required?: boolean})
 
   static create<T, U extends T>(this: { new(): T }, data?: U): PromiseLike<T>;
+  static createBulk<T, U extends T>(this: { new(): T }, data?: U[]): PromiseLike<T[]>;
 
   static query<T>(this: { new(): T }): QueryArray<T>;
   static find<T>(this: { new(): T }, id: RecordID): QuerySingle<T>;
@@ -134,7 +135,7 @@ export interface QuerySingle<T> extends PromiseLike<T> {
   where(condition: object): QuerySingle<T>;
   select(columns: string): QuerySingle<T>;
   order(orders: string): QuerySingle<T>;
-  group(group_by: string, fields: object): QuerySingle<T>;
+  group(group_by: string | null, fields: object): QuerySingle<T>;
   one(): QuerySingle<T>;
   limit(limit: number): QuerySingle<T>;
   skip(skip: number): QuerySingle<T>;
@@ -157,7 +158,7 @@ export interface QueryArray<T> extends PromiseLike<T[]> {
   where(condition: object): QueryArray<T>;
   select(columns: string): QueryArray<T>;
   order(orders: string): QueryArray<T>;
-  group(group_by: string, fields: object): QueryArray<T>;
+  group(group_by: string | null, fields: object): QueryArray<T>;
   one(): QuerySingle<T>;
   limit(limit: number): QueryArray<T>;
   skip(skip: number): QueryArray<T>;
