@@ -44,7 +44,7 @@ export class Connection {
   applySchemas(options?: { verbose?: boolean }): PromiseLike<void>;
   applySchemasSync(options?: { verbose?: boolean }): void;
   dropAllModels(): PromiseLike<void>;
-  manipulate(commands: ManipulateCommand[]): PromiseLike<{[id: string]: any}>;
+  manipulate(commands: ManipulateCommand[]): PromiseLike<{ [id: string]: any }>;
 }
 
 interface CormoTypesString {
@@ -88,12 +88,12 @@ interface CormoTypes {
 }
 
 type ModelColumnType = StringConstructor | 'string' | CormoTypesString
-        | NumberConstructor | 'number' | CormoTypesNumber
-        | BooleanConstructor | 'boolean' | CormoTypesBoolean
-        | 'integer' | CormoTypesInteger | 'geopoint' | CormoTypesGeoPoint
-        | DateConstructor | 'date' | CormoTypesDate
-        | ObjectConstructor | 'object' | CormoTypesObject
-        | 'recordid' | CormoTypesRecordID | 'text' | CormoTypesText
+  | NumberConstructor | 'number' | CormoTypesNumber
+  | BooleanConstructor | 'boolean' | CormoTypesBoolean
+  | 'integer' | CormoTypesInteger | 'geopoint' | CormoTypesGeoPoint
+  | DateConstructor | 'date' | CormoTypesDate
+  | ObjectConstructor | 'object' | CormoTypesObject
+  | 'recordid' | CormoTypesRecordID | 'text' | CormoTypesText
 
 interface ModelColumnProperty {
   type: ModelColumnType;
@@ -110,13 +110,13 @@ export class Model {
 
   static connection(connection: Connection, name?: string): void;
   static column(path: string, property: ModelColumnType | ModelColumnProperty): void;
-  static index(columns: {[column: string]: 1 | -1}, options?: { name?: string, unique?: boolean})
+  static index(columns: { [column: string]: 1 | -1 }, options?: { name?: string, unique?: boolean })
   static drop(): PromiseLike<void>;
   static deleteAll(): PromiseLike<void>;
 
-  static hasMany(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, integrity?: Integrity})
-  static hasOne(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, integrity?: Integrity})
-  static belongsTo(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, required?: boolean})
+  static hasMany(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, integrity?: Integrity })
+  static hasOne(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, integrity?: Integrity })
+  static belongsTo(target_model_or_column: string, options?: { type?: string, as?: string, foreign_key?: string, required?: boolean })
 
   static create<T, U extends T>(this: { new(): T }, data?: U): PromiseLike<T>;
   static createBulk<T, U extends T>(this: { new(): T }, data?: U[]): PromiseLike<T[]>;
@@ -135,10 +135,10 @@ export interface QuerySingle<T> extends PromiseLike<T> {
   where(condition: object): QuerySingle<T>;
   select(columns: string): QuerySingle<T>;
   order(orders: string): QuerySingle<T>;
-  group(group_by: string | null, fields: object): QuerySingle<T>;
+  group<U = T>(group_by: string | null, fields: object): QuerySingle<U>;
   one(): QuerySingle<T>;
-  limit(limit: number): QuerySingle<T>;
-  skip(skip: number): QuerySingle<T>;
+  limit(limit?: number): QuerySingle<T>;
+  skip(skip?: number): QuerySingle<T>;
   if(condition: boolean): QuerySingle<T>;
   endif(): QuerySingle<T>;
   include(column: string, select?: string): QuerySingle<T>;
@@ -158,10 +158,10 @@ export interface QueryArray<T> extends PromiseLike<T[]> {
   where(condition: object): QueryArray<T>;
   select(columns: string): QueryArray<T>;
   order(orders: string): QueryArray<T>;
-  group(group_by: string | null, fields: object): QueryArray<T>;
+  group<U = T>(group_by: string | null, fields: object): QueryArray<U>;
   one(): QuerySingle<T>;
-  limit(limit: number): QueryArray<T>;
-  skip(skip: number): QueryArray<T>;
+  limit(limit?: number): QueryArray<T>;
+  skip(skip?: number): QueryArray<T>;
   if(condition: boolean): QueryArray<T>;
   endif(): QueryArray<T>;
   include(column: string, select?: string): QueryArray<T>;
