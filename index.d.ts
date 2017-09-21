@@ -138,6 +138,9 @@ export interface QuerySingle<T> extends PromiseLike<T> {
   one(): QuerySingle<T>;
   limit(limit: number): QuerySingle<T>;
   skip(skip: number): QuerySingle<T>;
+  if(condition: boolean): QuerySingle<T>;
+  endif(): QuerySingle<T>;
+  include(column: string, select?: string): QuerySingle<T>;
 
   exec(): PromiseLike<T>;
   then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2>;
@@ -158,6 +161,9 @@ export interface QueryArray<T> extends PromiseLike<T[]> {
   one(): QuerySingle<T>;
   limit(limit: number): QueryArray<T>;
   skip(skip: number): QueryArray<T>;
+  if(condition: boolean): QueryArray<T>;
+  endif(): QueryArray<T>;
+  include(column: string, select?: string): QueryArray<T>;
 
   exec(): PromiseLike<T[]>;
   then<TResult1 = T[], TResult2 = never>(onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2>;
