@@ -33,7 +33,7 @@
   "dependencies": {
     "async": "^2.3.0",
     "bluebird": "^3.5.0",
-    "coffee-script": "^1.12.6",
+    "coffee-script": "^1.12.7",
     "commander": "^2.11.0",
     "inflect": "^0.4.0",
     "lodash": "^4.17.4",
