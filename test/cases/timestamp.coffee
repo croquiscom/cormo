@@ -23,7 +23,7 @@ module.exports = () ->
         user.save (error) ->
           return done error if error
           # created_at remains unchanged
-          expect(user.created_at).to.equal.created_at
+          expect(user.created_at.getTime()).to.equal created_at.getTime()
           # updated_at is changed to the current date
           expect(user.updated_at?.getTime()).to.be.closeTo now, 10
           done null

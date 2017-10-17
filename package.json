@@ -21,7 +21,7 @@
   "scripts": {
     "build": "coffee -c -o lib src",
     "doc": "node node_modules/.bin/crojsdoc",
-    "test": "NODE_ENV=test mocha --compilers coffee:coffee-script/register"
+    "test": "NODE_ENV=test mocha --require coffee-script/register --exit 'test/**/*.{js,coffee}'"
   },
   "repository": {
     "type": "git",
@@ -40,12 +40,12 @@
   },
   "devDependencies": {
     "benchmark": "^2.1.4",
-    "chai": "^3.5.0",
+    "chai": "^4.1.2",
     "coffee-coverage": "^2.0.1",
     "coffee-script": "^1.12.7",
     "crojsdoc": "^0.8.17",
     "microtime": "^2.1.3",
-    "mocha": "^3.2.0",
+    "mocha": "^4.0.1",
     "mongodb": "^2.2.26",
     "mysql": "^2.13.0",
     "pg": "^7.3.0",
