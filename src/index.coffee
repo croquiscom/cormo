@@ -21,8 +21,3 @@ exports.Command = require './command'
 # Exports [[#types]] module
 # @memberOf cormo
 exports.types = require './types'
-
-##
-# Exports [[#console]] module
-# @memberOf cormo
-exports.console = require './util/console'
