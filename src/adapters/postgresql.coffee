@@ -55,7 +55,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   _query: (sql, data, callback) ->
     #console.log 'PostgreSQLAdapter:', sql
-    @_client.query sql, data, (error, result) ->
+    @_pool.query sql, data, (error, result) ->
       callback error, result
 
   _getTables: (callback) ->
@@ -421,10 +421,14 @@ class PostgreSQLAdapter extends SQLAdapterBase
     transformer._transform = (record, encoding, callback) =>
       transformer.push @_convertToModelInstance model, record, options
       callback()
-    @_client.query new QueryStream sql, params
-    .on 'error', (error) ->
-      transformer.emit 'error', error
-    .pipe transformer
+    @_pool.connect()
+    .then (client) ->
+      client.query new QueryStream sql, params
+      .on 'end', ->
+        client.release()
+      .on 'error', (error) ->
+        transformer.emit 'error', error
+      .pipe transformer
     transformer
 
   ## @override AdapterBase::count
@@ -479,32 +483,32 @@ class PostgreSQLAdapter extends SQLAdapterBase
   # @nodejscallback
   connect: (settings, callback) ->
     # connect
-    pg.connect
+    pool = new pg.Pool
       host: settings.host
       port: settings.port
       user: settings.user
       password: settings.password
       database: settings.database
-    , (error, client, done) =>
-      if error?.code is '3D000'
-        return callback new Error 'database does not exist'
-      return callback PostgreSQLAdapter.wrapError 'failed to connect', error if error
 
-      @_client = client
-      @_client_done = done
+    pool.connect()
+    .then (client) =>
+      client.release()
+      @_pool = pool
       return callback null
+    .catch (error) ->
+      if error.code is '3D000'
+        return callback new Error 'database does not exist'
+      return callback PostgreSQLAdapter.wrapError 'failed to connect', error
 
   ## @override AdapterBase::close
   close: ->
-    if @_client_done
-      @_client_done()
-      @_client_done = null
-    @_client = null
+    @_pool.end()
+    @_pool = null
 
   ##
   # Exposes pg module's query method
   query: ->
-    @_client.query.apply @_client, arguments
+    @_pool.query.apply @_pool, arguments
 
 module.exports = (connection) ->
   new PostgreSQLAdapter connection
