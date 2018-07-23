@@ -49,14 +49,18 @@ if process.env.TRAVIS is 'true'
 else
   _g.db_configs =
     mysql:
-      database: 'test'
+      database: 'cormo_test'
+      user: 'cormo_test'
+      password: 'cormo_test'
     mongodb:
       database: 'test'
     sqlite3:
       database: __dirname + '/test.sqlite3'
     sqlite3_memory: {}
     postgresql:
-      database: 'test'
+      database: 'cormo_test'
+      user: 'cormo_test'
+      password: 'cormo_test'
     redis:
       database: 1
 

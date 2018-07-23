@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_DATABASE: cormo_test
+      MYSQL_USER: cormo_test
+      MYSQL_PASSWORD: cormo_test
+    ports:
+      - 3306:3306
+  redis:
+    image: redis:4-alpine
+    ports:
+      - 6379:6379
+  postgres:
+    image: postgres:9-alpine
+    environment:
+      POSTGRES_DB: cormo_test
+      POSTGRES_USER: cormo_test
+      POSTGRES_PASSWORD: cormo_test
+    ports:
+      - 5432:5432
+  mongo:
+    image: mongo:3.4-jessie
+    ports:
+      - 27017:27017
