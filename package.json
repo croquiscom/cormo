@@ -43,7 +43,7 @@
     "chai": "^4.1.2",
     "coffee-coverage": "^3.0.0",
     "coffee-script": "^1.12.7",
-    "crojsdoc": "^0.8.17",
+    "crojsdoc": "^0.8.18",
     "microtime": "^2.1.8",
     "mocha": "^5.2.0",
     "mongodb": "^3.1.1",
