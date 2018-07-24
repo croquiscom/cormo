@@ -166,12 +166,12 @@ class MongoDBAdapter extends AdapterBase
   _collection: (model) ->
     name = @_connection.models[model].tableName
     if not @_collections[name]
-      return @_collections[name] = @_client.collection _getMongoDBColName name
+      return @_collections[name] = @_db.collection _getMongoDBColName name
     else
       return @_collections[name]
 
   _getTables: (callback) ->
-    @_client.listCollections().toArray (error, collections) ->
+    @_db.listCollections().toArray (error, collections) ->
       return callback error if error
       tables = collections.map (collection) ->
         collection.name
@@ -181,7 +181,7 @@ class MongoDBAdapter extends AdapterBase
     callback null, 'NO SCHEMA'
 
   _getIndexes: (table, callback) ->
-    return @_client.collection(table).listIndexes().toArray (error, rows) ->
+    return @_db.collection(table).listIndexes().toArray (error, rows) ->
       return callback error if error
       indexes = {}
       for row in rows
@@ -247,7 +247,7 @@ class MongoDBAdapter extends AdapterBase
   drop: (model, callback) ->
     name = @_connection.models[model].tableName
     delete @_collections[name]
-    @_client.dropCollection _getMongoDBColName(name), (error) ->
+    @_db.dropCollection _getMongoDBColName(name), (error) ->
       # ignore not found error
       if error and error.errmsg isnt 'ns not found'
         return callback MongoDBAdapter.wrapError 'unknown error', error
@@ -280,7 +280,9 @@ class MongoDBAdapter extends AdapterBase
 
   _processSaveError = (error, callback) ->
     if error?.code in [11001, 11000]
-      key = error.message.match /index: [\w-.]+\$(\w+)(_1)?/
+      key = error.message.match /collection: [\w-.]+ index: (\w+)/
+      if not key
+        key = error.message.match /index: [\w-.]+\$(\w+)(_1)?/
       error = new Error('duplicated ' + key?[1])
     else
       error = MongoDBAdapter.wrapError 'unknown error', error
@@ -473,18 +475,22 @@ class MongoDBAdapter extends AdapterBase
         pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
       pipeline.push $limit: options.limit if options.limit
       if options.explain
-        return @_collection(model).aggregate pipeline, explain: true, (error, result) ->
+        return @_collection(model).aggregate pipeline, explain: true, (error, cursor) ->
           return callback error if error
-          callback null, result
-      @_collection(model).aggregate pipeline, (error, result) =>
+          cursor.toArray (error, result) ->
+            return callback error if error
+            callback null, result
+      @_collection(model).aggregate pipeline, (error, cursor) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error
-        callback null, result.map (record) =>
-          if options.group_by
-            if options.group_by.length is 1
-              record[options.group_by[0]] = record._id
-            else
-              record[group] = record._id[group] for group in options.group_by
-          @_convertToGroupInstance model, record, options.group_by, options.group_fields
+        cursor.toArray (error, result) =>
+          return callback error if error
+          callback null, result.map (record) =>
+            if options.group_by
+              if options.group_by.length is 1
+                record[options.group_by[0]] = record._id
+              else
+                record[group] = record._id[group] for group in options.group_by
+            @_convertToGroupInstance model, record, options.group_by, options.group_fields
     else
       if options.explain
         client_options.explain = true
@@ -534,12 +540,14 @@ class MongoDBAdapter extends AdapterBase
       if options.conditions_of_group.length > 0
         pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
       pipeline.push $group: _id: null, count: $sum: 1
-      @_collection(model).aggregate pipeline, (error, result) =>
+      @_collection(model).aggregate pipeline, (error, cursor) ->
         return callback MongoDBAdapter.wrapError 'unknown error', error if error
-        return callback new Error 'unknown error' if result?.length isnt 1
-        callback null, result[0].count
+        cursor.toArray (error, result) ->
+          return callback error if error
+          return callback new Error 'unknown error' if result?.length isnt 1
+          callback null, result[0].count
     else
-      @_collection(model).count conditions, (error, count) =>
+      @_collection(model).countDocuments conditions, (error, count) =>
         return callback MongoDBAdapter.wrapError 'unknown error', error if error
         callback null, count
 
@@ -569,9 +577,10 @@ class MongoDBAdapter extends AdapterBase
       url = "mongodb://#{settings.user}:#{settings.password}@#{settings.host or 'localhost'}:#{settings.port or 27017}/#{settings.database}"
     else
       url = "mongodb://#{settings.host or 'localhost'}:#{settings.port or 27017}/#{settings.database}"
-    mongodb.MongoClient.connect url, (error, db) =>
+    mongodb.MongoClient.connect url, { useNewUrlParser: true }, (error, client) =>
       return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      @_client = db
+      @_client = client
+      @_db = client.db(settings.database)
       callback null
 
   ## @override AdapterBase::close
@@ -579,6 +588,7 @@ class MongoDBAdapter extends AdapterBase
     if @_client
       @_client.close()
     @_client = null
+    @_db = null
 
   ##
   # Exposes mongodb module's a collection object
