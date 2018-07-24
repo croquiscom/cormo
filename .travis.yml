@@ -23,4 +23,4 @@ before_install:
 
 before_script:
   - psql -U postgres -c 'create database travis_ci_test;'
-  - psql -U postgres -c 'create extension postgis;'
+  - psql -U postgres -c 'create extension postgis;' travis_ci_test
