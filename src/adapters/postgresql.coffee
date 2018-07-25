@@ -51,6 +51,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
   ##
   # Creates a PostgreSQL adapter
   constructor: (connection) ->
+    super()
     @_connection = connection
 
   _query: (sql, data, callback) ->

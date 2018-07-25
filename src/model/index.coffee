@@ -41,7 +41,7 @@ class ColumnProperty
 # @uses ModelPersistence
 # @uses ModelValidate
 # @uses ModelCache
-class Model
+class ModelBase
   ##
   # Tracks changes of a record if true
   # @type Boolean
@@ -456,15 +456,12 @@ class Model
     schema = Object.keys(@_schema or {}).sort().map((column) => return "#{column}: #{@_schema[column].type}").join(', ')
     return '\u001b[36m' + "[Model: #{@name}(" + '\u001b[90m' + schema + '\u001b[36m' + ")]" + '\u001b[39m'
 
-_use = (file) ->
-  MixClass = require "./#{file}"
-  _.extend Model, MixClass
-  _.extend Model::, MixClass::
-_use 'query'
-_use 'callback'
-_use 'timestamp'
-_use 'persistence'
-_use 'validate'
-_use 'cache'
+ModelCacheMixin = require './cache'
+ModelCallbackMixin = require './callback'
+ModelPersistenceMixin = require './persistence'
+ModelQueryMixin = require './query'
+ModelTimestampMixin = require './timestamp'
+ModelValidateMixin = require './validate'
+class Model extends ModelCacheMixin(ModelCallbackMixin(ModelPersistenceMixin(ModelQueryMixin(ModelTimestampMixin(ModelValidateMixin(ModelBase))))))
 
 module.exports = Model

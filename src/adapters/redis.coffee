@@ -39,6 +39,7 @@ class RedisAdapter extends AdapterBase
   ##
   # Creates a Redis adapter
   constructor: (connection) ->
+    super()
     @_connection = connection
 
   ## @override AdapterBase::drop

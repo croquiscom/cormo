@@ -43,6 +43,7 @@ class SQLite3Adapter extends SQLAdapterBase
   ##
   # Creates a SQLite3 adapter
   constructor: (connection) ->
+    super()
     @_connection = connection
 
   _query: (method, sql, data, callback) ->

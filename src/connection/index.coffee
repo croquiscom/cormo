@@ -14,7 +14,7 @@ try
 # Manages connection to a database
 # @uses ConnectionAssociation
 # @uses ConnectionManipulate
-class Connection extends EventEmitter
+class ConnectionBase extends EventEmitter
   ##
   # Default connection
   # @property defaultConnection
@@ -52,6 +52,7 @@ class Connection extends EventEmitter
   # @see SQLite3Adapter::connect
   # @see RedisAdapter::connect
   constructor: (adapter_name, settings) ->
+    super()
     if settings.is_default isnt false
       Connection.defaultConnection = @
 
@@ -252,12 +253,9 @@ class Connection extends EventEmitter
   inspect: (depth) ->
     inspect @models
 
-_use = (file) ->
-  MixClass = require "./#{file}"
-  _.extend Connection, MixClass
-  _.extend Connection::, MixClass::
-_use 'association'
-_use 'manipulate'
+ConnectionAssociationMixin = require './association'
+ConnectionManipulateMixin = require './manipulate'
+class Connection extends ConnectionAssociationMixin(ConnectionManipulateMixin(ConnectionBase))
 
 Model._Connection = Connection
 

@@ -6,7 +6,7 @@ util = require '../util'
 ##
 # Model persistence
 # @namespace model
-class ModelPersistence
+ModelPersistenceMixin = (Base) -> class extends Base
   ##
   # Creates a record and saves it to the database
   # 'Model.create(data, callback)' is the same as 'Model.build(data).save(callback)'
@@ -182,4 +182,4 @@ class ModelPersistence
       Promise.resolve @
     .nodeify util.bindDomain callback
 
-module.exports = ModelPersistence
+module.exports = ModelPersistenceMixin

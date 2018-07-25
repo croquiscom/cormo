@@ -6,7 +6,7 @@ types = require '../types'
 ##
 # Manipulate data
 # @namespace connection
-class ConnectionManipulate
+ConnectionManipulateMixin = (Base) -> class extends Base
   _manipulateCreate: (model, data) ->
     model = inflector.camelize model
     return Promise.reject new Error("model #{model} does not exist") if not @models[model]
@@ -119,4 +119,4 @@ class ConnectionManipulate
         id_to_record_map
     .nodeify bindDomain callback
 
-module.exports = ConnectionManipulate
+module.exports = ConnectionManipulateMixin

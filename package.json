@@ -19,9 +19,9 @@
     "cormo": "./bin/cormo"
   },
   "scripts": {
-    "build": "coffee -c -o lib src",
+    "build": "coffee -c -b -o lib src",
     "doc": "node node_modules/.bin/crojsdoc",
-    "test": "NODE_ENV=test mocha --require coffee-script/register --exit 'test/**/*.{js,coffee}'"
+    "test": "NODE_ENV=test mocha --require coffeescript/register --exit 'test/**/*.{js,coffee}'"
   },
   "repository": {
     "type": "git",
@@ -42,7 +42,7 @@
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
     "coffee-coverage": "^3.0.0",
-    "coffee-script": "^1.12.7",
+    "coffeescript": "^2.3.1",
     "crojsdoc": "^0.8.20",
     "microtime": "^2.1.8",
     "mocha": "^5.2.0",

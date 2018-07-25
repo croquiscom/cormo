@@ -5,7 +5,7 @@ util = require '../util'
 ##
 # Model validate
 # @namespace model
-class ModelValidate
+ModelValidateMixin = (Base) -> class extends Base
   @_validateType: (column, type_class, value) ->
     switch type_class
       when types.Number
@@ -106,4 +106,4 @@ class ModelValidate
     @_checkConnection()
     @_validators.push validator
 
-module.exports = ModelValidate
+module.exports = ModelValidateMixin

@@ -4,7 +4,7 @@ Query = require '../query'
 ##
 # Model query
 # @namespace model
-class ModelQuery
+ModelQueryMixin = (Base) -> class extends Base
   @_createQueryAndRun: (criteria, data, callback) ->
     query = new Query @
     query[criteria] data
@@ -139,4 +139,4 @@ class ModelQuery
     .delete()
     .nodeify bindDomain callback
 
-module.exports = ModelQuery
+module.exports = ModelQueryMixin

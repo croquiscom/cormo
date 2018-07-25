@@ -7,7 +7,7 @@ types = require '../types'
 ##
 # Makes association between two models
 # @namespace connection
-class ConnectionAssociation
+ConnectionAssociationMixin = (Base) -> class extends Base
   ##
   # Adds a has-many association
   # @param {Class<Model>} this_model
@@ -387,4 +387,4 @@ class ConnectionAssociation
         Promise.reject new Error("unknown column '#{column}'")
     .nodeify bindDomain callback
 
-module.exports = ConnectionAssociation
+module.exports = ConnectionAssociationMixin

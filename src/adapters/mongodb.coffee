@@ -153,6 +153,7 @@ class MongoDBAdapter extends AdapterBase
   ##
   # Creates a MongoDB adapter
   constructor: (connection) ->
+    super()
     @_connection = connection
     @_collections = {}
 

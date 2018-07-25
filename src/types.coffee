@@ -6,12 +6,13 @@
 ##
 # Represents a string, used in model schemas.
 # @memberOf types
-exports.String = class CormoTypesString
-  constructor: (length) ->
-    if not(@ instanceof CormoTypesString)
-      return new CormoTypesString length
-    @length = length
-  toString: -> if @length then "string(#{@length})" else 'string'
+CormoTypesString = (length) ->
+  if not(@ instanceof CormoTypesString)
+    return new CormoTypesString length
+  @length = length
+  @toString = -> if @length then "string(#{@length})" else 'string'
+  return
+exports.String = CormoTypesString
 
 ##
 # Represents a double-precision floating-point, used in model schemas.

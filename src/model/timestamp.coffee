@@ -1,7 +1,7 @@
 ##
 # Timestamps
 # @namespace model
-class ModelTimestamp
+ModelTimestampMixin = (Base) -> class extends Base
   ##
   # Adds 'created_at' and 'updated_at' fields to records
   @timestamps: ->
@@ -14,4 +14,4 @@ class ModelTimestamp
       d = new Date()
       @updated_at = d
 
-module.exports = ModelTimestamp
+module.exports = ModelTimestampMixin

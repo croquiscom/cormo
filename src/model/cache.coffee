@@ -5,7 +5,7 @@ tableize = require('../util/inflector').tableize
 ##
 # Model cache
 # @namespace model
-class ModelCache
+ModelCacheMixin = (Base) -> class extends Base
   @_loadFromCache: (key, refresh) ->
     return Promise.reject new Error 'error' if refresh
     @_connection._connectRedisCache()
@@ -37,4 +37,4 @@ class ModelCache
           resolve()
     .nodeify bindDomain callback
 
-module.exports = ModelCache
+module.exports = ModelCacheMixin

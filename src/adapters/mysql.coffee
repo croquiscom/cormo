@@ -47,6 +47,7 @@ class MySQLAdapter extends SQLAdapterBase
   ##
   # Creates a MySQL adapter
   constructor: (connection) ->
+    super()
     @_connection = connection
 
   _query: (sql, data, callback) ->

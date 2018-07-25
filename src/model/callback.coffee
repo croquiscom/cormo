@@ -1,7 +1,7 @@
 ##
 # Model callbacks
 # @namespace model
-class ModelCallback
+ModelCallbackMixin = (Base) -> class extends Base
   ##
   # Adds a callback of after initializing
   # @param {Function|String} method
@@ -97,4 +97,4 @@ class ModelCallback
       throw new Error("Cannot execute method") if typeof method isnt 'function'
       method.call @
 
-module.exports = ModelCallback
+module.exports = ModelCallbackMixin
