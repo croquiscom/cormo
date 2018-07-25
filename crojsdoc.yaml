@@ -1,3 +1,4 @@
+output: docs
 title: CORMO
 quite: true
 files: true

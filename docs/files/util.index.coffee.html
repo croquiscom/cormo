@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>CORMO - util/index.coffee</title><script>if (location.protocol.match(/^http/) && location.pathname.match('\.html') === null && location.pathname.slice(-1) !== '/') {
+  location.href = location.href + '/';
+}</script><link href="../bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"><!--[if lt IE 9]><script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script><script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]--><link href="../google-code-prettify/prettify.css" rel="stylesheet" type="text/css"><link href="../style.css" rel="stylesheet" type="text/css"></head><body data-spy="scroll" data-target=".sidebar"><nav class="navbar navbar-default navbar-fixed-top" role="navigation"><div class="navbar-header"><button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#top-navigation-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><div class="collapse navbar-collapse" id="top-navigation-collapse"><ul class="nav navbar-nav"><li><a href="../index.html">Home</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Guides <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../guides/Aggregation.html">Aggregation</a></li><li><a href="../guides/Association.html">Association</a></li><li><a href="../guides/Callback.html">Callback</a></li><li><a href="../guides/Constraint.html">Constraint</a></li><li><a href="../guides/CreateRecords.html">Create records</a></li><li><a href="../guides/DefineModels.html">Define models</a></li><li><a href="../guides/Geospatial.html">Geospatial</a></li><li><a href="../guides/Miscellaneous.html">Miscellaneous</a></li><li><a href="../guides/Query.html">Query</a></li><li><a href="../guides/Validation.html">Validation</a></li></ul></li><li><a href="../modules/index.html">Modules</a></li><li><a href="../classes/index.html">Classes</a></li><li class="dropdown active"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Files - util/index.coffee <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../files/index.coffee.html">index.coffee</a></li><li><a href="../files/query.coffee.html">query.coffee</a></li><li><a href="../files/types.coffee.html">types.coffee</a></li><li><a href="../files/adapters.base.coffee.html">adapters/base.coffee</a></li><li><a href="../files/adapters.mongodb.coffee.html">adapters/mongodb.coffee</a></li><li><a href="../files/adapters.mysql.coffee.html">adapters/mysql.coffee</a></li><li><a href="../files/adapters.postgresql.coffee.html">adapters/postgresql.coffee</a></li><li><a href="../files/adapters.redis.coffee.html">adapters/redis.coffee</a></li><li><a href="../files/adapters.sql_base.coffee.html">adapters/sql_base.coffee</a></li><li><a href="../files/adapters.sqlite3.coffee.html">adapters/sqlite3.coffee</a></li><li><a href="../files/adapters.sqlite3_memory.coffee.html">adapters/sqlite3_memory.coffee</a></li><li><a href="../files/command.index.coffee.html">command/index.coffee</a></li><li><a href="../files/command.remote-console.coffee.html">command/remote-console.coffee</a></li><li><a href="../files/connection.association.coffee.html">connection/association.coffee</a></li><li><a href="../files/connection.index.coffee.html">connection/index.coffee</a></li><li><a href="../files/connection.manipulate.coffee.html">connection/manipulate.coffee</a></li><li><a href="../files/model.cache.coffee.html">model/cache.coffee</a></li><li><a href="../files/model.callback.coffee.html">model/callback.coffee</a></li><li><a href="../files/model.index.coffee.html">model/index.coffee</a></li><li><a href="../files/model.persistence.coffee.html">model/persistence.coffee</a></li><li><a href="../files/model.query.coffee.html">model/query.coffee</a></li><li><a href="../files/model.timestamp.coffee.html">model/timestamp.coffee</a></li><li><a href="../files/model.validate.coffee.html">model/validate.coffee</a></li><li><a href="../files/util.index.coffee.html">util/index.coffee</a></li><li><a href="../files/util.inflector.coffee.html">util/inflector.coffee</a></li></ul></li></ul><div class="options"><label class="checkbox"><input id="options-private" type="checkbox"> Private </label></div></div></div></nav><div class="container-fluid content"><div class="row"><div class="hidden-xs sidebar col-sm-3" data-spy="affix"><div class="cormo-sidenav"><div class="panel panel-default"><div class="panel-collapse collapse in" id="undefined_body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/index.coffee.html">index.coffee</a></li><li><a href="../files/query.coffee.html">query.coffee</a></li><li><a href="../files/types.coffee.html">types.coffee</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#adapters__body">adapters/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="adapters__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/adapters.base.coffee.html">base.coffee</a></li><li><a href="../files/adapters.mongodb.coffee.html">mongodb.coffee</a></li><li><a href="../files/adapters.mysql.coffee.html">mysql.coffee</a></li><li><a href="../files/adapters.postgresql.coffee.html">postgresql.coffee</a></li><li><a href="../files/adapters.redis.coffee.html">redis.coffee</a></li><li><a href="../files/adapters.sql_base.coffee.html">sql_base.coffee</a></li><li><a href="../files/adapters.sqlite3.coffee.html">sqlite3.coffee</a></li><li><a href="../files/adapters.sqlite3_memory.coffee.html">sqlite3_memory.coffee</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#command__body">command/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="command__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/command.index.coffee.html">index.coffee</a></li><li><a href="../files/command.remote-console.coffee.html">remote-console.coffee</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#connection__body">connection/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="connection__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/connection.association.coffee.html">association.coffee</a></li><li><a href="../files/connection.index.coffee.html">index.coffee</a></li><li><a href="../files/connection.manipulate.coffee.html">manipulate.coffee</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#model__body">model/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="model__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/model.cache.coffee.html">cache.coffee</a></li><li><a href="../files/model.callback.coffee.html">callback.coffee</a></li><li><a href="../files/model.index.coffee.html">index.coffee</a></li><li><a href="../files/model.persistence.coffee.html">persistence.coffee</a></li><li><a href="../files/model.query.coffee.html">query.coffee</a></li><li><a href="../files/model.timestamp.coffee.html">timestamp.coffee</a></li><li><a href="../files/model.validate.coffee.html">validate.coffee</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#util__body">util/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="util__body"><ul class="nav nav-pills nav-stacked"><li class="active"><a href="../files/util.index.coffee.html">index.coffee</a></li><li><a href="../files/util.inflector.coffee.html">inflector.coffee</a></li></ul></div></div></div></div><div class="col-sm-9 col-sm-offset-3"><section><h1>util/index.coffee</h1></section><pre class="prettyprint">##
+# Utilities
+# @module util
+# @namespace cormo
+
+Promise = require 'bluebird'
+
+##
+# Returns leaf object and last part.
+#
+# e.g.) (obj, 'a.b.c') -&gt; [ obj.a.b, 'c' ]
+# @memberOf util
+# @param {Object} obj
+# @param {String|Array&lt;String&gt;} path
+# @param {Boolean} [create_object=true]
+# @return {Array} [ leaf_object, last_part_of_path ]
+exports.getLeafOfPath = (obj, path, create_object) -&gt;
+  parts = if Array.isArray path then path[..] else path.split '.'
+  last = parts.pop()
+  if parts.length &gt; 0
+    if create_object isnt false
+      for part in parts
+        obj = obj[part] ||= {}
+    else
+      for part in parts
+        obj = obj[part]
+        return [] if not obj
+  [obj, last]
+
+##
+# Gets a value of object by path
+# @memberOf util
+# @param {Object} obj
+# @param {String|Array&lt;String&gt;} path
+# @return {*}
+exports.getPropertyOfPath = (obj, path) -&gt;
+  [obj, last] = exports.getLeafOfPath obj, path, false
+  return obj?[last]
+
+##
+# Sets a value to object by path
+# @memberOf util
+# @param {Object} obj
+# @param {String|Array&lt;String&gt;} path
+# @param {*} value
+exports.setPropertyOfPath = (obj, path, value) -&gt;
+  [obj, last] = exports.getLeafOfPath obj, path
+  obj[last] = value
+  return
+
+##
+# Sures a function call in the original domain
+# @memberOf util
+# @param {Function} fn
+# @return {Function}
+exports.bindDomain = (fn) -&gt;
+  if fn and d = process.domain
+    d.bind fn
+  else
+    fn</pre></div></div></div><script src="http://code.jquery.com/jquery-1.11.0.min.js"></script><script src="../bootstrap-3.2.0-dist/js/bootstrap.min.js"></script><script src="../google-code-prettify/prettify.js"></script><script src="../script.js"></script><script src="../group-examples.js"></script><a href="https://github.com/croquiscom/cormo"><img class="github-ribbon" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a></body></html>

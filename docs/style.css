@@ -1,0 +1,185 @@
+body {
+	padding-top: 70px;
+}
+.sidebar {
+	overflow-x: hidden;
+	overflow-y: auto;
+	top: 50px;
+	left: 0;
+	bottom: 0;
+	background: white;
+	position: fixed;
+}
+
+.cormo-sidenav {
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.cormo-sidenav li.cormo-class-property > a {
+	padding-left: 30px;
+	font-size: small;
+}
+
+.sourcecode {
+	display: none;
+}
+
+.options {
+	float: right;
+	margin-left: 30px;
+	margin-right: 15px;
+	margin-top: 6px;
+	
+}
+
+.cormo-class-property .label {
+	font-size: 0.7em;
+}
+
+.label {
+	margin-left: 3px;
+}
+
+.label-optional {
+	background-color: #3a87ad;
+}
+
+.label-static {
+	background-color: #f89406;
+}
+
+.label-abstract {
+	background-color: #389486;
+}
+
+.label-override {
+	background-color: #389486;
+}
+
+.label-async {
+	background-color: #8daf28;
+}
+
+.label-property {
+	background-color: #c09853;
+}
+
+.label-addable {
+	background-color: #468847;
+}
+
+.label-excludable {
+	background-color: #468847;
+}
+
+.label-private {
+	background-color: #333333;
+}
+
+.label-chainable {
+	background-color: #44cc3a;
+}
+
+.missing-link {
+	color: red;
+	background-color: gray;
+}
+
+section {
+	margin-bottom: 10px;
+}
+
+section .panel {
+	margin-bottom: 0px;
+}
+
+.cormo-sidenav .panel {
+	margin-bottom: 10px;
+}
+
+.extends {
+	font-size: 50%;
+}
+
+.uses {
+	font-size: 50%;
+}
+
+h1.class_title {
+	font-style: italic;
+}
+
+h2.class_method {
+	border-left: 10px solid #d9edf7;
+	padding-left: 10px;
+}
+
+ol.linenums {
+	margin-left: 60px;
+}
+
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9 {
+	list-style-type: decimal;
+}
+
+.github-ribbon {
+	position: fixed;
+	top: 40px;
+	right: 0;
+	border: 0;
+}
+
+.method-summary p {
+	margin-top: 5px;
+	margin-bottom: 0px;
+}
+
+.panel-heading .glyphicon:before {
+	content: "\e160";
+}
+
+.panel-heading.collapsed .glyphicon:before {
+	content: "\e159";
+}
+
+.panel .panel {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.panel .panel:first-child {
+	margin-top: 10px;
+}
+
+.method-depth0 {
+	margin: 0px;
+}
+
+.method-depth1 {
+	margin: 15px;
+}
+
+.method-depth2 {
+	margin: 30px;
+}
+
+.method-depth3 {
+	margin: 45px;
+}
+
+.method-depth4 {
+	margin: 60px;
+}
+
+.showcode {
+	margin-bottom: 10px;
+}
+
+.fix-anchor {
+	display: block;
+	margin-top: -60px;
+	height: 60px;
+	visibility: hidden;
+}
+
