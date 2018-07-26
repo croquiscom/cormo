@@ -168,7 +168,7 @@ class ConnectionBase extends EventEmitter
               for column, property of modelClass._schema
                 if not current.tables?[modelClass.tableName]?[property._dbname]
                   console.log "Adding column #{column} to #{modelClass.tableName}" if options.verbose
-                  add_columns_commands.push @_adapter.addColumnAsync model, property
+                  add_columns_commands.push @_adapter.addColumn model, property
             await Promise.all add_columns_commands
 
             tables_commands = []

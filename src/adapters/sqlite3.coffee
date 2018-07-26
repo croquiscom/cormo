@@ -151,13 +151,16 @@ class SQLite3Adapter extends SQLAdapterBase
           resolve()
 
   ## @override AdapterBase::addColumn
-  addColumn: (model, column_property, callback) ->
-    model_class = @_connection.models[model]
-    tableName = model_class.tableName
-    sql = "ALTER TABLE \"#{tableName}\" ADD COLUMN \"#{column_property._dbname}\" #{_propertyToSQL column_property}"
-    @_query 'run', sql, (error) ->
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null
+  addColumn: (model, column_property) ->
+    new Promise (resolve, reject) =>
+      model_class = @_connection.models[model]
+      tableName = model_class.tableName
+      sql = "ALTER TABLE \"#{tableName}\" ADD COLUMN \"#{column_property._dbname}\" #{_propertyToSQL column_property}"
+      @_query 'run', sql, (error) ->
+        if error
+          reject SQLite3Adapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   ## @override AdapterBase::createIndex
   createIndex: (model, index, callback) ->

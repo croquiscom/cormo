@@ -41,7 +41,7 @@ class AdapterBase
   # @param {Object} column_property
   # @nodejscallback
   # @see Connection::applySchemas
-  addColumn: (model, column_property, callback) -> callback null
+  addColumn: (model, column_property) -> Promise.resolve()
 
   ## Creates an index.
   # @abstract

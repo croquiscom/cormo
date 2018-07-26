@@ -150,13 +150,16 @@ class MySQLAdapter extends SQLAdapterBase
           resolve()
 
   ## @override AdapterBase::addColumn
-  addColumn: (model, column_property, callback) ->
-    model_class = @_connection.models[model]
-    tableName = model_class.tableName
-    sql = "ALTER TABLE `#{tableName}` ADD COLUMN `#{column_property._dbname}` #{_propertyToSQL column_property, @support_fractional_seconds}"
-    @_query sql, (error) ->
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null
+  addColumn: (model, column_property) ->
+    new Promise (resolve, reject) =>
+      model_class = @_connection.models[model]
+      tableName = model_class.tableName
+      sql = "ALTER TABLE `#{tableName}` ADD COLUMN `#{column_property._dbname}` #{_propertyToSQL column_property, @support_fractional_seconds}"
+      @_query sql, (error) ->
+        if error
+          reject MySQLAdapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   ## @override AdapterBase::createIndex
   createIndex: (model, index, callback) ->
