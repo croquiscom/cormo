@@ -194,11 +194,14 @@ class MySQLAdapter extends SQLAdapterBase
           resolve()
 
   ## @override AdapterBase::drop
-  drop: (model, callback) ->
-    tableName = @_connection.models[model].tableName
-    @_query "DROP TABLE IF EXISTS `#{tableName}`", (error) ->
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null
+  drop: (model) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      @_query "DROP TABLE IF EXISTS `#{tableName}`", (error) ->
+        if error
+          reject MySQLAdapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   _getModelID: (data) ->
     Number data.id

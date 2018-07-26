@@ -71,7 +71,7 @@ class AdapterBase
   # @param {String} model
   # @nodejscallback
   # @see Model.drop
-  drop: (model, callback) -> callback new Error 'not implemented'
+  drop: (model) -> Promise.reject 'not implemented'
 
   idToDB: (value) ->
     value

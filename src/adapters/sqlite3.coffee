@@ -179,11 +179,14 @@ class SQLite3Adapter extends SQLAdapterBase
           resolve()
 
   ## @override AdapterBase::drop
-  drop: (model, callback) ->
-    tableName = @_connection.models[model].tableName
-    @_query 'run', "DROP TABLE IF EXISTS \"#{tableName}\"", (error) ->
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null
+  drop: (model) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      @_query 'run', "DROP TABLE IF EXISTS \"#{tableName}\"", (error) ->
+        if error
+          reject SQLite3Adapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   _getModelID: (data) ->
     Number data.id

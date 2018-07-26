@@ -218,7 +218,7 @@ class ModelBase
   @drop: (callback) ->
     # do not need to apply schema before drop, only waiting connection established
     @_connection._promise_connection.then =>
-      @_adapter.dropAsync @_name
+      @_adapter.drop @_name
     .finally =>
       @_connection._schema_changed = true
     .nodeify util.bindDomain callback

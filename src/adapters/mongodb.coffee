@@ -256,14 +256,16 @@ class MongoDBAdapter extends AdapterBase
           resolve()
 
   ## @override AdapterBase::drop
-  drop: (model, callback) ->
-    name = @_connection.models[model].tableName
-    delete @_collections[name]
-    @_db.dropCollection _getMongoDBColName(name), (error) ->
-      # ignore not found error
-      if error and error.errmsg isnt 'ns not found'
-        return callback MongoDBAdapter.wrapError 'unknown error', error
-      callback null
+  drop: (model) ->
+    new Promise (resolve, reject) =>
+      name = @_connection.models[model].tableName
+      delete @_collections[name]
+      @_db.dropCollection _getMongoDBColName(name), (error) ->
+        # ignore not found error
+        if error and error.errmsg isnt 'ns not found'
+          reject MongoDBAdapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   idToDB: (value) ->
     _convertValueToObjectID value, 'id'

@@ -43,8 +43,13 @@ class RedisAdapter extends AdapterBase
     @_connection = connection
 
   ## @override AdapterBase::drop
-  drop: (model, callback) ->
-    @delete model, [], callback
+  drop: (model) ->
+    new Promise (resolve, reject) =>
+      @delete model, [], (error) =>
+        if error
+          reject error
+        else
+          resolve()
 
   valueToDB: (value, column, property) ->
     return if not value?

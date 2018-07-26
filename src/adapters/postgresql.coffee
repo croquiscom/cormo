@@ -201,10 +201,13 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->
-    tableName = @_connection.models[model].tableName
-    @_query "DROP TABLE IF EXISTS \"#{tableName}\"", null, (error) ->
-      return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
-      callback null
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      @_query "DROP TABLE IF EXISTS \"#{tableName}\"", null, (error) ->
+        if error
+          reject PostgreSQLAdapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   _getModelID: (data) ->
     Number data.id
