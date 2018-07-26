@@ -479,28 +479,35 @@ class MySQLAdapter extends SQLAdapterBase
     transformer
 
   ## @override AdapterBase::count
-  count: (model, conditions, options, callback) ->
-    params = []
-    tableName = @_connection.models[model].tableName
-    sql = "SELECT COUNT(*) AS count FROM `#{tableName}`"
-    if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-      catch e
-        return callback e
-    if options.group_by
-      sql += ' GROUP BY ' + options.group_by.join ','
-      if options.conditions_of_group.length > 0
+  count: (model, conditions, options) ->
+    new Promise (resolve, reject) =>
+      params = []
+      tableName = @_connection.models[model].tableName
+      sql = "SELECT COUNT(*) AS count FROM `#{tableName}`"
+      if conditions.length > 0
         try
-          sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
+          sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
         catch e
-          return callback e
-      sql = "SELECT COUNT(*) AS count FROM (#{sql}) _sub"
-    #console.log sql, params
-    @_query sql, params, (error, result) =>
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      return callback new Error 'unknown error' if result?.length isnt 1
-      callback null, Number(result[0].count)
+          reject e
+          return
+      if options.group_by
+        sql += ' GROUP BY ' + options.group_by.join ','
+        if options.conditions_of_group.length > 0
+          try
+            sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
+          catch e
+            reject e
+            return
+        sql = "SELECT COUNT(*) AS count FROM (#{sql}) _sub"
+      #console.log sql, params
+      @_query sql, params, (error, result) =>
+        if error
+          reject MySQLAdapter.wrapError 'unknown error', error
+          return
+        if result?.length isnt 1
+          reject new Error 'unknown error'
+          return
+        resolve Number(result[0].count)
 
   ## @override AdapterBase::delete
   delete: (model, conditions, callback) ->

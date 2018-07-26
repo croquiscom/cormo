@@ -232,7 +232,7 @@ class AdapterBase
   # @return {Number}
   # @nodejscallback
   # @see Query::count
-  count: (model, conditions, options, callback) -> callback new Error 'not implemented'
+  count: (model, conditions, options) -> Promise.reject new Error 'not implemented'
 
   ##
   # Deletes records from the database

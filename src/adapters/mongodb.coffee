@@ -588,30 +588,40 @@ class MongoDBAdapter extends AdapterBase
     transformer
 
   ## @override AdapterBase::count
-  count: (model, conditions, options, callback) ->
-    try
-      conditions = _buildWhere @_connection.models[model]._schema, conditions
-    catch e
-      return callback e
-    #console.log JSON.stringify conditions
-    if options.group_by or options.group_fields
-      pipeline = []
-      if conditions
-        pipeline.push $match: conditions
-      pipeline.push $group: _buildGroupFields options.group_by, options.group_fields
-      if options.conditions_of_group.length > 0
-        pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
-      pipeline.push $group: _id: null, count: $sum: 1
-      @_collection(model).aggregate pipeline, (error, cursor) ->
-        return callback MongoDBAdapter.wrapError 'unknown error', error if error
-        cursor.toArray (error, result) ->
-          return callback error if error
-          return callback new Error 'unknown error' if result?.length isnt 1
-          callback null, result[0].count
-    else
-      @_collection(model).countDocuments conditions, (error, count) =>
-        return callback MongoDBAdapter.wrapError 'unknown error', error if error
-        callback null, count
+  count: (model, conditions, options) ->
+    new Promise (resolve, reject) =>
+      try
+        conditions = _buildWhere @_connection.models[model]._schema, conditions
+      catch e
+        reject e
+        return
+      #console.log JSON.stringify conditions
+      if options.group_by or options.group_fields
+        pipeline = []
+        if conditions
+          pipeline.push $match: conditions
+        pipeline.push $group: _buildGroupFields options.group_by, options.group_fields
+        if options.conditions_of_group.length > 0
+          pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
+        pipeline.push $group: _id: null, count: $sum: 1
+        @_collection(model).aggregate pipeline, (error, cursor) ->
+          if error
+            reject MongoDBAdapter.wrapError 'unknown error', error
+            return
+          cursor.toArray (error, result) ->
+            if error
+              reject error
+              return
+            if result?.length isnt 1
+              reject new Error 'unknown error'
+              return
+            resolve result[0].count
+      else
+        @_collection(model).countDocuments conditions, (error, count) =>
+          if error
+            reject MongoDBAdapter.wrapError 'unknown error', error
+            return
+          resolve count
 
   ## @override AdapterBase::delete
   delete: (model, conditions, callback) ->
