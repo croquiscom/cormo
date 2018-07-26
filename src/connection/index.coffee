@@ -202,7 +202,7 @@ class ConnectionBase extends EventEmitter
                     console.log "Adding foreign key #{modelClass.tableName}.#{integrity.column} to #{integrity.parent.tableName}" if options.verbose
                     foreign_keys_commands.push [model, integrity.column, type, integrity.parent]
             await Promise.each foreign_keys_commands, (args) =>
-              @_adapter.createForeignKeyAsync.apply @_adapter, args
+              @_adapter.createForeignKey.apply @_adapter, args
           finally
             console.log 'Applying schemas done' if options.verbose
             @_applying_schemas = false

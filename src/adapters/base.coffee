@@ -63,7 +63,7 @@ class AdapterBase
   # @param {Class<Model>} references
   # @nodejscallback
   # @see Connection::applySchemas
-  createForeignKey: (model, column, type, references, callback) -> callback null
+  createForeignKey: (model, column, type, references) -> Promise.resolve()
 
   ##
   # Drops a model from the database
