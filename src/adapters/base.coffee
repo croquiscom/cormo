@@ -164,7 +164,7 @@ class AdapterBase
   # @param {String} model
   # @param {Object} data
   # @nodejscallback
-  update: (model, data, callback) -> callback new Error 'not implemented'
+  update: (model, data) -> Promise.reject new Error 'not implemented'
 
   ##
   # Updates some fields of records that match conditions

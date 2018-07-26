@@ -282,15 +282,18 @@ class SQLite3Adapter extends SQLAdapterBase
           reject new Error 'unexpected result'
 
   ## @override AdapterBase::update
-  update: (model, data, callback) ->
-    tableName = @_connection.models[model].tableName
-    values = []
-    [ fields ] = @_buildUpdateSet model, data, values
-    values.push data.id
-    sql = "UPDATE \"#{tableName}\" SET #{fields} WHERE id=?"
-    @_query 'run', sql, values, (error) ->
-      return _processSaveError error, callback if error
-      callback null
+  update: (model, data) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      values = []
+      [ fields ] = @_buildUpdateSet model, data, values
+      values.push data.id
+      sql = "UPDATE \"#{tableName}\" SET #{fields} WHERE id=?"
+      @_query 'run', sql, values, (error) ->
+        if error
+          _processSaveError error, reject
+          return
+        resolve()
 
   ## @override AdapterBase::updatePartial
   updatePartial: (model, data, conditions, options, callback) ->

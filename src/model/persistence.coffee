@@ -138,7 +138,7 @@ ModelPersistenceMixin = (Base) -> class extends Base
         return Promise.reject e
 
       ctor._connection.log ctor._name, 'update', data if not options?.skip_log
-      ctor._adapter.updateAsync ctor._name, data
+      ctor._adapter.update ctor._name, data
       .then =>
         @_prev_attributes = {}
 

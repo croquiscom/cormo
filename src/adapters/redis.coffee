@@ -84,7 +84,7 @@ class RedisAdapter extends AdapterBase
       data.$_$ = '' # ensure that there is one argument(one field) at least
       @_client.incr "#{tableize model}:_lastid", (error, id) =>
         if error
-          reject RedisAdapter.wrapError 'unknown error'
+          reject RedisAdapter.wrapError 'unknown error', error
           return
         @_client.hmset "#{tableize model}:#{id}", data, (error) ->
           if error
@@ -97,18 +97,27 @@ class RedisAdapter extends AdapterBase
     @_createBulkDefault model, data
 
   ## @override AdapterBase::update
-  update: (model, data, callback) ->
-    key = "#{tableize model}:#{data.id}"
-    delete data.id
-    data.$_$ = '' # ensure that there is one argument(one field) at least
-    @_client.exists key, (error, exists) =>
-      return callback RedisAdapter.wrapError 'unknown error', error if error
-      return callback null if not exists
-      @_client.del key, (error) =>
-        return callback RedisAdapter.wrapError 'unknown error', error if error
-        @_client.hmset key, data, (error) ->
-          return callback RedisAdapter.wrapError 'unknown error', error if error
-          callback null
+  update: (model, data) ->
+    new Promise (resolve, reject) =>
+      key = "#{tableize model}:#{data.id}"
+      delete data.id
+      data.$_$ = '' # ensure that there is one argument(one field) at least
+      @_client.exists key, (error, exists) =>
+        if error
+          reject RedisAdapter.wrapError 'unknown error', error
+          return
+        if not exists
+          resolve()
+          return
+        @_client.del key, (error) =>
+          if error
+            reject RedisAdapter.wrapError 'unknown error', error
+            return
+          @_client.hmset key, data, (error) ->
+            if error
+              reject RedisAdapter.wrapError 'unknown error', error
+              return
+            resolve()
 
   ## @override AdapterBase::updatePartial
   updatePartial: (model, data, conditions, options, callback) ->

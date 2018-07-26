@@ -327,15 +327,18 @@ class PostgreSQLAdapter extends SQLAdapterBase
           reject new Error 'unexpected rows'
 
   ## @override AdapterBase::update
-  update: (model, data, callback) ->
-    tableName = @_connection.models[model].tableName
-    values = []
-    [ fields ] = @_buildUpdateSet model, data, values
-    values.push data.id
-    sql = "UPDATE \"#{tableName}\" SET #{fields} WHERE id=$#{values.length}"
-    @_query sql, values, (error) ->
-      return _processSaveError tableName, error, callback if error
-      callback null
+  update: (model, data) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      values = []
+      [ fields ] = @_buildUpdateSet model, data, values
+      values.push data.id
+      sql = "UPDATE \"#{tableName}\" SET #{fields} WHERE id=$#{values.length}"
+      @_query sql, values, (error) ->
+        if error
+          _processSaveError tableName, error, reject
+          return
+        resolve()
 
   ## @override AdapterBase::updatePartial
   updatePartial: (model, data, conditions, options, callback) ->

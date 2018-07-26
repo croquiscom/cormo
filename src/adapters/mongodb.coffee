@@ -353,12 +353,15 @@ class MongoDBAdapter extends AdapterBase
           resolve ids
 
   ## @override AdapterBase::update
-  update: (model, data, callback) ->
-    id = data.id
-    delete data.id
-    @_collection(model).update { _id: id }, data, safe: true, (error) ->
-      return _processSaveError error, callback if error
-      callback null
+  update: (model, data) ->
+    new Promise (resolve, reject) =>
+      id = data.id
+      delete data.id
+      @_collection(model).update { _id: id }, data, safe: true, (error) ->
+        if error
+          _processSaveError error, reject
+          return
+        resolve()
 
   _buildUpdateOps: (schema, update_ops, data, path, object) ->
     for column, value of object
