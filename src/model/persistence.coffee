@@ -127,7 +127,7 @@ ModelPersistenceMixin = (Base) -> class extends Base
         return Promise.reject e
 
       ctor._connection.log ctor._name, 'update', data if not options?.skip_log
-      adapter.updatePartialAsync ctor._name, data, id: @id, {}
+      adapter.updatePartial ctor._name, data, id: @id, {}
       .then =>
         @_prev_attributes = {}
     else
@@ -164,8 +164,9 @@ ModelPersistenceMixin = (Base) -> class extends Base
 
       if @id
         @_runCallbacks 'update', 'before'
-        @_update options
-        .finally =>
+        try
+          await @_update options
+        finally
           @_runCallbacks 'update', 'after'
           @_runCallbacks 'save', 'after'
       else

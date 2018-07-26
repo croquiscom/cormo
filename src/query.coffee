@@ -412,7 +412,7 @@ class Query
         @_conditions.push id: @_id
         delete @_id
       @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
-      @_adapter.updatePartialAsync @_name, data, @_conditions, @_options
+      @_adapter.updatePartial @_name, data, @_conditions, @_options
     .nodeify bindDomain callback
 
   ##

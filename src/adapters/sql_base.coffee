@@ -183,8 +183,8 @@ class SQLAdapterBase extends AdapterBase
 
   ## @override AdapterBase::upsert
   upsert: (model, data, conditions, options, callback) ->
-    @updatePartial model, data, conditions, options, (error, count) =>
-      return callback error if error
+    @updatePartial model, data, conditions, options
+    .then (count) =>
       return callback null if count > 0
 
       insert_data = {}
@@ -204,7 +204,9 @@ class SQLAdapterBase extends AdapterBase
           callback error
           return
 
-        @updatePartial model, data, conditions, options, (error, count) =>
-          callback error
+        @updatePartial model, data, conditions, options
+        .then (count) => callback null
+        , (error) => callback error
+    , (error) => callback error
 
 module.exports = SQLAdapterBase

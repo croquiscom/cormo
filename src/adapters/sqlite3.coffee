@@ -296,19 +296,22 @@ class SQLite3Adapter extends SQLAdapterBase
         resolve()
 
   ## @override AdapterBase::updatePartial
-  updatePartial: (model, data, conditions, options, callback) ->
-    tableName = @_connection.models[model].tableName
-    values = []
-    [ fields ] = @_buildPartialUpdateSet model, data, values
-    sql = "UPDATE \"#{tableName}\" SET #{fields}"
-    if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
-      catch e
-        return callback e
-    @_query 'run', sql, values, (error) ->
-      return _processSaveError error, callback if error
-      callback null, @changes
+  updatePartial: (model, data, conditions, options) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      values = []
+      [ fields ] = @_buildPartialUpdateSet model, data, values
+      sql = "UPDATE \"#{tableName}\" SET #{fields}"
+      if conditions.length > 0
+        try
+          sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
+        catch e
+          return callback e
+      @_query 'run', sql, values, (error) ->
+        if error
+          _processSaveError error, reject
+          return
+        resolve @changes
 
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->

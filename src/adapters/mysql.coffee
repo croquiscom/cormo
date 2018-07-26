@@ -322,20 +322,25 @@ class MySQLAdapter extends SQLAdapterBase
         resolve()
 
   ## @override AdapterBase::updatePartial
-  updatePartial: (model, data, conditions, options, callback) ->
-    tableName = @_connection.models[model].tableName
-    values = []
-    [ fields ] = @_buildPartialUpdateSet model, data, values
-    sql = "UPDATE `#{tableName}` SET #{fields}"
-    if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
-      catch e
-        return callback e
-    @_query sql, values, (error, result) ->
-      return _processSaveError error, callback if error
-      return callback MySQLAdapter.wrapError 'unknown error' if not result?
-      callback null, result.affectedRows
+  updatePartial: (model, data, conditions, options) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      values = []
+      [ fields ] = @_buildPartialUpdateSet model, data, values
+      sql = "UPDATE `#{tableName}` SET #{fields}"
+      if conditions.length > 0
+        try
+          sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
+        catch e
+          return callback e
+      @_query sql, values, (error, result) ->
+        if error
+          _processSaveError error, reject
+          return
+        if not result?
+          reject MySQLAdapter.wrapError 'unknown error'
+          return
+        resolve result.affectedRows
 
   ## @override AdapterBase::upsert
   upsert: (model, data, conditions, options, callback) ->

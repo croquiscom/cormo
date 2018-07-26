@@ -174,7 +174,7 @@ class AdapterBase
   # @param {Object} conditions
   # @param {Object} options
   # @nodejscallback
-  updatePartial: (model, data, conditions, options, callback) -> callback new Error 'not implemented'
+  updatePartial: (model, data, conditions, options) -> Promise.reject new Error 'not implemented'
 
   ##
   # Updates some fields of records that match conditions or inserts a new record
