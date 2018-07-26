@@ -373,21 +373,27 @@ class SQLite3Adapter extends SQLAdapterBase
     [sql, params]
 
   ## @override AdapterBase::find
-  find: (model, conditions, options, callback) ->
-    try
-      [sql, params] = @_buildSqlForFind model, conditions, options
-    catch e
-      return callback e
-    if options.explain
-      return @_query 'all', "EXPLAIN QUERY PLAN #{sql}", params, (error, result) ->
-        return callback error if error
-        callback null, result
-    @_query 'all', sql, params, (error, result) =>
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      if options.group_fields
-        callback null, result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
-      else
-        callback null, result.map (record) => @_convertToModelInstance model, record, options
+  find: (model, conditions, options) ->
+    new Promise (resolve, reject) =>
+      try
+        [sql, params] = @_buildSqlForFind model, conditions, options
+      catch e
+        reject e
+        return
+      if options.explain
+        return @_query 'all', "EXPLAIN QUERY PLAN #{sql}", params, (error, result) ->
+          if error
+            reject error
+            return
+          resolve result
+      @_query 'all', sql, params, (error, result) =>
+        if error
+          reject SQLite3Adapter.wrapError 'unknown error', error
+          return
+        if options.group_fields
+          resolve result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
+        else
+          resolve result.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options) ->

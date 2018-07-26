@@ -436,22 +436,28 @@ class MySQLAdapter extends SQLAdapterBase
     [sql, params]
 
   ## @override AdapterBase::find
-  find: (model, conditions, options, callback) ->
-    try
-      [sql, params] = @_buildSqlForFind model, conditions, options
-    catch e
-      return callback e
-    if options.explain
-      return @_query "EXPLAIN #{sql}", params, (error, result) ->
-        return callback error if error
-        callback null, result
-    @_query sql, params, (error, result) =>
-      #console.log result
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      if options.group_fields
-        callback null, result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
-      else
-        callback null, result.map (record) => @_convertToModelInstance model, record, options
+  find: (model, conditions, options) ->
+    new Promise (resolve, reject) =>
+      try
+        [sql, params] = @_buildSqlForFind model, conditions, options
+      catch e
+        reject e
+        return
+      if options.explain
+        return @_query "EXPLAIN #{sql}", params, (error, result) ->
+          if error
+            reject error
+            return
+          resolve result
+      @_query sql, params, (error, result) =>
+        #console.log result
+        if error
+          reject MySQLAdapter.wrapError 'unknown error', error
+          return
+        if options.group_fields
+          resolve result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
+        else
+          resolve result.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options) ->

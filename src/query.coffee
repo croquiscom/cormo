@@ -265,7 +265,7 @@ class Query
         @_conditions.push id: @_id
         expected_count = 1
     @_connection.log @_name, 'find', conditions: @_conditions, options: @_options if not options?.skip_log
-    records = await @_adapter.findAsync @_name, @_conditions, @_options
+    records = await @_adapter.find @_name, @_conditions, @_options
     if expected_count?
       if records.length isnt expected_count
         throw new Error('not found')

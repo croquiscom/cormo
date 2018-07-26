@@ -153,17 +153,18 @@ class RedisAdapter extends AdapterBase
           reject new Error 'not found'
 
   ## @override AdapterBase::find
-  find: (model, conditions, options, callback) ->
-    table = tableize model
-    @_getKeys table, conditions, (error, keys) =>
-      async.map keys, (key, callback) =>
-        @_client.hgetall key, (error, result) ->
-          if result
-            result.id = Number key.substr table.length+1
-          callback null, result
-      , (error, records) =>
-        records = records.filter (record) -> record?
-        callback null, records.map (record) => @_convertToModelInstance model, record, options
+  find: (model, conditions, options) ->
+    new Promise (resolve, reject) =>
+      table = tableize model
+      @_getKeys table, conditions, (error, keys) =>
+        async.map keys, (key, callback) =>
+          @_client.hgetall key, (error, result) ->
+            if result
+              result.id = Number key.substr table.length+1
+            callback null, result
+        , (error, records) =>
+          records = records.filter (record) -> record?
+          resolve records.map (record) => @_convertToModelInstance model, record, options
 
   _delete: (keys, callback) ->
 

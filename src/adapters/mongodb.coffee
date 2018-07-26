@@ -503,51 +503,69 @@ class MongoDBAdapter extends AdapterBase
     [conditions, fields, orders, client_options]
 
   ## @override AdapterBase::find
-  find: (model, conditions, options, callback) ->
-    try
-      [conditions, fields, orders, client_options] = @_buildConditionsForFind model, conditions, options
-    catch e
-      return callback e
-    #console.log JSON.stringify conditions
-    if options.group_by or options.group_fields
-      pipeline = []
-      if conditions
-        pipeline.push $match: conditions
-      pipeline.push $group: _buildGroupFields options.group_by, options.group_fields
-      pipeline.push $sort: orders if orders
-      if options.conditions_of_group.length > 0
-        pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
-      pipeline.push $limit: options.limit if options.limit
-      if options.explain
-        return @_collection(model).aggregate pipeline, explain: true, (error, cursor) ->
-          return callback error if error
-          cursor.toArray (error, result) ->
-            return callback error if error
-            callback null, result
-      @_collection(model).aggregate pipeline, (error, cursor) =>
-        return callback MongoDBAdapter.wrapError 'unknown error', error if error
-        cursor.toArray (error, result) =>
-          return callback error if error
-          callback null, result.map (record) =>
-            if options.group_by
-              if options.group_by.length is 1
-                record[options.group_by[0]] = record._id
-              else
-                record[group] = record._id[group] for group in options.group_by
-            @_convertToGroupInstance model, record, options.group_by, options.group_fields
-    else
-      if options.explain
-        client_options.explain = true
-        return @_collection(model).find conditions, client_options, (error, cursor) ->
-          return callback error if error
-          cursor.toArray (error, result) ->
-            return callback error if error
-            callback null, result
-      @_collection(model).find conditions, client_options, (error, cursor) =>
-        return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
-        cursor.toArray (error, result) =>
-          return callback MongoDBAdapter.wrapError 'unknown error', error if error
-          callback null, result.map (record) => @_convertToModelInstance model, record, options
+  find: (model, conditions, options) ->
+    new Promise (resolve, reject) =>
+      try
+        [conditions, fields, orders, client_options] = @_buildConditionsForFind model, conditions, options
+      catch e
+        reject e
+        return
+      #console.log JSON.stringify conditions
+      if options.group_by or options.group_fields
+        pipeline = []
+        if conditions
+          pipeline.push $match: conditions
+        pipeline.push $group: _buildGroupFields options.group_by, options.group_fields
+        pipeline.push $sort: orders if orders
+        if options.conditions_of_group.length > 0
+          pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
+        pipeline.push $limit: options.limit if options.limit
+        if options.explain
+          return @_collection(model).aggregate pipeline, explain: true, (error, cursor) ->
+            if error
+              reject error
+              return
+            cursor.toArray (error, result) ->
+              if error
+                reject error
+                return
+              resolve result
+        @_collection(model).aggregate pipeline, (error, cursor) =>
+          if error
+            reject MongoDBAdapter.wrapError 'unknown error', error
+            return
+          cursor.toArray (error, result) =>
+            if error
+              reject error
+              return
+            resolve result.map (record) =>
+              if options.group_by
+                if options.group_by.length is 1
+                  record[options.group_by[0]] = record._id
+                else
+                  record[group] = record._id[group] for group in options.group_by
+              @_convertToGroupInstance model, record, options.group_by, options.group_fields
+      else
+        if options.explain
+          client_options.explain = true
+          return @_collection(model).find conditions, client_options, (error, cursor) ->
+            if error
+              reject error
+              return
+            cursor.toArray (error, result) ->
+              if error
+                reject error
+                return
+              resolve result
+        @_collection(model).find conditions, client_options, (error, cursor) =>
+          if error or not cursor
+            reject MongoDBAdapter.wrapError 'unknown error', error
+            return
+          cursor.toArray (error, result) =>
+            if error
+              reject MongoDBAdapter.wrapError 'unknown error', error
+              return
+            resolve result.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options) ->

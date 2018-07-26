@@ -207,7 +207,7 @@ class AdapterBase
   # @return {Array<Model>}
   # @nodejscallback
   # @see Query::exec
-  find: (model, conditions, options, callback) -> callback new Error 'not implemented'
+  find: (model, conditions, options) -> Promise.reject new Error 'not implemented'
 
   ##
   # Streams matching records
