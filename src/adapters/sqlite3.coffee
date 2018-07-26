@@ -248,14 +248,17 @@ class SQLite3Adapter extends SQLAdapterBase
     [ fields.join(','), places.join(',') ]
 
   ## @override AdapterBase::create
-  create: (model, data, callback) ->
-    tableName = @_connection.models[model].tableName
-    values = []
-    [ fields, places ] = @_buildUpdateSet model, data, values, true
-    sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES (#{places})"
-    @_query 'run', sql, values, (error) ->
-      return _processSaveError error, callback if error
-      callback null, @lastID
+  create: (model, data) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      values = []
+      [ fields, places ] = @_buildUpdateSet model, data, values, true
+      sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES (#{places})"
+      @_query 'run', sql, values, (error) ->
+        if error
+          _processSaveError error, reject
+          return
+        resolve @lastID
 
   ## @override AdapterBase::createBulk
   createBulk: (model, data, callback) ->

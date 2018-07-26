@@ -196,9 +196,13 @@ class SQLAdapterBase extends AdapterBase
       for condition in conditions
         for key, value of condition
           insert_data[key] = value
-      @create model, insert_data, (error) =>
-        return callback null if not error
-        return callback error if not /duplicated/.test error.message
+      try
+        await @create model, insert_data
+        callback null
+      catch error
+        if not /duplicated/.test error.message
+          callback error
+          return
 
         @updatePartial model, data, conditions, options, (error, count) =>
           callback error

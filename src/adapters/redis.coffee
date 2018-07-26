@@ -79,13 +79,18 @@ class RedisAdapter extends AdapterBase
         value
 
   ## @override AdapterBase::create
-  create: (model, data, callback) ->
-    data.$_$ = '' # ensure that there is one argument(one field) at least
-    @_client.incr "#{tableize model}:_lastid", (error, id) =>
-      return callback RedisAdapter.wrapError 'unknown error', error if error
-      @_client.hmset "#{tableize model}:#{id}", data, (error) ->
-        return callback RedisAdapter.wrapError 'unknown error', error if error
-        callback null, id
+  create: (model, data) ->
+    new Promise (resolve, reject) =>
+      data.$_$ = '' # ensure that there is one argument(one field) at least
+      @_client.incr "#{tableize model}:_lastid", (error, id) =>
+        if error
+          reject RedisAdapter.wrapError 'unknown error'
+          return
+        @_client.hmset "#{tableize model}:#{id}", data, (error) ->
+          if error
+            reject RedisAdapter.wrapError 'unknown error', error
+          else
+            resolve id
 
   ## @override AdapterBase::createBulk
   createBulk: (model, data, callback) ->

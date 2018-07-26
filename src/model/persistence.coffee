@@ -75,27 +75,23 @@ ModelPersistenceMixin = (Base) -> class extends Base
     return data
 
   _create: (options) ->
-    try
-      data = @_buildSaveData()
-    catch e
-      return Promise.reject e
+    data = @_buildSaveData()
 
     ctor = @constructor
     ctor._connection.log ctor._name, 'create', data if not options?.skip_log
-    ctor._adapter.createAsync ctor._name, data
-    .then (id) =>
-      Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
-      # save sub objects of each association
-      foreign_key = inflector.foreign_key ctor._name
-      promises = Object.keys(ctor._associations).map (column) =>
-        sub_promises = (@['__cache_' + column] or []).map (sub) ->
-          sub[foreign_key] = id
-          sub.save()
-        Promise.all sub_promises
-      Promise.all promises
-      .finally =>
-        @_prev_attributes = {}
-      .catch ->
+    id = await ctor._adapter.create ctor._name, data
+    Object.defineProperty @, 'id', configurable: false, enumerable: true, writable: false, value: id
+    # save sub objects of each association
+    foreign_key = inflector.foreign_key ctor._name
+    promises = Object.keys(ctor._associations).map (column) =>
+      sub_promises = (@['__cache_' + column] or []).map (sub) ->
+        sub[foreign_key] = id
+        sub.save()
+      Promise.all sub_promises
+    try
+      await Promise.all promises
+    catch
+    @_prev_attributes = {}
 
   @_createBulk: (records) ->
     error = undefined
@@ -174,8 +170,9 @@ ModelPersistenceMixin = (Base) -> class extends Base
           @_runCallbacks 'save', 'after'
       else
         @_runCallbacks 'create', 'before'
-        @_create options
-        .finally =>
+        try
+          await @_create options
+        finally
           @_runCallbacks 'create', 'after'
           @_runCallbacks 'save', 'after'
     .then =>

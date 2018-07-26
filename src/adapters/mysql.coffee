@@ -272,17 +272,20 @@ class MySQLAdapter extends SQLAdapterBase
     [ fields.join(','), places.join(',') ]
 
   ## @override AdapterBase::create
-  create: (model, data, callback) ->
-    tableName = @_connection.models[model].tableName
-    values = []
-    [ fields, places ] = @_buildUpdateSet model, data, values, true
-    sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES (#{places})"
-    @_query sql, values, (error, result) ->
-      return _processSaveError error, callback if error
-      if id = result?.insertId
-        callback null, id
-      else
-        callback new Error 'unexpected result'
+  create: (model, data) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      values = []
+      [ fields, places ] = @_buildUpdateSet model, data, values, true
+      sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES (#{places})"
+      @_query sql, values, (error, result) ->
+        if error
+          _processSaveError error, reject
+          return
+        if id = result?.insertId
+          resolve id
+        else
+          reject new Error 'unexpected result'
 
   ## @override AdapterBase::createBulk
   createBulk: (model, data, callback) ->

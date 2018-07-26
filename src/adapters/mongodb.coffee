@@ -303,15 +303,18 @@ class MongoDBAdapter extends AdapterBase
     callback error
 
   ## @override AdapterBase::create
-  create: (model, data, callback) ->
-    @_collection(model).insert data, safe: true, (error, result) ->
-      return _processSaveError error, callback if error
-      id = _objectIdToString result.ops[0]._id
-      if id
-        delete data._id
-        callback null, id
-      else
-        callback new Error 'unexpected result'
+  create: (model, data) ->
+    new Promise (resolve, reject) =>
+      @_collection(model).insert data, safe: true, (error, result) ->
+        if error
+          _processSaveError error, reject
+          return
+        id = _objectIdToString result.ops[0]._id
+        if id
+          delete data._id
+          resolve id
+        else
+          reject new Error 'unexpected result'
 
   ## @override AdapterBase::create
   createBulk: (model, data, callback) ->

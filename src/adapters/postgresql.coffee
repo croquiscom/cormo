@@ -289,18 +289,21 @@ class PostgreSQLAdapter extends SQLAdapterBase
     [ fields.join(','), places.join(',') ]
 
   ## @override AdapterBase::create
-  create: (model, data, callback) ->
-    tableName = @_connection.models[model].tableName
-    values = []
-    [ fields, places ] = @_buildUpdateSet model, data, values, true
-    sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES (#{places}) RETURNING id"
-    @_query sql, values, (error, result) ->
-      rows = result?.rows
-      return _processSaveError tableName, error, callback if error
-      if rows?.length is 1 and rows[0].id?
-        callback null, rows[0].id
-      else
-        callback new Error 'unexpected rows'
+  create: (model, data) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      values = []
+      [ fields, places ] = @_buildUpdateSet model, data, values, true
+      sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES (#{places}) RETURNING id"
+      @_query sql, values, (error, result) ->
+        rows = result?.rows
+        if error
+          _processSaveError tableName, error, reject
+          return
+        if rows?.length is 1 and rows[0].id?
+          resolve rows[0].id
+        else
+          reject new Error 'unexpected rows'
 
   ## @override AdapterBase::createBulk
   createBulk: (model, data, callback) ->

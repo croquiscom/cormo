@@ -143,7 +143,7 @@ class AdapterBase
   # @param {Object} data
   # @return {RecordID}
   # @nodejscallback
-  create: (model, data, callback) -> callback new Error 'not implemented'
+  create: (model, data) -> Promise.reject new Error 'not implemented'
 
   ##
   # Creates records
@@ -156,7 +156,9 @@ class AdapterBase
 
   _createBulkDefault: (model, data, callback) ->
     async.map data, (item, callback) =>
-      @create model, item, util.bindDomain callback
+      @create model, item
+      .then (id) => callback null, id
+      , (error) => callback error
     , callback
 
   ##
