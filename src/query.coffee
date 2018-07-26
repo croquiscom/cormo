@@ -1,5 +1,4 @@
 _ = require 'lodash'
-{bindDomain} = require './util'
 Promise = require 'bluebird'
 stream = require 'stream'
 
@@ -319,7 +318,7 @@ class Query
               records
       else
         @_execAndInclude options
-    .nodeify bindDomain callback
+    .nodeify callback
 
   ##
   # Executes the query and returns a readable stream
@@ -371,7 +370,7 @@ class Query
         @_conditions.push id: @_id
         delete @_id
       @_adapter.count @_name, @_conditions, @_options
-    .nodeify bindDomain callback
+    .nodeify callback
 
   ##
   # @private
@@ -416,7 +415,7 @@ class Query
         delete @_id
       @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
       @_adapter.updatePartial @_name, data, @_conditions, @_options
-    .nodeify bindDomain callback
+    .nodeify callback
 
   ##
   # Executes the query as an insert or update operation
@@ -438,7 +437,7 @@ class Query
         delete @_id
       @_connection.log @_name, 'upsert', data: data, conditions: @_conditions, options: @_options
       @_adapter.upsert @_name, data, @_conditions, @_options
-    .nodeify bindDomain callback
+    .nodeify callback
 
   _doIntegrityActions: (integrities, ids) ->
     promises = integrities.map (integrity) =>
@@ -497,6 +496,6 @@ class Query
 
       await @_doArchiveAndIntegrity options
       await @_adapter.delete @_name, @_conditions
-    .nodeify bindDomain callback
+    .nodeify callback
 
 module.exports = Query

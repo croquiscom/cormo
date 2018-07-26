@@ -1,4 +1,3 @@
-{bindDomain} = require '../util'
 Query = require '../query'
 
 ##
@@ -104,7 +103,7 @@ ModelQueryMixin = (Base) -> class extends Base
     new Query @
     .where condition
     .count()
-    .nodeify bindDomain callback
+    .nodeify callback
 
   ##
   # Updates some fields of records that match conditions
@@ -121,7 +120,7 @@ ModelQueryMixin = (Base) -> class extends Base
     new Query @
     .where condition
     .update updates
-    .nodeify bindDomain callback
+    .nodeify callback
 
   ##
   # Deletes records by conditions
@@ -137,6 +136,6 @@ ModelQueryMixin = (Base) -> class extends Base
     new Query @
     .where condition
     .delete()
-    .nodeify bindDomain callback
+    .nodeify callback
 
 module.exports = ModelQueryMixin

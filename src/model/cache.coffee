@@ -1,4 +1,3 @@
-{bindDomain} = require '../util'
 Promise = require 'bluebird'
 tableize = require('../util/inflector').tableize
 
@@ -35,6 +34,6 @@ ModelCacheMixin = (Base) -> class extends Base
       new Promise (resolve, reject) ->
         redis.del key, (error, count) ->
           resolve()
-    .nodeify bindDomain callback
+    .nodeify callback
 
 module.exports = ModelCacheMixin

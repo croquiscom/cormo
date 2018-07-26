@@ -1,7 +1,6 @@
 EventEmitter = require('events').EventEmitter
 Model = require '../model'
 _ = require 'lodash'
-{bindDomain} = require '../util'
 Promise = require 'bluebird'
 Toposort = require 'toposort-class'
 try
@@ -208,7 +207,7 @@ class ConnectionBase extends EventEmitter
             @_applying_schemas = false
             @_schema_changed = false
       return @_promise_schema_applied
-    .nodeify bindDomain callback
+    .nodeify callback
 
   ##
   # Applies schemas synchronously
@@ -226,7 +225,7 @@ class ConnectionBase extends EventEmitter
       current = current
       .then =>
         @models[model].drop()
-    .nodeify bindDomain callback
+    .nodeify callback
 
   ##
   # Logs

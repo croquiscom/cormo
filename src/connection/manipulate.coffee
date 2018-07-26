@@ -1,4 +1,3 @@
-{bindDomain} = require '../util'
 inflector = require '../util/inflector'
 Promise = require 'bluebird'
 types = require '../types'
@@ -117,6 +116,6 @@ ConnectionManipulateMixin = (Base) -> class extends Base
           Promise.reject new Error('unknown command: '+key)
       .then ->
         id_to_record_map
-    .nodeify bindDomain callback
+    .nodeify callback
 
 module.exports = ConnectionManipulateMixin

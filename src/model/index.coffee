@@ -221,7 +221,7 @@ class ModelBase
       @_adapter.drop @_name
     .finally =>
       @_connection._schema_changed = true
-    .nodeify util.bindDomain callback
+    .nodeify callback
 
   ##
   # Creates a record.
@@ -392,7 +392,7 @@ class ModelBase
         @constructor.delete id: @id
     .finally =>
       @_runCallbacks 'destroy', 'after'
-    .nodeify util.bindDomain callback
+    .nodeify callback
 
   ##
   # Deletes all records from the database

@@ -1,5 +1,4 @@
 _ = require 'lodash'
-{bindDomain} = require '../util'
 inflector = require '../util/inflector'
 Promise = require 'bluebird'
 types = require '../types'
@@ -385,6 +384,6 @@ ConnectionAssociationMixin = (Base) -> class extends Base
         @_fetchAssociatedHasMany records, association.target_model, association.foreign_key, column, select, options
       else
         Promise.reject new Error("unknown column '#{column}'")
-    .nodeify bindDomain callback
+    .nodeify callback
 
 module.exports = ConnectionAssociationMixin

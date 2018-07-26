@@ -26,7 +26,7 @@ ModelPersistenceMixin = (Base) -> class extends Base
       options = {}
     @_checkReady().then =>
       @build(data).save options
-    .nodeify util.bindDomain callback
+    .nodeify callback
 
   ##
   # Creates multiple records and saves them to the database.
@@ -51,7 +51,7 @@ ModelPersistenceMixin = (Base) -> class extends Base
       finally
         records.forEach (record) -> record._runCallbacks 'create', 'after'
         records.forEach (record) -> record._runCallbacks 'save', 'after'
-    .nodeify util.bindDomain callback
+    .nodeify callback
 
   @_buildSaveDataColumn: (data, model, column, property, allow_null) ->
     adapter = @_adapter
@@ -178,6 +178,6 @@ ModelPersistenceMixin = (Base) -> class extends Base
           @_runCallbacks 'save', 'after'
     .then =>
       Promise.resolve @
-    .nodeify util.bindDomain callback
+    .nodeify callback
 
 module.exports = ModelPersistenceMixin
