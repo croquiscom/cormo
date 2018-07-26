@@ -343,28 +343,31 @@ class MySQLAdapter extends SQLAdapterBase
         resolve result.affectedRows
 
   ## @override AdapterBase::upsert
-  upsert: (model, data, conditions, options, callback) ->
-    tableName = @_connection.models[model].tableName
+  upsert: (model, data, conditions, options) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
 
-    insert_data = {}
-    for key, value of data
-      if value?.$inc?
-        insert_data[key] = value.$inc
-      else
-        insert_data[key] = value
-    for condition in conditions
-      for key, value of condition
-        insert_data[key] = value
-    values = []
-    [ fields, places ] = @_buildUpdateSet model, insert_data, values, true
-    sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES (#{places})"
+      insert_data = {}
+      for key, value of data
+        if value?.$inc?
+          insert_data[key] = value.$inc
+        else
+          insert_data[key] = value
+      for condition in conditions
+        for key, value of condition
+          insert_data[key] = value
+      values = []
+      [ fields, places ] = @_buildUpdateSet model, insert_data, values, true
+      sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES (#{places})"
 
-    [ fields ] = @_buildPartialUpdateSet model, data, values
-    sql += " ON DUPLICATE KEY UPDATE #{fields}"
+      [ fields ] = @_buildPartialUpdateSet model, data, values
+      sql += " ON DUPLICATE KEY UPDATE #{fields}"
 
-    @_query sql, values, (error, result) ->
-      return _processSaveError error, callback if error
-      callback null
+      @_query sql, values, (error, result) ->
+        if error
+          _processSaveError error, reject
+          return
+        resolve()
 
   ## @override AdapterBase::findById
   findById: (model, id, options, callback) ->

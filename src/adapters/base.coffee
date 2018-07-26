@@ -184,7 +184,7 @@ class AdapterBase
   # @param {Object} conditions
   # @param {Object} options
   # @nodejscallback
-  upsert: (model, data, conditions, options, callback) -> callback new Error 'not implemented'
+  upsert: (model, data, conditions, options) -> callback new Error 'not implemented'
 
   ##
   # Finds a record by id

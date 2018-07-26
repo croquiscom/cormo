@@ -182,31 +182,27 @@ class SQLAdapterBase extends AdapterBase
       return '*'
 
   ## @override AdapterBase::upsert
-  upsert: (model, data, conditions, options, callback) ->
-    @updatePartial model, data, conditions, options
-    .then (count) =>
-      return callback null if count > 0
+  upsert: (model, data, conditions, options) ->
+    count = await @updatePartial model, data, conditions, options
+    if count > 0
+      return
 
-      insert_data = {}
-      for key, value of data
-        if value?.$inc?
-          insert_data[key] = value.$inc
-        else
-          insert_data[key] = value
-      for condition in conditions
-        for key, value of condition
-          insert_data[key] = value
-      try
-        await @create model, insert_data
-        callback null
-      catch error
-        if not /duplicated/.test error.message
-          callback error
-          return
+    insert_data = {}
+    for key, value of data
+      if value?.$inc?
+        insert_data[key] = value.$inc
+      else
+        insert_data[key] = value
+    for condition in conditions
+      for key, value of condition
+        insert_data[key] = value
+    try
+      await @create model, insert_data
+    catch error
+      if not /duplicated/.test error.message
+        throw error
+        return
 
-        @updatePartial model, data, conditions, options
-        .then (count) => callback null
-        , (error) => callback error
-    , (error) => callback error
+      await @updatePartial model, data, conditions, options
 
 module.exports = SQLAdapterBase

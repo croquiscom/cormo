@@ -434,7 +434,7 @@ class Query
         @_conditions.push id: @_id
         delete @_id
       @_connection.log @_name, 'upsert', data: data, conditions: @_conditions, options: @_options
-      @_adapter.upsertAsync @_name, data, @_conditions, @_options
+      @_adapter.upsert @_name, data, @_conditions, @_options
     .nodeify bindDomain callback
 
   _doIntegrityActions: (integrities, ids) ->
