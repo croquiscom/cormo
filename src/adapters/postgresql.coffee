@@ -139,18 +139,21 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::createTable
   createTable: (model, callback) ->
-    model_class = @_connection.models[model]
-    tableName = model_class.tableName
-    sql = []
-    sql.push 'id SERIAL PRIMARY KEY'
-    for column, property of model_class._schema
-      column_sql = _propertyToSQL property
-      if column_sql
-        sql.push "\"#{property._dbname}\" #{column_sql}"
-    sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
-    @_query sql, null, (error) =>
-      return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
-      callback null
+    new Promise (resolve, reject) =>
+      model_class = @_connection.models[model]
+      tableName = model_class.tableName
+      sql = []
+      sql.push 'id SERIAL PRIMARY KEY'
+      for column, property of model_class._schema
+        column_sql = _propertyToSQL property
+        if column_sql
+          sql.push "\"#{property._dbname}\" #{column_sql}"
+      sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
+      @_query sql, null, (error) =>
+        if error
+          reject PostgreSQLAdapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   ## @override AdapterBase::addColumn
   addColumn: (model, column_property, callback) ->

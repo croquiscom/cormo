@@ -127,25 +127,28 @@ class SQLite3Adapter extends SQLAdapterBase
 
   ## @override AdapterBase::createTable
   createTable: (model, callback) ->
-    model_class = @_connection.models[model]
-    tableName = model_class.tableName
-    sql = []
-    sql.push 'id INTEGER PRIMARY KEY AUTOINCREMENT'
-    for column, property of model_class._schema
-      column_sql = _propertyToSQL property
-      if column_sql
-        sql.push "\"#{property._dbname}\" #{column_sql}"
-    for integrity in model_class._integrities
-      if integrity.type is 'child_nullify'
-        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE SET NULL"
-      else if integrity.type is 'child_restrict'
-        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE RESTRICT"
-      else if integrity.type is 'child_delete'
-        sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE CASCADE"
-    sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
-    @_query 'run', sql, (error) =>
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null
+    new Promise (resolve, reject) =>
+      model_class = @_connection.models[model]
+      tableName = model_class.tableName
+      sql = []
+      sql.push 'id INTEGER PRIMARY KEY AUTOINCREMENT'
+      for column, property of model_class._schema
+        column_sql = _propertyToSQL property
+        if column_sql
+          sql.push "\"#{property._dbname}\" #{column_sql}"
+      for integrity in model_class._integrities
+        if integrity.type is 'child_nullify'
+          sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE SET NULL"
+        else if integrity.type is 'child_restrict'
+          sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE RESTRICT"
+        else if integrity.type is 'child_delete'
+          sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE CASCADE"
+      sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
+      @_query 'run', sql, (error) =>
+        if error
+          reject SQLite3Adapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   ## @override AdapterBase::addColumn
   addColumn: (model, column_property, callback) ->

@@ -33,7 +33,7 @@ class AdapterBase
   # @param {String} model
   # @nodejscallback
   # @see Connection::applySchemas
-  createTable: (model, callback) -> callback null
+  createTable: (model) -> Promise.resolve()
 
   ## Adds a column to a table
   # @abstract

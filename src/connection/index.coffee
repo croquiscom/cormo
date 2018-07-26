@@ -175,7 +175,7 @@ class ConnectionBase extends EventEmitter
             for model, modelClass of @models
               if not current.tables[modelClass.tableName]
                 console.log "Creating table #{modelClass.tableName}" if options.verbose
-                tables_commands.push @_adapter.createTableAsync model
+                tables_commands.push @_adapter.createTable model
             await Promise.all tables_commands
 
             indexes_commands = []

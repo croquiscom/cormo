@@ -224,17 +224,21 @@ class MongoDBAdapter extends AdapterBase
           resolve tables: results.get_table_schemas, indexes: results.get_indexes
 
   ## @override AdapterBase::createTable
-  createTable: (model, callback) ->
-    collection = @_collection(model)
-    indexes = []
-    for column, property of @_connection.models[model]._schema
-      if property.type_class is types.GeoPoint
-        indexes.push [ _.zipObject [column], ['2d'] ]
-    async.forEach indexes, (index, callback) ->
-      collection.ensureIndex index[0], index[1], (error) ->
-        callback error
-    , (error) ->
-      callback error
+  createTable: (model) ->
+    new Promise (resolve, reject) =>
+      collection = @_collection(model)
+      indexes = []
+      for column, property of @_connection.models[model]._schema
+        if property.type_class is types.GeoPoint
+          indexes.push [ _.zipObject [column], ['2d'] ]
+      async.forEach indexes, (index, callback) ->
+        collection.ensureIndex index[0], index[1], (error) ->
+          callback error
+      , (error) ->
+        if error
+          reject error
+        else
+          resolve()
 
   ## @override AdapterBase::createIndex
   createIndex: (model, index, callback) ->

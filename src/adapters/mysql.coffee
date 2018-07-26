@@ -130,21 +130,24 @@ class MySQLAdapter extends SQLAdapterBase
           resolve tables: results.get_table_schemas, indexes: results.get_indexes, foreign_keys: results.get_foreign_keys
 
   ## @override AdapterBase::createTable
-  createTable: (model, callback) ->
-    model_class = @_connection.models[model]
-    tableName = model_class.tableName
-    sql = []
-    sql.push 'id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY'
-    for column, property of model_class._schema
-      column_sql = _propertyToSQL property, @support_fractional_seconds
-      if column_sql
-        sql.push "`#{property._dbname}` #{column_sql}"
-    sql = "CREATE TABLE `#{tableName}` ( #{sql.join ','} )"
-    sql += " DEFAULT CHARSET=#{@_settings.charset or 'utf8'}"
-    sql += " COLLATE=#{@_settings.collation or 'utf8_unicode_ci'}"
-    @_query sql, (error) ->
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null
+  createTable: (model) ->
+    new Promise (resolve, reject) =>
+      model_class = @_connection.models[model]
+      tableName = model_class.tableName
+      sql = []
+      sql.push 'id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY'
+      for column, property of model_class._schema
+        column_sql = _propertyToSQL property, @support_fractional_seconds
+        if column_sql
+          sql.push "`#{property._dbname}` #{column_sql}"
+      sql = "CREATE TABLE `#{tableName}` ( #{sql.join ','} )"
+      sql += " DEFAULT CHARSET=#{@_settings.charset or 'utf8'}"
+      sql += " COLLATE=#{@_settings.collation or 'utf8_unicode_ci'}"
+      @_query sql, (error) ->
+        if error
+          reject MySQLAdapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   ## @override AdapterBase::addColumn
   addColumn: (model, column_property, callback) ->
