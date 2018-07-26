@@ -184,7 +184,7 @@ class AdapterBase
   # @param {Object} conditions
   # @param {Object} options
   # @nodejscallback
-  upsert: (model, data, conditions, options) -> callback new Error 'not implemented'
+  upsert: (model, data, conditions, options) -> Promise.reject new Error 'not implemented'
 
   ##
   # Finds a record by id
@@ -196,7 +196,7 @@ class AdapterBase
   # @nodejscallback
   # @throws {Error('not found')}
   # @see Query::exec
-  findById: (model, id, options, callback) -> callback new Error 'not implemented'
+  findById: (model, id, options) -> Promise.reject new Error 'not implemented'
 
   ##
   # Finds records

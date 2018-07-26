@@ -429,26 +429,34 @@ class MongoDBAdapter extends AdapterBase
         resolve()
 
   ## @override AdapterBase::findById
-  findById: (model, id, options, callback) ->
-    if options.select
-      fields = {}
-      options.select.forEach (column) -> fields[column] = 1
-    try
-      id = _convertValueToObjectID id, 'id'
-    catch e
-      return callback new Error('not found')
-    client_options = {}
-    if fields
-      client_options.fields = fields
-    if options.explain
-      client_options.explain = true
-      return @_collection(model).findOne _id: id, client_options, (error, result) ->
-        return callback error if error
-        callback null, result
-    @_collection(model).findOne _id: id, client_options, (error, result) =>
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      return callback new Error('not found') if not result
-      callback null, @_convertToModelInstance model, result, options
+  findById: (model, id, options) ->
+    new Promise (resolve, reject) =>
+      if options.select
+        fields = {}
+        options.select.forEach (column) -> fields[column] = 1
+      try
+        id = _convertValueToObjectID id, 'id'
+      catch e
+        reject new Error('not found')
+        return
+      client_options = {}
+      if fields
+        client_options.fields = fields
+      if options.explain
+        client_options.explain = true
+        return @_collection(model).findOne _id: id, client_options, (error, result) ->
+          if error
+            reject error
+            return
+          resolve result
+      @_collection(model).findOne _id: id, client_options, (error, result) =>
+        if error
+          reject MongoDBAdapter.wrapError 'unknown error', error
+          return
+        if not result
+          reject new Error('not found')
+          return
+        resolve @_convertToModelInstance model, result, options
 
   _buildConditionsForFind: (model, conditions, options) ->
     if options.select

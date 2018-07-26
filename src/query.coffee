@@ -246,36 +246,39 @@ class Query
   _exec: (options) ->
     if @_find_single_id and @_conditions.length is 0
       @_connection.log @_name, 'find by id', id: @_id, options: @_options if not options?.skip_log
-      return Promise.reject new Error('not found') if not @_id
-      return @_adapter.findByIdAsync @_name, @_id, @_options
-      .catch (error) ->
-        Promise.reject new Error('not found')
-      .then (record) ->
-        return Promise.reject new Error('not found') if not record
-        return record
+      if not @_id
+        throw new Error('not found')
+      try
+        record = await @_adapter.findById @_name, @_id, @_options
+      catch error
+        throw new Error('not found')
+      if not record
+        throw new Error('not found')
+      return record
     expected_count = undefined
     if @_id or @_find_single_id
       if Array.isArray @_id
-        return Promise.resolve [] if @_id.length is 0
+        return [] if @_id.length is 0
         @_conditions.push id: { $in: @_id }
         expected_count = @_id.length
       else
         @_conditions.push id: @_id
         expected_count = 1
     @_connection.log @_name, 'find', conditions: @_conditions, options: @_options if not options?.skip_log
-    @_adapter.findAsync @_name, @_conditions, @_options
-    .then (records) =>
-      if expected_count?
-        return Promise.reject new Error('not found') if records.length isnt expected_count
-      if @_preserve_order_ids
-        records =  @_preserve_order_ids.map (id) ->
-          for record in records
-            return record if record.id is id
-      if @_options.one
-        return Promise.reject new Error('unknown error') if records.length > 1
-        Promise.resolve if records.length is 1 then records[0] else null
-      else
-        Promise.resolve records
+    records = await @_adapter.findAsync @_name, @_conditions, @_options
+    if expected_count?
+      if records.length isnt expected_count
+        throw new Error('not found')
+    if @_preserve_order_ids
+      records =  @_preserve_order_ids.map (id) ->
+        for record in records
+          return record if record.id is id
+    if @_options.one
+      if records.length > 1
+        throw new Error('unknown error')
+      return if records.length is 1 then records[0] else null
+    else
+      return records
 
   ##
   # @private

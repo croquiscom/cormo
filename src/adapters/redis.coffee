@@ -120,33 +120,37 @@ class RedisAdapter extends AdapterBase
             resolve()
 
   ## @override AdapterBase::updatePartial
-  updatePartial: (model, data, conditions, options, callback) ->
-    fields_to_del = Object.keys(data).filter (key) -> not data[key]?
-    fields_to_del.forEach (key) -> delete data[key]
-    fields_to_del.push '$_$' # ensure that there is one argument at least
-    table = tableize model
-    data.$_$ = '' # ensure that there is one argument(one field) at least
-    @_getKeys table, conditions, (error, keys) =>
-      async.forEach keys, (key, callback) =>
-        args = _.clone fields_to_del
-        args.unshift key
-        @_client.hdel args, (error) =>
-          return callback RedisAdapter.wrapError 'unknown error', error if error
-          @_client.hmset key, data, (error) =>
+  updatePartial: (model, data, conditions, options) ->
+    new Promise (resolve, reject) =>
+      fields_to_del = Object.keys(data).filter (key) -> not data[key]?
+      fields_to_del.forEach (key) -> delete data[key]
+      fields_to_del.push '$_$' # ensure that there is one argument at least
+      table = tableize model
+      data.$_$ = '' # ensure that there is one argument(one field) at least
+      @_getKeys table, conditions, (error, keys) =>
+        async.forEach keys, (key, callback) =>
+          args = _.clone fields_to_del
+          args.unshift key
+          @_client.hdel args, (error) =>
             return callback RedisAdapter.wrapError 'unknown error', error if error
-            callback null
-      , (error) =>
-        callback null, keys.length
+            @_client.hmset key, data, (error) =>
+              return callback RedisAdapter.wrapError 'unknown error', error if error
+              callback null
+        , (error) =>
+          resolve keys.length
 
   ## @override AdapterBase::findById
-  findById: (model, id, options, callback) ->
-    @_client.hgetall "#{tableize model}:#{id}", (error, result) =>
-      return callback RedisAdapter.wrapError 'unknown error', error if error
-      if result
-        result.id = id
-        callback null, @_convertToModelInstance model, result, options
-      else
-        callback new Error 'not found'
+  findById: (model, id, options) ->
+    new Promise (resolve, reject) =>
+      @_client.hgetall "#{tableize model}:#{id}", (error, result) =>
+        if error
+          reject RedisAdapter.wrapError 'unknown error', error
+          return
+        if result
+          result.id = id
+          resolve @_convertToModelInstance model, result, options
+        else
+          reject new Error 'not found'
 
   ## @override AdapterBase::find
   find: (model, conditions, options, callback) ->

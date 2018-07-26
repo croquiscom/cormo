@@ -314,22 +314,28 @@ class SQLite3Adapter extends SQLAdapterBase
         resolve @changes
 
   ## @override AdapterBase::findById
-  findById: (model, id, options, callback) ->
-    select = @_buildSelect @_connection.models[model], options.select
-    tableName = @_connection.models[model].tableName
-    sql = "SELECT #{select} FROM \"#{tableName}\" WHERE id=? LIMIT 1"
-    if options.explain
-      return @_query 'all', "EXPLAIN QUERY PLAN #{sql}", id, (error, result) ->
-        return callback error if error
-        callback null, result
-    @_query 'all', sql, id, (error, result) =>
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      if result?.length is 1
-        callback null, @_convertToModelInstance model, result[0], options
-      else if result?.length > 1
-        callback new Error 'unknown error'
-      else
-        callback new Error 'not found'
+  findById: (model, id, options) ->
+    new Promise (resolve, reject) =>
+      select = @_buildSelect @_connection.models[model], options.select
+      tableName = @_connection.models[model].tableName
+      sql = "SELECT #{select} FROM \"#{tableName}\" WHERE id=? LIMIT 1"
+      if options.explain
+        @_query 'all', "EXPLAIN QUERY PLAN #{sql}", id, (error, result) ->
+          if error
+            reject error
+            return
+          resolve result
+        return
+      @_query 'all', sql, id, (error, result) =>
+        if error
+          reject SQLite3Adapter.wrapError 'unknown error', error
+          return
+        if result?.length is 1
+          resolve @_convertToModelInstance model, result[0], options
+        else if result?.length > 1
+          reject new Error 'unknown error'
+        else
+          reject new Error 'not found'
 
   _buildSqlForFind: (model, conditions, options) ->
     if options.group_by or options.group_fields
