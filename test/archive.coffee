@@ -5,7 +5,7 @@ _dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql' ]
 _dbs.forEach (db) ->
   return if not _g.db_configs[db]
   describe 'archive-' + db, ->
-    before (done) ->
+    before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
       class User extends _g.Model
@@ -20,18 +20,17 @@ _dbs.forEach (db) ->
         @belongsTo 'user'
         @archive: true
 
-      _g.connection.dropAllModels done
+      await _g.connection.dropAllModels()
       return
 
-    beforeEach (done) ->
-      _g.deleteAllRecords [_g.connection._Archive, _g.connection.Post, _g.connection.User], done
+    beforeEach ->
+      await _g.deleteAllRecords [_g.connection._Archive, _g.connection.Post, _g.connection.User]
       return
 
-    after (done) ->
-      _g.connection.dropAllModels ->
-        _g.connection.close()
-        _g.connection = null
-        done null
+    after ->
+      await _g.connection.dropAllModels()
+      _g.connection.close()
+      _g.connection = null
       return
 
     require('./cases/archive')()

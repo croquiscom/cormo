@@ -1,10 +1,8 @@
 _g = require '../support/common'
-async = require 'async'
 {expect} = require 'chai'
 
-_createUsers = (User, data, callback) ->
-  if typeof data is 'function'
-    callback = data
+_createUsers = (User, data) ->
+  if not data
     data = [
       { name: 'John Doe', age: 27 }
       { name: 'Bill Smith', age: 45 }
@@ -13,14 +11,13 @@ _createUsers = (User, data, callback) ->
       { name: 'Daniel Smith', age: 8 }
     ]
   data.sort -> 0.5 - Math.random() # random sort
-  User.createBulk data, callback
-  return
+  await User.createBulk data
 
 module.exports = () ->
-  it 'simple', (done) ->
-    _createUsers _g.connection.User, (error, users) ->
-      return done error if error
-      count = 0
+  it 'simple', ->
+    await _createUsers _g.connection.User
+    count = 0
+    await new Promise (resolve, reject) ->
       _g.connection.User.where(age: 27).stream()
       .on 'data', (user) ->
         count++
@@ -29,14 +26,15 @@ module.exports = () ->
         expect(user.age).to.eql 27
       .on 'end', ->
         expect(count).to.eql 2
-        done null
+        resolve()
       .on 'error', (error) ->
-        done error
+        reject(error)
+    return
 
-  it 'lean option', (done) ->
-    _createUsers _g.connection.User, (error, users) ->
-      return done error if error
-      count = 0
+  it 'lean option', ->
+    await _createUsers _g.connection.User
+    count = 0
+    await new Promise (resolve, reject) ->
       _g.connection.User.where(age: 27).lean().stream()
       .on 'data', (user) ->
         count++
@@ -45,6 +43,7 @@ module.exports = () ->
         expect(user.age).to.eql 27
       .on 'end', ->
         expect(count).to.eql 2
-        done null
+        resolve()
       .on 'error', (error) ->
-        done error
+        reject(error)
+    return

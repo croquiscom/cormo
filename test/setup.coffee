@@ -6,22 +6,19 @@ _dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql', 'redis' 
 _dbs.forEach (db) ->
   return if not _g.db_configs[db]
   describe 'setup-' + db, ->
-    it 'can process without waiting connected and schemas applied', (done) ->
+    it 'can process without waiting connected and schemas applied', ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
       User = _g.connection.model 'User',
         name: String
         age: Number
 
-      User.create { name: 'John Doe', age: 27 }, (error, user) ->
-        return done error if error
-        User.find user.id, (error, record) ->
-          return done error if error
-          expect(record).to.exist
-          expect(record).to.be.an.instanceof User
-          expect(record).to.have.property 'id', user.id
-          expect(record).to.have.property 'name', user.name
-          expect(record).to.have.property 'age', user.age
-          done null
+      user = await User.create { name: 'John Doe', age: 27 }
+      record = await User.find user.id
+      expect(record).to.exist
+      expect(record).to.be.an.instanceof User
+      expect(record).to.have.property 'id', user.id
+      expect(record).to.have.property 'name', user.name
+      expect(record).to.have.property 'age', user.age
       return
 
     it 'association order', ->
@@ -45,9 +42,8 @@ _dbs.forEach (db) ->
       .then ->
         _g.connection.dropAllModels()
 
-    afterEach (done) ->
-      _g.connection.dropAllModels ->
-        _g.connection.close()
-        _g.connection = null
-        done null
+    afterEach ->
+      await _g.connection.dropAllModels()
+      _g.connection.close()
+      _g.connection = null
       return

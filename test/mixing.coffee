@@ -2,7 +2,7 @@ _g = require './support/common'
 
 return if not _g.db_configs['mysql'] or not _g.db_configs['mongodb']
 describe 'mixing several database', ->
-  before (done) ->
+  before ->
     mysql = new _g.Connection 'mysql', _g.db_configs.mysql
     mongodb = new _g.Connection 'mongodb', _g.db_configs.mongodb
 
@@ -40,28 +40,27 @@ describe 'mixing several database', ->
       mongodb: mongodb
       User: User
       Post: Post
-      applySchemas: (callback) ->
-        mysql.applySchemas (error) ->
-          return callback error if error
-          mongodb.applySchemas callback
-      dropAllModels: (callback) ->
-        mysql.dropAllModels (error) ->
-          return callback error if error
-          mongodb.dropAllModels callback
+      applySchemas: ->
+        await mysql.applySchemas()
+        await mongodb.applySchemas()
+        return
+      dropAllModels: ->
+        await mysql.dropAllModels()
+        await mongodb.dropAllModels()
+        return
 
-    _g.connection.dropAllModels done
+    await _g.connection.dropAllModels()
     return
 
-  beforeEach (done) ->
-    _g.deleteAllRecords [_g.connection.User, _g.connection.Post], done
+  beforeEach ->
+    await _g.deleteAllRecords [_g.connection.User, _g.connection.Post]
     return
 
-  after (done) ->
-    _g.connection.dropAllModels ->
-      _g.connection.mysql.close()
-      _g.connection.mongodb.close()
-      _g.connection = null
-      done null
+  after ->
+    await _g.connection.dropAllModels()
+    _g.connection.mysql.close()
+    _g.connection.mongodb.close()
+    _g.connection = null
     return
 
   describe '#hasMany', ->

@@ -1,72 +1,58 @@
 _g = require '../support/common'
-async = require 'async'
 {expect} = require 'chai'
 
 module.exports = () ->
-  it 'define a model, create an instance and fetch it', (done) ->
+  it 'define a model, create an instance and fetch it', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name'
-        expect(user.name).to.have.keys 'first', 'last'
-        expect(user.name.first).to.eql 'John'
-        expect(user.name.last).to.eql 'Doe'
-        callback null, user.id
-      (id, callback) -> User.find id, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name'
-        expect(user.name).to.have.keys 'first', 'last'
-        expect(user.name.first).to.eql 'John'
-        expect(user.name.last).to.eql 'Doe'
-        callback null
-    ], done
+    user = await User.create { name: first: 'John', last: 'Doe' }
+    expect(user).to.have.keys 'id', 'name'
+    expect(user.name).to.have.keys 'first', 'last'
+    expect(user.name.first).to.eql 'John'
+    expect(user.name.last).to.eql 'Doe'
+    user = await User.find user.id
+    expect(user).to.have.keys 'id', 'name'
+    expect(user.name).to.have.keys 'first', 'last'
+    expect(user.name.first).to.eql 'John'
+    expect(user.name.last).to.eql 'Doe'
+    return
 
-  it 'get a record whose super column is null', (done) ->
+  it 'get a record whose super column is null', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create {}, callback
-      (user, callback) -> User.find user.id, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name'
-        expect(user.name).to.be.null
-        callback null
-    ], done
+    user = await User.create {}
+    user = await User.find user.id
+    expect(user).to.have.keys 'id', 'name'
+    expect(user.name).to.be.null
+    return
 
-  it 'another style to define a model', (done) ->
+  it 'another style to define a model', ->
     User = _g.connection.User
 
     User.column 'name.first', String
     User.column 'name.last', String
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name'
-        expect(user.name).to.have.keys 'first', 'last'
-        expect(user.name.first).to.eql 'John'
-        expect(user.name.last).to.eql 'Doe'
-        callback null, user.id
-      (id, callback) -> User.find id, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name'
-        expect(user.name).to.have.keys 'first', 'last'
-        expect(user.name.first).to.eql 'John'
-        expect(user.name.last).to.eql 'Doe'
-        callback null
-    ], done
+    user = await User.create { name: first: 'John', last: 'Doe' }
+    expect(user).to.have.keys 'id', 'name'
+    expect(user.name).to.have.keys 'first', 'last'
+    expect(user.name.first).to.eql 'John'
+    expect(user.name.last).to.eql 'Doe'
+    user = await User.find user.id
+    expect(user).to.have.keys 'id', 'name'
+    expect(user.name).to.have.keys 'first', 'last'
+    expect(user.name.first).to.eql 'John'
+    expect(user.name.last).to.eql 'Doe'
+    return
 
-  it 'constraint', (done) ->
+  it 'constraint', ->
     User = _g.connection.User
 
     User.column 'name',
@@ -74,83 +60,71 @@ module.exports = () ->
       middle: String
       last: { type: String, required: true }
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', middle: 'F.', last: 'Doe' }, callback
-      (user, callback) -> User.find user.id, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name'
-        expect(user.name).to.have.keys 'first', 'middle', 'last'
-        expect(user.name.first).to.eql 'John'
-        expect(user.name.middle).to.eql 'F.'
-        expect(user.name.last).to.eql 'Doe'
-        callback null
-      # missing non-required field
-      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
-      (user, callback) -> User.find user.id, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name'
-        expect(user.name).to.have.keys 'first', 'middle', 'last'
-        expect(user.name.first).to.eql 'John'
-        expect(user.name.middle).to.null
-        expect(user.name.last).to.eql 'Doe'
-        callback null
-      # missing required field
-      (callback) -> User.create { name: first: 'John', middle: 'F.' }, (error, user) ->
-        expect(error).to.exist
-        expect(error).to.have.property 'message', "'name.last' is required"
-        callback null
-    ], done
+    user = await User.create { name: first: 'John', middle: 'F.', last: 'Doe' }
+    user = await User.find user.id
+    expect(user).to.have.keys 'id', 'name'
+    expect(user.name).to.have.keys 'first', 'middle', 'last'
+    expect(user.name.first).to.eql 'John'
+    expect(user.name.middle).to.eql 'F.'
+    expect(user.name.last).to.eql 'Doe'
+    # missing non-required field
+    user = await User.create { name: first: 'John', last: 'Doe' }
+    user = await User.find user.id
+    expect(user).to.have.keys 'id', 'name'
+    expect(user.name).to.have.keys 'first', 'middle', 'last'
+    expect(user.name.first).to.eql 'John'
+    expect(user.name.middle).to.null
+    expect(user.name.last).to.eql 'Doe'
+    # missing required field
+    try
+      await User.create { name: first: 'John', middle: 'F.' }
+      throw new Error 'must throw an error.'
+    catch error
+      expect(error).to.exist
+      expect(error).to.have.property 'message', "'name.last' is required"
+    return
 
-  it 'query', (done) ->
+  it 'query', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
-      (user, callback) -> User.create { name: first: 'Bill', last: 'Smith' }, callback
-      (user, callback) -> User.create { name: first: 'Daniel', last: 'Smith' }, callback
-      (user, callback) -> User.where { 'name.last': 'Smith' }, callback
-      (users, callback) ->
-        expect(users).to.have.length 2
-        users.sort (a, b) -> if a.name.first < b.name.first then -1 else 1
-        expect(users[0]).to.have.keys 'id', 'name'
-        expect(users[0].name).to.have.keys 'first', 'last'
-        expect(users[0].name.first).to.eql 'Bill'
-        expect(users[0].name.last).to.eql 'Smith'
-        expect(users[1]).to.have.keys 'id', 'name'
-        expect(users[1].name).to.have.keys 'first', 'last'
-        expect(users[1].name.first).to.eql 'Daniel'
-        expect(users[1].name.last).to.eql 'Smith'
-        callback null
-    ], done
+    await User.create { name: first: 'John', last: 'Doe' }
+    await User.create { name: first: 'Bill', last: 'Smith' }
+    await User.create { name: first: 'Daniel', last: 'Smith' }
+    users = await User.where { 'name.last': 'Smith' }
+    expect(users).to.have.length 2
+    users.sort (a, b) -> if a.name.first < b.name.first then -1 else 1
+    expect(users[0]).to.have.keys 'id', 'name'
+    expect(users[0].name).to.have.keys 'first', 'last'
+    expect(users[0].name.first).to.eql 'Bill'
+    expect(users[0].name.last).to.eql 'Smith'
+    expect(users[1]).to.have.keys 'id', 'name'
+    expect(users[1].name).to.have.keys 'first', 'last'
+    expect(users[1].name.first).to.eql 'Daniel'
+    expect(users[1].name.last).to.eql 'Smith'
+    return
 
-  it 'update', (done) ->
+  it 'update', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
-      (user, callback) ->
-        User.find(user.id).update name: first: 'Bill', (error, count) ->
-          return callback error if error
-          expect(count).to.equal 1
-          callback null, user.id
-      (id, callback) -> User.find id, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name'
-        expect(user.name).to.have.keys 'first', 'last'
-        expect(user.name.first).to.eql 'Bill'
-        expect(user.name.last).to.eql 'Doe'
-        callback null
-    ], done
+    user = await User.create { name: first: 'John', last: 'Doe' }
+    count = await User.find(user.id).update name: first: 'Bill'
+    expect(count).to.equal 1
+    user = await User.find user.id
+    expect(user).to.have.keys 'id', 'name'
+    expect(user.name).to.have.keys 'first', 'last'
+    expect(user.name.first).to.eql 'Bill'
+    expect(user.name.last).to.eql 'Doe'
+    return
 
-  it 'constraint on update', (done) ->
+  it 'constraint on update', ->
     User = _g.connection.User
 
     User.column 'name',
@@ -158,16 +132,16 @@ module.exports = () ->
       middle: String
       last: { type: String, required: true }
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', middle: 'F.', last: 'Doe' }, callback
-      (user, callback) ->
-        User.find(user.id).update name: last: null, (error) ->
-          expect(error).to.exist
-          expect(error).to.have.property 'message', "'name.last' is required"
-          callback null
-    ], done
+    user = await User.create { name: first: 'John', middle: 'F.', last: 'Doe' }
+    try
+      await User.find(user.id).update name: last: null
+      throw new Error 'must throw an error.'
+    catch error
+      expect(error).to.exist
+      expect(error).to.have.property 'message', "'name.last' is required"
+    return
 
-  it 'keys on empty', (done) ->
+  it 'keys on empty', ->
     User = _g.connection.User
 
     User.column 'name',
@@ -175,41 +149,32 @@ module.exports = () ->
       last: String
     User.column 'age', Number
 
-    async.waterfall [
-      (callback) -> User.create name: { first: 'John', last: 'Doe' }, age: 20, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name', 'age'
-        callback null
-      (callback) -> User.create age: 20, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name', 'age'
-        expect(user.name).to.null
-        callback null
-    ], done
+    user = await User.create name: { first: 'John', last: 'Doe' }, age: 20
+    expect(user).to.have.keys 'id', 'name', 'age'
+    user = await User.create age: 20
+    expect(user).to.have.keys 'id', 'name', 'age'
+    expect(user.name).to.null
+    return
 
-  it 'replace object', (done) ->
+  it 'replace object', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create name: { first: 'John', last: 'Doe' }, callback
-      (user, callback) ->
-        user.name = first: 'Bill'
-        expect(user.name.first).to.equal 'Bill'
-        user.save callback
-      (user, callback) -> User.find user.id, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name'
-        expect(user.name).to.have.keys 'first', 'last'
-        expect(user.name.first).to.eql 'Bill'
-        expect(user.name.last).to.be.null
-        callback null
-    ], done
+    user = await User.create name: { first: 'John', last: 'Doe' }
+    user.name = first: 'Bill'
+    expect(user.name.first).to.equal 'Bill'
+    await user.save()
+    user = await User.find user.id
+    expect(user).to.have.keys 'id', 'name'
+    expect(user.name).to.have.keys 'first', 'last'
+    expect(user.name.first).to.eql 'Bill'
+    expect(user.name.last).to.be.null
+    return
 
-  it 'get & set', (done) ->
+  it 'get & set', ->
     User = _g.connection.User
 
     User.column 'name',
@@ -226,148 +191,120 @@ module.exports = () ->
     expect(user.get('name.first')).to.equal 'John'
     expect(user.get('name.last')).to.not.exist
 
-    done null
+    return
 
-  it 'select sub', (done) ->
+  it 'select sub', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
-      (user, callback) -> User.select 'name.first', callback
-      (users, callback) ->
-        expect(users).to.have.length 1
-        expect(users[0]).to.have.keys 'id', 'name'
-        expect(users[0].name).to.have.keys 'first'
-        expect(users[0].name.first).to.eql 'John'
-        callback null
-    ], done
+    await User.create { name: first: 'John', last: 'Doe' }
+    users = await User.select 'name.first'
+    expect(users).to.have.length 1
+    expect(users[0]).to.have.keys 'id', 'name'
+    expect(users[0].name).to.have.keys 'first'
+    expect(users[0].name.first).to.eql 'John'
+    return
 
-  it 'select super', (done) ->
+  it 'select super', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
-      (user, callback) -> User.select 'name', callback
-      (users, callback) ->
-        expect(users).to.have.length 1
-        expect(users[0]).to.have.keys 'id', 'name'
-        expect(users[0].name).to.have.keys 'first', 'last'
-        expect(users[0].name.first).to.eql 'John'
-        expect(users[0].name.last).to.eql 'Doe'
-        callback null
-    ], done
+    await User.create { name: first: 'John', last: 'Doe' }
+    users = await User.select 'name'
+    expect(users).to.have.length 1
+    expect(users[0]).to.have.keys 'id', 'name'
+    expect(users[0].name).to.have.keys 'first', 'last'
+    expect(users[0].name.first).to.eql 'John'
+    expect(users[0].name.last).to.eql 'Doe'
+    return
 
-  it 'update super null', (done) ->
+  it 'update super null', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
-      (user, callback) ->
-        User.find(user.id).update name: null, (error, count) ->
-          return callback error if error
-          expect(count).to.equal 1
-          callback null, user.id
-      (id, callback) -> User.find id, callback
-      (user, callback) ->
-        expect(user).to.have.keys 'id', 'name'
-        expect(user.name).to.be.null
-        callback null
-    ], done
+    user = await User.create { name: first: 'John', last: 'Doe' }
+    count = await User.find(user.id).update name: null
+    expect(count).to.equal 1
+    user = await User.find user.id
+    expect(user).to.have.keys 'id', 'name'
+    expect(user.name).to.be.null
+    return
 
-  it 'lean option', (done) ->
+  it 'lean option', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
-      (user, callback) -> User.select('name').lean().exec callback
-      (users, callback) ->
-        expect(users).to.have.length 1
-        expect(users[0]).to.have.keys 'id', 'name'
-        expect(users[0].name).to.have.keys 'first', 'last'
-        expect(users[0].name.first).to.eql 'John'
-        expect(users[0].name.last).to.eql 'Doe'
-        callback null
-    ], done
+    await User.create { name: first: 'John', last: 'Doe' }
+    users = await User.select('name').lean()
+    expect(users).to.have.length 1
+    expect(users[0]).to.have.keys 'id', 'name'
+    expect(users[0].name).to.have.keys 'first', 'last'
+    expect(users[0].name.first).to.eql 'John'
+    expect(users[0].name.last).to.eql 'Doe'
+    return
 
-  it 'select for null fields', (done) ->
+  it 'select for null fields', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create {}, (error, user) ->
-        callback error
-      # select sub
-      (callback) -> User.select 'name.first', (error, users) ->
-        return callback error if error
-        expect(users).to.have.length 1
-        expect(users[0]).to.have.keys 'id', 'name'
-        expect(users[0].name).to.eql first: null
-        callback null
-      # select super
-      (callback) -> User.select 'name', (error, users) ->
-        return callback error if error
-        expect(users).to.have.length 1
-        expect(users[0]).to.have.keys 'id', 'name'
-        expect(users[0].name).to.be.null
-        callback null
-      # select sub with lean
-      (callback) -> User.select('name.first').lean().exec (error, users) ->
-        return callback error if error
-        expect(users).to.have.length 1
-        expect(users[0]).to.have.keys 'id', 'name'
-        expect(users[0].name).to.eql first: null
-        callback null
-      # select super with lean
-      (callback) -> User.select('name').lean().exec (error, users) ->
-        return callback error if error
-        expect(users).to.have.length 1
-        expect(users[0]).to.have.keys 'id', 'name'
-        expect(users[0].name).to.be.null
-        callback null
-    ], done
+    await User.create {}
+    # select sub
+    users = await User.select 'name.first'
+    expect(users).to.have.length 1
+    expect(users[0]).to.have.keys 'id', 'name'
+    expect(users[0].name).to.eql first: null
+    # select super
+    users = await User.select 'name'
+    expect(users).to.have.length 1
+    expect(users[0]).to.have.keys 'id', 'name'
+    expect(users[0].name).to.be.null
+    # select sub with lean
+    users = await User.select('name.first').lean()
+    expect(users).to.have.length 1
+    expect(users[0]).to.have.keys 'id', 'name'
+    expect(users[0].name).to.eql first: null
+    # select super with lean
+    users = await User.select('name').lean()
+    expect(users).to.have.length 1
+    expect(users[0]).to.have.keys 'id', 'name'
+    expect(users[0].name).to.be.null
+    return
 
-  it 'order', (done) ->
+  it 'order', ->
     User = _g.connection.User
 
     User.column 'name',
       first: String
       last: String
 
-    async.waterfall [
-      (callback) -> User.create { name: first: 'John', last: 'Doe' }, callback
-      (user, callback) -> User.create { name: first: 'Bill', last: 'Smith' }, callback
-      (user, callback) -> User.create { name: first: 'Alice', last: 'Jackson' }, callback
-      (user, callback) -> User.create { name: first: 'Gina', last: 'Baker' }, callback
-      (user, callback) -> User.create { name: first: 'Daniel', last: 'Smith' }, callback
-      (user, callback) -> User.where().order('name.first').exec callback
-      (users, callback) ->
-        expect(users).to.have.length 5
-        expect(users[0]).to.have.keys 'id', 'name'
-        expect(users[0].name).to.have.keys 'first', 'last'
-        expect(users[0].name.first).to.eql 'Alice'
-        expect(users[0].name.last).to.eql 'Jackson'
-        expect(users[1]).to.have.keys 'id', 'name'
-        expect(users[1].name).to.have.keys 'first', 'last'
-        expect(users[1].name.first).to.eql 'Bill'
-        expect(users[1].name.last).to.eql 'Smith'
-        callback null
-    ], done
+    await User.create { name: first: 'John', last: 'Doe' }
+    await User.create { name: first: 'Bill', last: 'Smith' }
+    await User.create { name: first: 'Alice', last: 'Jackson' }
+    await User.create { name: first: 'Gina', last: 'Baker' }
+    await User.create { name: first: 'Daniel', last: 'Smith' }
+    users = await User.where().order('name.first')
+    expect(users).to.have.length 5
+    expect(users[0]).to.have.keys 'id', 'name'
+    expect(users[0].name).to.have.keys 'first', 'last'
+    expect(users[0].name.first).to.eql 'Alice'
+    expect(users[0].name.last).to.eql 'Jackson'
+    expect(users[1]).to.have.keys 'id', 'name'
+    expect(users[1].name).to.have.keys 'first', 'last'
+    expect(users[1].name.first).to.eql 'Bill'
+    expect(users[1].name.last).to.eql 'Smith'
+    return

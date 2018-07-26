@@ -1,10 +1,8 @@
 _g = require '../support/common'
-async = require 'async'
 {expect} = require 'chai'
 
-_createPlaces = (Place, data, callback) ->
-  if typeof data is 'function'
-    callback = data
+_createPlaces = (Place, data) ->
+  if not data
     data = [
       { name: 'Carrier Dome', location: [-76.136154,43.036243] }
       { name: 'Eurosites Parc des Princes', location: [2.253051,48.841419] }
@@ -21,113 +19,100 @@ _createPlaces = (Place, data, callback) ->
       { name: 'Tiananmen Square', location: [116.397667,39.906017] }
     ]
   data.sort -> 0.5 - Math.random() # random sort
-  Place.createBulk data, callback
-  return
+  await Place.createBulk data
 
 module.exports = () ->
-  it 'valid geopoint', (done) ->
-    _g.connection.Place.create name: 'Carrier Dome', location: [-76.136131, 43.036240], (error, place) ->
-      return done error if error
-      _g.connection.Place.find place.id, (error, record) ->
-        return done error if error
-        expect(record).to.have.property 'name', 'Carrier Dome'
-        expect(record).to.have.property 'location'
-        expect(record.location).to.be.an.instanceof Array
-        expect(record.location).to.have.length 2
-        expect(record.location[0]).to.equal -76.136131
-        expect(record.location[1]).to.equal 43.036240
-        done null
+  it 'valid geopoint', ->
+    place = await _g.connection.Place.create name: 'Carrier Dome', location: [-76.136131, 43.036240]
+    record = await _g.connection.Place.find place.id
+    expect(record).to.have.property 'name', 'Carrier Dome'
+    expect(record).to.have.property 'location'
+    expect(record.location).to.be.an.instanceof Array
+    expect(record.location).to.have.length 2
+    expect(record.location[0]).to.equal -76.136131
+    expect(record.location[1]).to.equal 43.036240
     return
 
-  it 'invalid geopoint', (done) ->
+  it 'invalid geopoint', ->
     data = [
       -76.136131
       []
       [ -76.136131 ]
       [ -76.136131, 43.036240, 10.59 ]
     ]
-    async.forEach data, (item, callback) ->
-      _g.connection.Place.create name: 'Carrier Dome', location: item, (error, place) ->
+    for item in data
+      try
+        await _g.connection.Place.create name: 'Carrier Dome', location: item
+        throw new Error 'must throw an error.'
+      catch error
         expect(error).to.exist
         expect(error).to.have.property 'message', "'location' is not a geo point"
-        callback null
-    , (error) ->
-      done error
+    return
 
-  it 'near query 1', (done) ->
-    _createPlaces _g.connection.Place, (error) ->
-      return done error if error
-      _g.connection.Place.query().near(location: [-80, 40]).exec (error, places) ->
-        return done error if error
-        expected = [
-          'The White House'
-          'Carrier Dome'
-          'Sanford Stadium'
-          'Dodgers Stadium'
-          'Candlestick Park'
-          'Anfield Football Stadium'
-          'Aloha Stadium'
-          'Wimbledon'
-          'Palace of Versailles'
-          'Eurosites Parc des Princes'
-          'Tiananmen Square'
-          'Jamsil Baseball Stadium'
-          'Sapporo Dome'
-        ]
-        places = places.map (place) -> place.name
-        expect(places).to.eql expected
-        done null
+  it 'near query 1', ->
+    await _createPlaces _g.connection.Place
+    places = await _g.connection.Place.query().near(location: [-80, 40])
+    expected = [
+      'The White House'
+      'Carrier Dome'
+      'Sanford Stadium'
+      'Dodgers Stadium'
+      'Candlestick Park'
+      'Anfield Football Stadium'
+      'Aloha Stadium'
+      'Wimbledon'
+      'Palace of Versailles'
+      'Eurosites Parc des Princes'
+      'Tiananmen Square'
+      'Jamsil Baseball Stadium'
+      'Sapporo Dome'
+    ]
+    places = places.map (place) -> place.name
+    expect(places).to.eql expected
+    return
 
-  it 'near query 2', (done) ->
-    _createPlaces _g.connection.Place, (error) ->
-      return done error if error
-      _g.connection.Place.query().near(location: [-5, 45]).limit(4).exec (error, places) ->
-        return done error if error
-        expected = [
-          'Wimbledon'
-          'Palace of Versailles'
-          'Eurosites Parc des Princes'
-          'Anfield Football Stadium'
-        ]
-        places = places.map (place) -> place.name
-        expect(places).to.eql expected
-        done null
+  it 'near query 2', ->
+    await _createPlaces _g.connection.Place
+    places = await _g.connection.Place.query().near(location: [-5, 45]).limit(4)
+    expected = [
+      'Wimbledon'
+      'Palace of Versailles'
+      'Eurosites Parc des Princes'
+      'Anfield Football Stadium'
+    ]
+    places = places.map (place) -> place.name
+    expect(places).to.eql expected
+    return
 
-  it 'near query 3', (done) ->
-    _createPlaces _g.connection.Place, (error) ->
-      return done error if error
-      _g.connection.Place.query().near(location: [170, 45]).limit(1).exec (error, places) ->
-        return done error if error
-        expected = [
-          'Sapporo Dome'
-        ]
-        places = places.map (place) -> place.name
-        expect(places).to.eql expected
-        done null
+  it 'near query 3', ->
+    await _createPlaces _g.connection.Place
+    places = await _g.connection.Place.query().near(location: [170, 45]).limit(1)
+    expected = [
+      'Sapporo Dome'
+    ]
+    places = places.map (place) -> place.name
+    expect(places).to.eql expected
+    return
 
-  it 'near query 4', (done) ->
-    _createPlaces _g.connection.Place, (error) ->
-      return done error if error
-      _g.connection.Place.query().near(location: [-80, 40]).skip(3).limit(3).exec (error, places) ->
-        return done error if error
-        expected = [
-          'Dodgers Stadium'
-          'Candlestick Park'
-          'Anfield Football Stadium'
-        ]
-        places = places.map (place) -> place.name
-        expect(places).to.eql expected
-        done null
+  it 'near query 4', ->
+    await _createPlaces _g.connection.Place
+    places = await _g.connection.Place.query().near(location: [-80, 40]).skip(3).limit(3)
+    expected = [
+      'Dodgers Stadium'
+      'Candlestick Park'
+      'Anfield Football Stadium'
+    ]
+    places = places.map (place) -> place.name
+    expect(places).to.eql expected
+    return
 
-  it 'near and condition', (done) ->
-    _createPlaces _g.connection.Place, (error) ->
-      return done error if error
-      _g.connection.Place.where(name: $contains: 'Stadium').near(location: [170, 45]).limit(2).exec (error, places) ->
-        return done error if error
-        expected = [
-          'Jamsil Baseball Stadium'
-          'Anfield Football Stadium'
-        ]
-        places = places.map (place) -> place.name
-        expect(places).to.eql expected
-        done null
+  it 'near and condition', ->
+    await _createPlaces _g.connection.Place
+    places = await _g.connection.Place.where(name: $contains: 'Stadium').near(location: [170, 45]).limit(2)
+    expected = [
+      'Jamsil Baseball Stadium'
+      'Anfield Football Stadium'
+    ]
+    places = places.map (place) -> place.name
+    expect(places).to.eql expected
+    return
