@@ -169,16 +169,19 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::createIndex
   createIndex: (model, index, callback) ->
-    model_class = @_connection.models[model]
-    tableName = model_class.tableName
-    columns = []
-    for column, order of index.columns
-      columns.push "\"#{column}\" #{if order is -1 then 'DESC' else 'ASC'}"
-    unique = if index.options.unique then 'UNIQUE ' else ''
-    sql = "CREATE #{unique}INDEX \"#{index.options.name}\" ON \"#{tableName}\" (#{columns.join ','})"
-    @_query sql, null, (error) =>
-      return callback PostgreSQLAdapter.wrapError 'unknown error', error if error
-      callback null
+    new Promise (resolve, reject) =>
+      model_class = @_connection.models[model]
+      tableName = model_class.tableName
+      columns = []
+      for column, order of index.columns
+        columns.push "\"#{column}\" #{if order is -1 then 'DESC' else 'ASC'}"
+      unique = if index.options.unique then 'UNIQUE ' else ''
+      sql = "CREATE #{unique}INDEX \"#{index.options.name}\" ON \"#{tableName}\" (#{columns.join ','})"
+      @_query sql, null, (error) =>
+        if error
+          reject PostgreSQLAdapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   ## @override AdapterBase::createForeignKey
   createForeignKey: (model, column, type, references, callback) ->

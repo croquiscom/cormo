@@ -53,7 +53,7 @@ class AdapterBase
   # @param {Boolean} index.options.unique
   # @nodejscallback
   # @see Connection::applySchemas
-  createIndex: (model, index, callback) -> callback null
+  createIndex: (model, index) -> Promise.resolve()
 
   ## Creates a foreign key.
   # @abstract

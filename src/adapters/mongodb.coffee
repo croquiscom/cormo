@@ -241,16 +241,19 @@ class MongoDBAdapter extends AdapterBase
           resolve()
 
   ## @override AdapterBase::createIndex
-  createIndex: (model, index, callback) ->
-    collection = @_collection(model)
-    options =
-      name: index.options.name
-      unique: index.options.unique
-    if index.options.unique and not index.options.required
-      options.sparse = true
-    collection.ensureIndex index.columns, options, (error) ->
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null
+  createIndex: (model, index) ->
+    new Promise (resolve, reject) =>
+      collection = @_collection(model)
+      options =
+        name: index.options.name
+        unique: index.options.unique
+      if index.options.unique and not index.options.required
+        options.sparse = true
+      collection.ensureIndex index.columns, options, (error) ->
+        if error
+          reject MongoDBAdapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->

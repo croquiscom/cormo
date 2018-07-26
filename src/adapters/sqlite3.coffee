@@ -163,17 +163,20 @@ class SQLite3Adapter extends SQLAdapterBase
           resolve()
 
   ## @override AdapterBase::createIndex
-  createIndex: (model, index, callback) ->
-    model_class = @_connection.models[model]
-    tableName = model_class.tableName
-    columns = []
-    for column, order of index.columns
-      columns.push "\"#{column}\" #{if order is -1 then 'DESC' else 'ASC'}"
-    unique = if index.options.unique then 'UNIQUE ' else ''
-    sql = "CREATE #{unique}INDEX \"#{index.options.name}\" ON \"#{tableName}\" (#{columns.join ','})"
-    @_query 'run', sql, (error, result) =>
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null
+  createIndex: (model, index) ->
+    new Promise (resolve, reject) =>
+      model_class = @_connection.models[model]
+      tableName = model_class.tableName
+      columns = []
+      for column, order of index.columns
+        columns.push "\"#{column}\" #{if order is -1 then 'DESC' else 'ASC'}"
+      unique = if index.options.unique then 'UNIQUE ' else ''
+      sql = "CREATE #{unique}INDEX \"#{index.options.name}\" ON \"#{tableName}\" (#{columns.join ','})"
+      @_query 'run', sql, (error, result) =>
+        if error
+          reject SQLite3Adapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   ## @override AdapterBase::drop
   drop: (model, callback) ->

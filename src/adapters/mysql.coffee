@@ -162,17 +162,20 @@ class MySQLAdapter extends SQLAdapterBase
           resolve()
 
   ## @override AdapterBase::createIndex
-  createIndex: (model, index, callback) ->
-    model_class = @_connection.models[model]
-    tableName = model_class.tableName
-    columns = []
-    for column, order of index.columns
-      columns.push "`#{column}` #{if order is -1 then 'DESC' else 'ASC'}"
-    unique = if index.options.unique then 'UNIQUE ' else ''
-    sql = "CREATE #{unique}INDEX `#{index.options.name}` ON `#{tableName}` (#{columns.join ','})"
-    @_query sql, (error) ->
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null
+  createIndex: (model, index) ->
+    new Promise (resolve, reject) =>
+      model_class = @_connection.models[model]
+      tableName = model_class.tableName
+      columns = []
+      for column, order of index.columns
+        columns.push "`#{column}` #{if order is -1 then 'DESC' else 'ASC'}"
+      unique = if index.options.unique then 'UNIQUE ' else ''
+      sql = "CREATE #{unique}INDEX `#{index.options.name}` ON `#{tableName}` (#{columns.join ','})"
+      @_query sql, (error) ->
+        if error
+          reject MySQLAdapter.wrapError 'unknown error', error
+        else
+          resolve()
 
   ## @override AdapterBase::createForeignKey
   createForeignKey: (model, column, type, references, callback) ->

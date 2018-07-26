@@ -183,7 +183,7 @@ class ConnectionBase extends EventEmitter
               for index in modelClass._indexes
                 if not current.indexes?[modelClass.tableName]?[index.options.name]
                   console.log "Creating index on #{modelClass.tableName} #{Object.keys(index.columns)}" if options.verbose
-                  indexes_commands.push @_adapter.createIndexAsync model, index
+                  indexes_commands.push @_adapter.createIndex model, index
             await Promise.all indexes_commands
 
             foreign_keys_commands = []
