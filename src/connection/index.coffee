@@ -158,8 +158,9 @@ class ConnectionBase extends EventEmitter
         console.log 'Applying schemas' if options.verbose
 
         @_promise_schema_applied = @_promise_connection.then =>
-          return @_adapter.getSchemasAsync()
-          .tap (current) =>
+          try
+            current = await @_adapter.getSchemas()
+
             add_columns_commands = []
             for model, modelClass of @models
               if not current.tables?[modelClass.tableName] or current.tables?[modelClass.tableName] is 'NO SCHEMA'
@@ -168,23 +169,23 @@ class ConnectionBase extends EventEmitter
                 if not current.tables?[modelClass.tableName]?[property._dbname]
                   console.log "Adding column #{column} to #{modelClass.tableName}" if options.verbose
                   add_columns_commands.push @_adapter.addColumnAsync model, property
-            Promise.all add_columns_commands
-          .tap (current) =>
+            await Promise.all add_columns_commands
+
             tables_commands = []
             for model, modelClass of @models
               if not current.tables[modelClass.tableName]
                 console.log "Creating table #{modelClass.tableName}" if options.verbose
                 tables_commands.push @_adapter.createTableAsync model
-            Promise.all tables_commands
-          .tap (current) =>
+            await Promise.all tables_commands
+
             indexes_commands = []
             for model, modelClass of @models
               for index in modelClass._indexes
                 if not current.indexes?[modelClass.tableName]?[index.options.name]
                   console.log "Creating index on #{modelClass.tableName} #{Object.keys(index.columns)}" if options.verbose
                   indexes_commands.push @_adapter.createIndexAsync model, index
-            Promise.all indexes_commands
-          .tap (current) =>
+            await Promise.all indexes_commands
+
             foreign_keys_commands = []
             for model, modelClass of @models
               for integrity in modelClass._integrities
@@ -200,9 +201,9 @@ class ConnectionBase extends EventEmitter
                   if not (current_foreign_key and current_foreign_key is integrity.parent.tableName)
                     console.log "Adding foreign key #{modelClass.tableName}.#{integrity.column} to #{integrity.parent.tableName}" if options.verbose
                     foreign_keys_commands.push [model, integrity.column, type, integrity.parent]
-            Promise.each foreign_keys_commands, (args) =>
+            await Promise.each foreign_keys_commands, (args) =>
               @_adapter.createForeignKeyAsync.apply @_adapter, args
-          .finally =>
+          finally
             console.log 'Applying schemas done' if options.verbose
             @_applying_schemas = false
             @_schema_changed = false

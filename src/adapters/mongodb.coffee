@@ -190,34 +190,38 @@ class MongoDBAdapter extends AdapterBase
       return callback null, indexes
 
   ## @override AdapterBase::getSchemas
-  getSchemas: (callback) ->
-    async.auto
-      get_tables: (callback) =>
-        @_getTables callback
-      get_table_schemas: ['get_tables', (results, callback) =>
-        table_schemas = {}
-        async.each results.get_tables, (table, callback) =>
-          @_getSchema table, (error, schema) ->
+  getSchemas: () ->
+    new Promise (resolve, reject) =>
+      async.auto
+        get_tables: (callback) =>
+          @_getTables callback
+        get_table_schemas: ['get_tables', (results, callback) =>
+          table_schemas = {}
+          async.each results.get_tables, (table, callback) =>
+            @_getSchema table, (error, schema) ->
+              return callback error if error
+              table_schemas[table] = schema
+              callback null
+          , (error) ->
             return callback error if error
-            table_schemas[table] = schema
-            callback null
-        , (error) ->
-          return callback error if error
-          callback null, table_schemas
-      ]
-      get_indexes: ['get_tables', (results, callback) =>
-        all_indexes = {}
-        async.each results.get_tables, (table, callback) =>
-          @_getIndexes table, (error, indexes) ->
+            callback null, table_schemas
+        ]
+        get_indexes: ['get_tables', (results, callback) =>
+          all_indexes = {}
+          async.each results.get_tables, (table, callback) =>
+            @_getIndexes table, (error, indexes) ->
+              return callback error if error
+              all_indexes[table] = indexes
+              callback null
+          , (error) ->
             return callback error if error
-            all_indexes[table] = indexes
-            callback null
-        , (error) ->
-          return callback error if error
-          callback null, all_indexes
-      ]
-    , (error, results) ->
-      callback error, tables: results.get_table_schemas, indexes: results.get_indexes
+            callback null, all_indexes
+        ]
+      , (error, results) ->
+        if error
+          reject error
+        else
+          resolve tables: results.get_table_schemas, indexes: results.get_indexes
 
   ## @override AdapterBase::createTable
   createTable: (model, callback) ->

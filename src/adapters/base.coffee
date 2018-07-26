@@ -26,7 +26,7 @@ class AdapterBase
   # @returnprop {Object} tables
   # @nodejscallback
   # @see Connection::applySchemas
-  getSchemas: (callback) -> callback null, tables: []
+  getSchemas: () -> Promise.resolve tables: []
 
   ## Creates a table.
   # @abstract

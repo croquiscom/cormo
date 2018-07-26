@@ -103,27 +103,31 @@ class MySQLAdapter extends SQLAdapterBase
       callback null, foreign_keys
 
   ## @override AdapterBase::getSchemas
-  getSchemas: (callback) ->
-    async.auto
-      get_tables: (callback) =>
-        @_getTables callback
-      get_table_schemas: ['get_tables', (results, callback) =>
-        table_schemas = {}
-        async.each results.get_tables, (table, callback) =>
-          @_getSchema table, (error, schema) ->
+  getSchemas: () ->
+    new Promise (resolve, reject) =>
+      async.auto
+        get_tables: (callback) =>
+          @_getTables callback
+        get_table_schemas: ['get_tables', (results, callback) =>
+          table_schemas = {}
+          async.each results.get_tables, (table, callback) =>
+            @_getSchema table, (error, schema) ->
+              return callback error if error
+              table_schemas[table] = schema
+              callback null
+          , (error) ->
             return callback error if error
-            table_schemas[table] = schema
-            callback null
-        , (error) ->
-          return callback error if error
-          callback null, table_schemas
-      ]
-      get_indexes: (callback) =>
-        @_getIndexes callback
-      get_foreign_keys: (callback) =>
-        @_getForeignKeys callback
-    , (error, results) ->
-      callback error, tables: results.get_table_schemas, indexes: results.get_indexes, foreign_keys: results.get_foreign_keys
+            callback null, table_schemas
+        ]
+        get_indexes: (callback) =>
+          @_getIndexes callback
+        get_foreign_keys: (callback) =>
+          @_getForeignKeys callback
+      , (error, results) ->
+        if error
+          reject error
+        else
+          resolve tables: results.get_table_schemas, indexes: results.get_indexes, foreign_keys: results.get_foreign_keys
 
   ## @override AdapterBase::createTable
   createTable: (model, callback) ->
