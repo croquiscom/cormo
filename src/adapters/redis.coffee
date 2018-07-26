@@ -44,12 +44,7 @@ class RedisAdapter extends AdapterBase
 
   ## @override AdapterBase::drop
   drop: (model) ->
-    new Promise (resolve, reject) =>
-      @delete model, [], (error) =>
-        if error
-          reject error
-        else
-          resolve()
+    @delete model, []
 
   valueToDB: (value, column, property) ->
     return if not value?
@@ -166,16 +161,21 @@ class RedisAdapter extends AdapterBase
           records = records.filter (record) -> record?
           resolve records.map (record) => @_convertToModelInstance model, record, options
 
-  _delete: (keys, callback) ->
-
   ## @override AdapterBase::delete
-  delete: (model, conditions, callback) ->
-    @_getKeys tableize(model), conditions, (error, keys) =>
-      return callback error if error
-      return callback null, 0 if keys.length is 0
-      @_client.del keys, (error, count) ->
-        return callback RedisAdapter.wrapError 'unknown error', error if error
-        callback null, count
+  delete: (model, conditions) ->
+    new Promise (resolve, reject) =>
+      @_getKeys tableize(model), conditions, (error, keys) =>
+        if error
+          reject error
+          return
+        if keys.length is 0
+          resolve 0
+          return
+        @_client.del keys, (error, count) ->
+          if error
+            reject RedisAdapter.wrapError 'unknown error', error
+            return
+          resolve count
 
   ##
   # Connects to the database

@@ -510,20 +510,26 @@ class MySQLAdapter extends SQLAdapterBase
         resolve Number(result[0].count)
 
   ## @override AdapterBase::delete
-  delete: (model, conditions, callback) ->
-    params = []
-    tableName = @_connection.models[model].tableName
-    sql = "DELETE FROM `#{tableName}`"
-    if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-      catch e
-        return callback e
-    #console.log sql, params
-    @_query sql, params, (error, result) ->
-      return callback new Error 'rejected' if error and error.code in ['ER_ROW_IS_REFERENCED_', 'ER_ROW_IS_REFERENCED_2']
-      return callback MySQLAdapter.wrapError 'unknown error', error if error or not result?
-      callback null, result.affectedRows
+  delete: (model, conditions) ->
+    new Promise (resolve, reject) =>
+      params = []
+      tableName = @_connection.models[model].tableName
+      sql = "DELETE FROM `#{tableName}`"
+      if conditions.length > 0
+        try
+          sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+        catch e
+          reject e
+          return
+      #console.log sql, params
+      @_query sql, params, (error, result) ->
+        if error and error.code in ['ER_ROW_IS_REFERENCED_', 'ER_ROW_IS_REFERENCED_2']
+          reject new Error 'rejected'
+          return
+        if error or not result?
+          reject MySQLAdapter.wrapError 'unknown error', error
+          return
+        resolve result.affectedRows
 
   ##
   # Connects to the database

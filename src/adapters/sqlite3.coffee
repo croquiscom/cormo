@@ -445,21 +445,27 @@ class SQLite3Adapter extends SQLAdapterBase
         resolve Number(result[0].count)
 
   ## @override AdapterBase::delete
-  delete: (model, conditions, callback) ->
-    params = []
-    tableName = @_connection.models[model].tableName
-    sql = "DELETE FROM \"#{tableName}\""
-    if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-      catch e
-        return callback e
-    #console.log sql, params
-    @_query 'run', sql, params, (error) ->
-      # @ is sqlite3.Statement
-      return callback new Error 'rejected' if error and error.code is 'SQLITE_CONSTRAINT'
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null, @changes
+  delete: (model, conditions) ->
+    new Promise (resolve, reject) =>
+      params = []
+      tableName = @_connection.models[model].tableName
+      sql = "DELETE FROM \"#{tableName}\""
+      if conditions.length > 0
+        try
+          sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+        catch e
+          reject e
+          return
+      #console.log sql, params
+      @_query 'run', sql, params, (error) ->
+        # @ is sqlite3.Statement
+        if error and error.code is 'SQLITE_CONSTRAINT'
+          reject new Error 'rejected'
+          return
+        if error
+          reject SQLite3Adapter.wrapError 'unknown error', error
+          return
+        resolve @changes
 
   ##
   # Connects to the database

@@ -624,16 +624,20 @@ class MongoDBAdapter extends AdapterBase
           resolve count
 
   ## @override AdapterBase::delete
-  delete: (model, conditions, callback) ->
-    model_class = @_connection.models[model]
-    try
-      conditions = _buildWhere model_class._schema, conditions
-    catch e
-      return callback e
-    #console.log JSON.stringify conditions
-    @_collection(model).remove conditions, safe: true, (error, result) ->
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null, result.result.n
+  delete: (model, conditions) ->
+    new Promise (resolve, reject) =>
+      model_class = @_connection.models[model]
+      try
+        conditions = _buildWhere model_class._schema, conditions
+      catch e
+        reject e
+        return
+      #console.log JSON.stringify conditions
+      @_collection(model).remove conditions, safe: true, (error, result) ->
+        if error
+          reject MongoDBAdapter.wrapError 'unknown error', error
+          return
+        resolve result.result.n
 
   ##
   # Connects to the database

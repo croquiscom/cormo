@@ -495,9 +495,8 @@ class Query
         delete @_id
       @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log
 
-      @_doArchiveAndIntegrity options
-      .then =>
-        @_adapter.deleteAsync @_name, @_conditions
+      await @_doArchiveAndIntegrity options
+      await @_adapter.delete @_name, @_conditions
     .nodeify bindDomain callback
 
 module.exports = Query

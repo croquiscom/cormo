@@ -24,14 +24,14 @@ class AdapterBase
   # @abstract
   # @return {Object}
   # @returnprop {Object} tables
-  # @nodejscallback
+  # @promise
   # @see Connection::applySchemas
   getSchemas: () -> Promise.resolve tables: []
 
   ## Creates a table.
   # @abstract
   # @param {String} model
-  # @nodejscallback
+  # @promise
   # @see Connection::applySchemas
   createTable: (model) -> Promise.resolve()
 
@@ -39,7 +39,7 @@ class AdapterBase
   # @abstract
   # @param {String} model
   # @param {Object} column_property
-  # @nodejscallback
+  # @promise
   # @see Connection::applySchemas
   addColumn: (model, column_property) -> Promise.resolve()
 
@@ -51,7 +51,7 @@ class AdapterBase
   # @param {Object} index.options
   # @param {String} index.options.name
   # @param {Boolean} index.options.unique
-  # @nodejscallback
+  # @promise
   # @see Connection::applySchemas
   createIndex: (model, index) -> Promise.resolve()
 
@@ -61,7 +61,7 @@ class AdapterBase
   # @param {String} column
   # @param {String} type
   # @param {Class<Model>} references
-  # @nodejscallback
+  # @promise
   # @see Connection::applySchemas
   createForeignKey: (model, column, type, references) -> Promise.resolve()
 
@@ -69,7 +69,7 @@ class AdapterBase
   # Drops a model from the database
   # @abstract
   # @param {String} model
-  # @nodejscallback
+  # @promise
   # @see Model.drop
   drop: (model) -> Promise.reject 'not implemented'
 
@@ -142,7 +142,7 @@ class AdapterBase
   # @param {String} model
   # @param {Object} data
   # @return {RecordID}
-  # @nodejscallback
+  # @promise
   create: (model, data) -> Promise.reject new Error 'not implemented'
 
   ##
@@ -151,7 +151,7 @@ class AdapterBase
   # @param {String} model
   # @param {Array<Object>} data
   # @return {Array<RecordID>}
-  # @nodejscallback
+  # @promise
   createBulk: (model, data) -> Promise.reject new Error 'not implemented'
 
   _createBulkDefault: (model, data) ->
@@ -163,7 +163,7 @@ class AdapterBase
   # @abstract
   # @param {String} model
   # @param {Object} data
-  # @nodejscallback
+  # @promise
   update: (model, data) -> Promise.reject new Error 'not implemented'
 
   ##
@@ -173,7 +173,7 @@ class AdapterBase
   # @param {Object} data
   # @param {Object} conditions
   # @param {Object} options
-  # @nodejscallback
+  # @promise
   updatePartial: (model, data, conditions, options) -> Promise.reject new Error 'not implemented'
 
   ##
@@ -183,7 +183,7 @@ class AdapterBase
   # @param {Object} data
   # @param {Object} conditions
   # @param {Object} options
-  # @nodejscallback
+  # @promise
   upsert: (model, data, conditions, options) -> Promise.reject new Error 'not implemented'
 
   ##
@@ -193,7 +193,7 @@ class AdapterBase
   # @param {RecordID} id
   # @param {Object} options
   # @return {Model}
-  # @nodejscallback
+  # @promise
   # @throws {Error('not found')}
   # @see Query::exec
   findById: (model, id, options) -> Promise.reject new Error 'not implemented'
@@ -205,7 +205,7 @@ class AdapterBase
   # @param {Object} conditions
   # @param {Object} options
   # @return {Array<Model>}
-  # @nodejscallback
+  # @promise
   # @see Query::exec
   find: (model, conditions, options) -> Promise.reject new Error 'not implemented'
 
@@ -230,7 +230,7 @@ class AdapterBase
   # @param {Object} conditions
   # @param {Object} options
   # @return {Number}
-  # @nodejscallback
+  # @promise
   # @see Query::count
   count: (model, conditions, options) -> Promise.reject new Error 'not implemented'
 
@@ -240,9 +240,9 @@ class AdapterBase
   # @param {String} model
   # @param {Object} conditions
   # @return {Number}
-  # @nodejscallback
+  # @promise
   # @see Query::delete
-  delete: (model, conditions, callback) -> callback new Error 'not implemented'
+  delete: (model, conditions) -> Promise.reject new Error 'not implemented'
 
   ##
   # Closes connection
