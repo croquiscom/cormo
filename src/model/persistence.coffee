@@ -43,14 +43,14 @@ ModelPersistenceMixin = (Base) -> class extends Base
       records = data.map (item) => @build item
       promises = records.map (record) ->
         record.validate()
-      Promise.all promises
-      .then =>
-        records.forEach (record) -> record._runCallbacks 'save', 'before'
-        records.forEach (record) -> record._runCallbacks 'create', 'before'
-        @_createBulk records
-        .finally ->
-          records.forEach (record) -> record._runCallbacks 'create', 'after'
-          records.forEach (record) -> record._runCallbacks 'save', 'after'
+      await Promise.all promises
+      records.forEach (record) -> record._runCallbacks 'save', 'before'
+      records.forEach (record) -> record._runCallbacks 'create', 'before'
+      try
+        await @_createBulk records
+      finally
+        records.forEach (record) -> record._runCallbacks 'create', 'after'
+        records.forEach (record) -> record._runCallbacks 'save', 'after'
     .nodeify util.bindDomain callback
 
   @_buildSaveDataColumn: (data, model, column, property, allow_null) ->
@@ -101,14 +101,14 @@ ModelPersistenceMixin = (Base) -> class extends Base
       catch e
         error = e
       return data
-    return Promise.reject error if error
+    if error
+      throw error
 
     @_connection.log @_name, 'createBulk', data_array
-    @_adapter.createBulkAsync @_name, data_array
-    .then (ids) ->
-      records.forEach (record, i) ->
-        Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: ids[i]
-      Promise.resolve records
+    ids = await @_adapter.createBulk @_name, data_array
+    records.forEach (record, i) ->
+      Object.defineProperty record, 'id', configurable: false, enumerable: true, writable: false, value: ids[i]
+    records
 
   _update: (options) ->
     ctor = @constructor

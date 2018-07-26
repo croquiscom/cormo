@@ -288,21 +288,24 @@ class MySQLAdapter extends SQLAdapterBase
           reject new Error 'unexpected result'
 
   ## @override AdapterBase::createBulk
-  createBulk: (model, data, callback) ->
-    tableName = @_connection.models[model].tableName
-    values = []
-    fields = undefined
-    places = []
-    data.forEach (item) =>
-      [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
-      places.push '(' + places_sub + ')'
-    sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES #{places.join ','}"
-    @_query sql, values, (error, result) ->
-      return _processSaveError error, callback if error
-      if id = result?.insertId
-        callback null, data.map (item, i) -> id + i
-      else
-        callback new Error 'unexpected result'
+  createBulk: (model, data) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      values = []
+      fields = undefined
+      places = []
+      data.forEach (item) =>
+        [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
+        places.push '(' + places_sub + ')'
+      sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES #{places.join ','}"
+      @_query sql, values, (error, result) ->
+        if error
+          _processSaveError error, reject
+          return
+        if id = result?.insertId
+          resolve data.map (item, i) -> id + i
+        else
+          reject new Error 'unexpected result'
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->

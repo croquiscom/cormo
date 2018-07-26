@@ -317,31 +317,40 @@ class MongoDBAdapter extends AdapterBase
           reject new Error 'unexpected result'
 
   ## @override AdapterBase::create
-  createBulk: (model, data, callback) ->
-    if data.length > 1000
-      chunks = []
-      i = 0
-      while i < data.length
-        chunks.push data.slice i, i+1000
-        i += 1000
-      async.map chunks, (chunk, callback) =>
-        @createBulk model, chunk, callback
-      , (error, records_list) ->
-        return callback error if error
-        callback null, _.flatten records_list
-      return
-    @_collection(model).insert data, safe: true, (error, result) ->
-      return _processSaveError error, callback if error
-      error = undefined
-      ids = result.ops.map (doc) ->
-        id = _objectIdToString doc._id
-        if id
-          delete data._id
+  createBulk: (model, data) ->
+    new Promise (resolve, reject) =>
+      if data.length > 1000
+        chunks = []
+        i = 0
+        while i < data.length
+          chunks.push data.slice i, i+1000
+          i += 1000
+        async.map chunks, (chunk, callback) =>
+          @createBulk model, chunk
+          .then (ids) => callback null, ids
+          , (error) => callback error
+        , (error, records_list) ->
+          if error
+            reject error
+          else
+            resolve _.flatten records_list
+        return
+      @_collection(model).insert data, safe: true, (error, result) ->
+        if error
+          _processSaveError error, reject
+          return
+        error = undefined
+        ids = result.ops.map (doc) ->
+          id = _objectIdToString doc._id
+          if id
+            delete data._id
+          else
+            error = new Error 'unexpected result'
+          return id
+        if error
+          reject error
         else
-          error = new Error 'unexpected result'
-        return id
-      return callback error if error
-      callback null, ids
+          resolve ids
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->

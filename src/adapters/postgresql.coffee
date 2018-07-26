@@ -306,22 +306,25 @@ class PostgreSQLAdapter extends SQLAdapterBase
           reject new Error 'unexpected rows'
 
   ## @override AdapterBase::createBulk
-  createBulk: (model, data, callback) ->
-    tableName = @_connection.models[model].tableName
-    values = []
-    fields = undefined
-    places = []
-    data.forEach (item) =>
-      [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
-      places.push '(' + places_sub + ')'
-    sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES #{places.join ','} RETURNING id"
-    @_query sql, values, (error, result) ->
-      return _processSaveError tableName, error, callback if error
-      ids = result?.rows.map (row) -> row.id
-      if ids.length is data.length
-        callback null, ids
-      else
-        callback new Error 'unexpected rows'
+  createBulk: (model, data) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      values = []
+      fields = undefined
+      places = []
+      data.forEach (item) =>
+        [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
+        places.push '(' + places_sub + ')'
+      sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES #{places.join ','} RETURNING id"
+      @_query sql, values, (error, result) ->
+        if error
+          _processSaveError tableName, error, reject
+          return
+        ids = result?.rows.map (row) -> row.id
+        if ids.length is data.length
+          resolve ids
+        else
+          reject new Error 'unexpected rows'
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->

@@ -152,14 +152,11 @@ class AdapterBase
   # @param {Array<Object>} data
   # @return {Array<RecordID>}
   # @nodejscallback
-  createBulk: (model, data, callback) -> callback new Error 'not implemented'
+  createBulk: (model, data) -> Promise.reject new Error 'not implemented'
 
-  _createBulkDefault: (model, data, callback) ->
-    async.map data, (item, callback) =>
+  _createBulkDefault: (model, data) ->
+    await Promise.all data.map (item) =>
       @create model, item
-      .then (id) => callback null, id
-      , (error) => callback error
-    , callback
 
   ##
   # Updates a record

@@ -261,22 +261,25 @@ class SQLite3Adapter extends SQLAdapterBase
         resolve @lastID
 
   ## @override AdapterBase::createBulk
-  createBulk: (model, data, callback) ->
-    tableName = @_connection.models[model].tableName
-    values = []
-    fields = undefined
-    places = []
-    data.forEach (item) =>
-      [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
-      places.push '(' + places_sub + ')'
-    sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES #{places.join ','}"
-    @_query 'run', sql, values, (error) ->
-      return _processSaveError error, callback if error
-      if id = @lastID
-        id = id - data.length + 1
-        callback null, data.map (item, i) -> id + i
-      else
-        callback new Error 'unexpected result'
+  createBulk: (model, data) ->
+    new Promise (resolve, reject) =>
+      tableName = @_connection.models[model].tableName
+      values = []
+      fields = undefined
+      places = []
+      data.forEach (item) =>
+        [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
+        places.push '(' + places_sub + ')'
+      sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES #{places.join ','}"
+      @_query 'run', sql, values, (error) ->
+        if error
+          _processSaveError error, reject
+          return
+        if id = @lastID
+          id = id - data.length + 1
+          resolve data.map (item, i) -> id + i
+        else
+          reject new Error 'unexpected result'
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->

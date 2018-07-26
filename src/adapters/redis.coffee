@@ -93,8 +93,8 @@ class RedisAdapter extends AdapterBase
             resolve id
 
   ## @override AdapterBase::createBulk
-  createBulk: (model, data, callback) ->
-    @_createBulkDefault model, data, callback
+  createBulk: (model, data) ->
+    @_createBulkDefault model, data
 
   ## @override AdapterBase::update
   update: (model, data, callback) ->
