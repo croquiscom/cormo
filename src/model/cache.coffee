@@ -6,34 +6,31 @@ tableize = require('../util/inflector').tableize
 # @namespace model
 ModelCacheMixin = (Base) -> class extends Base
   @_loadFromCache: (key, refresh) ->
-    return Promise.reject new Error 'error' if refresh
-    @_connection._connectRedisCache()
-    .then (redis) =>
-      key = 'CC.'+tableize(@_name)+':'+key
-      new Promise (resolve, reject) ->
-        redis.get key, (error, value) ->
-          return reject error if error
-          resolve value
-    .then (value) ->
-      return Promise.reject new Error 'error' if not value?
-      Promise.resolve JSON.parse value
+    if refresh
+      throw new Error 'error'
+    redis = await @_connection._connectRedisCache()
+    key = 'CC.'+tableize(@_name)+':'+key
+    value = await new Promise (resolve, reject) ->
+      redis.get key, (error, value) ->
+        return reject error if error
+        resolve value
+    if not value?
+      throw new Error 'error'
+    JSON.parse value
 
   @_saveToCache: (key, ttl, data) ->
-    @_connection._connectRedisCache()
-    .then (redis) =>
-      key = 'CC.'+tableize(@_name)+':'+key
-      new Promise (resolve, reject) ->
-        redis.setex key, ttl, JSON.stringify(data), (error) ->
-          return reject error if error
-          resolve()
+    redis = await @_connection._connectRedisCache()
+    key = 'CC.'+tableize(@_name)+':'+key
+    await new Promise (resolve, reject) ->
+      redis.setex key, ttl, JSON.stringify(data), (error) ->
+        return reject error if error
+        resolve()
 
-  @removeCache: (key, callback) ->
-    @_connection._connectRedisCache()
-    .then (redis) =>
-      key = 'CC.'+tableize(@_name)+':'+key
-      new Promise (resolve, reject) ->
-        redis.del key, (error, count) ->
-          resolve()
-    .nodeify callback
+  @removeCache: (key) ->
+    redis = await @_connection._connectRedisCache()
+    key = 'CC.'+tableize(@_name)+':'+key
+    await new Promise (resolve, reject) ->
+      redis.del key, (error, count) ->
+        resolve()
 
 module.exports = ModelCacheMixin

@@ -69,7 +69,7 @@ class ConnectionBase extends EventEmitter
       @connected = true
     .catch (error) =>
       @_adapter = null
-      Promise.reject error
+      console.log 'fail to connect', error
 
     Object.defineProperty @, 'adapter', get: -> @_adapter
 
@@ -77,7 +77,8 @@ class ConnectionBase extends EventEmitter
   # Closes this connection.
   # A closed connection can be used no more.
   close: ->
-    Connection.defaultConnection = null if Connection.defaultConnection is @
+    if Connection.defaultConnection is @
+      Connection.defaultConnection = null
     @_adapter.close()
     @_adapter = null
 
@@ -91,8 +92,9 @@ class ConnectionBase extends EventEmitter
 
   _checkSchemaApplied: ->
     @_initializeModels()
-    return Promise.resolve() if not @_applying_schemas and not @_schema_changed
-    return @applySchemas()
+    if not @_applying_schemas and not @_schema_changed
+      return
+    await @applySchemas()
 
   _initializeModels: ->
     for model, modelClass of @models
@@ -113,9 +115,8 @@ class ConnectionBase extends EventEmitter
 
   _getModelNamesByAssociationOrder: ->
     t = new Toposort()
-    Object.keys(@models).forEach (model) =>
+    for model, modelClass of @models
       t.add model, []
-      modelClass = @models[model]
       for name, association of modelClass._associations
         # ignore association with models of other connection
         if association.target_model._connection isnt @
@@ -127,105 +128,92 @@ class ConnectionBase extends EventEmitter
           t.add association.target_model._name, model
         else if association.type is 'belongsTo'
           t.add model, association.target_model._name
-    t.sort()
+    return t.sort()
 
   ##
   # Applies schemas
   # @param {Object} [options]
   # @param {Boolean} [options.verbose=false]
   # @promise
-  # @nodejscallback
   # @see AdapterBase::applySchema
-  applySchemas: (options, callback) ->
-    if typeof options is 'function'
-      callback = options
-      options = {}
-    else if not options
+  applySchemas: (options) ->
+    if not options
       options = {}
 
-    Promise.resolve().then =>
-      @_initializeModels()
-      return if not @_schema_changed
+    @_initializeModels()
+    if not @_schema_changed
+      return
 
-      @_applyAssociations()
+    @_applyAssociations()
 
-      if not @_applying_schemas
-        @_applying_schemas = true
-
-        @_checkArchive()
-
-        console.log 'Applying schemas' if options.verbose
-
-        @_promise_schema_applied = @_promise_connection.then =>
-          try
-            current = await @_adapter.getSchemas()
-
-            add_columns_commands = []
-            for model, modelClass of @models
-              if not current.tables?[modelClass.tableName] or current.tables?[modelClass.tableName] is 'NO SCHEMA'
-                continue
-              for column, property of modelClass._schema
-                if not current.tables?[modelClass.tableName]?[property._dbname]
-                  console.log "Adding column #{column} to #{modelClass.tableName}" if options.verbose
-                  add_columns_commands.push @_adapter.addColumn model, property
-            await Promise.all add_columns_commands
-
-            tables_commands = []
-            for model, modelClass of @models
-              if not current.tables[modelClass.tableName]
-                console.log "Creating table #{modelClass.tableName}" if options.verbose
-                tables_commands.push @_adapter.createTable model
-            await Promise.all tables_commands
-
-            indexes_commands = []
-            for model, modelClass of @models
-              for index in modelClass._indexes
-                if not current.indexes?[modelClass.tableName]?[index.options.name]
-                  console.log "Creating index on #{modelClass.tableName} #{Object.keys(index.columns)}" if options.verbose
-                  indexes_commands.push @_adapter.createIndex model, index
-            await Promise.all indexes_commands
-
-            foreign_keys_commands = []
-            for model, modelClass of @models
-              for integrity in modelClass._integrities
-                type = ''
-                if integrity.type is 'child_nullify'
-                  type = 'nullify'
-                else if integrity.type is 'child_restrict'
-                  type = 'restrict'
-                else if integrity.type is 'child_delete'
-                  type = 'delete'
-                if type
-                  current_foreign_key = current.foreign_keys?[modelClass.tableName]?[integrity.column]
-                  if not (current_foreign_key and current_foreign_key is integrity.parent.tableName)
-                    console.log "Adding foreign key #{modelClass.tableName}.#{integrity.column} to #{integrity.parent.tableName}" if options.verbose
-                    foreign_keys_commands.push [model, integrity.column, type, integrity.parent]
-            await Promise.each foreign_keys_commands, (args) =>
-              @_adapter.createForeignKey.apply @_adapter, args
-          finally
-            console.log 'Applying schemas done' if options.verbose
-            @_applying_schemas = false
-            @_schema_changed = false
+    if @_applying_schemas
       return @_promise_schema_applied
-    .nodeify callback
 
-  ##
-  # Applies schemas synchronously
-  # @method
-  # @see Connection::applySchemas
-  applySchemasSync: deasync? @::applySchemas
+    @_applying_schemas = true
+
+    @_checkArchive()
+
+    console.log 'Applying schemas' if options.verbose
+
+    @_promise_schema_applied = @_promise_connection.then =>
+      try
+        current = await @_adapter.getSchemas()
+
+        add_columns_commands = []
+        for model, modelClass of @models
+          if not current.tables?[modelClass.tableName] or current.tables?[modelClass.tableName] is 'NO SCHEMA'
+            continue
+          for column, property of modelClass._schema
+            if not current.tables?[modelClass.tableName]?[property._dbname]
+              console.log "Adding column #{column} to #{modelClass.tableName}" if options.verbose
+              add_columns_commands.push @_adapter.addColumn model, property
+        await Promise.all add_columns_commands
+
+        tables_commands = []
+        for model, modelClass of @models
+          if not current.tables[modelClass.tableName]
+            console.log "Creating table #{modelClass.tableName}" if options.verbose
+            tables_commands.push @_adapter.createTable model
+        await Promise.all tables_commands
+
+        indexes_commands = []
+        for model, modelClass of @models
+          for index in modelClass._indexes
+            if not current.indexes?[modelClass.tableName]?[index.options.name]
+              console.log "Creating index on #{modelClass.tableName} #{Object.keys(index.columns)}" if options.verbose
+              indexes_commands.push @_adapter.createIndex model, index
+        await Promise.all indexes_commands
+
+        foreign_keys_commands = []
+        for model, modelClass of @models
+          for integrity in modelClass._integrities
+            type = ''
+            if integrity.type is 'child_nullify'
+              type = 'nullify'
+            else if integrity.type is 'child_restrict'
+              type = 'restrict'
+            else if integrity.type is 'child_delete'
+              type = 'delete'
+            if type
+              current_foreign_key = current.foreign_keys?[modelClass.tableName]?[integrity.column]
+              if not (current_foreign_key and current_foreign_key is integrity.parent.tableName)
+                console.log "Adding foreign key #{modelClass.tableName}.#{integrity.column} to #{integrity.parent.tableName}" if options.verbose
+                foreign_keys_commands.push [model, integrity.column, type, integrity.parent]
+        for args in foreign_keys_commands
+          await @_adapter.createForeignKey.apply @_adapter, args
+      finally
+        console.log 'Applying schemas done' if options.verbose
+        @_applying_schemas = false
+        @_schema_changed = false
+    return @_promise_schema_applied
 
   ##
   # Drops all model tables
   # @promise
-  # @nodejscallback
-  dropAllModels: (callback) ->
-    current = Promise.resolve()
-    Promise.all @_getModelNamesByAssociationOrder().map (model) =>
-      current = current
-      .then =>
-        @models[model].drop()
-    .nodeify callback
+  dropAllModels: ->
+    for model in @_getModelNamesByAssociationOrder()
+      await @models[model].drop()
+    return
 
   ##
   # Logs
@@ -236,9 +224,9 @@ class ConnectionBase extends EventEmitter
 
   _connectRedisCache: ->
     if @_redis_cache_client
-      Promise.resolve @_redis_cache_client
+      @_redis_cache_client
     else if not redis
-      Promise.reject new Error('cache needs Redis')
+      throw new Error('cache needs Redis')
     else
       settings = @_redis_cache_settings
       @_redis_cache_client = client = settings.client or (redis.createClient settings.port or 6379, settings.host or '127.0.0.1')
@@ -248,7 +236,7 @@ class ConnectionBase extends EventEmitter
           client.send_anyways = true
           client.select settings.database
           client.send_anyways = false
-      Promise.resolve client
+      client
 
   inspect: (depth) ->
     inspect @models
