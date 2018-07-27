@@ -213,15 +213,14 @@ class ModelBase
   ##
   # Drops this model from the database
   # @promise
-  # @nodejscallback
   # @see AdapterBase::drop
-  @drop: (callback) ->
+  @drop: ->
     # do not need to apply schema before drop, only waiting connection established
-    @_connection._promise_connection.then =>
-      @_adapter.drop @_name
-    .finally =>
+    try
+      await @_connection._promise_connection
+      await @_adapter.drop @_name
+    finally
       @_connection._schema_changed = true
-    .nodeify callback
 
   ##
   # Creates a record.
@@ -383,16 +382,13 @@ class ModelBase
   ##
   # Destroys this record (remove from the database)
   # @promise
-  # @nodejscallback
-  destroy: (callback) ->
+  destroy: ->
     @_runCallbacks 'destroy', 'before'
-    Promise.resolve()
-    .then =>
+    try
       if @id
-        @constructor.delete id: @id
-    .finally =>
+        await @constructor.delete id: @id
+    finally
       @_runCallbacks 'destroy', 'after'
-    .nodeify callback
 
   ##
   # Deletes all records from the database
@@ -416,6 +412,7 @@ class ModelBase
       this_model: @
       target_model_or_column: target_model_or_column
       options: options
+    return
 
   ##
   # Adds a has-one association
@@ -433,6 +430,7 @@ class ModelBase
       this_model: @
       target_model_or_column: target_model_or_column
       options: options
+    return
 
   ##
   # Adds a belongs-to association
@@ -450,6 +448,7 @@ class ModelBase
       this_model: @
       target_model_or_column: target_model_or_column
       options: options
+    return
 
   @inspect: (depth) ->
     schema = Object.keys(@_schema or {}).sort().map((column) => return "#{column}: #{@_schema[column].type}").join(', ')
