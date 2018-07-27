@@ -397,9 +397,8 @@ class ModelBase
   ##
   # Deletes all records from the database
   # @promise
-  # @nodejscallback
-  @deleteAll: (callback) ->
-    @delete().nodeify callback
+  @deleteAll: ->
+    await @delete()
 
   ##
   # Adds a has-many association

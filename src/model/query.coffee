@@ -4,18 +4,13 @@ Query = require '../query'
 # Model query
 # @namespace model
 ModelQueryMixin = (Base) -> class extends Base
-  @_createQueryAndRun: (criteria, data, callback) ->
+  @_createQueryAndRun: (criteria, data) ->
     query = new Query @
     query[criteria] data
-    if typeof callback is 'function'
-      query.exec callback
     query
 
-  @_createOptionalQueryAndRun: (criteria, data, callback) ->
-    if typeof data is 'function'
-      @_createQueryAndRun criteria, null, data
-    else
-      @_createQueryAndRun criteria, data, callback
+  @_createOptionalQueryAndRun: (criteria, data) ->
+    @_createQueryAndRun criteria, data
 
   ##
   # Creates q query object
@@ -25,68 +20,48 @@ ModelQueryMixin = (Base) -> class extends Base
   ##
   # Finds a record by id
   # @param {RecordID|Array<RecordID>} id
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Model|Array<Model>} callback.record
   # @return {Query}
   # @throws {Error('not found')}
-  @find: (id, callback) ->
-    @_createQueryAndRun 'find', id, callback
+  @find: (id) ->
+    @_createQueryAndRun 'find', id
 
   ##
   # Finds records by ids while preserving order.
   # @param {Array<RecordID>} ids
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Array<Model>} callback.records
   # @return {Query}
   # @throws {Error('not found')}
-  @findPreserve: (ids, callback) ->
-    @_createQueryAndRun 'findPreserve', ids, callback
+  @findPreserve: (ids) ->
+    @_createQueryAndRun 'findPreserve', ids
 
   ##
   # Finds records by conditions
   # @param {Object} [condition]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Array<Model>} callback.records
   # @return {Query}
-  @where: (condition, callback) ->
-    @_createOptionalQueryAndRun 'where', condition, callback
+  @where: (condition) ->
+    @_createOptionalQueryAndRun 'where', condition
 
   ##
   # Selects columns for result
   # @param {String} [columns]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Array<Model>} callback.records
   # @return {Query}
-  @select: (columns, callback) ->
-    @_createOptionalQueryAndRun 'select', columns, callback
+  @select: (columns) ->
+    @_createOptionalQueryAndRun 'select', columns
 
   ##
   # Specifies orders of result
   # @param {String} [orders]
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Array<Model>} callback.records
   # @return {Query}
-  @order: (orders, callback) ->
-    @_createOptionalQueryAndRun 'order', orders, callback
+  @order: (orders) ->
+    @_createOptionalQueryAndRun 'order', orders
 
   ##
   # Groups result records
   # @param {String} group_by
   # @param {Object} fields
-  # @param {Function} [callback]
-  # @param {Error} callback.error
-  # @param {Array<Object>} callback.records
   # @return {Query}
-  @group: (group_by, fields, callback) ->
+  @group: (group_by, fields) ->
     query = new Query @
     query.group group_by, fields
-    if typeof callback is 'function'
-      query.exec callback
     query
 
   ##
@@ -94,16 +69,10 @@ ModelQueryMixin = (Base) -> class extends Base
   # @param {Object} [condition]
   # @return {Number}
   # @promise
-  # @nodejscallback
-  @count: (condition, callback) ->
-    if typeof condition is 'function'
-      callback = condition
-      condition = null
-
-    new Query @
-    .where condition
-    .count()
-    .nodeify callback
+  @count: (condition) ->
+    await new Query @
+      .where condition
+      .count()
 
   ##
   # Updates some fields of records that match conditions
@@ -111,31 +80,19 @@ ModelQueryMixin = (Base) -> class extends Base
   # @param {Object} [condition]
   # @return {Number}
   # @promise
-  # @nodejscallback
-  @update: (updates, condition, callback) ->
-    if typeof condition is 'function'
-      callback = condition
-      condition = null
-
-    new Query @
-    .where condition
-    .update updates
-    .nodeify callback
+  @update: (updates, condition) ->
+    await new Query @
+      .where condition
+      .update updates
 
   ##
   # Deletes records by conditions
   # @param {Object} [condition]
   # @return {Number}
   # @promise
-  # @nodejscallback
-  @delete: (condition, callback) ->
-    if typeof condition is 'function'
-      callback = condition
-      condition = null
-
-    new Query @
-    .where condition
-    .delete()
-    .nodeify callback
+  @delete: (condition) ->
+    await new Query @
+      .where condition
+      .delete()
 
 module.exports = ModelQueryMixin
