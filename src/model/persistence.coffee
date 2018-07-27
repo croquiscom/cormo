@@ -9,49 +9,41 @@ util = require '../util'
 ModelPersistenceMixin = (Base) -> class extends Base
   ##
   # Creates a record and saves it to the database
-  # 'Model.create(data, callback)' is the same as 'Model.build(data).save(callback)'
+  # 'Model.create(data)' is the same as 'Model.build(data).save()'
   # @param {Object} [data={}]
   # @param {Object} [options]
   # @param {Boolean} [options.skip_log=false]
   # @return {Model} created record
   # @promise
-  # @nodejscallback
-  @create: (data, options, callback) ->
-    if typeof data is 'function'
-      callback = data
-      data = {}
-      options = {}
-    else if typeof options is 'function'
-      callback = options
-      options = {}
-    @_checkReady().then =>
-      @build(data).save options
-    .nodeify callback
+  @create: (data, options) ->
+    await @_checkReady()
+    await @build(data).save options
 
   ##
   # Creates multiple records and saves them to the database.
   # @param {Array<Object>} data
   # @return {Array<Model>} created records
   # @promise
-  # @nodejscallback
-  @createBulk: (data, callback) ->
-    @_checkReady().then =>
-      return Promise.reject new Error 'data is not an array' if not Array.isArray data
+  @createBulk: (data) ->
+    await @_checkReady()
 
-      return Promise.resolve [] if data.length is 0
+    if not Array.isArray data
+      throw new Error 'data is not an array'
 
-      records = data.map (item) => @build item
-      promises = records.map (record) ->
-        record.validate()
-      await Promise.all promises
-      records.forEach (record) -> record._runCallbacks 'save', 'before'
-      records.forEach (record) -> record._runCallbacks 'create', 'before'
-      try
-        await @_createBulk records
-      finally
-        records.forEach (record) -> record._runCallbacks 'create', 'after'
-        records.forEach (record) -> record._runCallbacks 'save', 'after'
-    .nodeify callback
+    if data.length is 0
+      return []
+
+    records = data.map (item) => @build item
+    promises = records.map (record) ->
+      record.validate()
+    await Promise.all promises
+    records.forEach (record) -> record._runCallbacks 'save', 'before'
+    records.forEach (record) -> record._runCallbacks 'create', 'before'
+    try
+      await @_createBulk records
+    finally
+      records.forEach (record) -> record._runCallbacks 'create', 'after'
+      records.forEach (record) -> record._runCallbacks 'save', 'after'
 
   @_buildSaveDataColumn: (data, model, column, property, allow_null) ->
     adapter = @_adapter
@@ -63,6 +55,7 @@ ModelPersistenceMixin = (Base) -> class extends Base
         util.setPropertyOfPath data, parts, value
       else
         data[property._dbname] = value
+    return
 
   _buildSaveData: ->
     data = {}
@@ -115,32 +108,24 @@ ModelPersistenceMixin = (Base) -> class extends Base
     if ctor.dirty_tracking
       # update changed values only
       if not @isDirty()
-        return Promise.resolve()
+        return
 
       data = {}
       adapter = ctor._adapter
       schema = ctor._schema
-      try
-        for path of @_prev_attributes
-          ctor._buildSaveDataColumn data, @_attributes, path, schema[path], true
-      catch e
-        return Promise.reject e
+      for path of @_prev_attributes
+        ctor._buildSaveDataColumn data, @_attributes, path, schema[path], true
 
       ctor._connection.log ctor._name, 'update', data if not options?.skip_log
-      adapter.updatePartial ctor._name, data, id: @id, {}
-      .then =>
-        @_prev_attributes = {}
+      await adapter.updatePartial ctor._name, data, id: @id, {}
+      @_prev_attributes = {}
     else
       # update all
-      try
-        data = @_buildSaveData()
-      catch e
-        return Promise.reject e
+      data = @_buildSaveData()
 
       ctor._connection.log ctor._name, 'update', data if not options?.skip_log
-      ctor._adapter.update ctor._name, data
-      .then =>
-        @_prev_attributes = {}
+      await ctor._adapter.update ctor._name, data
+      @_prev_attributes = {}
 
   ##
   # Saves data to the database
@@ -149,35 +134,28 @@ ModelPersistenceMixin = (Base) -> class extends Base
   # @param {Boolean} [options.skip_log=false]
   # @return {Model} this
   # @promise
-  # @nodejscallback
-  save: (options, callback) ->
-    if typeof options is 'function'
-      callback = options
-      options = {}
-    @constructor._checkReady().then =>
-      if options?.validate isnt false
-        return @validate()
-        .then =>
-          @save _.extend({}, options, validate: false)
+  save: (options) ->
+    await @constructor._checkReady()
+    if options?.validate isnt false
+      await @validate()
+      return await @save _.extend({}, options, validate: false)
 
-      @_runCallbacks 'save', 'before'
+    @_runCallbacks 'save', 'before'
 
-      if @id
-        @_runCallbacks 'update', 'before'
-        try
-          await @_update options
-        finally
-          @_runCallbacks 'update', 'after'
-          @_runCallbacks 'save', 'after'
-      else
-        @_runCallbacks 'create', 'before'
-        try
-          await @_create options
-        finally
-          @_runCallbacks 'create', 'after'
-          @_runCallbacks 'save', 'after'
-    .then =>
-      Promise.resolve @
-    .nodeify callback
+    if @id
+      @_runCallbacks 'update', 'before'
+      try
+        await @_update options
+      finally
+        @_runCallbacks 'update', 'after'
+        @_runCallbacks 'save', 'after'
+    else
+      @_runCallbacks 'create', 'before'
+      try
+        await @_create options
+      finally
+        @_runCallbacks 'create', 'after'
+        @_runCallbacks 'save', 'after'
+    return @
 
 module.exports = ModelPersistenceMixin
