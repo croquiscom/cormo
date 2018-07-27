@@ -140,6 +140,15 @@ _buildGroupFields = (group_by, group_fields) ->
     group[field] = expr
   return group
 
+_processSaveError = (error) ->
+  if error?.code in [11001, 11000]
+    key = error.message.match /collection: [\w-.]+ index: (\w+)/
+    if not key
+      key = error.message.match /index: [\w-.]+\$(\w+)(_1)?/
+    return new Error('duplicated ' + key?[1])
+  else
+    return MongoDBAdapter.wrapError 'unknown error', error
+
 ##
 # Adapter for MongoDB
 # @namespace adapter
@@ -260,21 +269,12 @@ class MongoDBAdapter extends AdapterBase
     else
       value
 
-  _throwSaveError = (error) ->
-    if error?.code in [11001, 11000]
-      key = error.message.match /collection: [\w-.]+ index: (\w+)/
-      if not key
-        key = error.message.match /index: [\w-.]+\$(\w+)(_1)?/
-      throw new Error('duplicated ' + key?[1])
-    else
-      throw MongoDBAdapter.wrapError 'unknown error', error
-
   ## @override AdapterBase::create
   create: (model, data) ->
     try
       result = await @_collection(model).insert data, safe: true
     catch error
-      _throwSaveError error
+      throw _processSaveError error
     id = _objectIdToString result.ops[0]._id
     if id
       delete data._id
@@ -298,7 +298,7 @@ class MongoDBAdapter extends AdapterBase
     try
       result = await @_collection(model).insert data, safe: true
     catch error
-      _throwSaveError error
+      throw _processSaveError error
     error = undefined
     ids = result.ops.map (doc) ->
       id = _objectIdToString doc._id
@@ -319,7 +319,7 @@ class MongoDBAdapter extends AdapterBase
     try
       await @_collection(model).update { _id: id }, data, safe: true
     catch error
-      _throwSaveError error
+      throw _processSaveError error
     return
 
   _buildUpdateOps: (schema, update_ops, data, path, object) ->
@@ -357,7 +357,7 @@ class MongoDBAdapter extends AdapterBase
       result = await @_collection(model).update conditions, update_ops, safe: true, multi: true
       return result.result.n
     catch error
-      _throwSaveError error
+      throw _processSaveError error
     return
 
   ## @override AdapterBase::upsert
@@ -383,7 +383,7 @@ class MongoDBAdapter extends AdapterBase
     try
       await @_collection(model).update conditions, update_ops, safe: true, upsert: true
     catch error
-      _throwSaveError error
+      throw _processSaveError error
     return
 
   ## @override AdapterBase::findById
