@@ -1,4 +1,3 @@
-async = require 'async'
 stream = require 'stream'
 types = require '../types'
 util = require '../util'
