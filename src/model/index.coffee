@@ -1,5 +1,4 @@
 _ = require 'lodash'
-Promise = require 'bluebird'
 tableize = require('../util/inflector').tableize
 types = require '../types'
 util = require '../util'
@@ -132,7 +131,7 @@ class ModelBase
 
   @_checkReady: ->
     @_checkConnection()
-    Promise.all [@_connection._checkSchemaApplied(), @_connection._promise_connection]
+    await Promise.all [@_connection._checkSchemaApplied(), @_connection._promise_connection]
 
   @_getKeyType: (target_connection = @_connection) ->
     if @_connection is target_connection and target_connection._adapter.key_type_internal

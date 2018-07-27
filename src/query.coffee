@@ -1,5 +1,4 @@
 _ = require 'lodash'
-Promise = require 'bluebird'
 stream = require 'stream'
 
 ##
@@ -395,7 +394,7 @@ class Query
     data = {}
     @_validateAndBuildSaveData errors, data, updates, '', updates
     if errors.length > 0
-      return Promise.reject new Error errors.join ','
+      throw new Error errors.join ','
 
     if @_id or @_find_single_id
       @_conditions.push id: @_id
@@ -415,7 +414,7 @@ class Query
     data = {}
     @_validateAndBuildSaveData errors, data, updates, '', updates
     if errors.length > 0
-      return Promise.reject new Error errors.join ','
+      throw new Error errors.join ','
 
     if @_id or @_find_single_id
       @_conditions.push id: @_id

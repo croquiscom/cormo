@@ -1,6 +1,5 @@
 _ = require 'lodash'
 inflector = require '../util/inflector'
-Promise = require 'bluebird'
 util = require '../util'
 
 ##
@@ -80,7 +79,7 @@ ModelPersistenceMixin = (Base) -> class extends Base
       sub_promises = (@['__cache_' + column] or []).map (sub) ->
         sub[foreign_key] = id
         sub.save()
-      Promise.all sub_promises
+      await Promise.all sub_promises
     try
       await Promise.all promises
     catch

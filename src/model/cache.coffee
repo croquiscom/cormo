@@ -1,4 +1,3 @@
-Promise = require 'bluebird'
 tableize = require('../util/inflector').tableize
 
 ##

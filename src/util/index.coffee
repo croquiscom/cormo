@@ -3,8 +3,6 @@
 # @module util
 # @namespace cormo
 
-Promise = require 'bluebird'
-
 ##
 # Returns leaf object and last part.
 #

@@ -1,4 +1,3 @@
-Promise = require 'bluebird'
 types = require '../types'
 util = require '../util'
 
