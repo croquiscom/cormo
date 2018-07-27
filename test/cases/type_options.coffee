@@ -13,7 +13,7 @@ module.exports = () ->
     await _g.connection.applySchemas()
     await TypeOptionsString1.create col: '01234'
     try
-      await TypeOptionsString1.create col: '0123456789'
+      record = await TypeOptionsString1.create col: '0123456789'
     catch error
       return
     # MySQL non-strict mode accepts long string
@@ -32,7 +32,7 @@ module.exports = () ->
     await _g.connection.applySchemas()
     await TypeOptionsString2.create col: '01234'
     try
-      await TypeOptionsString2.create col: '0123456789'
+      record = await TypeOptionsString2.create col: '0123456789'
     catch error
       return
     # MySQL non-strict mode accepts long string
