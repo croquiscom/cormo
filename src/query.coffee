@@ -282,13 +282,10 @@ class Query
   ##
   # @private
   _execAndInclude: (options) ->
-    @_exec options
-    .then (records) =>
-      promises = @_includes.map (include) =>
-        @_connection.fetchAssociated records, include.column, include.select, model: @_model, lean: @_options.lean
-      Promise.all(promises)
-      .then ->
-        records
+    records = await @_exec options
+    await Promise.all @_includes.map (include) =>
+      await @_connection.fetchAssociated records, include.column, include.select, model: @_model, lean: @_options.lean
+    records
 
   ##
   # Executes the query
