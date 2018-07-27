@@ -183,12 +183,15 @@ class RedisAdapter extends AdapterBase
   # @param {String} [settings.host='127.0.0.1']
   # @param {Number} [settings.port=6379]
   # @param {Number} [settings.database=0]
-  # @nodejscallback
-  connect: (settings, callback) ->
+  connect: (settings) ->
     @_client = redis.createClient settings.port or 6379, settings.host or '127.0.0.1'
-    @_client.on 'connect', =>
-      @_client.select settings.database or 0, (error) ->
-        callback error
+    return await new Promise (resolve, reject) =>
+      @_client.on 'connect', =>
+        @_client.select settings.database or 0, (error) ->
+          if error
+            reject error
+          else
+            resolve()
 
 module.exports = (connection) ->
   new RedisAdapter connection

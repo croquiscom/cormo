@@ -542,8 +542,7 @@ class MySQLAdapter extends SQLAdapterBase
   # @param {String} [settings.charset='utf8']
   # @param {String} [settings.collation='utf8_unicode_ci']
   # @param {Number} [settings.pool_size=10]
-  # @nodejscallback
-  connect: (settings, callback) ->
+  connect: (settings) ->
     # connect
     client = mysql.createConnection
       host: settings.host
@@ -553,26 +552,31 @@ class MySQLAdapter extends SQLAdapterBase
       charset: settings.charset
     @_database = settings.database
     @_settings = settings
-    client.connect (error) =>
-      if error
-        client.end()
-        return callback MySQLAdapter.wrapError 'failed to connect', error
-      @_createDatabase client, (error) =>
+    return await new Promise (resolve, reject) =>
+      client.connect (error) =>
         if error
           client.end()
-          return callback error
-        @_checkFeatures client, (error) =>
-          client.end()
-          return callback error if error
-          @_client = mysql.createPool
-            host: settings.host
-            port: settings.port
-            user: settings.user
-            password: settings.password
-            charset: settings.charset
-            database: settings.database
-            connectionLimit: settings.pool_size or 10
-          callback null
+          reject MySQLAdapter.wrapError 'failed to connect', error
+          return
+        @_createDatabase client, (error) =>
+          if error
+            client.end()
+            reject error
+            return
+          @_checkFeatures client, (error) =>
+            client.end()
+            if error
+              reject error
+              return
+            @_client = mysql.createPool
+              host: settings.host
+              port: settings.port
+              user: settings.user
+              password: settings.password
+              charset: settings.charset
+              database: settings.database
+              connectionLimit: settings.pool_size or 10
+            resolve()
 
   # create database if not exist
   _createDatabase: (client, callback) ->

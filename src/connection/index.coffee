@@ -62,7 +62,7 @@ class ConnectionBase extends EventEmitter
     @_schema_changed = false
 
     @_adapter = Bluebird.promisifyAll require(__dirname + '/../adapters/' + adapter_name) @
-    @_promise_connection = @_adapter.connectAsync settings
+    @_promise_connection = @_adapter.connect settings
     .then =>
       @connected = true
     .catch (error) =>

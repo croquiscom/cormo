@@ -471,14 +471,16 @@ class SQLite3Adapter extends SQLAdapterBase
   # Connects to the database
   # @param {Object} settings
   # @param {String} settings.database
-  # @nodejscallback
-  connect: (settings, callback) ->
-    client = new sqlite3.Database settings.database, (error) =>
-      return callback SQLite3Adapter.wrapError 'failed to open', error if error
+  connect: (settings) ->
+    await new Promise (resolve, reject) =>
+      client = new sqlite3.Database settings.database, (error) =>
+        if error
+          reject SQLite3Adapter.wrapError 'failed to open', error
+          return
 
-      @_client = client
-      @_query 'run', 'PRAGMA foreign_keys=ON', (error) ->
-        callback null
+        @_client = client
+        @_query 'run', 'PRAGMA foreign_keys=ON', (error) ->
+          resolve()
 
   ## @override AdapterBase::close
   close: ->

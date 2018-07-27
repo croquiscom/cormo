@@ -535,8 +535,7 @@ class PostgreSQLAdapter extends SQLAdapterBase
   # @param {String} [settings.user]
   # @param {String} [settings.password]
   # @param {String} settings.database
-  # @nodejscallback
-  connect: (settings, callback) ->
+  connect: (settings) ->
     # connect
     pool = new pg.Pool
       host: settings.host
@@ -545,15 +544,15 @@ class PostgreSQLAdapter extends SQLAdapterBase
       password: settings.password
       database: settings.database
 
-    pool.connect()
-    .then (client) =>
+    try
+      client = await pool.connect()
       client.release()
       @_pool = pool
-      return callback null
-    .catch (error) ->
+      return
+    catch error
       if error.code is '3D000'
-        return callback new Error 'database does not exist'
-      return callback PostgreSQLAdapter.wrapError 'failed to connect', error
+        throw new Error 'database does not exist'
+      throw PostgreSQLAdapter.wrapError 'failed to connect', error
 
   ## @override AdapterBase::close
   close: ->

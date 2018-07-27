@@ -568,17 +568,18 @@ class MongoDBAdapter extends AdapterBase
   # @param {String} [settings.user]
   # @param {String} [settings.password]
   # @param {String} settings.database
-  # @nodejscallback
-  connect: (settings, callback) ->
+  connect: (settings) ->
     if settings.user or settings.password
       url = "mongodb://#{settings.user}:#{settings.password}@#{settings.host or 'localhost'}:#{settings.port or 27017}/#{settings.database}"
     else
       url = "mongodb://#{settings.host or 'localhost'}:#{settings.port or 27017}/#{settings.database}"
-    mongodb.MongoClient.connect url, { useNewUrlParser: true }, (error, client) =>
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      @_client = client
-      @_db = client.db(settings.database)
-      callback null
+    try
+      client = await mongodb.MongoClient.connect url, { useNewUrlParser: true }
+    catch error
+      throw MongoDBAdapter.wrapError 'unknown error', error
+    @_client = client
+    @_db = client.db(settings.database)
+    return
 
   ## @override AdapterBase::close
   close: ->
