@@ -1,0 +1,1 @@
+declare var ColumnProperty: any, Model: any, ModelBase: any, ModelCacheMixin: any, ModelCallbackMixin: any, ModelPersistenceMixin: any, ModelQueryMixin: any, ModelTimestampMixin: any, ModelValidateMixin: any, _: any, _pf_get: any, _pf_getChanged: any, _pf_getPrevious: any, _pf_isDirty: any, _pf_reset: any, _pf_set: any, tableize: any, types: any, util: any;

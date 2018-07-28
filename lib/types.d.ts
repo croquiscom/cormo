@@ -1,0 +1,1 @@
+declare var CormoTypesBoolean: any, CormoTypesDate: any, CormoTypesGeoPoint: any, CormoTypesInteger: any, CormoTypesNumber: any, CormoTypesObject: any, CormoTypesRecordID: any, CormoTypesString: any, CormoTypesText: any, GeoPoint: any, Integer: any, RecordID: any;
