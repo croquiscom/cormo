@@ -8,8 +8,8 @@ SQLAdapterBase = require './sql_base'
 types = require '../types'
 
 _ = require 'lodash'
-Bluebird = require 'bluebird'
 stream = require 'stream'
+util = require 'util'
 
 _typeToSQL = (property, support_fractional_seconds) ->
   if property.array
@@ -62,19 +62,15 @@ class MySQLAdapter extends SQLAdapterBase
     super()
     @_connection = connection
 
-  _query: (sql, data) ->
-    #console.log 'MySQLAdapter:', sql
-    await @_client.queryAsync sql, data
-
   _getTables: ->
-    tables = await @_query "SHOW TABLES"
+    tables = await @_client.queryAsync "SHOW TABLES"
     tables = tables.map (table) ->
       key = Object.keys(table)[0]
       table[key]
     tables
 
   _getSchema: (table) ->
-    columns = await @_query "SHOW COLUMNS FROM `#{table}`"
+    columns = await @_client.queryAsync "SHOW COLUMNS FROM `#{table}`"
     schema = {}
     for column in columns
       type = if /^varchar\((\d*)\)/i.test column.Type
@@ -95,7 +91,7 @@ class MySQLAdapter extends SQLAdapterBase
     schema
 
   _getIndexes: ->
-    rows = await @_query "SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX", [@_database]
+    rows = await @_client.queryAsync "SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX", [@_database]
     indexes = {}
     for row in rows
       indexes_of_table = indexes[row.TABLE_NAME] or= {}
@@ -103,7 +99,7 @@ class MySQLAdapter extends SQLAdapterBase
     indexes
 
   _getForeignKeys: ->
-    rows = await @_query "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME IS NOT NULL AND CONSTRAINT_SCHEMA = ?", [@_database]
+    rows = await @_client.queryAsync "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME IS NOT NULL AND CONSTRAINT_SCHEMA = ?", [@_database]
     foreign_keys = {}
     for row in rows
       foreign_keys_of_table = foreign_keys[row.TABLE_NAME] or= {}
@@ -134,7 +130,7 @@ class MySQLAdapter extends SQLAdapterBase
     sql += " DEFAULT CHARSET=#{@_settings.charset or 'utf8'}"
     sql += " COLLATE=#{@_settings.collation or 'utf8_unicode_ci'}"
     try
-      await @_query sql
+      await @_client.queryAsync sql
     catch error
       throw MySQLAdapter.wrapError 'unknown error', error
     return
@@ -145,7 +141,7 @@ class MySQLAdapter extends SQLAdapterBase
     tableName = model_class.tableName
     sql = "ALTER TABLE `#{tableName}` ADD COLUMN `#{column_property._dbname}` #{_propertyToSQL column_property, @support_fractional_seconds}"
     try
-      await @_query sql
+      await @_client.queryAsync sql
     catch error
       throw MySQLAdapter.wrapError 'unknown error', error
     return
@@ -160,7 +156,7 @@ class MySQLAdapter extends SQLAdapterBase
     unique = if index.options.unique then 'UNIQUE ' else ''
     sql = "CREATE #{unique}INDEX `#{index.options.name}` ON `#{tableName}` (#{columns.join ','})"
     try
-      await @_query sql
+      await @_client.queryAsync sql
     catch error
       throw MySQLAdapter.wrapError 'unknown error', error
     return
@@ -175,7 +171,7 @@ class MySQLAdapter extends SQLAdapterBase
       when 'delete' then 'CASCADE'
     sql = "ALTER TABLE `#{tableName}` ADD FOREIGN KEY (`#{column}`) REFERENCES `#{references.tableName}`(id) ON DELETE #{action}"
     try
-      await @_query sql
+      await @_client.queryAsync sql
     catch error
       throw MySQLAdapter.wrapError 'unknown error', error
     return
@@ -184,7 +180,7 @@ class MySQLAdapter extends SQLAdapterBase
   drop: (model) ->
     tableName = @_connection.models[model].tableName
     try
-      await @_query "DROP TABLE IF EXISTS `#{tableName}`"
+      await @_client.queryAsync "DROP TABLE IF EXISTS `#{tableName}`"
     catch error
       throw MySQLAdapter.wrapError 'unknown error', error
     return
@@ -251,7 +247,7 @@ class MySQLAdapter extends SQLAdapterBase
     [ fields, places ] = @_buildUpdateSet model, data, values, true
     sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES (#{places})"
     try
-      result = await @_query sql, values
+      result = await @_client.queryAsync sql, values
     catch error
       throw _processSaveError error
     if id = result?.insertId
@@ -270,7 +266,7 @@ class MySQLAdapter extends SQLAdapterBase
       places.push '(' + places_sub + ')'
     sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES #{places.join ','}"
     try
-      result = await @_query sql, values
+      result = await @_client.queryAsync sql, values
     catch error
       throw _processSaveError error
     if id = result?.insertId
@@ -286,7 +282,7 @@ class MySQLAdapter extends SQLAdapterBase
     values.push data.id
     sql = "UPDATE `#{tableName}` SET #{fields} WHERE id=?"
     try
-      await @_query sql, values
+      await @_client.queryAsync sql, values
     catch error
       throw _processSaveError error
     return
@@ -303,7 +299,7 @@ class MySQLAdapter extends SQLAdapterBase
       catch e
         return callback e
     try
-      result = await @_query sql, values
+      result = await @_client.queryAsync sql, values
     catch error
       throw _processSaveError error
     if not result?
@@ -331,7 +327,7 @@ class MySQLAdapter extends SQLAdapterBase
     sql += " ON DUPLICATE KEY UPDATE #{fields}"
 
     try
-      await @_query sql, values
+      await @_client.queryAsync sql, values
     catch error
       throw _processSaveError error
     return
@@ -343,9 +339,9 @@ class MySQLAdapter extends SQLAdapterBase
     tableName = @_connection.models[model].tableName
     sql = "SELECT #{select} FROM `#{tableName}` WHERE id=? LIMIT 1"
     if options.explain
-      return await @_query "EXPLAIN #{sql}", id
+      return await @_client.queryAsync "EXPLAIN #{sql}", id
     try
-      result = await @_query sql, id
+      result = await @_client.queryAsync sql, id
     catch error
       throw MySQLAdapter.wrapError 'unknown error', error
     if result?.length is 1
@@ -400,9 +396,9 @@ class MySQLAdapter extends SQLAdapterBase
   find: (model, conditions, options) ->
     [sql, params] = @_buildSqlForFind model, conditions, options
     if options.explain
-      return await @_query "EXPLAIN #{sql}", params
+      return await @_client.queryAsync "EXPLAIN #{sql}", params
     try
-      result = await @_query sql, params
+      result = await @_client.queryAsync sql, params
     catch error
       throw MySQLAdapter.wrapError 'unknown error', error
     #console.log result
@@ -444,7 +440,7 @@ class MySQLAdapter extends SQLAdapterBase
       sql = "SELECT COUNT(*) AS count FROM (#{sql}) _sub"
     #console.log sql, params
     try
-      result = await @_query sql, params
+      result = await @_client.queryAsync sql, params
     catch error
       throw MySQLAdapter.wrapError 'unknown error', error
     if result?.length isnt 1
@@ -460,7 +456,7 @@ class MySQLAdapter extends SQLAdapterBase
       sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     #console.log sql, params
     try
-      result = await @_query sql, params
+      result = await @_client.queryAsync sql, params
     catch error
       if error and error.code in ['ER_ROW_IS_REFERENCED_', 'ER_ROW_IS_REFERENCED_2']
         throw new Error 'rejected'
@@ -483,12 +479,14 @@ class MySQLAdapter extends SQLAdapterBase
   # @param {Number} [settings.pool_size=10]
   connect: (settings) ->
     # connect
-    client = Bluebird.promisifyAll mysql.createConnection
+    client = mysql.createConnection
       host: settings.host
       port: settings.port
       user: settings.user
       password: settings.password
       charset: settings.charset
+    client.connectAsync = util.promisify client.connect
+    client.queryAsync = util.promisify client.query
     @_database = settings.database
     @_settings = settings
     try
@@ -505,7 +503,7 @@ class MySQLAdapter extends SQLAdapterBase
       await @_checkFeatures client
     finally
       client.end()
-    @_client = Bluebird.promisifyAll mysql.createPool
+    @_client = mysql.createPool
       host: settings.host
       port: settings.port
       user: settings.user
@@ -513,6 +511,7 @@ class MySQLAdapter extends SQLAdapterBase
       charset: settings.charset
       database: settings.database
       connectionLimit: settings.pool_size or 10
+    @_client.queryAsync = util.promisify @_client.query
     return
 
   # create database if not exist
@@ -553,7 +552,7 @@ class MySQLAdapter extends SQLAdapterBase
   ##
   # Exposes mysql module's query method
   query: ->
-    @_client.query.apply @_client, arguments
+    @_client.queryAsync.apply @_client, arguments
 
 module.exports = (connection) ->
   new MySQLAdapter connection

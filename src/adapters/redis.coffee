@@ -7,8 +7,8 @@ catch error
 AdapterBase = require './base'
 types = require '../types'
 tableize = require('../util/inflector').tableize
-Bluebird = require 'bluebird'
 _ = require 'lodash'
+util = require 'util'
 
 ##
 # Adapter for Redis
@@ -172,7 +172,10 @@ class RedisAdapter extends AdapterBase
   # @param {Number} [settings.port=6379]
   # @param {Number} [settings.database=0]
   connect: (settings) ->
-    @_client = Bluebird.promisifyAll redis.createClient settings.port or 6379, settings.host or '127.0.0.1'
+    methods = ['del', 'exists', 'hdel', 'hgetall', 'hmset', 'incr', 'keys', 'select']
+    @_client = redis.createClient settings.port or 6379, settings.host or '127.0.0.1'
+    for method in methods
+      @_client[method+'Async'] = util.promisify @_client[method]
     await @_client.selectAsync settings.database or 0
 
 module.exports = (connection) ->

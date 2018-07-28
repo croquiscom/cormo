@@ -27,7 +27,7 @@ module.exports = () ->
         @column 'object', type: Object, required: true
         @column 'array', type: [String], required: true
       await _g.connection.applySchemas()
-      await _g.connection.adapter.runAsync "INSERT INTO tests (name, object, array) VALUES ('croquis', '', '')"
+      await _g.connection.adapter.run "INSERT INTO tests (name, object, array) VALUES ('croquis', '', '')"
       records = await Test.where().lean(true)
       expect(records).to.eql [
         { id: records[0].id, name: 'croquis', object: null, array: null }

@@ -46,7 +46,7 @@ module.exports = () ->
         { name: 'Daniel Smith', age: 8 }
       ]
       users = await _g.connection.User.createBulk data
-      rows = await _g.connection.adapter.queryAsync "SELECT * FROM users WHERE age=?", [27]
+      rows = await _g.connection.adapter.query "SELECT * FROM users WHERE age=?", [27]
       expect(rows).to.have.length 2
       expect(rows[0]).to.eql id: users[0].id, name: users[0].name, age: users[0].age
       expect(rows[1]).to.eql id: users[2].id, name: users[2].name, age: users[2].age

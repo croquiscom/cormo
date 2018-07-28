@@ -1,7 +1,6 @@
 EventEmitter = require('events').EventEmitter
 Model = require '../model'
 _ = require 'lodash'
-Bluebird = require 'bluebird'
 Toposort = require 'toposort-class'
 try
   redis = require 'redis'
@@ -61,7 +60,7 @@ class ConnectionBase extends EventEmitter
     @_pending_associations = []
     @_schema_changed = false
 
-    @_adapter = Bluebird.promisifyAll require(__dirname + '/../adapters/' + adapter_name) @
+    @_adapter = require(__dirname + '/../adapters/' + adapter_name) @
     @_promise_connection = @_adapter.connect settings
     .then =>
       @connected = true

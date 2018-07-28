@@ -6,9 +6,9 @@ catch e
 
 SQLAdapterBase = require './sql_base'
 types = require '../types'
-Bluebird = require 'bluebird'
 _ = require 'lodash'
 stream = require 'stream'
+util = require 'util'
 
 _typeToSQL = (property) ->
   if property.array
@@ -418,7 +418,9 @@ class SQLite3Adapter extends SQLAdapterBase
           if error
             reject error
             return
-          resolve Bluebird.promisifyAll client
+          client.allAsync = util.promisify client.all
+          client.runAsync = util.promisify client.run
+          resolve client
     catch error
       throw SQLite3Adapter.wrapError 'failed to open', error
 
