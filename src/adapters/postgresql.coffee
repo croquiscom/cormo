@@ -11,7 +11,6 @@ SQLAdapterBase = require './sql_base'
 types = require '../types'
 
 _ = require 'lodash'
-async = require 'async'
 stream = require 'stream'
 
 _typeToSQL = (property) ->
