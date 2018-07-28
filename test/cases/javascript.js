@@ -1,9 +1,8 @@
-var _g = require('../support/common');
-var expect = require('chai').expect;
+const _g = require('../support/common');
+const { expect } = require('chai');
 
-_createUsers = function (User, data, callback) {
-  if (typeof(data)==='function') {
-    callback = data;
+async function _createUsers(User, data) {
+  if (!data) {
     data = [
       { name: 'John Doe', age: 27 },
       { name: 'Bill Smith', age: 45 },
@@ -12,109 +11,69 @@ _createUsers = function (User, data, callback) {
       { name: 'Daniel Smith', age: 53 }
     ];
   }
-  data.sort(function () { return 0.5 - Math.random(); }); // random sort
-  User.createBulk(data, callback);
-};
+  data.sort(() => 0.5 - Math.random()); // random sort
+  return await User.createBulk(data);
+}
 
-module.exports = function () {
-  it('create one', function (done) {
-    var user = new _g.connection.User();
+module.exports = () => {
+  it('create one', async () => {
+    const user = new _g.connection.User();
     user.name = 'John Doe';
     user.age = 27;
     expect(user).to.have.property('name', 'John Doe');
     expect(user).to.have.property('age', 27);
-    done(null);
   });
 
-  it('initialize in constructor', function (done) {
-    var user = new _g.connection.User({name: 'John Doe', age: 27});
+  it('initialize in constructor', async () => {
+    const user = new _g.connection.User({name: 'John Doe', age: 27});
     expect(user).to.have.property('name', 'John Doe');
     expect(user).to.have.property('age', 27);
-    done(null);
   });
 
-  it('build method', function (done) {
-    var user = _g.connection.User.build({name: 'John Doe', age: 27});
+  it('build method', async () => {
+    const user = _g.connection.User.build({name: 'John Doe', age: 27});
     expect(user).to.have.property('name', 'John Doe');
     expect(user).to.have.property('age', 27);
-    done(null);
   });
 
-  it('add a new record to the database', function (done) {
-    var user = new _g.connection.User({name: 'John Doe', age: 27});
-    user.save(function (error) {
-      if (error) {
-        return done(error);
-      }
-      expect(user).to.have.property('id');
-      done(null);
-    });
+  it('add a new record to the database', async () => {
+    const user = new _g.connection.User({name: 'John Doe', age: 27});
+    await user.save();
+    expect(user).to.have.property('id');
   });
 
-  it('create method', function (done) {
-    _g.connection.User.create({ name: 'John Doe', age: 27 }, function (error, user) {
-      if (error) {
-        return done(error);
-      }
-      expect(user).to.have.property('id');
-      done(null);
-    });
+  it('create method', async () => {
+    const user = await _g.connection.User.create({ name: 'John Doe', age: 27 });
+    expect(user).to.have.property('id');
   });
 
-  it('simple where', function (done) {
-    _createUsers(_g.connection.User, function (error, users) {
-      if (error) {
-        return done(error);
-      }
-      _g.connection.User.where({age: 27}, function (error, users) {
-        if (error) {
-          return done(error);
-        }
-        expect(users).to.have.length(2)
-        users.sort(function (a, b) { return a.name < b.name ? -1 : 1; });
-        expect(users[0]).to.have.property('name', 'Alice Jackson');
-        expect(users[0]).to.have.property('age', 27);
-        expect(users[1]).to.have.property('name', 'John Doe');
-        expect(users[1]).to.have.property('age', 27);
-        done(null);
-      });
-    });
+  it('simple where', async () => {
+    await _createUsers(_g.connection.User);
+    const users = await _g.connection.User.where({age: 27});
+    expect(users).to.have.length(2)
+    users.sort((a, b) => a.name < b.name ? -1 : 1);
+    expect(users[0]).to.have.property('name', 'Alice Jackson');
+    expect(users[0]).to.have.property('age', 27);
+    expect(users[1]).to.have.property('name', 'John Doe');
+    expect(users[1]).to.have.property('age', 27);
   });
 
-  it('where chain', function (done) {
-    _createUsers(_g.connection.User, function (error, users) {
-      if (error) {
-        return done(error);
-      }
-      _g.connection.User.where({age: 27}).where({name: 'Alice Jackson'}).exec(function (error, users) {
-        if (error) {
-          return done(error);
-        }
-        expect(users).to.have.length(1);
-        expect(users[0]).to.have.property('name', 'Alice Jackson');
-        expect(users[0]).to.have.property('age', 27);
-        done(null);
-      });
-    });
+  it('where chain', async () => {
+    await _createUsers(_g.connection.User);
+    const users = await _g.connection.User.where({age: 27}).where({name: 'Alice Jackson'});
+    expect(users).to.have.length(1);
+    expect(users[0]).to.have.property('name', 'Alice Jackson');
+    expect(users[0]).to.have.property('age', 27);
   });
 
-  it('$or', function (done) {
-    _createUsers(_g.connection.User, function (error, users) {
-      if (error) {
-        return done(error);
-      }
-      _g.connection.User.where({$or: [ { age: 32 }, { name: 'John Doe' } ]}, function (error, users) {
-        if (error) {
-          return done(error);
-        }
-        expect(users).to.have.length(2);
-        users.sort(function (a, b) { return a.name < b.name ? -1 : 1; });
-        expect(users[0]).to.have.property('name', 'Gina Baker');
-        expect(users[0]).to.have.property('age', 32);
-        expect(users[1]).to.have.property('name', 'John Doe');
-        expect(users[1]).to.have.property('age', 27);
-        done(null);
-      });
-    });
+  it('$or', async () => {
+    await _createUsers(_g.connection.User);
+    const users = await _g.connection.User.where({$or: [ { age: 32 }, { name: 'John Doe' } ]});
+    expect(users).to.have.length(2);
+    users.sort(function (a, b) { return a.name < b.name ? -1 : 1; });
+    expect(users[0]).to.have.property('name', 'Gina Baker');
+    expect(users[0]).to.have.property('age', 32);
+    expect(users[1]).to.have.property('name', 'John Doe');
+    expect(users[1]).to.have.property('age', 27);
   });
 };

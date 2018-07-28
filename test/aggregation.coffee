@@ -5,7 +5,7 @@ _dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql' ]
 _dbs.forEach (db) ->
   return if not _g.db_configs[db]
   describe 'aggregation-' + db, ->
-    before (done) ->
+    before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
       if _g.use_coffeescript_class
@@ -19,11 +19,11 @@ _dbs.forEach (db) ->
           date: Date
           price: Number
 
-      _g.connection.dropAllModels done
+      await _g.connection.dropAllModels()
       return
 
-    beforeEach (done) ->
-      _g.connection.manipulate [
+    beforeEach ->
+      await _g.connection.manipulate [
         'deleteAll'
         { create_order: customer: 'John Doe', date: '2012/01/01', price: 20 }
         { create_order: customer: 'John Doe', date: '2012/01/01', price: 11 }
@@ -34,14 +34,13 @@ _dbs.forEach (db) ->
         { create_order: customer: 'Daniel Smith', date: '2012/01/19', price: 6 }
         { create_order: customer: 'Daniel Smith', date: '2012/04/23', price: 13 }
         { create_order: customer: 'Daniel Smith', date: '2012/04/23', price: 11 }
-      ], done
+      ]
       return
 
-    after (done) ->
-      _g.connection.dropAllModels ->
-        _g.connection.close()
-        _g.connection = null
-        done null
+    after ->
+      await _g.connection.dropAllModels()
+      _g.connection.close()
+      _g.connection = null
       return
 
     require('./cases/aggregation')()

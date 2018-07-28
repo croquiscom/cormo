@@ -10,7 +10,6 @@ class CormoTypesObjectId
 
 _ = require 'lodash'
 AdapterBase = require './base'
-async = require 'async'
 stream = require 'stream'
 types = require '../types'
 
@@ -141,6 +140,15 @@ _buildGroupFields = (group_by, group_fields) ->
     group[field] = expr
   return group
 
+_processSaveError = (error) ->
+  if error?.code in [11001, 11000]
+    key = error.message.match /collection: [\w-.]+ index: (\w+)/
+    if not key
+      key = error.message.match /index: [\w-.]+\$(\w+)(_1)?/
+    return new Error('duplicated ' + key?[1])
+  else
+    return MongoDBAdapter.wrapError 'unknown error', error
+
 ##
 # Adapter for MongoDB
 # @namespace adapter
@@ -171,94 +179,76 @@ class MongoDBAdapter extends AdapterBase
     else
       return @_collections[name]
 
-  _getTables: (callback) ->
-    @_db.listCollections().toArray (error, collections) ->
-      return callback error if error
-      tables = collections.map (collection) ->
-        collection.name
-      return callback null, tables
+  _getTables: ->
+    collections = await @_db.listCollections().toArray()
+    tables = collections.map (collection) ->
+      collection.name
+    return tables
 
-  _getSchema: (table, callback) ->
-    callback null, 'NO SCHEMA'
+  _getSchema: (table) ->
+    return await 'NO SCHEMA'
 
-  _getIndexes: (table, callback) ->
-    return @_db.collection(table).listIndexes().toArray (error, rows) ->
-      return callback error if error
-      indexes = {}
-      for row in rows
-        indexes[row.name] = row.key
-      return callback null, indexes
+  _getIndexes: (table) ->
+    rows = await @_db.collection(table).listIndexes().toArray()
+    indexes = {}
+    for row in rows
+      indexes[row.name] = row.key
+    return indexes
 
   ## @override AdapterBase::getSchemas
-  getSchemas: (callback) ->
-    async.auto
-      get_tables: (callback) =>
-        @_getTables callback
-      get_table_schemas: ['get_tables', (results, callback) =>
-        table_schemas = {}
-        async.each results.get_tables, (table, callback) =>
-          @_getSchema table, (error, schema) ->
-            return callback error if error
-            table_schemas[table] = schema
-            callback null
-        , (error) ->
-          return callback error if error
-          callback null, table_schemas
-      ]
-      get_indexes: ['get_tables', (results, callback) =>
-        all_indexes = {}
-        async.each results.get_tables, (table, callback) =>
-          @_getIndexes table, (error, indexes) ->
-            return callback error if error
-            all_indexes[table] = indexes
-            callback null
-        , (error) ->
-          return callback error if error
-          callback null, all_indexes
-      ]
-    , (error, results) ->
-      callback error, tables: results.get_table_schemas, indexes: results.get_indexes
+  getSchemas: () ->
+    tables = await @_getTables()
+    table_schemas = {}
+    all_indexes = {}
+    for table in tables
+      table_schemas[table] = await @_getSchema table
+      all_indexes[table] = await @_getIndexes table
+    return tables: table_schemas, indexes: all_indexes
 
   ## @override AdapterBase::createTable
-  createTable: (model, callback) ->
+  createTable: (model) ->
     collection = @_collection(model)
     indexes = []
     for column, property of @_connection.models[model]._schema
       if property.type_class is types.GeoPoint
         indexes.push [ _.zipObject [column], ['2d'] ]
-    async.forEach indexes, (index, callback) ->
-      collection.ensureIndex index[0], index[1], (error) ->
-        callback error
-    , (error) ->
-      callback error
+    for index in indexes
+      await collection.ensureIndex index[0], index[1]
+    return
 
   ## @override AdapterBase::createIndex
-  createIndex: (model, index, callback) ->
+  createIndex: (model, index) ->
     collection = @_collection(model)
     options =
       name: index.options.name
       unique: index.options.unique
     if index.options.unique and not index.options.required
       options.sparse = true
-    collection.ensureIndex index.columns, options, (error) ->
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null
+    try
+      await collection.ensureIndex index.columns, options
+      return
+    catch error
+      throw MongoDBAdapter.wrapError 'unknown error', error
 
   ## @override AdapterBase::drop
-  drop: (model, callback) ->
+  drop: (model) ->
     name = @_connection.models[model].tableName
     delete @_collections[name]
-    @_db.dropCollection _getMongoDBColName(name), (error) ->
+    try
+      await @_db.dropCollection _getMongoDBColName(name)
+      return
+    catch error
       # ignore not found error
       if error and error.errmsg isnt 'ns not found'
-        return callback MongoDBAdapter.wrapError 'unknown error', error
-      callback null
+        throw MongoDBAdapter.wrapError 'unknown error', error
+      return
 
   idToDB: (value) ->
     _convertValueToObjectID value, 'id'
 
   valueToDB: (value, column, property) ->
-    return if not value?
+    if not value?
+      return
     # convert id type
     if column is 'id' or property.type_class is CormoTypesObjectId
       if property.array
@@ -279,61 +269,58 @@ class MongoDBAdapter extends AdapterBase
     else
       value
 
-  _processSaveError = (error, callback) ->
-    if error?.code in [11001, 11000]
-      key = error.message.match /collection: [\w-.]+ index: (\w+)/
-      if not key
-        key = error.message.match /index: [\w-.]+\$(\w+)(_1)?/
-      error = new Error('duplicated ' + key?[1])
+  ## @override AdapterBase::create
+  create: (model, data) ->
+    try
+      result = await @_collection(model).insert data, safe: true
+    catch error
+      throw _processSaveError error
+    id = _objectIdToString result.ops[0]._id
+    if id
+      delete data._id
+      return id
     else
-      error = MongoDBAdapter.wrapError 'unknown error', error
-    callback error
+      throw new Error 'unexpected result'
 
   ## @override AdapterBase::create
-  create: (model, data, callback) ->
-    @_collection(model).insert data, safe: true, (error, result) ->
-      return _processSaveError error, callback if error
-      id = _objectIdToString result.ops[0]._id
-      if id
-        delete data._id
-        callback null, id
-      else
-        callback new Error 'unexpected result'
-
-  ## @override AdapterBase::create
-  createBulk: (model, data, callback) ->
+  createBulk: (model, data) ->
     if data.length > 1000
       chunks = []
       i = 0
       while i < data.length
         chunks.push data.slice i, i+1000
         i += 1000
-      async.map chunks, (chunk, callback) =>
-        @createBulk model, chunk, callback
-      , (error, records_list) ->
-        return callback error if error
-        callback null, _.flatten records_list
-      return
-    @_collection(model).insert data, safe: true, (error, result) ->
-      return _processSaveError error, callback if error
-      error = undefined
-      ids = result.ops.map (doc) ->
-        id = _objectIdToString doc._id
-        if id
-          delete data._id
-        else
-          error = new Error 'unexpected result'
-        return id
-      return callback error if error
-      callback null, ids
+      ids_all = []
+      for chunk in chunks
+        ids = await @createBulk model, chunk
+        [].push.apply ids_all, ids
+      return ids_all
+    try
+      result = await @_collection(model).insert data, safe: true
+    catch error
+      throw _processSaveError error
+    error = undefined
+    ids = result.ops.map (doc) ->
+      id = _objectIdToString doc._id
+      if id
+        delete data._id
+      else
+        error = new Error 'unexpected result'
+      return id
+    if error
+      throw error
+    else
+      return ids
 
   ## @override AdapterBase::update
-  update: (model, data, callback) ->
+  update: (model, data) ->
     id = data.id
     delete data.id
-    @_collection(model).update { _id: id }, data, safe: true, (error) ->
-      return _processSaveError error, callback if error
-      callback null
+    try
+      await @_collection(model).update { _id: id }, data, safe: true
+    catch error
+      throw _processSaveError error
+    return
 
   _buildUpdateOps: (schema, update_ops, data, path, object) ->
     for column, value of object
@@ -350,7 +337,7 @@ class MongoDBAdapter extends AdapterBase
         @_buildUpdateOps schema, update_ops, data, path + column + '.', object[column]
 
   ## @override AdapterBase::updatePartial
-  updatePartial: (model, data, conditions, options, callback) ->
+  updatePartial: (model, data, conditions, options) ->
     schema = @_connection.models[model]._schema
     try
       conditions = _buildWhere schema, conditions
@@ -366,17 +353,21 @@ class MongoDBAdapter extends AdapterBase
       delete update_ops.$unset
     if Object.keys(update_ops.$inc).length is 0
       delete update_ops.$inc
-    @_collection(model).update conditions, update_ops, safe: true, multi: true, (error, result) ->
-      return _processSaveError error, callback if error
-      callback null, result.result.n
+    try
+      result = await @_collection(model).update conditions, update_ops, safe: true, multi: true
+      return result.result.n
+    catch error
+      throw _processSaveError error
+    return
 
   ## @override AdapterBase::upsert
-  upsert: (model, data, conditions, options, callback) ->
+  upsert: (model, data, conditions, options) ->
     schema = @_connection.models[model]._schema
     try
       conditions = _buildWhere schema, conditions
     catch e
-      return callback e
+      reject e
+      return
     if not conditions
       conditions = {}
     update_ops = $set: {}, $unset: {}, $inc: {}
@@ -389,31 +380,36 @@ class MongoDBAdapter extends AdapterBase
       delete update_ops.$unset
     if Object.keys(update_ops.$inc).length is 0
       delete update_ops.$inc
-    @_collection(model).update conditions, update_ops, safe: true, upsert: true, (error, result) ->
-      return _processSaveError error, callback if error
-      callback null
+    try
+      await @_collection(model).update conditions, update_ops, safe: true, upsert: true
+    catch error
+      throw _processSaveError error
+    return
 
   ## @override AdapterBase::findById
-  findById: (model, id, options, callback) ->
+  findById: (model, id, options) ->
     if options.select
       fields = {}
       options.select.forEach (column) -> fields[column] = 1
     try
       id = _convertValueToObjectID id, 'id'
     catch e
-      return callback new Error('not found')
+      reject new Error('not found')
+      return
     client_options = {}
     if fields
       client_options.fields = fields
     if options.explain
       client_options.explain = true
-      return @_collection(model).findOne _id: id, client_options, (error, result) ->
-        return callback error if error
-        callback null, result
-    @_collection(model).findOne _id: id, client_options, (error, result) =>
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      return callback new Error('not found') if not result
-      callback null, @_convertToModelInstance model, result, options
+      return await @_collection(model).findOne _id: id, client_options
+    try
+      result = await @_collection(model).findOne _id: id, client_options
+    catch error
+      throw MongoDBAdapter.wrapError 'unknown error', error
+    if not result
+      throw new Error('not found')
+      return
+    return @_convertToModelInstance model, result, options
 
   _buildConditionsForFind: (model, conditions, options) ->
     if options.select
@@ -460,11 +456,8 @@ class MongoDBAdapter extends AdapterBase
     [conditions, fields, orders, client_options]
 
   ## @override AdapterBase::find
-  find: (model, conditions, options, callback) ->
-    try
-      [conditions, fields, orders, client_options] = @_buildConditionsForFind model, conditions, options
-    catch e
-      return callback e
+  find: (model, conditions, options) ->
+    [conditions, fields, orders, client_options] = @_buildConditionsForFind model, conditions, options
     #console.log JSON.stringify conditions
     if options.group_by or options.group_fields
       pipeline = []
@@ -476,35 +469,36 @@ class MongoDBAdapter extends AdapterBase
         pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
       pipeline.push $limit: options.limit if options.limit
       if options.explain
-        return @_collection(model).aggregate pipeline, explain: true, (error, cursor) ->
-          return callback error if error
-          cursor.toArray (error, result) ->
-            return callback error if error
-            callback null, result
-      @_collection(model).aggregate pipeline, (error, cursor) =>
-        return callback MongoDBAdapter.wrapError 'unknown error', error if error
-        cursor.toArray (error, result) =>
-          return callback error if error
-          callback null, result.map (record) =>
-            if options.group_by
-              if options.group_by.length is 1
-                record[options.group_by[0]] = record._id
-              else
-                record[group] = record._id[group] for group in options.group_by
-            @_convertToGroupInstance model, record, options.group_by, options.group_fields
+        cursor = await @_collection(model).aggregate pipeline, explain: true
+        return await cursor.toArray()
+      try
+        cursor = await @_collection(model).aggregate pipeline
+      catch error
+        throw MongoDBAdapter.wrapError 'unknown error', error
+      result = await cursor.toArray()
+      return result.map (record) =>
+        if options.group_by
+          if options.group_by.length is 1
+            record[options.group_by[0]] = record._id
+          else
+            record[group] = record._id[group] for group in options.group_by
+        @_convertToGroupInstance model, record, options.group_by, options.group_fields
     else
       if options.explain
         client_options.explain = true
-        return @_collection(model).find conditions, client_options, (error, cursor) ->
-          return callback error if error
-          cursor.toArray (error, result) ->
-            return callback error if error
-            callback null, result
-      @_collection(model).find conditions, client_options, (error, cursor) =>
-        return callback MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
-        cursor.toArray (error, result) =>
-          return callback MongoDBAdapter.wrapError 'unknown error', error if error
-          callback null, result.map (record) => @_convertToModelInstance model, record, options
+        cursor = await @_collection(model).find conditions, client_options
+        return await cursor.toArray()
+      try
+        cursor = await @_collection(model).find conditions, client_options
+      catch error
+        throw MongoDBAdapter.wrapError 'unknown error', error
+      if not cursor
+        throw MongoDBAdapter.wrapError 'unknown error'
+      try
+        result = await cursor.toArray()
+      catch error
+        throw MongoDBAdapter.wrapError 'unknown error', error
+      return result.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options) ->
@@ -520,18 +514,17 @@ class MongoDBAdapter extends AdapterBase
       transformer.push @_convertToModelInstance model, record, options
       callback()
     @_collection(model).find conditions, client_options, (error, cursor) ->
-      return transformer.emit 'error', MongoDBAdapter.wrapError 'unknown error', error if error or not cursor
+      if error or not cursor
+        transformer.emit 'error', MongoDBAdapter.wrapError 'unknown error', error
+        return
       cursor.on 'error', (error) ->
         transformer.emit 'error', error
       .pipe transformer
     transformer
 
   ## @override AdapterBase::count
-  count: (model, conditions, options, callback) ->
-    try
-      conditions = _buildWhere @_connection.models[model]._schema, conditions
-    catch e
-      return callback e
+  count: (model, conditions, options) ->
+    conditions = _buildWhere @_connection.models[model]._schema, conditions
     #console.log JSON.stringify conditions
     if options.group_by or options.group_fields
       pipeline = []
@@ -541,28 +534,31 @@ class MongoDBAdapter extends AdapterBase
       if options.conditions_of_group.length > 0
         pipeline.push $match: _buildWhere options.group_fields, options.conditions_of_group
       pipeline.push $group: _id: null, count: $sum: 1
-      @_collection(model).aggregate pipeline, (error, cursor) ->
-        return callback MongoDBAdapter.wrapError 'unknown error', error if error
-        cursor.toArray (error, result) ->
-          return callback error if error
-          return callback new Error 'unknown error' if result?.length isnt 1
-          callback null, result[0].count
+      try
+        cursor = await @_collection(model).aggregate pipeline
+      catch error
+        throw MongoDBAdapter.wrapError 'unknown error', error
+      result = await cursor.toArray()
+      if result?.length isnt 1
+        throw new Error 'unknown error'
+      return result[0].count
     else
-      @_collection(model).countDocuments conditions, (error, count) =>
-        return callback MongoDBAdapter.wrapError 'unknown error', error if error
-        callback null, count
+      try
+        count = await @_collection(model).countDocuments conditions
+      catch error
+        throw MongoDBAdapter.wrapError 'unknown error', error
+      return count
 
   ## @override AdapterBase::delete
-  delete: (model, conditions, callback) ->
+  delete: (model, conditions) ->
     model_class = @_connection.models[model]
-    try
-      conditions = _buildWhere model_class._schema, conditions
-    catch e
-      return callback e
+    conditions = _buildWhere model_class._schema, conditions
     #console.log JSON.stringify conditions
-    @_collection(model).remove conditions, safe: true, (error, result) ->
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      callback null, result.result.n
+    try
+      result = await @_collection(model).remove conditions, safe: true
+    catch error
+      throw MongoDBAdapter.wrapError 'unknown error', error
+    return result.result.n
 
   ##
   # Connects to the database
@@ -572,17 +568,18 @@ class MongoDBAdapter extends AdapterBase
   # @param {String} [settings.user]
   # @param {String} [settings.password]
   # @param {String} settings.database
-  # @nodejscallback
-  connect: (settings, callback) ->
+  connect: (settings) ->
     if settings.user or settings.password
       url = "mongodb://#{settings.user}:#{settings.password}@#{settings.host or 'localhost'}:#{settings.port or 27017}/#{settings.database}"
     else
       url = "mongodb://#{settings.host or 'localhost'}:#{settings.port or 27017}/#{settings.database}"
-    mongodb.MongoClient.connect url, { useNewUrlParser: true }, (error, client) =>
-      return callback MongoDBAdapter.wrapError 'unknown error', error if error
-      @_client = client
-      @_db = client.db(settings.database)
-      callback null
+    try
+      client = await mongodb.MongoClient.connect url, { useNewUrlParser: true }
+    catch error
+      throw MongoDBAdapter.wrapError 'unknown error', error
+    @_client = client
+    @_db = client.db(settings.database)
+    return
 
   ## @override AdapterBase::close
   close: ->

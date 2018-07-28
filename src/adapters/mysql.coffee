@@ -8,8 +8,8 @@ SQLAdapterBase = require './sql_base'
 types = require '../types'
 
 _ = require 'lodash'
-async = require 'async'
 stream = require 'stream'
+util = require 'util'
 
 _typeToSQL = (property, support_fractional_seconds) ->
   if property.array
@@ -34,6 +34,18 @@ _propertyToSQL = (property, support_fractional_seconds) ->
       type += ' NULL'
     return type
 
+_processSaveError = (error) ->
+  if error.code is 'ER_NO_SUCH_TABLE'
+    return new Error('table does not exist')
+  else if error.code is 'ER_DUP_ENTRY'
+    key = error.message.match /for key '([^']*)'/
+    return new Error('duplicated ' + key?[1])
+  else if error.code is 'ER_BAD_NULL_ERROR'
+    key = error.message.match /Column '([^']*)'/
+    return new Error("'#{key?[1]}' is required")
+  else
+    return MySQLAdapter.wrapError 'unknown error', error
+
 ##
 # Adapter for MySQL
 # @namespace adapter
@@ -50,83 +62,62 @@ class MySQLAdapter extends SQLAdapterBase
     super()
     @_connection = connection
 
-  _query: (sql, data, callback) ->
-    #console.log 'MySQLAdapter:', sql
-    @_client.query sql, data, callback
+  _getTables: ->
+    tables = await @_client.queryAsync "SHOW TABLES"
+    tables = tables.map (table) ->
+      key = Object.keys(table)[0]
+      table[key]
+    tables
 
-  _getTables: (callback) ->
-    @_query "SHOW TABLES", (error, tables) ->
-      return callback error if error
-      tables = tables.map (table) ->
-        key = Object.keys(table)[0]
-        table[key]
-      callback null, tables
+  _getSchema: (table) ->
+    columns = await @_client.queryAsync "SHOW COLUMNS FROM `#{table}`"
+    schema = {}
+    for column in columns
+      type = if /^varchar\((\d*)\)/i.test column.Type
+        new types.String(RegExp.$1)
+      else if /^double/i.test column.Type
+        new types.Number()
+      else if /^tinyint\(1\)/i.test column.Type
+        new types.Boolean()
+      else if /^int/i.test column.Type
+        new types.Integer()
+      else if /^point/i.test column.Type
+        new types.GeoPoint()
+      else if /^datetime/i.test column.Type
+        new types.Date()
+      else if /^text/i.test column.Type
+        new types.Object()
+      schema[column.Field] = type: type, required: column.Null is 'NO'
+    schema
 
-  _getSchema: (table, callback) ->
-    @_query "SHOW COLUMNS FROM `#{table}`", (error, columns) ->
-      return callback error if error
-      schema = {}
-      for column in columns
-        type = if /^varchar\((\d*)\)/i.test column.Type
-          new types.String(RegExp.$1)
-        else if /^double/i.test column.Type
-          new types.Number()
-        else if /^tinyint\(1\)/i.test column.Type
-          new types.Boolean()
-        else if /^int/i.test column.Type
-          new types.Integer()
-        else if /^point/i.test column.Type
-          new types.GeoPoint()
-        else if /^datetime/i.test column.Type
-          new types.Date()
-        else if /^text/i.test column.Type
-          new types.Object()
-        schema[column.Field] = type: type, required: column.Null is 'NO'
-      callback null, schema
+  _getIndexes: ->
+    rows = await @_client.queryAsync "SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX", [@_database]
+    indexes = {}
+    for row in rows
+      indexes_of_table = indexes[row.TABLE_NAME] or= {}
+      (indexes_of_table[row.INDEX_NAME] or= {})[row.COLUMN_NAME] = 1
+    indexes
 
-  _getIndexes: (callback) ->
-    @_query "SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX", [@_database], (error, rows) ->
-      return callback error if error
-      indexes = {}
-      for row in rows
-        indexes_of_table = indexes[row.TABLE_NAME] or= {}
-        (indexes_of_table[row.INDEX_NAME] or= {})[row.COLUMN_NAME] = 1
-      callback null, indexes
-
-  _getForeignKeys: (callback) ->
-    @_query "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME IS NOT NULL AND CONSTRAINT_SCHEMA = ?", [@_database], (error, rows) ->
-      return callback error if error
-      foreign_keys = {}
-      for row in rows
-        foreign_keys_of_table = foreign_keys[row.TABLE_NAME] or= {}
-        foreign_keys_of_table[row.COLUMN_NAME] = row.REFERENCED_TABLE_NAME
-      callback null, foreign_keys
+  _getForeignKeys: ->
+    rows = await @_client.queryAsync "SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME IS NOT NULL AND CONSTRAINT_SCHEMA = ?", [@_database]
+    foreign_keys = {}
+    for row in rows
+      foreign_keys_of_table = foreign_keys[row.TABLE_NAME] or= {}
+      foreign_keys_of_table[row.COLUMN_NAME] = row.REFERENCED_TABLE_NAME
+    foreign_keys
 
   ## @override AdapterBase::getSchemas
-  getSchemas: (callback) ->
-    async.auto
-      get_tables: (callback) =>
-        @_getTables callback
-      get_table_schemas: ['get_tables', (results, callback) =>
-        table_schemas = {}
-        async.each results.get_tables, (table, callback) =>
-          @_getSchema table, (error, schema) ->
-            return callback error if error
-            table_schemas[table] = schema
-            callback null
-        , (error) ->
-          return callback error if error
-          callback null, table_schemas
-      ]
-      get_indexes: (callback) =>
-        @_getIndexes callback
-      get_foreign_keys: (callback) =>
-        @_getForeignKeys callback
-    , (error, results) ->
-      callback error, tables: results.get_table_schemas, indexes: results.get_indexes, foreign_keys: results.get_foreign_keys
+  getSchemas: () ->
+    tables = await @_getTables()
+    table_schemas = {}
+    for table in tables
+      table_schemas[table] = await @_getSchema table
+    indexes = await @_getIndexes()
+    foreign_keys = await @_getForeignKeys()
+    return tables: table_schemas, indexes: indexes, foreign_keys: foreign_keys
 
   ## @override AdapterBase::createTable
-  createTable: (model, callback) ->
+  createTable: (model) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
     sql = []
@@ -138,21 +129,25 @@ class MySQLAdapter extends SQLAdapterBase
     sql = "CREATE TABLE `#{tableName}` ( #{sql.join ','} )"
     sql += " DEFAULT CHARSET=#{@_settings.charset or 'utf8'}"
     sql += " COLLATE=#{@_settings.collation or 'utf8_unicode_ci'}"
-    @_query sql, (error) ->
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null
+    try
+      await @_client.queryAsync sql
+    catch error
+      throw MySQLAdapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::addColumn
-  addColumn: (model, column_property, callback) ->
+  addColumn: (model, column_property) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
     sql = "ALTER TABLE `#{tableName}` ADD COLUMN `#{column_property._dbname}` #{_propertyToSQL column_property, @support_fractional_seconds}"
-    @_query sql, (error) ->
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null
+    try
+      await @_client.queryAsync sql
+    catch error
+      throw MySQLAdapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::createIndex
-  createIndex: (model, index, callback) ->
+  createIndex: (model, index) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
     columns = []
@@ -160,12 +155,14 @@ class MySQLAdapter extends SQLAdapterBase
       columns.push "`#{column}` #{if order is -1 then 'DESC' else 'ASC'}"
     unique = if index.options.unique then 'UNIQUE ' else ''
     sql = "CREATE #{unique}INDEX `#{index.options.name}` ON `#{tableName}` (#{columns.join ','})"
-    @_query sql, (error) ->
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null
+    try
+      await @_client.queryAsync sql
+    catch error
+      throw MySQLAdapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::createForeignKey
-  createForeignKey: (model, column, type, references, callback) ->
+  createForeignKey: (model, column, type, references) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
     action = switch type
@@ -173,17 +170,20 @@ class MySQLAdapter extends SQLAdapterBase
       when 'restrict' then 'RESTRICT'
       when 'delete' then 'CASCADE'
     sql = "ALTER TABLE `#{tableName}` ADD FOREIGN KEY (`#{column}`) REFERENCES `#{references.tableName}`(id) ON DELETE #{action}"
-    @_query sql, (error) ->
-      if error
-        return callback MySQLAdapter.wrapError 'unknown error', error
-      callback null
+    try
+      await @_client.queryAsync sql
+    catch error
+      throw MySQLAdapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::drop
-  drop: (model, callback) ->
+  drop: (model) ->
     tableName = @_connection.models[model].tableName
-    @_query "DROP TABLE IF EXISTS `#{tableName}`", (error) ->
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      callback null
+    try
+      await @_client.queryAsync "DROP TABLE IF EXISTS `#{tableName}`"
+    catch error
+      throw MySQLAdapter.wrapError 'unknown error', error
+    return
 
   _getModelID: (data) ->
     Number data.id
@@ -200,19 +200,6 @@ class MySQLAdapter extends SQLAdapterBase
       value isnt 0
     else
       value
-
-  _processSaveError = (error, callback) ->
-    if error.code is 'ER_NO_SUCH_TABLE'
-      error = new Error('table does not exist')
-    else if error.code is 'ER_DUP_ENTRY'
-      key = error.message.match /for key '([^']*)'/
-      error = new Error('duplicated ' + key?[1])
-    else if error.code is 'ER_BAD_NULL_ERROR'
-      key = error.message.match /Column '([^']*)'/
-      error = new Error("'#{key?[1]}' is required")
-    else
-      error = MySQLAdapter.wrapError 'unknown error', error
-    callback error
 
   _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
     dbname = property._dbname
@@ -254,20 +241,22 @@ class MySQLAdapter extends SQLAdapterBase
     [ fields.join(','), places.join(',') ]
 
   ## @override AdapterBase::create
-  create: (model, data, callback) ->
+  create: (model, data) ->
     tableName = @_connection.models[model].tableName
     values = []
     [ fields, places ] = @_buildUpdateSet model, data, values, true
     sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES (#{places})"
-    @_query sql, values, (error, result) ->
-      return _processSaveError error, callback if error
-      if id = result?.insertId
-        callback null, id
-      else
-        callback new Error 'unexpected result'
+    try
+      result = await @_client.queryAsync sql, values
+    catch error
+      throw _processSaveError error
+    if id = result?.insertId
+      return id
+    else
+      throw new Error 'unexpected result'
 
   ## @override AdapterBase::createBulk
-  createBulk: (model, data, callback) ->
+  createBulk: (model, data) ->
     tableName = @_connection.models[model].tableName
     values = []
     fields = undefined
@@ -276,26 +265,30 @@ class MySQLAdapter extends SQLAdapterBase
       [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
       places.push '(' + places_sub + ')'
     sql = "INSERT INTO `#{tableName}` (#{fields}) VALUES #{places.join ','}"
-    @_query sql, values, (error, result) ->
-      return _processSaveError error, callback if error
-      if id = result?.insertId
-        callback null, data.map (item, i) -> id + i
-      else
-        callback new Error 'unexpected result'
+    try
+      result = await @_client.queryAsync sql, values
+    catch error
+      throw _processSaveError error
+    if id = result?.insertId
+      return data.map (item, i) -> id + i
+    else
+      throw new Error 'unexpected result'
 
   ## @override AdapterBase::update
-  update: (model, data, callback) ->
+  update: (model, data) ->
     tableName = @_connection.models[model].tableName
     values = []
     [ fields ] = @_buildUpdateSet model, data, values
     values.push data.id
     sql = "UPDATE `#{tableName}` SET #{fields} WHERE id=?"
-    @_query sql, values, (error) ->
-      return _processSaveError error, callback if error
-      callback null
+    try
+      await @_client.queryAsync sql, values
+    catch error
+      throw _processSaveError error
+    return
 
   ## @override AdapterBase::updatePartial
-  updatePartial: (model, data, conditions, options, callback) ->
+  updatePartial: (model, data, conditions, options) ->
     tableName = @_connection.models[model].tableName
     values = []
     [ fields ] = @_buildPartialUpdateSet model, data, values
@@ -305,13 +298,16 @@ class MySQLAdapter extends SQLAdapterBase
         sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
       catch e
         return callback e
-    @_query sql, values, (error, result) ->
-      return _processSaveError error, callback if error
-      return callback MySQLAdapter.wrapError 'unknown error' if not result?
-      callback null, result.affectedRows
+    try
+      result = await @_client.queryAsync sql, values
+    catch error
+      throw _processSaveError error
+    if not result?
+      throw MySQLAdapter.wrapError 'unknown error'
+    return result.affectedRows
 
   ## @override AdapterBase::upsert
-  upsert: (model, data, conditions, options, callback) ->
+  upsert: (model, data, conditions, options) ->
     tableName = @_connection.models[model].tableName
 
     insert_data = {}
@@ -330,28 +326,30 @@ class MySQLAdapter extends SQLAdapterBase
     [ fields ] = @_buildPartialUpdateSet model, data, values
     sql += " ON DUPLICATE KEY UPDATE #{fields}"
 
-    @_query sql, values, (error, result) ->
-      return _processSaveError error, callback if error
-      callback null
+    try
+      await @_client.queryAsync sql, values
+    catch error
+      throw _processSaveError error
+    return
 
   ## @override AdapterBase::findById
-  findById: (model, id, options, callback) ->
+  findById: (model, id, options) ->
     id = @_convertValueType id, @key_type
     select = @_buildSelect @_connection.models[model], options.select
     tableName = @_connection.models[model].tableName
     sql = "SELECT #{select} FROM `#{tableName}` WHERE id=? LIMIT 1"
     if options.explain
-      return @_query "EXPLAIN #{sql}", id, (error, result) ->
-        return callback error if error
-        callback null, result
-    @_query sql, id, (error, result) =>
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      if result?.length is 1
-        callback null, @_convertToModelInstance model, result[0], options
-      else if result?.length > 1
-        callback new Error 'unknown error'
-      else
-        callback new Error 'not found'
+      return await @_client.queryAsync "EXPLAIN #{sql}", id
+    try
+      result = await @_client.queryAsync sql, id
+    catch error
+      throw MySQLAdapter.wrapError 'unknown error', error
+    if result?.length is 1
+      return @_convertToModelInstance model, result[0], options
+    else if result?.length > 1
+      throw new Error 'unknown error'
+    else
+      throw new Error 'not found'
 
   _buildSqlForFind: (model, conditions, options) ->
     if options.group_by or options.group_fields
@@ -395,22 +393,19 @@ class MySQLAdapter extends SQLAdapterBase
     [sql, params]
 
   ## @override AdapterBase::find
-  find: (model, conditions, options, callback) ->
-    try
-      [sql, params] = @_buildSqlForFind model, conditions, options
-    catch e
-      return callback e
+  find: (model, conditions, options) ->
+    [sql, params] = @_buildSqlForFind model, conditions, options
     if options.explain
-      return @_query "EXPLAIN #{sql}", params, (error, result) ->
-        return callback error if error
-        callback null, result
-    @_query sql, params, (error, result) =>
-      #console.log result
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      if options.group_fields
-        callback null, result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
-      else
-        callback null, result.map (record) => @_convertToModelInstance model, record, options
+      return await @_client.queryAsync "EXPLAIN #{sql}", params
+    try
+      result = await @_client.queryAsync sql, params
+    catch error
+      throw MySQLAdapter.wrapError 'unknown error', error
+    #console.log result
+    if options.group_fields
+      return result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
+    else
+      return result.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options) ->
@@ -425,51 +420,51 @@ class MySQLAdapter extends SQLAdapterBase
     transformer._transform = (record, encoding, callback) =>
       transformer.push @_convertToModelInstance model, record, options
       callback()
-    @_query(sql, params).stream()
+    @_client.query(sql, params).stream()
     .on 'error', (error) ->
       transformer.emit 'error', error
     .pipe transformer
     transformer
 
   ## @override AdapterBase::count
-  count: (model, conditions, options, callback) ->
+  count: (model, conditions, options) ->
     params = []
     tableName = @_connection.models[model].tableName
     sql = "SELECT COUNT(*) AS count FROM `#{tableName}`"
     if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-      catch e
-        return callback e
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     if options.group_by
       sql += ' GROUP BY ' + options.group_by.join ','
       if options.conditions_of_group.length > 0
-        try
-          sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
-        catch e
-          return callback e
+        sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
       sql = "SELECT COUNT(*) AS count FROM (#{sql}) _sub"
     #console.log sql, params
-    @_query sql, params, (error, result) =>
-      return callback MySQLAdapter.wrapError 'unknown error', error if error
-      return callback new Error 'unknown error' if result?.length isnt 1
-      callback null, Number(result[0].count)
+    try
+      result = await @_client.queryAsync sql, params
+    catch error
+      throw MySQLAdapter.wrapError 'unknown error', error
+    if result?.length isnt 1
+      throw new Error 'unknown error'
+    return Number(result[0].count)
 
   ## @override AdapterBase::delete
-  delete: (model, conditions, callback) ->
+  delete: (model, conditions) ->
     params = []
     tableName = @_connection.models[model].tableName
     sql = "DELETE FROM `#{tableName}`"
     if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-      catch e
-        return callback e
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     #console.log sql, params
-    @_query sql, params, (error, result) ->
-      return callback new Error 'rejected' if error and error.code in ['ER_ROW_IS_REFERENCED_', 'ER_ROW_IS_REFERENCED_2']
-      return callback MySQLAdapter.wrapError 'unknown error', error if error or not result?
-      callback null, result.affectedRows
+    try
+      result = await @_client.queryAsync sql, params
+    catch error
+      if error and error.code in ['ER_ROW_IS_REFERENCED_', 'ER_ROW_IS_REFERENCED_2']
+        throw new Error 'rejected'
+        return
+      throw MySQLAdapter.wrapError 'unknown error', error
+    if not result?
+      throw MySQLAdapter.wrapError 'unknown error'
+    return result.affectedRows
 
   ##
   # Connects to the database
@@ -482,8 +477,7 @@ class MySQLAdapter extends SQLAdapterBase
   # @param {String} [settings.charset='utf8']
   # @param {String} [settings.collation='utf8_unicode_ci']
   # @param {Number} [settings.pool_size=10]
-  # @nodejscallback
-  connect: (settings, callback) ->
+  connect: (settings) ->
     # connect
     client = mysql.createConnection
       host: settings.host
@@ -491,53 +485,63 @@ class MySQLAdapter extends SQLAdapterBase
       user: settings.user
       password: settings.password
       charset: settings.charset
+    client.connectAsync = util.promisify client.connect
+    client.queryAsync = util.promisify client.query
     @_database = settings.database
     @_settings = settings
-    client.connect (error) =>
-      if error
-        client.end()
-        return callback MySQLAdapter.wrapError 'failed to connect', error
-      @_createDatabase client, (error) =>
-        if error
-          client.end()
-          return callback error
-        @_checkFeatures client, (error) =>
-          client.end()
-          return callback error if error
-          @_client = mysql.createPool
-            host: settings.host
-            port: settings.port
-            user: settings.user
-            password: settings.password
-            charset: settings.charset
-            database: settings.database
-            connectionLimit: settings.pool_size or 10
-          callback null
+    try
+      await client.connectAsync()
+    catch error
+      client.end()
+      throw MySQLAdapter.wrapError 'failed to connect', error
+    try
+      await @_createDatabase client
+    catch error
+      client.end()
+      throw error
+    try
+      await @_checkFeatures client
+    finally
+      client.end()
+    @_client = mysql.createPool
+      host: settings.host
+      port: settings.port
+      user: settings.user
+      password: settings.password
+      charset: settings.charset
+      database: settings.database
+      connectionLimit: settings.pool_size or 10
+    @_client.queryAsync = util.promisify @_client.query
+    return
 
   # create database if not exist
-  _createDatabase: (client, callback) ->
+  _createDatabase: (client) ->
     # check database existence
-    client.query "USE `#{@_database}`", (error) =>
-      return callback null if not error
-
+    try
+      await client.queryAsync "USE `#{@_database}`"
+    catch error
       if error.code is 'ER_BAD_DB_ERROR'
-        client.query "CREATE DATABASE `#{@_database}`", (error) =>
-          return callback MySQLAdapter.wrapError 'unknown error', error if error
-          @_createDatabase client, callback
+        try
+          await client.queryAsync "CREATE DATABASE `#{@_database}`"
+        catch error
+          throw MySQLAdapter.wrapError 'unknown error', error
+        await @_createDatabase client
       else
         msg = if error.code is 'ER_DBACCESS_DENIED_ERROR' then "no access right to the database '#{@_database}'" else 'unknown error'
-        callback MySQLAdapter.wrapError msg, error
+        throw MySQLAdapter.wrapError msg, error
 
-  _checkFeatures: (client, callback) ->
-    client.query "CREATE TABLE _temp (date DATETIME(10))", (error) =>
+  _checkFeatures: (client) ->
+    try
+      await client.queryAsync "CREATE TABLE _temp (date DATETIME(10))"
+    catch error
       if error.code is 'ER_PARSE_ERROR'
         # MySQL 5.6.4 below does not support fractional seconds
         @support_fractional_seconds = false
       else if error.code is 'ER_TOO_BIG_PRECISION'
         @support_fractional_seconds = true
       else
-        return callback error
-      callback null
+        throw error
+    return
 
   ## @override AdapterBase::close
   close: ->
@@ -548,7 +552,7 @@ class MySQLAdapter extends SQLAdapterBase
   ##
   # Exposes mysql module's query method
   query: ->
-    @_client.query.apply @_client, arguments
+    @_client.queryAsync.apply @_client, arguments
 
 module.exports = (connection) ->
   new MySQLAdapter connection

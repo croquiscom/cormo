@@ -5,14 +5,14 @@ _dbs = [ 'mysql', 'mongodb', 'postgresql', 'sqlite3' ]
 _dbs.forEach (db) ->
   return if not _g.db_configs[db]
   describe 'adapter-' + db, ->
-    before (done) ->
+    before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-      _g.connection.dropAllModels done
+      await _g.connection.dropAllModels()
       return
 
-    afterEach (done) ->
-      _g.connection.dropAllModels done
+    afterEach ->
+      await _g.connection.dropAllModels()
       return
 
     after ->

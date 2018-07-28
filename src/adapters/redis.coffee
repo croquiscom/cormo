@@ -7,8 +7,8 @@ catch error
 AdapterBase = require './base'
 types = require '../types'
 tableize = require('../util/inflector').tableize
-async = require 'async'
 _ = require 'lodash'
+util = require 'util'
 
 ##
 # Adapter for Redis
@@ -17,24 +17,22 @@ class RedisAdapter extends AdapterBase
   support_upsert: false
   key_type: types.Integer
 
-  _getKeys: (table, conditions, callback) ->
+  _getKeys: (table, conditions) ->
     if Array.isArray conditions
       if conditions.length is 0
-        @_client.keys "#{table}:*", (error, keys) ->
-          callback null, keys
+        return await @_client.keysAsync "#{table}:*"
+      all_keys = []
+      await Promise.all conditions.map (condition) =>
+        keys = await @_getKeys table, condition
+        [].push.apply all_keys, keys
         return
-      async.map conditions, (condition, callback) =>
-        @_getKeys table, condition, callback
-      , (error, keys) ->
-        callback null, _.flatten keys
-      return
+      return all_keys
     else if typeof conditions is 'object' and conditions.id
       if conditions.id.$in
-        callback null, conditions.id.$in.map (id) -> "#{table}:#{id}"
+        return conditions.id.$in.map (id) -> "#{table}:#{id}"
       else
-        callback null, ["#{table}:#{conditions.id}"]
-      return
-    return callback null, []
+        return ["#{table}:#{conditions.id}"]
+    return []
 
   ##
   # Creates a Redis adapter
@@ -43,8 +41,8 @@ class RedisAdapter extends AdapterBase
     @_connection = connection
 
   ## @override AdapterBase::drop
-  drop: (model, callback) ->
-    @delete model, [], callback
+  drop: (model) ->
+    @delete model, []
 
   valueToDB: (value, column, property) ->
     return if not value?
@@ -74,84 +72,98 @@ class RedisAdapter extends AdapterBase
         value
 
   ## @override AdapterBase::create
-  create: (model, data, callback) ->
+  create: (model, data) ->
     data.$_$ = '' # ensure that there is one argument(one field) at least
-    @_client.incr "#{tableize model}:_lastid", (error, id) =>
-      return callback RedisAdapter.wrapError 'unknown error', error if error
-      @_client.hmset "#{tableize model}:#{id}", data, (error) ->
-        return callback RedisAdapter.wrapError 'unknown error', error if error
-        callback null, id
+    try
+      id = await @_client.incrAsync "#{tableize model}:_lastid"
+    catch error
+      throw RedisAdapter.wrapError 'unknown error', error
+    try
+      await @_client.hmsetAsync "#{tableize model}:#{id}", data
+    catch error
+      throw RedisAdapter.wrapError 'unknown error', error
+    return id
 
   ## @override AdapterBase::createBulk
-  createBulk: (model, data, callback) ->
-    @_createBulkDefault model, data, callback
+  createBulk: (model, data) ->
+    await @_createBulkDefault model, data
 
   ## @override AdapterBase::update
-  update: (model, data, callback) ->
+  update: (model, data) ->
     key = "#{tableize model}:#{data.id}"
     delete data.id
     data.$_$ = '' # ensure that there is one argument(one field) at least
-    @_client.exists key, (error, exists) =>
-      return callback RedisAdapter.wrapError 'unknown error', error if error
-      return callback null if not exists
-      @_client.del key, (error) =>
-        return callback RedisAdapter.wrapError 'unknown error', error if error
-        @_client.hmset key, data, (error) ->
-          return callback RedisAdapter.wrapError 'unknown error', error if error
-          callback null
+    try
+      exists = await @_client.existsAsync key
+    catch error
+      throw RedisAdapter.wrapError 'unknown error', error
+    if not exists
+      return
+    try
+      await @_client.delAsync key
+    catch error
+      throw RedisAdapter.wrapError 'unknown error', error
+    try
+      await @_client.hmsetAsync key, data
+    catch error
+      throw RedisAdapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::updatePartial
-  updatePartial: (model, data, conditions, options, callback) ->
+  updatePartial: (model, data, conditions, options) ->
     fields_to_del = Object.keys(data).filter (key) -> not data[key]?
     fields_to_del.forEach (key) -> delete data[key]
     fields_to_del.push '$_$' # ensure that there is one argument at least
     table = tableize model
     data.$_$ = '' # ensure that there is one argument(one field) at least
-    @_getKeys table, conditions, (error, keys) =>
-      async.forEach keys, (key, callback) =>
-        args = _.clone fields_to_del
-        args.unshift key
-        @_client.hdel args, (error) =>
-          return callback RedisAdapter.wrapError 'unknown error', error if error
-          @_client.hmset key, data, (error) =>
-            return callback RedisAdapter.wrapError 'unknown error', error if error
-            callback null
-      , (error) =>
-        callback null, keys.length
+    keys = await @_getKeys table, conditions
+    for key in keys
+      args = _.clone fields_to_del
+      args.unshift key
+      try
+        await @_client.hdelAsync args
+      catch error
+        throw RedisAdapter.wrapError 'unknown error', error if error
+      try
+        await @_client.hmsetAsync key, data
+      catch error
+        throw RedisAdapter.wrapError 'unknown error', error if error
+    return keys.length
 
   ## @override AdapterBase::findById
-  findById: (model, id, options, callback) ->
-    @_client.hgetall "#{tableize model}:#{id}", (error, result) =>
-      return callback RedisAdapter.wrapError 'unknown error', error if error
-      if result
-        result.id = id
-        callback null, @_convertToModelInstance model, result, options
-      else
-        callback new Error 'not found'
+  findById: (model, id, options) ->
+    try
+      result = await @_client.hgetallAsync "#{tableize model}:#{id}"
+    catch error
+      throw RedisAdapter.wrapError 'unknown error', error
+    if result
+      result.id = id
+      return @_convertToModelInstance model, result, options
+    else
+      throw new Error 'not found'
 
   ## @override AdapterBase::find
-  find: (model, conditions, options, callback) ->
+  find: (model, conditions, options) ->
     table = tableize model
-    @_getKeys table, conditions, (error, keys) =>
-      async.map keys, (key, callback) =>
-        @_client.hgetall key, (error, result) ->
-          if result
-            result.id = Number key.substr table.length+1
-          callback null, result
-      , (error, records) =>
-        records = records.filter (record) -> record?
-        callback null, records.map (record) => @_convertToModelInstance model, record, options
-
-  _delete: (keys, callback) ->
+    keys = await @_getKeys table, conditions
+    records = await Promise.all keys.map (key) =>
+      result = await @_client.hgetallAsync key
+      if result
+        result.id = Number key.substr table.length+1
+      return result
+    records = records.filter (record) -> record?
+    return records.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::delete
-  delete: (model, conditions, callback) ->
-    @_getKeys tableize(model), conditions, (error, keys) =>
-      return callback error if error
-      return callback null, 0 if keys.length is 0
-      @_client.del keys, (error, count) ->
-        return callback RedisAdapter.wrapError 'unknown error', error if error
-        callback null, count
+  delete: (model, conditions) ->
+    keys = await @_getKeys tableize(model), conditions
+    if keys.length is 0
+      return 0
+    try
+      count = await @_client.delAsync keys
+    catch error
+      throw RedisAdapter.wrapError 'unknown error', error
+    return count
 
   ##
   # Connects to the database
@@ -159,12 +171,12 @@ class RedisAdapter extends AdapterBase
   # @param {String} [settings.host='127.0.0.1']
   # @param {Number} [settings.port=6379]
   # @param {Number} [settings.database=0]
-  # @nodejscallback
-  connect: (settings, callback) ->
+  connect: (settings) ->
+    methods = ['del', 'exists', 'hdel', 'hgetall', 'hmset', 'incr', 'keys', 'select']
     @_client = redis.createClient settings.port or 6379, settings.host or '127.0.0.1'
-    @_client.on 'connect', =>
-      @_client.select settings.database or 0, (error) ->
-        callback error
+    for method in methods
+      @_client[method+'Async'] = util.promisify @_client[method]
+    await @_client.selectAsync settings.database or 0
 
 module.exports = (connection) ->
   new RedisAdapter connection

@@ -1,4 +1,3 @@
-Promise = require 'bluebird'
 types = require '../types'
 util = require '../util'
 
@@ -64,8 +63,7 @@ ModelValidateMixin = (Base) -> class extends Base
   ##
   # Validates data
   # @promise
-  # @nodejscallback
-  validate: (callback) ->
+  validate: ->
     @_runCallbacks 'validate', 'before'
 
     errors = []
@@ -89,12 +87,10 @@ ModelValidateMixin = (Base) -> class extends Base
         errors.push e.message
     if errors.length > 0
       @_runCallbacks 'validate', 'after'
-      Promise.reject new Error errors.join ','
-      .nodeify callback
+      throw new Error errors.join ','
     else
       @_runCallbacks 'validate', 'after'
-      Promise.resolve()
-      .nodeify callback
+      return
 
   ##
   # Adds a validator
@@ -105,5 +101,6 @@ ModelValidateMixin = (Base) -> class extends Base
   @addValidator: (validator) ->
     @_checkConnection()
     @_validators.push validator
+    return
 
 module.exports = ModelValidateMixin

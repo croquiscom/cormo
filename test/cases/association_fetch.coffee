@@ -1,5 +1,4 @@
 _g = require '../support/common'
-async = require 'async'
 {expect} = require 'chai'
 
 _checkPost = (post, title, user_id, user_name, user_age) ->
@@ -39,188 +38,85 @@ module.exports = ->
   preset_users = undefined
   preset_posts = undefined
 
-  beforeEach (done) ->
-    async.mapSeries [
-      { name: 'John Doe', age: 27 }
-      { name: 'Bill Smith', age: 45 }
-    ], (item, callback) ->
-      _g.connection.User.create item, callback
-    , (error, users) ->
-      return done error if error
-      preset_users = users
-      async.mapSeries [
-        { user_id: users[0].id, title: 'first post', body: 'This is the 1st post.' }
-        { user_id: users[0].id, title: 'second post', body: 'This is the 2st post.' }
-        { user_id: users[1].id, title: 'another post', body: 'This is a post by user1.' }
-      ], (item, callback) ->
-        _g.connection.Post.create item, callback
-      , (error, posts) ->
-        return done error if error
-        preset_posts = posts
-        done null
+  beforeEach ->
+    user1 = await _g.connection.User.create { name: 'John Doe', age: 27 }
+    user2 = await _g.connection.User.create { name: 'Bill Smith', age: 45 }
+    preset_users = [user1, user2]
+    post1 = await _g.connection.Post.create { user_id: user1.id, title: 'first post', body: 'This is the 1st post.' }
+    post2 = await _g.connection.Post.create { user_id: user1.id, title: 'second post', body: 'This is the 2st post.' }
+    post3 = await _g.connection.Post.create { user_id: user2.id, title: 'another post', body: 'This is a post by user1.' }
+    preset_posts = [post1, post2, post3]
+    return
 
-  it 'fetch objects that belong to', (done) ->
-    async.waterfall [
-      (callback) ->
-        _g.connection.Post.where callback
-      (posts, callback) ->
-        _g.connection.fetchAssociated posts, 'user', (error) ->
-          callback error, posts
-      (posts, callback) ->
-        expect(posts).to.have.length 3
-        _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
-        _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe', 27
-        _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith', 45
-        callback null
-    ], done
+  it 'fetch objects that belong to', ->
+    posts = await _g.connection.Post.where()
+    await _g.connection.fetchAssociated posts, 'user'
+    expect(posts).to.have.length 3
+    _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
+    _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe', 27
+    _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith', 45
 
-  it 'fetch an object that belongs to', (done) ->
-    async.waterfall [
-      (callback) ->
-        _g.connection.Post.find preset_posts[0].id, callback
-      (post, callback) ->
-        _g.connection.fetchAssociated post, 'user', (error) ->
-          callback error, post
-      (post, callback) ->
-        _checkPost post, 'first post', preset_users[0].id, 'John Doe', 27
-        callback null
-    ], done
+  it 'fetch an object that belongs to', ->
+    post = await _g.connection.Post.find preset_posts[0].id
+    await _g.connection.fetchAssociated post, 'user'
+    _checkPost post, 'first post', preset_users[0].id, 'John Doe', 27
+    return
 
-  it 'fetch objects that belong to with select', (done) ->
-    async.waterfall [
-      (callback) ->
-        _g.connection.Post.where callback
-      (posts, callback) ->
-        _g.connection.fetchAssociated posts, 'user', 'name', (error) ->
-          callback error, posts
-      (posts, callback) ->
-        expect(posts).to.have.length 3
-        _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe'
-        _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe'
-        _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith'
-        callback null
-    ], done
+  it 'fetch objects that belong to with select', ->
+    posts = await _g.connection.Post.where()
+    await _g.connection.fetchAssociated posts, 'user', 'name'
+    expect(posts).to.have.length 3
+    _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe'
+    _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe'
+    _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith'
+    return
 
-  it 'fetch objects that have many', (done) ->
-    async.waterfall [
-      (callback) ->
-        _g.connection.User.where callback
-      (users, callback) ->
-        _g.connection.fetchAssociated users, 'posts', (error) ->
-          callback error, users
-      (users, callback) ->
-        expect(users).to.have.length 2
-        _checkUser users[0], 'John Doe', [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], true
-        _checkUser users[1], 'Bill Smith', [preset_posts[2].id], ['another post'], true
-        callback null
-    ], done
+  it 'fetch objects that have many', ->
+    users = await _g.connection.User.where()
+    await _g.connection.fetchAssociated users, 'posts'
+    expect(users).to.have.length 2
+    _checkUser users[0], 'John Doe', [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], true
+    _checkUser users[1], 'Bill Smith', [preset_posts[2].id], ['another post'], true
+    return
 
-  it 'fetch an object that has many', (done) ->
-    async.waterfall [
-      (callback) ->
-        _g.connection.User.find preset_users[0].id, callback
-      (user, callback) ->
-        _g.connection.fetchAssociated user, 'posts', (error) ->
-          callback error, user
-      (user, callback) ->
-        _checkUser user, 'John Doe', [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], true
-        callback null
-    ], done
+  it 'fetch an object that has many', ->
+    user = await _g.connection.User.find preset_users[0].id
+    await _g.connection.fetchAssociated user, 'posts'
+    _checkUser user, 'John Doe', [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], true
+    return
 
-  it 'fetch objects that have many with select', (done) ->
-    async.waterfall [
-      (callback) ->
-        _g.connection.User.where callback
-      (users, callback) ->
-        _g.connection.fetchAssociated users, 'posts', 'title', (error) ->
-          callback error, users
-      (users, callback) ->
-        expect(users).to.have.length 2
-        _checkUser users[0], 'John Doe', [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], false
-        _checkUser users[1], 'Bill Smith', [preset_posts[2].id], ['another post'], false
-        callback null
-    ], done
+  it 'fetch objects that have many with select', ->
+    users = await _g.connection.User.where()
+    await _g.connection.fetchAssociated users, 'posts', 'title'
+    expect(users).to.have.length 2
+    _checkUser users[0], 'John Doe', [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], false
+    _checkUser users[1], 'Bill Smith', [preset_posts[2].id], ['another post'], false
+    return
 
-  it 'null id', (done) ->
-    async.waterfall [
-      (callback) ->
-        _g.connection.Post.find(preset_posts[1].id).update user_id: null, (error) ->
-          callback error
-      (callback) ->
-        _g.connection.Post.where().order('id').exec callback
-      (posts, callback) ->
-        _g.connection.fetchAssociated posts, 'user', (error) ->
-          callback error, posts
-      (posts, callback) ->
-        expect(posts).to.have.length 3
-        _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
-        _checkPost posts[1], 'second post', null
-        _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith', 45
-        callback null
-      (callback) ->
-        _g.connection.User.where().order('id').exec callback
-      (users, callback) ->
-        _g.connection.fetchAssociated users, 'posts', (error) ->
-          callback error, users
-      (users, callback) ->
-        expect(users).to.have.length 2
-        _checkUser users[0], 'John Doe', [preset_posts[0].id], ['first post'], true
-        _checkUser users[1], 'Bill Smith', [preset_posts[2].id], ['another post'], true
-        callback null
-    ], done
+  it 'null id', ->
+    await _g.connection.Post.find(preset_posts[1].id).update user_id: null
+    posts = await _g.connection.Post.where().order('id')
+    await _g.connection.fetchAssociated posts, 'user'
+    expect(posts).to.have.length 3
+    _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
+    _checkPost posts[1], 'second post', null
+    _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith', 45
+    users = await _g.connection.User.where().order('id')
+    await _g.connection.fetchAssociated users, 'posts'
+    expect(users).to.have.length 2
+    _checkUser users[0], 'John Doe', [preset_posts[0].id], ['first post'], true
+    _checkUser users[1], 'Bill Smith', [preset_posts[2].id], ['another post'], true
+    return
 
-  it 'invalid id', (done) ->
-    async.waterfall [
-      (callback) ->
-        _g.connection.User.find(preset_users[1].id).delete (error) ->
-          callback error
-      (callback) ->
-        _g.connection.Post.where().order('id').exec callback
-      (posts, callback) ->
-        _g.connection.fetchAssociated posts, 'user', (error) ->
-          callback error, posts
-      (posts, callback) ->
-        expect(posts).to.have.length 3
-        _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
-        _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe', 27
-        _checkPost posts[2], 'another post', null
-        callback null
-      (callback) ->
-        _g.connection.Post.find preset_posts[2].id, callback
-      (post, callback) ->
-        _g.connection.fetchAssociated post, 'user', (error) ->
-          callback error, post
-      (post, callback) ->
-        _checkPost post, 'another post', null
-        callback null
-    ], done
-
-  it 'promise api', ->
-    _g.connection.Post.where()
-    .then (posts) ->
-      _g.connection.fetchAssociated posts, 'user'
-      .then ->
-        expect(posts).to.have.length 3
-        _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
-        _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe', 27
-        _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith', 45
-
-  it 'promise api with select', ->
-    _g.connection.Post.where()
-    .then (posts) ->
-      _g.connection.fetchAssociated posts, 'user', 'name'
-      .then ->
-        expect(posts).to.have.length 3
-        _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe'
-        _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe'
-        _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith'
-
-  it 'promise api with select null', ->
-    _g.connection.Post.where()
-    .then (posts) ->
-      _g.connection.fetchAssociated posts, 'user', null
-      .then ->
-        expect(posts).to.have.length 3
-        _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
-        _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe', 27
-        _checkPost posts[2], 'another post', preset_users[1].id, 'Bill Smith', 45
+  it 'invalid id', ->
+    await _g.connection.User.find(preset_users[1].id).delete()
+    posts = await _g.connection.Post.where().order('id')
+    await _g.connection.fetchAssociated posts, 'user'
+    expect(posts).to.have.length 3
+    _checkPost posts[0], 'first post', preset_users[0].id, 'John Doe', 27
+    _checkPost posts[1], 'second post', preset_users[0].id, 'John Doe', 27
+    _checkPost posts[2], 'another post', null
+    post = await _g.connection.Post.find preset_posts[2].id
+    await _g.connection.fetchAssociated post, 'user'
+    _checkPost post, 'another post', null
+    return

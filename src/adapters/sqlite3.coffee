@@ -6,9 +6,9 @@ catch e
 
 SQLAdapterBase = require './sql_base'
 types = require '../types'
-async = require 'async'
 _ = require 'lodash'
 stream = require 'stream'
+util = require 'util'
 
 _typeToSQL = (property) ->
   if property.array
@@ -31,6 +31,14 @@ _propertyToSQL = (property) ->
       type += ' NULL'
     return type
 
+_processSaveError = (error) ->
+  if /no such table/.test error.message
+    return new Error('table does not exist')
+  else if error.code is 'SQLITE_CONSTRAINT'
+    return new Error('duplicated')
+  else
+    return SQLite3Adapter.wrapError 'unknown error', error
+
 ##
 # Adapter for SQLite3
 # @namespace adapter
@@ -46,83 +54,53 @@ class SQLite3Adapter extends SQLAdapterBase
     super()
     @_connection = connection
 
-  _query: (method, sql, data, callback) ->
-    #console.log 'SQLite3Adapter:', sql
-    @_client[method].apply @_client, [].slice.call arguments, 1
+  _getTables: ->
+    tables = await @_client.allAsync "SELECT name FROM sqlite_master WHERE type='table'"
+    tables = tables.map (table) ->
+      table.name
+    tables
 
-  _getTables: (callback) ->
-    @_query 'all', "SELECT name FROM sqlite_master WHERE type='table'", (error, tables) =>
-      return callback error if error
-      tables = tables.map (table) ->
-        table.name
-      callback null, tables
+  _getSchema: (table) ->
+    columns = await @_client.allAsync "PRAGMA table_info(`#{table}`)"
+    schema = {}
+    for column in columns
+      type = if /^varchar\((\d*)\)/i.test column.type
+        new types.String(RegExp.$1)
+      else if /^double/i.test column.type
+        new types.Number()
+      else if /^tinyint/i.test column.type
+        new types.Boolean()
+      else if /^int/i.test column.type
+        new types.Integer()
+      else if /^real/i.test column.type
+        new types.Date()
+      else if /^text/i.test column.type
+        new types.Object()
+      schema[column.name] = type: type, required: column.notnull is 1
+    schema
 
-  _getSchema: (table, callback) ->
-    @_query 'all', "PRAGMA table_info(`#{table}`)", (error, columns) ->
-      return callback error if error
-      schema = {}
+  _getIndexes: (table) ->
+    rows = await @_client.allAsync "PRAGMA index_list(`#{table}`)"
+    indexes = {}
+    for row in rows
+      indexes[row.name] or= {}
+      columns = await @_client.allAsync "PRAGMA index_info(`#{row.name}`)"
       for column in columns
-        type = if /^varchar\((\d*)\)/i.test column.type
-          new types.String(RegExp.$1)
-        else if /^double/i.test column.type
-          new types.Number()
-        else if /^tinyint/i.test column.type
-          new types.Boolean()
-        else if /^int/i.test column.type
-          new types.Integer()
-        else if /^real/i.test column.type
-          new types.Date()
-        else if /^text/i.test column.type
-          new types.Object()
-        schema[column.name] = type: type, required: column.notnull is 1
-      callback null, schema
-
-  _getIndexes: (table, callback) ->
-    @_query 'all', "PRAGMA index_list(`#{table}`)", (error, rows) =>
-      return callback error if error
-      indexes = {}
-      async.each rows, (row, callback) =>
-        indexes[row.name] or= {}
-        @_query 'all', "PRAGMA index_info(`#{row.name}`)", (error, columns) ->
-          return callback error if error
-          for column in columns
-            indexes[row.name][column.name] = 1
-          callback null
-      , (error) ->
-        callback error, indexes
+        indexes[row.name][column.name] = 1
+    indexes
 
   ## @override AdapterBase::getSchemas
-  getSchemas: (callback) ->
-    async.auto
-      get_tables: (callback) =>
-        @_getTables callback
-      get_table_schemas: ['get_tables', (results, callback) =>
-        table_schemas = {}
-        async.each results.get_tables, (table, callback) =>
-          @_getSchema table, (error, schema) ->
-            return callback error if error
-            table_schemas[table] = schema
-            callback null
-        , (error) ->
-          return callback error if error
-          callback null, table_schemas
-      ]
-      get_indexes: ['get_tables', (results, callback) =>
-        all_indexes = {}
-        async.each results.get_tables, (table, callback) =>
-          @_getIndexes table, (error, indexes) ->
-            return callback error if error
-            all_indexes[table] = indexes
-            callback null
-        , (error) ->
-          return callback error if error
-          callback null, all_indexes
-      ]
-    , (error, results) ->
-      callback error, tables: results.get_table_schemas, indexes: results.get_indexes
+  getSchemas: () ->
+    tables = await @_getTables()
+    table_schemas = {}
+    all_indexes = {}
+    for table in tables
+      table_schemas[table] = await @_getSchema table
+      all_indexes[table] = await @_getIndexes table
+    return tables: table_schemas, indexes: all_indexes
 
   ## @override AdapterBase::createTable
-  createTable: (model, callback) ->
+  createTable: (model) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
     sql = []
@@ -139,21 +117,25 @@ class SQLite3Adapter extends SQLAdapterBase
       else if integrity.type is 'child_delete'
         sql.push "FOREIGN KEY (\"#{integrity.column}\") REFERENCES \"#{integrity.parent.tableName}\"(id) ON DELETE CASCADE"
     sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
-    @_query 'run', sql, (error) =>
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null
+    try
+      await @_client.runAsync sql
+    catch error
+      throw SQLite3Adapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::addColumn
-  addColumn: (model, column_property, callback) ->
+  addColumn: (model, column_property) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
     sql = "ALTER TABLE \"#{tableName}\" ADD COLUMN \"#{column_property._dbname}\" #{_propertyToSQL column_property}"
-    @_query 'run', sql, (error) ->
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null
+    try
+      await @_client.runAsync sql
+    catch error
+      throw SQLite3Adapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::createIndex
-  createIndex: (model, index, callback) ->
+  createIndex: (model, index) ->
     model_class = @_connection.models[model]
     tableName = model_class.tableName
     columns = []
@@ -161,16 +143,20 @@ class SQLite3Adapter extends SQLAdapterBase
       columns.push "\"#{column}\" #{if order is -1 then 'DESC' else 'ASC'}"
     unique = if index.options.unique then 'UNIQUE ' else ''
     sql = "CREATE #{unique}INDEX \"#{index.options.name}\" ON \"#{tableName}\" (#{columns.join ','})"
-    @_query 'run', sql, (error, result) =>
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null
+    try
+      await @_client.runAsync sql
+    catch error
+      throw SQLite3Adapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::drop
-  drop: (model, callback) ->
+  drop: (model) ->
     tableName = @_connection.models[model].tableName
-    @_query 'run', "DROP TABLE IF EXISTS \"#{tableName}\"", (error) ->
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null
+    try
+      await @_client.runAsync "DROP TABLE IF EXISTS \"#{tableName}\""
+    catch error
+      throw SQLite3Adapter.wrapError 'unknown error', error
+    return
 
   _getModelID: (data) ->
     Number data.id
@@ -187,15 +173,6 @@ class SQLite3Adapter extends SQLAdapterBase
       value isnt 0
     else
       value
-
-  _processSaveError = (error, callback) ->
-    if /no such table/.test error.message
-      error = new Error('table does not exist')
-    else if error.code is 'SQLITE_CONSTRAINT'
-      error = new Error('duplicated')
-    else
-      error = SQLite3Adapter.wrapError 'unknown error', error
-    callback error
 
   _buildUpdateSetOfColumn: (property, data, values, fields, places, insert) ->
     dbname = property._dbname
@@ -232,17 +209,24 @@ class SQLite3Adapter extends SQLAdapterBase
     [ fields.join(','), places.join(',') ]
 
   ## @override AdapterBase::create
-  create: (model, data, callback) ->
+  create: (model, data) ->
     tableName = @_connection.models[model].tableName
     values = []
     [ fields, places ] = @_buildUpdateSet model, data, values, true
     sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES (#{places})"
-    @_query 'run', sql, values, (error) ->
-      return _processSaveError error, callback if error
-      callback null, @lastID
+    try
+      id = await new Promise (resolve, reject) =>
+        @_client.run sql, values, (error) ->
+          if error
+            reject error
+          else
+            resolve @lastID
+    catch error
+      throw _processSaveError error
+    return id
 
   ## @override AdapterBase::createBulk
-  createBulk: (model, data, callback) ->
+  createBulk: (model, data) ->
     tableName = @_connection.models[model].tableName
     values = []
     fields = undefined
@@ -251,57 +235,69 @@ class SQLite3Adapter extends SQLAdapterBase
       [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
       places.push '(' + places_sub + ')'
     sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES #{places.join ','}"
-    @_query 'run', sql, values, (error) ->
-      return _processSaveError error, callback if error
-      if id = @lastID
-        id = id - data.length + 1
-        callback null, data.map (item, i) -> id + i
-      else
-        callback new Error 'unexpected result'
+    try
+      id = await new Promise (resolve, reject) =>
+        @_client.run sql, values, (error) ->
+          if error
+            reject error
+          else
+            resolve @lastID
+    catch error
+      throw _processSaveError error
+    if id
+      id = id - data.length + 1
+      return data.map (item, i) -> id + i
+    else
+      throw new Error 'unexpected result'
 
   ## @override AdapterBase::update
-  update: (model, data, callback) ->
+  update: (model, data) ->
     tableName = @_connection.models[model].tableName
     values = []
     [ fields ] = @_buildUpdateSet model, data, values
     values.push data.id
     sql = "UPDATE \"#{tableName}\" SET #{fields} WHERE id=?"
-    @_query 'run', sql, values, (error) ->
-      return _processSaveError error, callback if error
-      callback null
+    try
+      await @_client.runAsync sql, values
+    catch error
+      throw _processSaveError error
+    return
 
   ## @override AdapterBase::updatePartial
-  updatePartial: (model, data, conditions, options, callback) ->
+  updatePartial: (model, data, conditions, options) ->
     tableName = @_connection.models[model].tableName
     values = []
     [ fields ] = @_buildPartialUpdateSet model, data, values
     sql = "UPDATE \"#{tableName}\" SET #{fields}"
     if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
-      catch e
-        return callback e
-    @_query 'run', sql, values, (error) ->
-      return _processSaveError error, callback if error
-      callback null, @changes
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
+    try
+      return await new Promise (resolve, reject) =>
+        @_client.run sql, values, (error) ->
+          if error
+            reject error
+          else
+            resolve @changes
+    catch error
+      throw _processSaveError error
 
   ## @override AdapterBase::findById
-  findById: (model, id, options, callback) ->
+  findById: (model, id, options) ->
     select = @_buildSelect @_connection.models[model], options.select
     tableName = @_connection.models[model].tableName
     sql = "SELECT #{select} FROM \"#{tableName}\" WHERE id=? LIMIT 1"
     if options.explain
-      return @_query 'all', "EXPLAIN QUERY PLAN #{sql}", id, (error, result) ->
-        return callback error if error
-        callback null, result
-    @_query 'all', sql, id, (error, result) =>
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      if result?.length is 1
-        callback null, @_convertToModelInstance model, result[0], options
-      else if result?.length > 1
-        callback new Error 'unknown error'
-      else
-        callback new Error 'not found'
+      return await @_client.allAsync "EXPLAIN QUERY PLAN #{sql}", id
+    try
+      result = await @_client.allAsync sql, id
+    catch error
+      throw SQLite3Adapter.wrapError 'unknown error', error
+    if result?.length is 1
+      return @_convertToModelInstance model, result[0], options
+    else if result?.length > 1
+      throw new Error 'unknown error'
+    else
+      throw new Error 'not found'
 
   _buildSqlForFind: (model, conditions, options) ->
     if options.group_by or options.group_fields
@@ -339,21 +335,18 @@ class SQLite3Adapter extends SQLAdapterBase
     [sql, params]
 
   ## @override AdapterBase::find
-  find: (model, conditions, options, callback) ->
-    try
-      [sql, params] = @_buildSqlForFind model, conditions, options
-    catch e
-      return callback e
+  find: (model, conditions, options) ->
+    [sql, params] = @_buildSqlForFind model, conditions, options
     if options.explain
-      return @_query 'all', "EXPLAIN QUERY PLAN #{sql}", params, (error, result) ->
-        return callback error if error
-        callback null, result
-    @_query 'all', sql, params, (error, result) =>
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      if options.group_fields
-        callback null, result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
-      else
-        callback null, result.map (record) => @_convertToModelInstance model, record, options
+      return await @_client.allAsync "EXPLAIN QUERY PLAN #{sql}", params
+    try
+      result = await @_client.allAsync sql, params
+    catch error
+      throw SQLite3Adapter.wrapError 'unknown error', error
+    if options.group_fields
+      return result.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
+    else
+      return result.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options) ->
@@ -374,58 +367,65 @@ class SQLite3Adapter extends SQLAdapterBase
     readable
 
   ## @override AdapterBase::count
-  count: (model, conditions, options, callback) ->
+  count: (model, conditions, options) ->
     params = []
     tableName = @_connection.models[model].tableName
     sql = "SELECT COUNT(*) AS count FROM \"#{tableName}\""
     if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-      catch e
-        return callback e
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     if options.group_by
       sql += ' GROUP BY ' + options.group_by.join ','
       if options.conditions_of_group.length > 0
-        try
-          sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
-        catch e
-          return callback e
+        sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
       sql = "SELECT COUNT(*) AS count FROM (#{sql})"
     #console.log sql, params
-    @_query 'all', sql, params, (error, result) =>
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      return callback new Error 'unknown error' if result?.length isnt 1
-      callback null, Number(result[0].count)
+    try
+      result = await @_client.allAsync sql, params
+    catch error
+      throw SQLite3Adapter.wrapError 'unknown error', error
+    if result?.length isnt 1
+      throw new Error 'unknown error'
+    return Number(result[0].count)
 
   ## @override AdapterBase::delete
-  delete: (model, conditions, callback) ->
+  delete: (model, conditions) ->
     params = []
     tableName = @_connection.models[model].tableName
     sql = "DELETE FROM \"#{tableName}\""
     if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-      catch e
-        return callback e
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     #console.log sql, params
-    @_query 'run', sql, params, (error) ->
-      # @ is sqlite3.Statement
-      return callback new Error 'rejected' if error and error.code is 'SQLITE_CONSTRAINT'
-      return callback SQLite3Adapter.wrapError 'unknown error', error if error
-      callback null, @changes
+    try
+      return await new Promise (resolve, reject) =>
+        @_client.run sql, params, (error) ->
+          if error
+            reject error
+          else
+            resolve @changes
+    catch error
+      if error.code is 'SQLITE_CONSTRAINT'
+        throw new Error 'rejected'
+      throw SQLite3Adapter.wrapError 'unknown error', error
 
   ##
   # Connects to the database
   # @param {Object} settings
   # @param {String} settings.database
-  # @nodejscallback
-  connect: (settings, callback) ->
-    client = new sqlite3.Database settings.database, (error) =>
-      return callback SQLite3Adapter.wrapError 'failed to open', error if error
+  connect: (settings) ->
+    try
+      @_client = await new Promise (resolve, reject) =>
+        client = new sqlite3.Database settings.database, (error) =>
+          if error
+            reject error
+            return
+          client.allAsync = util.promisify client.all
+          client.runAsync = util.promisify client.run
+          resolve client
+    catch error
+      throw SQLite3Adapter.wrapError 'failed to open', error
 
-      @_client = client
-      @_query 'run', 'PRAGMA foreign_keys=ON', (error) ->
-        callback null
+    await @_client.runAsync 'PRAGMA foreign_keys=ON'
+    return
 
   ## @override AdapterBase::close
   close: ->

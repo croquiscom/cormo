@@ -1,4 +1,3 @@
-async = require 'async'
 stream = require 'stream'
 types = require '../types'
 util = require '../util'
@@ -24,24 +23,24 @@ class AdapterBase
   # @abstract
   # @return {Object}
   # @returnprop {Object} tables
-  # @nodejscallback
+  # @promise
   # @see Connection::applySchemas
-  getSchemas: (callback) -> callback null, tables: []
+  getSchemas: () -> Promise.resolve tables: []
 
   ## Creates a table.
   # @abstract
   # @param {String} model
-  # @nodejscallback
+  # @promise
   # @see Connection::applySchemas
-  createTable: (model, callback) -> callback null
+  createTable: (model) -> Promise.resolve()
 
   ## Adds a column to a table
   # @abstract
   # @param {String} model
   # @param {Object} column_property
-  # @nodejscallback
+  # @promise
   # @see Connection::applySchemas
-  addColumn: (model, column_property, callback) -> callback null
+  addColumn: (model, column_property) -> Promise.resolve()
 
   ## Creates an index.
   # @abstract
@@ -51,9 +50,9 @@ class AdapterBase
   # @param {Object} index.options
   # @param {String} index.options.name
   # @param {Boolean} index.options.unique
-  # @nodejscallback
+  # @promise
   # @see Connection::applySchemas
-  createIndex: (model, index, callback) -> callback null
+  createIndex: (model, index) -> Promise.resolve()
 
   ## Creates a foreign key.
   # @abstract
@@ -61,17 +60,17 @@ class AdapterBase
   # @param {String} column
   # @param {String} type
   # @param {Class<Model>} references
-  # @nodejscallback
+  # @promise
   # @see Connection::applySchemas
-  createForeignKey: (model, column, type, references, callback) -> callback null
+  createForeignKey: (model, column, type, references) -> Promise.resolve()
 
   ##
   # Drops a model from the database
   # @abstract
   # @param {String} model
-  # @nodejscallback
+  # @promise
   # @see Model.drop
-  drop: (model, callback) -> callback new Error 'not implemented'
+  drop: (model) -> Promise.reject 'not implemented'
 
   idToDB: (value) ->
     value
@@ -142,8 +141,8 @@ class AdapterBase
   # @param {String} model
   # @param {Object} data
   # @return {RecordID}
-  # @nodejscallback
-  create: (model, data, callback) -> callback new Error 'not implemented'
+  # @promise
+  create: (model, data) -> Promise.reject new Error 'not implemented'
 
   ##
   # Creates records
@@ -151,21 +150,20 @@ class AdapterBase
   # @param {String} model
   # @param {Array<Object>} data
   # @return {Array<RecordID>}
-  # @nodejscallback
-  createBulk: (model, data, callback) -> callback new Error 'not implemented'
+  # @promise
+  createBulk: (model, data) -> Promise.reject new Error 'not implemented'
 
-  _createBulkDefault: (model, data, callback) ->
-    async.map data, (item, callback) =>
-      @create model, item, util.bindDomain callback
-    , callback
+  _createBulkDefault: (model, data) ->
+    await Promise.all data.map (item) =>
+      @create model, item
 
   ##
   # Updates a record
   # @abstract
   # @param {String} model
   # @param {Object} data
-  # @nodejscallback
-  update: (model, data, callback) -> callback new Error 'not implemented'
+  # @promise
+  update: (model, data) -> Promise.reject new Error 'not implemented'
 
   ##
   # Updates some fields of records that match conditions
@@ -174,8 +172,8 @@ class AdapterBase
   # @param {Object} data
   # @param {Object} conditions
   # @param {Object} options
-  # @nodejscallback
-  updatePartial: (model, data, conditions, options, callback) -> callback new Error 'not implemented'
+  # @promise
+  updatePartial: (model, data, conditions, options) -> Promise.reject new Error 'not implemented'
 
   ##
   # Updates some fields of records that match conditions or inserts a new record
@@ -184,8 +182,8 @@ class AdapterBase
   # @param {Object} data
   # @param {Object} conditions
   # @param {Object} options
-  # @nodejscallback
-  upsert: (model, data, conditions, options, callback) -> callback new Error 'not implemented'
+  # @promise
+  upsert: (model, data, conditions, options) -> Promise.reject new Error 'not implemented'
 
   ##
   # Finds a record by id
@@ -194,10 +192,10 @@ class AdapterBase
   # @param {RecordID} id
   # @param {Object} options
   # @return {Model}
-  # @nodejscallback
+  # @promise
   # @throws {Error('not found')}
   # @see Query::exec
-  findById: (model, id, options, callback) -> callback new Error 'not implemented'
+  findById: (model, id, options) -> Promise.reject new Error 'not implemented'
 
   ##
   # Finds records
@@ -206,9 +204,9 @@ class AdapterBase
   # @param {Object} conditions
   # @param {Object} options
   # @return {Array<Model>}
-  # @nodejscallback
+  # @promise
   # @see Query::exec
-  find: (model, conditions, options, callback) -> callback new Error 'not implemented'
+  find: (model, conditions, options) -> Promise.reject new Error 'not implemented'
 
   ##
   # Streams matching records
@@ -231,9 +229,9 @@ class AdapterBase
   # @param {Object} conditions
   # @param {Object} options
   # @return {Number}
-  # @nodejscallback
+  # @promise
   # @see Query::count
-  count: (model, conditions, options, callback) -> callback new Error 'not implemented'
+  count: (model, conditions, options) -> Promise.reject new Error 'not implemented'
 
   ##
   # Deletes records from the database
@@ -241,9 +239,9 @@ class AdapterBase
   # @param {String} model
   # @param {Object} conditions
   # @return {Number}
-  # @nodejscallback
+  # @promise
   # @see Query::delete
-  delete: (model, conditions, callback) -> callback new Error 'not implemented'
+  delete: (model, conditions) -> Promise.reject new Error 'not implemented'
 
   ##
   # Closes connection

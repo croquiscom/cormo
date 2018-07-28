@@ -2,38 +2,40 @@ _g = require '../support/common'
 {expect} = require 'chai'
 
 module.exports = () ->
-  it 'valid', (done) ->
-    _g.connection.User.create { name: 'John Doe', age: 27 }, (error, user) ->
-      return done error if error
-      done null
+  it 'valid', ->
+    await _g.connection.User.create { name: 'John Doe', age: 27 }
     return
 
-  it 'invalid age', (done) ->
-    _g.connection.User.create { name: 'John Doe', age: 10 }, (error, user) ->
+  it 'invalid age', ->
+    try
+      await _g.connection.User.create { name: 'John Doe', age: 10 }
+      throw new Error 'must throw an error.'
+    catch error
       expect(error).to.exist
       expect(error.message).to.equal 'too young'
-      done null
     return
 
-  it 'invalid email', (done) ->
-    _g.connection.User.create { name: 'John Doe', age: 27, email: 'invalid' }, (error, user) ->
+  it 'invalid email', ->
+    try
+      await _g.connection.User.create { name: 'John Doe', age: 27, email: 'invalid' }
+      throw new Error 'must throw an error.'
+    catch error
       expect(error).to.exist
       expect(error.message).to.equal 'invalid email'
-      done null
     return
 
-  it 'invalid both', (done) ->
-    _g.connection.User.create { name: 'John Doe', age: 10, email: 'invalid' }, (error, user) ->
+  it 'invalid both', ->
+    try
+      await _g.connection.User.create { name: 'John Doe', age: 10, email: 'invalid' }
+      throw new Error 'must throw an error.'
+    catch error
       expect(error).to.exist
       if error.message isnt 'invalid email,too young'
         expect(error.message).to.equal 'too young,invalid email'
-      done null
     return
 
-  it 'validation bug $inc: 0', (done) ->
+  it 'validation bug $inc: 0', ->
     if not _g.connection.adapter.support_upsert
-      return done null
-    _g.connection.User.where(name: 'John Doe').upsert age: $inc: 0, (error, user) ->
-      return done error if error
-      done null
+      return
+    await _g.connection.User.where(name: 'John Doe').upsert age: $inc: 0
     return

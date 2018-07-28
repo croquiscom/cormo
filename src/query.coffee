@@ -1,6 +1,4 @@
 _ = require 'lodash'
-{bindDomain} = require './util'
-Promise = require 'bluebird'
 stream = require 'stream'
 
 ##
@@ -246,47 +244,47 @@ class Query
   _exec: (options) ->
     if @_find_single_id and @_conditions.length is 0
       @_connection.log @_name, 'find by id', id: @_id, options: @_options if not options?.skip_log
-      return Promise.reject new Error('not found') if not @_id
-      return @_adapter.findByIdAsync @_name, @_id, @_options
-      .catch (error) ->
-        Promise.reject new Error('not found')
-      .then (record) ->
-        return Promise.reject new Error('not found') if not record
-        return record
+      if not @_id
+        throw new Error('not found')
+      try
+        record = await @_adapter.findById @_name, @_id, @_options
+      catch error
+        throw new Error('not found')
+      if not record
+        throw new Error('not found')
+      return record
     expected_count = undefined
     if @_id or @_find_single_id
       if Array.isArray @_id
-        return Promise.resolve [] if @_id.length is 0
+        return [] if @_id.length is 0
         @_conditions.push id: { $in: @_id }
         expected_count = @_id.length
       else
         @_conditions.push id: @_id
         expected_count = 1
     @_connection.log @_name, 'find', conditions: @_conditions, options: @_options if not options?.skip_log
-    @_adapter.findAsync @_name, @_conditions, @_options
-    .then (records) =>
-      if expected_count?
-        return Promise.reject new Error('not found') if records.length isnt expected_count
-      if @_preserve_order_ids
-        records =  @_preserve_order_ids.map (id) ->
-          for record in records
-            return record if record.id is id
-      if @_options.one
-        return Promise.reject new Error('unknown error') if records.length > 1
-        Promise.resolve if records.length is 1 then records[0] else null
-      else
-        Promise.resolve records
+    records = await @_adapter.find @_name, @_conditions, @_options
+    if expected_count?
+      if records.length isnt expected_count
+        throw new Error('not found')
+    if @_preserve_order_ids
+      records =  @_preserve_order_ids.map (id) ->
+        for record in records
+          return record if record.id is id
+    if @_options.one
+      if records.length > 1
+        throw new Error('unknown error')
+      return if records.length is 1 then records[0] else null
+    else
+      return records
 
   ##
   # @private
   _execAndInclude: (options) ->
-    @_exec options
-    .then (records) =>
-      promises = @_includes.map (include) =>
-        @_connection.fetchAssociated records, include.column, include.select, model: @_model, lean: @_options.lean
-      Promise.all(promises)
-      .then ->
-        records
+    records = await @_exec options
+    await Promise.all @_includes.map (include) =>
+      await @_connection.fetchAssociated records, include.column, include.select, model: @_model, lean: @_options.lean
+    records
 
   ##
   # Executes the query
@@ -294,29 +292,22 @@ class Query
   # @param {Boolean} [options.skip_log=false]
   # @return {Model|Array<Model>}
   # @promise
-  # @nodejscallback
   # @see AdapterBase::findById
   # @see AdapterBase::find
-  exec: (options, callback) ->
-    if typeof options is 'function'
-      callback = options
-      options = {}
-
-    @_model._checkReady().then =>
-      if (cache_options = @_options.cache) and (cache_key = cache_options.key)
-        # try cache
-        @_model._loadFromCache cache_key, cache_options.refresh
-        .catch (error) =>
-          # no cache, execute query
-          @_execAndInclude options
-          .then (records) =>
-            # save result to cache
-            @_model._saveToCache cache_key, cache_options.ttl, records
-            .then ->
-              records
-      else
-        @_execAndInclude options
-    .nodeify bindDomain callback
+  exec: (options) ->
+    await @_model._checkReady()
+    if (cache_options = @_options.cache) and (cache_key = cache_options.key)
+      # try cache
+      try
+        await @_model._loadFromCache cache_key, cache_options.refresh
+      catch error
+        # no cache, execute query
+        records = await @_execAndInclude options
+        # save result to cache
+        await @_model._saveToCache cache_key, cache_options.ttl, records
+        records
+    else
+      await @_execAndInclude options
 
   ##
   # Executes the query and returns a readable stream
@@ -341,12 +332,11 @@ class Query
   # Explains the query
   # @return {Object}
   # @promise
-  # @nodejscallback
-  explain: (callback) ->
+  explain: ->
     @_options.cache = null
     @_options.explain = true
     @_includes = []
-    @exec skip_log: true, callback
+    await @exec skip_log: true
 
   ##
   # Executes the query as a promise (.then == .exec().then)
@@ -360,15 +350,13 @@ class Query
   # Executes the query as a count operation
   # @return {Number}
   # @promise
-  # @nodejscallback
   # @see AdapterBase::count
-  count: (callback) ->
-    @_model._checkReady().then =>
-      if @_id or @_find_single_id
-        @_conditions.push id: @_id
-        delete @_id
-      @_adapter.countAsync @_name, @_conditions, @_options
-    .nodeify bindDomain callback
+  count: ->
+    await @_model._checkReady()
+    if @_id or @_find_single_id
+      @_conditions.push id: @_id
+      delete @_id
+    await @_adapter.count @_name, @_conditions, @_options
 
   ##
   # @private
@@ -392,62 +380,59 @@ class Query
         @_validateAndBuildSaveData errors, data, updates, path + column, temp
       else if typeof object[column] is 'object'
         @_validateAndBuildSaveData errors, data, updates, path + column + '.', object[column]
+    return
 
   ##
   # Executes the query as a update operation
   # @param {Object} updates
   # @return {Number}
   # @promise
-  # @nodejscallback
   # @see AdapterBase::count
-  update: (updates, callback) ->
-    @_model._checkReady().then =>
-      errors = []
-      data = {}
-      @_validateAndBuildSaveData errors, data, updates, '', updates
-      if errors.length > 0
-        return Promise.reject new Error errors.join ','
+  update: (updates) ->
+    await @_model._checkReady()
+    errors = []
+    data = {}
+    @_validateAndBuildSaveData errors, data, updates, '', updates
+    if errors.length > 0
+      throw new Error errors.join ','
 
-      if @_id or @_find_single_id
-        @_conditions.push id: @_id
-        delete @_id
-      @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
-      @_adapter.updatePartialAsync @_name, data, @_conditions, @_options
-    .nodeify bindDomain callback
+    if @_id or @_find_single_id
+      @_conditions.push id: @_id
+      delete @_id
+    @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
+    await @_adapter.updatePartial @_name, data, @_conditions, @_options
 
   ##
   # Executes the query as an insert or update operation
   # @param {Object} updates
   # @return {Number}
   # @promise
-  # @nodejscallback
   # @see AdapterBase::count
-  upsert: (updates, callback) ->
-    @_model._checkReady().then =>
-      errors = []
-      data = {}
-      @_validateAndBuildSaveData errors, data, updates, '', updates
-      if errors.length > 0
-        return Promise.reject new Error errors.join ','
+  upsert: (updates) ->
+    await @_model._checkReady()
+    errors = []
+    data = {}
+    @_validateAndBuildSaveData errors, data, updates, '', updates
+    if errors.length > 0
+      throw new Error errors.join ','
 
-      if @_id or @_find_single_id
-        @_conditions.push id: @_id
-        delete @_id
-      @_connection.log @_name, 'upsert', data: data, conditions: @_conditions, options: @_options
-      @_adapter.upsertAsync @_name, data, @_conditions, @_options
-    .nodeify bindDomain callback
+    if @_id or @_find_single_id
+      @_conditions.push id: @_id
+      delete @_id
+    @_connection.log @_name, 'upsert', data: data, conditions: @_conditions, options: @_options
+    await @_adapter.upsert @_name, data, @_conditions, @_options
 
   _doIntegrityActions: (integrities, ids) ->
     promises = integrities.map (integrity) =>
       if integrity.type is 'parent_nullify'
-        integrity.child.update _.zipObject([integrity.column], [null]), _.zipObject([integrity.column], [ids])
+        await integrity.child.update _.zipObject([integrity.column], [null]), _.zipObject([integrity.column], [ids])
       else if integrity.type is 'parent_restrict'
-        integrity.child.count _.zipObject [integrity.column], [ids]
-        .then (count) ->
-          Promise.reject new Error 'rejected' if count>0
+        count = await integrity.child.count _.zipObject [integrity.column], [ids]
+        if count > 0
+          throw new Error 'rejected'
       else if integrity.type is 'parent_delete'
-        integrity.child.delete _.zipObject [integrity.column], [ids]
-    Promise.all promises
+        await integrity.child.delete _.zipObject [integrity.column], [ids]
+    await Promise.all promises
 
   ##
   # @private
@@ -456,23 +441,24 @@ class Query
     integrities = @_model._integrities.filter (integrity) -> integrity.type.substr(0, 7) is 'parent_'
     need_child_archive = integrities.some (integrity) => integrity.child.archive
     need_integrity = need_child_archive or (integrities.length > 0 and not @_adapter.native_integrity)
-    return Promise.resolve() if not need_archive and not need_integrity
+    if not need_archive and not need_integrity
+      return
 
     # find all records to be deleted
     query = @_model.where @_conditions
-    query.select '' if not need_archive # we need only id field for integrity
-    query.exec skip_log: options?.skip_log
-    .then (records) =>
-      return Promise.resolve records if not need_archive
+    if not need_archive # we need only id field for integrity
+      query.select ''
+    records = await query.exec skip_log: options?.skip_log
+    if need_archive
       archive_records = records.map (record) => model: @_name, data: record
-      @_connection.models['_Archive'].createBulk archive_records
-      .then ->
-        Promise.resolve records
-    .then (records) =>
-      return Promise.resolve() if not need_integrity
-      return Promise.resolve() if records.length is 0
-      ids = records.map (record) -> record.id
-      @_doIntegrityActions integrities, ids
+      await @_connection.models['_Archive'].createBulk archive_records
+    if not need_integrity
+      return
+    if records.length is 0
+      return
+    ids = records.map (record) -> record.id
+    await @_doIntegrityActions integrities, ids
+    return
 
   ##
   # Executes the query as a delete operation
@@ -480,21 +466,15 @@ class Query
   # @param {Boolean} [options.skip_log=false]
   # @return {Number}
   # @promise
-  # @nodejscallback
   # @see AdapterBase::delete
-  delete: (options, callback) ->
-    if typeof options is 'function'
-      callback = options
-      options = {}
-    @_model._checkReady().then =>
-      if @_id or @_find_single_id
-        @_conditions.push id: @_id
-        delete @_id
-      @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log
+  delete: (options) ->
+    await @_model._checkReady()
+    if @_id or @_find_single_id
+      @_conditions.push id: @_id
+      delete @_id
+    @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log
 
-      @_doArchiveAndIntegrity options
-      .then =>
-        @_adapter.deleteAsync @_name, @_conditions
-    .nodeify bindDomain callback
+    await @_doArchiveAndIntegrity options
+    await @_adapter.delete @_name, @_conditions
 
 module.exports = Query

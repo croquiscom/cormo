@@ -6,7 +6,7 @@ _dbs = [ 'mysql', 'mongodb', 'postgresql' ]
 _dbs.forEach (db) ->
   return if not _g.db_configs[db]
   describe 'geospatial-' + db, ->
-    before (done) ->
+    before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
       if _g.use_coffeescript_class
@@ -18,18 +18,17 @@ _dbs.forEach (db) ->
           name: String
           location: _g.cormo.types.GeoPoint
 
-      _g.connection.dropAllModels done
+      await _g.connection.dropAllModels()
       return
 
-    beforeEach (done) ->
-      _g.deleteAllRecords [_g.connection.Place], done
+    beforeEach ->
+      await _g.deleteAllRecords [_g.connection.Place]
       return
 
-    after (done) ->
-      _g.connection.dropAllModels ->
-        _g.connection.close()
-        _g.connection = null
-        done null
+    after ->
+      await _g.connection.dropAllModels()
+      _g.connection.close()
+      _g.connection = null
       return
 
     require('./cases/geospatial')()
@@ -42,10 +41,10 @@ _dbs_not.forEach (db) ->
     before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-    it 'does not support geospatial', (done) ->
+    it 'does not support geospatial', ->
       expect( ->
         Place = _g.connection.model 'Place',
           name: String
           location: _g.cormo.types.GeoPoint
       ).to.throw 'this adapter does not support GeoPoint type'
-      done null
+      return

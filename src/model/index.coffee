@@ -1,5 +1,4 @@
 _ = require 'lodash'
-Promise = require 'bluebird'
 tableize = require('../util/inflector').tableize
 types = require '../types'
 util = require '../util'
@@ -132,7 +131,7 @@ class ModelBase
 
   @_checkReady: ->
     @_checkConnection()
-    Promise.all [@_connection._checkSchemaApplied(), @_connection._promise_connection]
+    await Promise.all [@_connection._checkSchemaApplied(), @_connection._promise_connection]
 
   @_getKeyType: (target_connection = @_connection) ->
     if @_connection is target_connection and target_connection._adapter.key_type_internal
@@ -213,15 +212,14 @@ class ModelBase
   ##
   # Drops this model from the database
   # @promise
-  # @nodejscallback
   # @see AdapterBase::drop
-  @drop: (callback) ->
+  @drop: ->
     # do not need to apply schema before drop, only waiting connection established
-    @_connection._promise_connection.then =>
-      @_adapter.dropAsync @_name
-    .finally =>
+    try
+      await @_connection._promise_connection
+      await @_adapter.drop @_name
+    finally
       @_connection._schema_changed = true
-    .nodeify util.bindDomain callback
 
   ##
   # Creates a record.
@@ -383,23 +381,19 @@ class ModelBase
   ##
   # Destroys this record (remove from the database)
   # @promise
-  # @nodejscallback
-  destroy: (callback) ->
+  destroy: ->
     @_runCallbacks 'destroy', 'before'
-    Promise.resolve()
-    .then =>
+    try
       if @id
-        @constructor.delete id: @id
-    .finally =>
+        await @constructor.delete id: @id
+    finally
       @_runCallbacks 'destroy', 'after'
-    .nodeify util.bindDomain callback
 
   ##
   # Deletes all records from the database
   # @promise
-  # @nodejscallback
-  @deleteAll: (callback) ->
-    @delete().nodeify callback
+  @deleteAll: ->
+    await @delete()
 
   ##
   # Adds a has-many association
@@ -417,6 +411,7 @@ class ModelBase
       this_model: @
       target_model_or_column: target_model_or_column
       options: options
+    return
 
   ##
   # Adds a has-one association
@@ -434,6 +429,7 @@ class ModelBase
       this_model: @
       target_model_or_column: target_model_or_column
       options: options
+    return
 
   ##
   # Adds a belongs-to association
@@ -451,6 +447,7 @@ class ModelBase
       this_model: @
       target_model_or_column: target_model_or_column
       options: options
+    return
 
   @inspect: (depth) ->
     schema = Object.keys(@_schema or {}).sort().map((column) => return "#{column}: #{@_schema[column].type}").join(', ')

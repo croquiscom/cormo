@@ -1,7 +1,5 @@
 # common modules to test cases
 
-async = require 'async'
-
 _g = {}
 
 _g.cormo = require '../..'
@@ -19,17 +17,16 @@ else
 
 console.log "Run test with dirty_tracking=#{_g.Model.dirty_tracking}"
 
-_g.deleteAllRecords = (models, callback) ->
-  _g.connection.applySchemas (error) ->
-    return callback error if error
-    async.forEach models, (model, callback) ->
-      return callback null if not model
-      archive = model.archive
-      model.archive = false
-      model.deleteAll (error, count) ->
-        model.archive = archive
-        callback error
-    , callback
+_g.deleteAllRecords = (models) ->
+  await _g.connection.applySchemas()
+  for model in models
+    if not model
+      continue
+    archive = model.archive
+    model.archive = false
+    await model.deleteAll()
+    model.archive = archive
+  return
 
 if process.env.TRAVIS is 'true'
   _g.db_configs =

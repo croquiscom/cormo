@@ -5,7 +5,7 @@ _dbs = [ 'mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql' ]
 _dbs.forEach (db) ->
   return if not _g.db_configs[db]
   describe 'query-' + db, ->
-    before (done) ->
+    before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
       if _g.use_coffeescript_class
@@ -23,18 +23,17 @@ _dbs.forEach (db) ->
           name: type: String, unique: true
           age: Number
 
-      _g.connection.dropAllModels done
+      await _g.connection.dropAllModels()
       return
 
-    beforeEach (done) ->
-      _g.deleteAllRecords [_g.connection.User,_g.connection.UserUnique], done
+    beforeEach ->
+      await _g.deleteAllRecords [_g.connection.User,_g.connection.UserUnique]
       return
 
-    after (done) ->
-      _g.connection.dropAllModels ->
-        _g.connection.close()
-        _g.connection = null
-        done null
+    after ->
+      await _g.connection.dropAllModels()
+      _g.connection.close()
+      _g.connection = null
       return
 
     describe '#simple', ->
