@@ -32,11 +32,12 @@
   "types": "./lib/index.d.ts",
   "dependencies": {
     "commander": "^2.16.0",
-    "inflect": "^0.4.0",
+    "inflected": "^2.0.4",
     "lodash": "^4.17.10",
     "toposort-class": "^1.0.1"
   },
   "devDependencies": {
+    "@types/inflected": "^1.1.29",
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
     "coffee-coverage": "^3.0.0",
