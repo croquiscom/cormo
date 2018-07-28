@@ -436,19 +436,11 @@ class MySQLAdapter extends SQLAdapterBase
     tableName = @_connection.models[model].tableName
     sql = "SELECT COUNT(*) AS count FROM `#{tableName}`"
     if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-      catch e
-        reject e
-        return
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     if options.group_by
       sql += ' GROUP BY ' + options.group_by.join ','
       if options.conditions_of_group.length > 0
-        try
-          sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
-        catch e
-          reject e
-          return
+        sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
       sql = "SELECT COUNT(*) AS count FROM (#{sql}) _sub"
     #console.log sql, params
     try
@@ -465,11 +457,7 @@ class MySQLAdapter extends SQLAdapterBase
     tableName = @_connection.models[model].tableName
     sql = "DELETE FROM `#{tableName}`"
     if conditions.length > 0
-      try
-        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-      catch e
-        reject e
-        return
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
     #console.log sql, params
     try
       result = await @_query sql, params

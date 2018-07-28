@@ -36,6 +36,22 @@ _propertyToSQL = (property) ->
       type += ' NULL'
     return type
 
+_processSaveError = (tableName, error) ->
+  if error.code is '42P01'
+    return new Error('table does not exist')
+  else if error.code is '23505'
+    column = ''
+    key = error.message.match /unique constraint \"(.*)\"/
+    if key?
+      column = key[1]
+      key = column.match new RegExp "#{tableName}_([^']*)_key"
+      if key?
+        column = key[1]
+      column = ' ' + column
+    return new Error('duplicated' + column)
+  else
+    return PostgreSQLAdapter.wrapError 'unknown error', error
+
 ##
 # Adapter for PostgreSQL
 # @namespace adapter
@@ -54,183 +70,135 @@ class PostgreSQLAdapter extends SQLAdapterBase
     super()
     @_connection = connection
 
-  _query: (sql, data, callback) ->
-    #console.log 'PostgreSQLAdapter:', sql
-    @_pool.query sql, data, (error, result) ->
-      callback error, result
+  _getTables: ->
+    result = await @_pool.query "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"
+    tables = result.rows.map (table) ->
+      table.table_name
+    tables
 
-  _getTables: (callback) ->
-    @_query "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = 'public' AND table_type = 'BASE TABLE'", null, (error, result) ->
-      return callback error if error
-      tables = result.rows.map (table) ->
-        table.table_name
-      callback null, tables
+  _getSchema: (table) ->
+    result = await @_pool.query "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1", [table]
+    schema = {}
+    for column in result.rows
+      type = if column.data_type is 'character varying'
+        new types.String(column.character_maximum_length)
+      else if column.data_type is 'double precision'
+        new types.Number()
+      else if column.data_type is 'boolean'
+        new types.Boolean()
+      else if column.data_type is 'integer'
+        new types.Integer()
+      else if column.data_type is 'USER-DEFINED' and column.udt_schema is 'public' and column.udt_name is 'geometry'
+        new types.GeoPoint()
+      else if column.data_type is 'timestamp without time zone'
+        new types.Date()
+      else if column.data_type is 'json'
+        new types.Object()
+      else if column.data_type is 'text'
+        new types.Text()
+      schema[column.column_name] = type: type, required: column.is_nullable is 'NO'
+    schema
 
-  _getSchema: (table, callback) ->
-    @_query "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1", [table], (error, result) =>
-      return callback error if error
-      schema = {}
-      for column in result.rows
-        type = if column.data_type is 'character varying'
-          new types.String(column.character_maximum_length)
-        else if column.data_type is 'double precision'
-          new types.Number()
-        else if column.data_type is 'boolean'
-          new types.Boolean()
-        else if column.data_type is 'integer'
-          new types.Integer()
-        else if column.data_type is 'USER-DEFINED' and column.udt_schema is 'public' and column.udt_name is 'geometry'
-          new types.GeoPoint()
-        else if column.data_type is 'timestamp without time zone'
-          new types.Date()
-        else if column.data_type is 'json'
-          new types.Object()
-        else if column.data_type is 'text'
-          new types.Text()
-        schema[column.column_name] = type: type, required: column.is_nullable is 'NO'
-      callback null, schema
-
-  _getIndexes: (callback) ->
+  _getIndexes: ->
     # see http://stackoverflow.com/a/2213199/3239514
-    @_query "SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name FROM pg_class t, pg_class i, pg_index ix, pg_attribute a WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND a.attnum = ANY(ix.indkey)", null, (error, result) ->
-      return callback error if error
-      indexes = {}
-      for row in result.rows
-        indexes_of_table = indexes[row.table_name] or= {}
-        (indexes_of_table[row.index_name] or= {})[row.column_name] = 1
-      callback null, indexes
+    result = await @_pool.query "SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name FROM pg_class t, pg_class i, pg_index ix, pg_attribute a WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND a.attnum = ANY(ix.indkey)"
+    indexes = {}
+    for row in result.rows
+      indexes_of_table = indexes[row.table_name] or= {}
+      (indexes_of_table[row.index_name] or= {})[row.column_name] = 1
+    indexes
 
-  _getForeignKeys: (callback) ->
+  _getForeignKeys: ->
     # see http://stackoverflow.com/a/1152321/3239514
-    @_query "SELECT tc.table_name AS table_name, kcu.column_name AS column_name, ccu.table_name AS referenced_table_name FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name WHERE constraint_type = 'FOREIGN KEY'", null, (error, result) ->
-      return callback error if error
-      foreign_keys = {}
-      for row in result.rows
-        foreign_keys_of_table = foreign_keys[row.table_name] or= {}
-        foreign_keys_of_table[row.column_name] = row.referenced_table_name
-      callback null, foreign_keys
+    result = await @_pool.query "SELECT tc.table_name AS table_name, kcu.column_name AS column_name, ccu.table_name AS referenced_table_name FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name WHERE constraint_type = 'FOREIGN KEY'"
+    foreign_keys = {}
+    for row in result.rows
+      foreign_keys_of_table = foreign_keys[row.table_name] or= {}
+      foreign_keys_of_table[row.column_name] = row.referenced_table_name
+    foreign_keys
 
   ## @override AdapterBase::getSchemas
   getSchemas: () ->
-    new Promise (resolve, reject) =>
-      async.auto
-        get_tables: (callback) =>
-          @_getTables callback
-        get_table_schemas: ['get_tables', (results, callback) =>
-          table_schemas = {}
-          async.each results.get_tables, (table, callback) =>
-            @_getSchema table, (error, schema) ->
-              return callback error if error
-              table_schemas[table] = schema
-              callback null
-          , (error) ->
-            return callback error if error
-            callback null, table_schemas
-        ]
-        get_indexes: (callback) =>
-          @_getIndexes callback
-        get_foreign_keys: (callback) =>
-          @_getForeignKeys callback
-      , (error, results) ->
-        if error
-          reject error
-        else
-          resolve tables: results.get_table_schemas, indexes: results.get_indexes, foreign_keys: results.get_foreign_keys
+    tables = await @_getTables()
+    table_schemas = {}
+    for table in tables
+      table_schemas[table] = await @_getSchema table
+    indexes = await @_getIndexes()
+    foreign_keys = await @_getForeignKeys()
+    return tables: table_schemas, indexes: indexes, foreign_keys: foreign_keys
 
   ## @override AdapterBase::createTable
-  createTable: (model, callback) ->
-    new Promise (resolve, reject) =>
-      model_class = @_connection.models[model]
-      tableName = model_class.tableName
-      sql = []
-      sql.push 'id SERIAL PRIMARY KEY'
-      for column, property of model_class._schema
-        column_sql = _propertyToSQL property
-        if column_sql
-          sql.push "\"#{property._dbname}\" #{column_sql}"
-      sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
-      @_query sql, null, (error) =>
-        if error
-          reject PostgreSQLAdapter.wrapError 'unknown error', error
-        else
-          resolve()
+  createTable: (model) ->
+    model_class = @_connection.models[model]
+    tableName = model_class.tableName
+    sql = []
+    sql.push 'id SERIAL PRIMARY KEY'
+    for column, property of model_class._schema
+      column_sql = _propertyToSQL property
+      if column_sql
+        sql.push "\"#{property._dbname}\" #{column_sql}"
+    sql = "CREATE TABLE \"#{tableName}\" ( #{sql.join ','} )"
+    try
+      await @_pool.query sql
+    catch error
+      throw PostgreSQLAdapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::addColumn
   addColumn: (model, column_property) ->
-    new Promise (resolve, reject) =>
-      model_class = @_connection.models[model]
-      tableName = model_class.tableName
-      sql = "ALTER TABLE \"#{tableName}\" ADD COLUMN \"#{column_property._dbname}\" #{_propertyToSQL column_property}"
-      @_query sql, null, (error) ->
-        if error
-          reject PostgreSQLAdapter.wrapError 'unknown error', error
-        else
-          resolve()
+    model_class = @_connection.models[model]
+    tableName = model_class.tableName
+    sql = "ALTER TABLE \"#{tableName}\" ADD COLUMN \"#{column_property._dbname}\" #{_propertyToSQL column_property}"
+    try
+      await @_pool.query sql
+    catch error
+      throw PostgreSQLAdapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::createIndex
-  createIndex: (model, index, callback) ->
-    new Promise (resolve, reject) =>
-      model_class = @_connection.models[model]
-      tableName = model_class.tableName
-      columns = []
-      for column, order of index.columns
-        columns.push "\"#{column}\" #{if order is -1 then 'DESC' else 'ASC'}"
-      unique = if index.options.unique then 'UNIQUE ' else ''
-      sql = "CREATE #{unique}INDEX \"#{index.options.name}\" ON \"#{tableName}\" (#{columns.join ','})"
-      @_query sql, null, (error) =>
-        if error
-          reject PostgreSQLAdapter.wrapError 'unknown error', error
-        else
-          resolve()
+  createIndex: (model, index) ->
+    model_class = @_connection.models[model]
+    tableName = model_class.tableName
+    columns = []
+    for column, order of index.columns
+      columns.push "\"#{column}\" #{if order is -1 then 'DESC' else 'ASC'}"
+    unique = if index.options.unique then 'UNIQUE ' else ''
+    sql = "CREATE #{unique}INDEX \"#{index.options.name}\" ON \"#{tableName}\" (#{columns.join ','})"
+    try
+      await @_pool.query sql
+    catch error
+      throw PostgreSQLAdapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::createForeignKey
   createForeignKey: (model, column, type, references) ->
-    new Promise (resolve, reject) =>
-      model_class = @_connection.models[model]
-      tableName = model_class.tableName
-      action = switch type
-        when 'nullify' then 'SET NULL'
-        when 'restrict' then 'RESTRICT'
-        when 'delete' then 'CASCADE'
-      sql = "ALTER TABLE \"#{tableName}\" ADD FOREIGN KEY (\"#{column}\") REFERENCES \"#{references.tableName}\"(id) ON DELETE #{action}"
-      @_query sql, null, (error) ->
-        if error
-          reject MySQLAdapter.wrapError 'unknown error', error
-        else
-          resolve()
+    model_class = @_connection.models[model]
+    tableName = model_class.tableName
+    action = switch type
+      when 'nullify' then 'SET NULL'
+      when 'restrict' then 'RESTRICT'
+      when 'delete' then 'CASCADE'
+    sql = "ALTER TABLE \"#{tableName}\" ADD FOREIGN KEY (\"#{column}\") REFERENCES \"#{references.tableName}\"(id) ON DELETE #{action}"
+    try
+      await @_pool.query sql
+    catch error
+      throw MySQLAdapter.wrapError 'unknown error', error
+    return
 
   ## @override AdapterBase::drop
-  drop: (model, callback) ->
-    new Promise (resolve, reject) =>
-      tableName = @_connection.models[model].tableName
-      @_query "DROP TABLE IF EXISTS \"#{tableName}\"", null, (error) ->
-        if error
-          reject PostgreSQLAdapter.wrapError 'unknown error', error
-        else
-          resolve()
+  drop: (model) ->
+    tableName = @_connection.models[model].tableName
+    try
+      await @_pool.query "DROP TABLE IF EXISTS \"#{tableName}\""
+    catch error
+      throw PostgreSQLAdapter.wrapError 'unknown error', error
+    return
 
   _getModelID: (data) ->
     Number data.id
 
   valueToModel: (value, property) ->
     value
-
-  _processSaveError = (tableName, error, callback) ->
-    if error.code is '42P01'
-      error = new Error('table does not exist')
-    else if error.code is '23505'
-      column = ''
-      key = error.message.match /unique constraint \"(.*)\"/
-      if key?
-        column = key[1]
-        key = column.match new RegExp "#{tableName}_([^']*)_key"
-        if key?
-          column = key[1]
-        column = ' ' + column
-      error = new Error('duplicated' + column)
-    else
-      error = PostgreSQLAdapter.wrapError 'unknown error', error
-    callback error
 
   _buildSelect: (model_class, select) ->
     if not select
@@ -290,97 +258,88 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::create
   create: (model, data) ->
-    new Promise (resolve, reject) =>
-      tableName = @_connection.models[model].tableName
-      values = []
-      [ fields, places ] = @_buildUpdateSet model, data, values, true
-      sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES (#{places}) RETURNING id"
-      @_query sql, values, (error, result) ->
-        rows = result?.rows
-        if error
-          _processSaveError tableName, error, reject
-          return
-        if rows?.length is 1 and rows[0].id?
-          resolve rows[0].id
-        else
-          reject new Error 'unexpected rows'
+    tableName = @_connection.models[model].tableName
+    values = []
+    [ fields, places ] = @_buildUpdateSet model, data, values, true
+    sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES (#{places}) RETURNING id"
+    try
+      result = await @_pool.query sql, values
+    catch error
+      throw _processSaveError tableName, error
+    rows = result?.rows
+    if rows?.length is 1 and rows[0].id?
+      return rows[0].id
+    else
+      throw new Error 'unexpected rows'
 
   ## @override AdapterBase::createBulk
   createBulk: (model, data) ->
-    new Promise (resolve, reject) =>
-      tableName = @_connection.models[model].tableName
-      values = []
-      fields = undefined
-      places = []
-      data.forEach (item) =>
-        [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
-        places.push '(' + places_sub + ')'
-      sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES #{places.join ','} RETURNING id"
-      @_query sql, values, (error, result) ->
-        if error
-          _processSaveError tableName, error, reject
-          return
-        ids = result?.rows.map (row) -> row.id
-        if ids.length is data.length
-          resolve ids
-        else
-          reject new Error 'unexpected rows'
+    tableName = @_connection.models[model].tableName
+    values = []
+    fields = undefined
+    places = []
+    data.forEach (item) =>
+      [ fields, places_sub ] = @_buildUpdateSet model, item, values, true
+      places.push '(' + places_sub + ')'
+    sql = "INSERT INTO \"#{tableName}\" (#{fields}) VALUES #{places.join ','} RETURNING id"
+    try
+      result = await @_pool.query sql, values
+    catch error
+      throw _processSaveError tableName, error
+    ids = result?.rows.map (row) -> row.id
+    if ids.length is data.length
+      return ids
+    else
+      throw new Error 'unexpected rows'
 
   ## @override AdapterBase::update
   update: (model, data) ->
-    new Promise (resolve, reject) =>
-      tableName = @_connection.models[model].tableName
-      values = []
-      [ fields ] = @_buildUpdateSet model, data, values
-      values.push data.id
-      sql = "UPDATE \"#{tableName}\" SET #{fields} WHERE id=$#{values.length}"
-      @_query sql, values, (error) ->
-        if error
-          _processSaveError tableName, error, reject
-          return
-        resolve()
+    tableName = @_connection.models[model].tableName
+    values = []
+    [ fields ] = @_buildUpdateSet model, data, values
+    values.push data.id
+    sql = "UPDATE \"#{tableName}\" SET #{fields} WHERE id=$#{values.length}"
+    try
+      await @_pool.query sql, values
+    catch error
+      throw _processSaveError tableName, error
+    return
 
   ## @override AdapterBase::updatePartial
   updatePartial: (model, data, conditions, options) ->
-    new Promise (resolve, reject) =>
-      tableName = @_connection.models[model].tableName
-      values = []
-      [ fields ] = @_buildPartialUpdateSet model, data, values
-      sql = "UPDATE \"#{tableName}\" SET #{fields}"
-      if conditions.length > 0
-        try
-          sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
-        catch e
-          return callback e
-      @_query sql, values, (error, result) ->
-        if error
-          _processSaveError tableName, error, reject
-          return
-        resolve result.rowCount
+    tableName = @_connection.models[model].tableName
+    values = []
+    [ fields ] = @_buildPartialUpdateSet model, data, values
+    sql = "UPDATE \"#{tableName}\" SET #{fields}"
+    if conditions.length > 0
+      try
+        sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, values
+      catch e
+        return callback e
+    try
+      result = await @_pool.query sql, values
+    catch error
+      throw _processSaveError tableName, error
+    return result.rowCount
 
   ## @override AdapterBase::findById
   findById: (model, id, options) ->
-    new Promise (resolve, reject) =>
-      select = @_buildSelect @_connection.models[model], options.select
-      tableName = @_connection.models[model].tableName
-      sql = "SELECT #{select} FROM \"#{tableName}\" WHERE id=$1 LIMIT 1"
-      if options.explain
-        return @_query "EXPLAIN #{sql}", [id], (error, result) ->
-          if error
-            reject error
-            return
-          resolve result
-      @_query sql, [id], (error, result) =>
-        rows = result?.rows
-        if error
-          reject PostgreSQLAdapter.wrapError 'unknown error', error
-          return
-        if rows?.length is 1
-          resolve @_convertToModelInstance model, rows[0], options
-        else if rows?.length > 1
-          reject new Error 'unknown error'
-        else
-          reject new Error 'not found'
+    select = @_buildSelect @_connection.models[model], options.select
+    tableName = @_connection.models[model].tableName
+    sql = "SELECT #{select} FROM \"#{tableName}\" WHERE id=$1 LIMIT 1"
+    if options.explain
+      return await @_pool.query "EXPLAIN #{sql}", [id]
+    try
+      result = await @_pool.query sql, [id]
+    catch error
+      throw PostgreSQLAdapter.wrapError 'unknown error', error
+    rows = result?.rows
+    if rows?.length is 1
+      return @_convertToModelInstance model, rows[0], options
+    else if rows?.length > 1
+      throw new Error 'unknown error'
+    else
+      throw new Error 'not found'
 
   _buildSqlForFind: (model, conditions, options) ->
     if options.group_by or options.group_fields
@@ -425,27 +384,18 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::find
   find: (model, conditions, options) ->
-    new Promise (resolve, reject) =>
-      try
-        [sql, params] = @_buildSqlForFind model, conditions, options
-      catch e
-        reject e
-        return
-      if options.explain
-        return @_query "EXPLAIN #{sql}", params, (error, result) ->
-          if error
-            reject error
-            return
-          resolve result
-      @_query sql, params, (error, result) =>
-        rows = result?.rows
-        if error
-          reject PostgreSQLAdapter.wrapError 'unknown error', error
-          return
-        if options.group_fields
-          resolve rows.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
-        else
-          resolve rows.map (record) => @_convertToModelInstance model, record, options
+    [sql, params] = @_buildSqlForFind model, conditions, options
+    if options.explain
+      return await @_pool.query "EXPLAIN #{sql}", params
+    try
+      result = await @_pool.query sql, params
+    catch error
+      throw PostgreSQLAdapter.wrapError 'unknown error', error
+    rows = result?.rows
+    if options.group_fields
+      return rows.map (record) => @_convertToGroupInstance model, record, options.group_by, options.group_fields
+    else
+      return rows.map (record) => @_convertToModelInstance model, record, options
 
   ## @override AdapterBase::stream
   stream: (model, conditions, options) ->
@@ -475,57 +425,43 @@ class PostgreSQLAdapter extends SQLAdapterBase
 
   ## @override AdapterBase::count
   count: (model, conditions, options) ->
-    new Promise (resolve, reject) =>
-      params = []
-      tableName = @_connection.models[model].tableName
-      sql = "SELECT COUNT(*) AS count FROM \"#{tableName}\""
-      if conditions.length > 0
-        try
-          sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-        catch e
-          reject e
-          return
-      if options.group_by
-        sql += ' GROUP BY ' + options.group_by.join ','
-        if options.conditions_of_group.length > 0
-          try
-            sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
-          catch e
-            reject e
-            return
-        sql = "SELECT COUNT(*) AS count FROM (#{sql}) _sub"
-      #console.log sql, params
-      @_query sql, params, (error, result) =>
-        rows = result?.rows
-        if error
-          reject PostgreSQLAdapter.wrapError 'unknown error', error
-          return
-        if rows?.length isnt 1
-          reject new Error 'unknown error'
-          return
-        resolve Number(rows[0].count)
+    params = []
+    tableName = @_connection.models[model].tableName
+    sql = "SELECT COUNT(*) AS count FROM \"#{tableName}\""
+    if conditions.length > 0
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+    if options.group_by
+      sql += ' GROUP BY ' + options.group_by.join ','
+      if options.conditions_of_group.length > 0
+        sql += ' HAVING ' + @_buildWhere options.group_fields, options.conditions_of_group, params
+      sql = "SELECT COUNT(*) AS count FROM (#{sql}) _sub"
+    #console.log sql, params
+    try
+      result = await @_pool.query sql, params
+    catch error
+      throw PostgreSQLAdapter.wrapError 'unknown error', error
+    rows = result?.rows
+    if rows?.length isnt 1
+      throw new Error 'unknown error'
+    return Number(rows[0].count)
 
   ## @override AdapterBase::delete
   delete: (model, conditions) ->
-    new Promise (resolve, reject) =>
-      params = []
-      tableName = @_connection.models[model].tableName
-      sql = "DELETE FROM \"#{tableName}\""
-      if conditions.length > 0
-        try
-          sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
-        catch e
-          reject e
-          return
-      #console.log sql, params
-      @_query sql, params, (error, result) ->
-        if error and error.code is '23503'
-          reject new Error 'rejected'
-          return
-        if error or not result?
-          reject PostgreSQLAdapter.wrapError 'unknown error', error
-          return
-        resolve result.rowCount
+    params = []
+    tableName = @_connection.models[model].tableName
+    sql = "DELETE FROM \"#{tableName}\""
+    if conditions.length > 0
+      sql += ' WHERE ' + @_buildWhere @_connection.models[model]._schema, conditions, params
+    #console.log sql, params
+    try
+      result = await @_pool.query sql, params
+    catch error
+      if error.code is '23503'
+        throw new Error 'rejected'
+      throw PostgreSQLAdapter.wrapError 'unknown error', error
+    if not result?
+      throw PostgreSQLAdapter.wrapError 'unknown error', error
+    return result.rowCount
 
   ##
   # Connects to the database
