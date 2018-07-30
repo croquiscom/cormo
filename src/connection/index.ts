@@ -68,7 +68,7 @@ ConnectionBase = class ConnectionBase extends EventEmitter {
     this.models = {};
     this._pending_associations = [];
     this._schema_changed = false;
-    this._adapter = require(__dirname + '/../adapters/' + adapter_name)(this);
+    this._adapter = require(__dirname + '/../adapters/' + adapter_name).default(this);
     this._promise_connection = this._adapter.connect(settings).then(() => {
       return this.connected = true;
     }).catch((error) => {

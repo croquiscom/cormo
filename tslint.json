@@ -22,7 +22,8 @@
     ],
     "variable-name": [
       true,
-      "allow-snake-case"
+      "allow-snake-case",
+      "allow-leading-underscore"
     ]
   },
   "rulesDirectory": []

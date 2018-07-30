@@ -1,5 +1,4 @@
 // tslint:disable:max-classes-per-file
-// tslint:disable:no-empty-interface
 // tslint:disable:variable-name
 
 /**
