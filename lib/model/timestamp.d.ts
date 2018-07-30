@@ -1,1 +1,8 @@
-declare var ModelTimestampMixin: any;
+/**
+ * Timestamps
+ * @namespace model
+ */
+declare class ModelTimestamp {
+    static timestamps(): any;
+}
+export { ModelTimestamp };

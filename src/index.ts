@@ -9,10 +9,11 @@
  */
 export { Connection } from './connection';
 
-//#
-// Exports [[#Model]] class
-// @memberOf cormo
-exports.Model = require('./model');
+/**
+ * Exports [[#Model]] class
+ * @memberOf cormo
+ */
+export { Model } from './model';
 
 //#
 // Exports [[#Command]] class

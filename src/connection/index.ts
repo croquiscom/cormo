@@ -1,20 +1,17 @@
-var Model, redis;
+var redis;
 
 import { EventEmitter } from 'events';
-
-Model = require('../model');
-
-import * as _ from 'lodash';
 import * as Toposort from 'toposort-class';
+import { inspect } from 'util';
+import { Model } from '../model';
+
+import { ConnectionAssociation } from './association';
+import { ConnectionManipulate } from './manipulate';
 
 try {
   redis = require('redis');
 } catch (error) { }
 
-import { inspect } from 'util';
-
-import { ConnectionAssociation } from './association';
-import { ConnectionManipulate } from './manipulate';
 
 /**
  * Manages connection to a database
@@ -344,11 +341,17 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
 }
 
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
-  baseCtors.forEach((baseCtor) => {
-    Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
+  for (const baseCtor of baseCtors) {
+    for (const name of Object.getOwnPropertyNames(baseCtor)) {
+      if (name === 'length' || name === 'prototype' || name === 'name') {
+        continue;
+      }
+      derivedCtor[name] = baseCtor[name];
+    }
+    for (const name of Object.getOwnPropertyNames(baseCtor.prototype)) {
       derivedCtor.prototype[name] = baseCtor.prototype[name];
-    });
-  });
+    }
+  }
 }
 
 applyMixins(Connection, [ConnectionAssociation, ConnectionManipulate]);

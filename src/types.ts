@@ -7,7 +7,7 @@
  * @namespace cormo
  */
 
-type ColumnType = 'string' | ICormoTypesString | ICormoTypesStringConstructor | StringConstructor
+export type ColumnType = 'string' | ICormoTypesString | ICormoTypesStringConstructor | StringConstructor
   | 'number' | ICormoTypesNumber | ICormoTypesNumberConstructor | NumberConstructor
   | 'boolean' | ICormoTypesBoolean | ICormoTypesBooleanConstructor | BooleanConstructor
   | 'integer' | ICormoTypesInteger | ICormoTypesIntegerConstructor
@@ -17,7 +17,7 @@ type ColumnType = 'string' | ICormoTypesString | ICormoTypesStringConstructor | 
   | 'recordid' | ICormoTypesRecordID | ICormoTypesRecordIDConstructor
   | 'text' | ICormoTypesText | ICormoTypesTextConstructor;
 
-type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber | ICormoTypesBoolean | ICormoTypesInteger
+export type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber | ICormoTypesBoolean | ICormoTypesInteger
   | ICormoTypesGeoPoint | ICormoTypesDate | ICormoTypesObject | ICormoTypesRecordID | ICormoTypesText;
 
 /**

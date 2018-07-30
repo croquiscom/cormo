@@ -3,8 +3,8 @@
  * @module types
  * @namespace cormo
  */
-declare type ColumnType = 'string' | ICormoTypesString | ICormoTypesStringConstructor | StringConstructor | 'number' | ICormoTypesNumber | ICormoTypesNumberConstructor | NumberConstructor | 'boolean' | ICormoTypesBoolean | ICormoTypesBooleanConstructor | BooleanConstructor | 'integer' | ICormoTypesInteger | ICormoTypesIntegerConstructor | 'geopoint' | ICormoTypesGeoPoint | ICormoTypesGeoPointConstructor | 'date' | ICormoTypesDate | ICormoTypesDateConstructor | DateConstructor | 'object' | ICormoTypesObject | ICormoTypesObjectConstructor | ObjectConstructor | 'recordid' | ICormoTypesRecordID | ICormoTypesRecordIDConstructor | 'text' | ICormoTypesText | ICormoTypesTextConstructor;
-declare type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber | ICormoTypesBoolean | ICormoTypesInteger | ICormoTypesGeoPoint | ICormoTypesDate | ICormoTypesObject | ICormoTypesRecordID | ICormoTypesText;
+export declare type ColumnType = 'string' | ICormoTypesString | ICormoTypesStringConstructor | StringConstructor | 'number' | ICormoTypesNumber | ICormoTypesNumberConstructor | NumberConstructor | 'boolean' | ICormoTypesBoolean | ICormoTypesBooleanConstructor | BooleanConstructor | 'integer' | ICormoTypesInteger | ICormoTypesIntegerConstructor | 'geopoint' | ICormoTypesGeoPoint | ICormoTypesGeoPointConstructor | 'date' | ICormoTypesDate | ICormoTypesDateConstructor | DateConstructor | 'object' | ICormoTypesObject | ICormoTypesObjectConstructor | ObjectConstructor | 'recordid' | ICormoTypesRecordID | ICormoTypesRecordIDConstructor | 'text' | ICormoTypesText | ICormoTypesTextConstructor;
+export declare type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber | ICormoTypesBoolean | ICormoTypesInteger | ICormoTypesGeoPoint | ICormoTypesDate | ICormoTypesObject | ICormoTypesRecordID | ICormoTypesText;
 /**
  * Represents a string, used in model schemas.
  * @memberOf types
