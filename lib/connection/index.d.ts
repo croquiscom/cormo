@@ -20,6 +20,7 @@ declare class Connection extends EventEmitter implements ConnectionAssociation, 
     close(): null;
     model(name: any, schema: any): {
         new (data?: object | undefined): {
+            _runCallbacks(name: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackName, type: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackType): void;
             _defineProperty(object: any, key: any, path: any, enumerable: any): any;
             isDirty(): boolean;
             getChanged(): string[];
@@ -36,6 +37,21 @@ declare class Connection extends EventEmitter implements ConnectionAssociation, 
         _connection: Connection;
         _adapter: AdapterBase;
         _name: string;
+        _loadFromCache(key: string, refresh?: boolean | undefined): Promise<any>;
+        _saveToCache(key: string, ttl: number, data: any): Promise<void>;
+        removeCache(key: string): Promise<void>;
+        afterInitialize(method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        afterFind(method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        beforeSave(this: typeof Model & typeof import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallback, method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        afterSave(this: typeof Model & typeof import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallback, method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        beforeCreate(this: typeof Model & typeof import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallback, method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        afterCreate(this: typeof Model & typeof import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallback, method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        beforeUpdate(this: typeof Model & typeof import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallback, method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        afterUpdate(this: typeof Model & typeof import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallback, method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        beforeDestroy(this: typeof Model & typeof import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallback, method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        afterDestroy(this: typeof Model & typeof import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallback, method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        beforeValidate(this: typeof Model & typeof import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallback, method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
+        afterValidate(this: typeof Model & typeof import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallback, method: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackMethod): void;
         query<T extends Model>(this: new () => T): import("../../../../../../Users/zigzag/work/cormo/src/query").IQueryArray<T>;
         find<T extends Model>(this: new () => T, id: string | number): import("../../../../../../Users/zigzag/work/cormo/src/query").IQuerySingle<T>;
         find<T extends Model>(this: new () => T, id: (string | number)[]): import("../../../../../../Users/zigzag/work/cormo/src/query").IQueryArray<T>;

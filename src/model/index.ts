@@ -8,7 +8,7 @@ import * as util from '../util';
 import { tableize } from '../util/inflector';
 
 import { ModelCache } from './cache';
-import { ModelCallback } from './callback';
+import { ModelCallback, ModelCallbackMethod, ModelCallbackName, ModelCallbackType } from './callback';
 import { ModelPersistence } from './persistence';
 import { ModelQuery, ModelQueryMethod } from './query';
 import { ModelTimestamp } from './timestamp';
@@ -97,6 +97,21 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
   public static async _loadFromCache(key: string, refresh?: boolean): Promise<any> { /**/ }
   public static async _saveToCache(key: string, ttl: number, data: any) { /**/ }
   public static async removeCache(key: string) { /**/ }
+
+  // ModelCallback interface
+  public static afterInitialize(method: ModelCallbackMethod) { /**/ }
+  public static afterFind(method: ModelCallbackMethod) { /**/ }
+  public static beforeSave(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
+  public static afterSave(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
+  public static beforeCreate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
+  public static afterCreate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
+  public static beforeUpdate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
+  public static afterUpdate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
+  public static beforeDestroy(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
+  public static afterDestroy(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
+  public static beforeValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
+  public static afterValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
+  public _runCallbacks(name: ModelCallbackName, type: ModelCallbackType) { /**/ }
 
   // ModelQuery interface
   public static query<T extends Model>(this: { new(): T }): IQueryArray<T> {

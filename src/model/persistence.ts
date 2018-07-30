@@ -26,7 +26,6 @@ class ModelPersistence {
   // @return {Array<Model>} created records
   // @promise
   static async createBulk(data) {
-    var promises, records;
     await this._checkReady();
     if (!Array.isArray(data)) {
       throw new Error('data is not an array');
@@ -34,28 +33,25 @@ class ModelPersistence {
     if (data.length === 0) {
       return [];
     }
-    records = data.map((item) => {
+    const records = data.map((item) => {
       return this.build(item);
     });
-    promises = records.map(function(record) {
-      return record.validate();
-    });
-    await Promise.all(promises);
-    records.forEach(function(record) {
-      return record._runCallbacks('save', 'before');
-    });
-    records.forEach(function(record) {
-      return record._runCallbacks('create', 'before');
-    });
+    await Promise.all(records.map((record) => record.validate()));
+    for (const record of records) {
+      record._runCallbacks('save', 'before');
+    }
+    for (const record of records) {
+      record._runCallbacks('create', 'before');
+    }
     try {
-      return (await this._createBulk(records));
+      return await this._createBulk(records);
     } finally {
-      records.forEach(function(record) {
-        return record._runCallbacks('create', 'after');
-      });
-      records.forEach(function(record) {
-        return record._runCallbacks('save', 'after');
-      });
+      for (const record of records) {
+        record._runCallbacks('create', 'after');
+      }
+      for (const record of records) {
+        record._runCallbacks('save', 'after');
+      }
     }
   }
 

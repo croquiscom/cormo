@@ -44,6 +44,13 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
     upsert(updates: object): PromiseLike<number>;
     delete(): PromiseLike<number>;
 }
+export interface QueryOptions {
+    cache: {
+        key: string;
+        ttl: number;
+        refresh?: boolean;
+    };
+}
 /**
  * Collects conditions to query
  */
@@ -54,6 +61,7 @@ declare class Query<T> {
     private _adapter;
     private _ifs;
     private _current_if;
+    private _options;
     /**
      * Creates a query instance
      */
@@ -141,7 +149,7 @@ declare class Query<T> {
      * @param {Boolean} options.refresh don't load from cache if true
      * @chainable
      */
-    cache(options: any): this;
+    cache(options: QueryOptions['cache']): this;
     /**
      * Returns associated objects also
      * @param {String} column
