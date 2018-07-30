@@ -93,6 +93,11 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
 
   public static _name: string;
 
+  // ModelCache interface
+  public static async _loadFromCache(key: string, refresh?: boolean): Promise<any> { /**/ }
+  public static async _saveToCache(key: string, ttl: number, data: any) { /**/ }
+  public static async removeCache(key: string) { /**/ }
+
   // ModelQuery interface
   public static query<T extends Model>(this: { new(): T }): IQueryArray<T> {
     return {} as IQueryArray<T>;

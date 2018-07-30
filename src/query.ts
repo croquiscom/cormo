@@ -58,6 +58,14 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   delete(): PromiseLike<number>;
 }
 
+export interface QueryOptions {
+  cache: {
+    key: string,
+    ttl: number,
+    refresh?: boolean,
+  };
+}
+
 /**
  * Collects conditions to query
  */
@@ -68,6 +76,7 @@ class Query<T> {
   private _adapter: AdapterBase;
   private _ifs: boolean[];
   private _current_if: boolean;
+  private _options: QueryOptions;
 
   /**
    * Creates a query instance
@@ -82,9 +91,9 @@ class Query<T> {
     this._conditions = [];
     this._includes = [];
     this._options = {
-      orders: [],
       conditions_of_group: [],
-      lean: model.lean_query
+      lean: model.lean_query,
+      orders: [],
     };
   }
 
@@ -331,7 +340,7 @@ class Query<T> {
    * @param {Boolean} options.refresh don't load from cache if true
    * @chainable
    */
-  public cache(options) {
+  public cache(options: QueryOptions['cache']) {
     if (!this._current_if) {
       return this;
     }
@@ -366,22 +375,20 @@ class Query<T> {
    * @see AdapterBase::find
    */
   public async exec(options?) {
-    var cache_key, cache_options, error, records;
     await this._model._checkReady();
-    if ((cache_options = this._options.cache) && (cache_key = cache_options.key)) {
+    if (this._options.cache && this._options.cache.key) {
       try {
         // try cache
-        return (await this._model._loadFromCache(cache_key, cache_options.refresh));
-      } catch (error1) {
-        error = error1;
+        return await this._model._loadFromCache(this._options.cache.key, this._options.cache.refresh);
+      } catch (error) {
         // no cache, execute query
-        records = (await this._execAndInclude(options));
+        const records = (await this._execAndInclude(options));
         // save result to cache
-        await this._model._saveToCache(cache_key, cache_options.ttl, records);
+        await this._model._saveToCache(this._options.cache.key, this._options.cache.ttl, records);
         return records;
       }
     } else {
-      return (await this._execAndInclude(options));
+      return await this._execAndInclude(options);
     }
   }
 

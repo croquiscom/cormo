@@ -1,54 +1,54 @@
 import { tableize } from '../util/inflector';
+import { Model } from './index';
 
 /**
  * Model cache
  * @namespace model
  */
 class ModelCache {
-  static async _loadFromCache(key, refresh) {
-    var redis, value;
+  public static async _loadFromCache(this: typeof Model, key: string, refresh?: boolean): Promise<any> {
     if (refresh) {
       throw new Error('error');
     }
-    redis = (await this._connection._connectRedisCache());
+    const redis = await this._connection._connectRedisCache();
     key = 'CC.' + tableize(this._name) + ':' + key;
-    value = (await new Promise(function(resolve, reject) {
-      return redis.get(key, function(error, value) {
+    const value = await new Promise<string>((resolve, reject) => {
+      redis.get(key, (error: Error, v: string) => {
         if (error) {
-          return reject(error);
+          reject(error);
+          return;
         }
-        return resolve(value);
+        resolve(v);
       });
-    }));
+    });
     if (value == null) {
       throw new Error('error');
     }
     return JSON.parse(value);
   }
 
-  static async _saveToCache(key, ttl, data) {
-    var redis;
-    redis = (await this._connection._connectRedisCache());
+  public static async _saveToCache(this: typeof Model, key: string, ttl: number, data: any) {
+    const redis = await this._connection._connectRedisCache();
     key = 'CC.' + tableize(this._name) + ':' + key;
-    return (await new Promise(function(resolve, reject) {
-      return redis.setex(key, ttl, JSON.stringify(data), function(error) {
+    await new Promise((resolve, reject) => {
+      redis.setex(key, ttl, JSON.stringify(data), (error: Error) => {
         if (error) {
-          return reject(error);
+          reject(error);
+          return;
         }
-        return resolve();
+        resolve();
       });
-    }));
+    });
   }
 
-  static async removeCache(key) {
-    var redis;
-    redis = (await this._connection._connectRedisCache());
+  public static async removeCache(this: typeof Model, key: string) {
+    const redis = await this._connection._connectRedisCache();
     key = 'CC.' + tableize(this._name) + ':' + key;
-    return (await new Promise(function(resolve, reject) {
-      return redis.del(key, function(error, count) {
-        return resolve();
+    await new Promise((resolve) => {
+      redis.del(key, () => {
+        resolve();
       });
-    }));
+    });
   }
 }
 
