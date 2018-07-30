@@ -13,6 +13,11 @@ export { Connection } from './connection';
  */
 export { Model } from './model';
 /**
+ * Exports [[#Command]] class
+ * @memberOf cormo
+ */
+export { Command } from './command';
+/**
  * Exports [[#types]] module
  * @memberOf cormo
  */
