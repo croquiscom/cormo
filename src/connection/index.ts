@@ -7,11 +7,11 @@ import { Model } from '../model';
 
 import { ConnectionAssociation } from './association';
 import { ConnectionManipulate } from './manipulate';
+import { AdapterBase } from '../adapters/base';
 
 try {
   redis = require('redis');
 } catch (error) { }
-
 
 /**
  * Manages connection to a database
@@ -26,12 +26,12 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
   // @static
   // @see Connection::constructor
 
-  //#
-  // Indicates the adapter associated to this connection
-  // @property _adapter
-  // @type AdapterBase
-  // @private
-  // @see Connection::constructor
+  /**
+   * Indicates the adapter associated to this connection
+   * @private
+   * @see Connection::constructor
+   */
+  public _adapter: AdapterBase;
 
   //#
   // Model lists using this connection.

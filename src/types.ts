@@ -265,3 +265,26 @@ export {
   CormoTypesText as Text,
   _toCORMOType,
 };
+
+/**
+ * A pseudo type represents a record's unique identifier.
+ *
+ * Its real type differs by adapters.
+ *
+ * * String for MongoDB
+ * * Integer for MySQL, SQLite3, PostegreSQL
+ * @namespace ptypes
+ */
+export type RecordID = string | number;
+
+/**
+ * A pseudo type represents an integer
+ * @namespace ptypes
+ */
+export type Integer = number;
+
+/**
+ * A pseudo type represents a two - dimensional point
+ * @namespace ptypes
+ */
+export type GeoPoint = [number, number];

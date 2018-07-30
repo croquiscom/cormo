@@ -1,4 +1,8 @@
 import * as _ from 'lodash';
+
+import { AdapterBase } from '../adapters/base';
+import { Connection } from '../connection';
+import { IQueryArray, IQuerySingle, Query } from '../query';
 import * as types from '../types';
 import * as util from '../util';
 import { tableize } from '../util/inflector';
@@ -6,7 +10,7 @@ import { tableize } from '../util/inflector';
 import { ModelCache } from './cache';
 import { ModelCallback } from './callback';
 import { ModelPersistence } from './persistence';
-import { ModelQuery } from './query';
+import { ModelQuery, ModelQueryMethod } from './query';
 import { ModelTimestamp } from './timestamp';
 import { ModelValidate } from './validate';
 
@@ -71,26 +75,53 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
    */
   public static lean_query = false;
 
-  //#
-  // @property tableName
-  // @type String
-  // @static
+  public static tableName: string;
 
-  //#
-  // Indicates the connection associated to this model
-  // @property _connection
-  // @type Connection
-  // @private
-  // @static
-  // @see Model.connection
+  /**
+   * Indicates the connection associated to this model
+   * @see Model.connection
+   * @private
+   */
+  public static _connection: Connection;
 
-  //#
-  // Indicates the adapter associated to this model
-  // @property _adapter
-  // @type AdapterBase
-  // @private
-  // @static
-  // @see Model.connection
+  /**
+   * Indicates the adapter associated to this model
+   * @private
+   * @see Model.connection
+   */
+  public static _adapter: AdapterBase;
+
+  public static _name: string;
+
+  // ModelQuery interface
+  public static query<T extends Model>(this: { new(): T }): IQueryArray<T> {
+    return {} as IQueryArray<T>;
+  }
+  public static find<T extends Model>(this: { new(): T }, id: types.RecordID): IQuerySingle<T>;
+  public static find<T extends Model>(this: { new(): T }, id: types.RecordID[]): IQueryArray<T>;
+  public static find<T extends Model>(
+    this: { new(): T }, id: types.RecordID | types.RecordID[],
+  ): IQuerySingle<T> | IQueryArray<T> {
+    return {} as IQueryArray<T>;
+  }
+  public static findPreserve<T extends Model>(this: { new(): T }, ids: types.RecordID[]): IQueryArray<T> {
+    return {} as IQueryArray<T>;
+  }
+  public static where<T extends Model>(this: { new(): T }, condition?: object): IQueryArray<T> {
+    return {} as IQueryArray<T>;
+  }
+  public static select<T extends Model>(this: { new(): T }, columns: string): IQueryArray<T> {
+    return {} as IQueryArray<T>;
+  }
+  public static order<T extends Model>(this: { new(): T }, orders: string): IQueryArray<T> {
+    return {} as IQueryArray<T>;
+  }
+  public static _createQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T> {
+    return {} as Query<T>;
+  }
+  public static _createOptionalQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T> {
+    return {} as Query<T>;
+  }
 
   //#
   // Schema for this model.
@@ -161,7 +192,7 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
       value: []
     });
     if (!this.tableName) {
-      return this.tableName = tableize(name);
+      this.tableName = tableize(name);
     }
   }
 
@@ -311,7 +342,7 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
   //#
   // Creates a record
   // @param {Object} [data={}]
-  constructor(data) {
+  constructor(data?: object) {
     var adapter, column, ctor, id, j, last, len, obj, parts, path, property, ref, schema, selected_columns, selected_columns_raw, value;
     data = data || {};
     ctor = this.constructor;

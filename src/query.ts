@@ -1,14 +1,78 @@
 import * as _ from 'lodash';
 import * as stream from 'stream';
 
+import { AdapterBase } from './adapters/base';
+import { Connection } from './connection';
+import { Model } from './model';
+import { RecordID } from './types';
+
+export interface IQuerySingle<T> extends PromiseLike<T> {
+  find(id: RecordID): IQuerySingle<T>;
+  find(id: RecordID[]): IQueryArray<T>;
+  findPreserve(id: RecordID[]): IQueryArray<T>;
+  where(condition?: object): IQuerySingle<T>;
+  select(columns: string): IQuerySingle<T>;
+  order(orders: string): IQuerySingle<T>;
+  group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
+  one(): IQuerySingle<T>;
+  limit(limit?: number): IQuerySingle<T>;
+  skip(skip?: number): IQuerySingle<T>;
+  if(condition: boolean): IQuerySingle<T>;
+  endif(): IQuerySingle<T>;
+  include(column: string, select?: string): IQuerySingle<T>;
+
+  exec(): PromiseLike<T>;
+  then<TResult1 = T, TResult2 = never>(
+    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+  ): PromiseLike<TResult1 | TResult2>;
+  count(): PromiseLike<number>;
+  update(updates: object): PromiseLike<number>;
+  upsert(updates: object): PromiseLike<number>;
+  delete(): PromiseLike<number>;
+}
+
+export interface IQueryArray<T> extends PromiseLike<T[]> {
+  find(id: RecordID): IQuerySingle<T>;
+  find(id: RecordID[]): IQueryArray<T>;
+  findPreserve(id: RecordID[]): IQueryArray<T>;
+  where(condition?: object): IQueryArray<T>;
+  select(columns: string): IQueryArray<T>;
+  order(orders: string): IQueryArray<T>;
+  group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
+  one(): IQuerySingle<T>;
+  limit(limit?: number): IQueryArray<T>;
+  skip(skip?: number): IQueryArray<T>;
+  if(condition: boolean): IQueryArray<T>;
+  endif(): IQueryArray<T>;
+  include(column: string, select?: string): IQueryArray<T>;
+
+  exec(): PromiseLike<T[]>;
+  then<TResult1 = T[], TResult2 = never>(
+    onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+  ): PromiseLike<TResult1 | TResult2>;
+  count(): PromiseLike<number>;
+  update(updates: object): PromiseLike<number>;
+  upsert(updates: object): PromiseLike<number>;
+  delete(): PromiseLike<number>;
+}
+
 /**
  * Collects conditions to query
  */
-class Query {
-  //#
-  // Creates a query instance
-  // @param {Class<Model>} model
-  constructor(model) {
+class Query<T> {
+  private _model: typeof Model;
+  private _name: string;
+  private _connection: Connection;
+  private _adapter: AdapterBase;
+  private _ifs: boolean[];
+  private _current_if: boolean;
+
+  /**
+   * Creates a query instance
+   */
+  constructor(model: typeof Model) {
     this._model = model;
     this._name = model._name;
     this._connection = model._connection;
@@ -24,11 +88,11 @@ class Query {
     };
   }
 
-  //#
-  // Finds a record by id
-  // @param {RecordID|Array<RecordID>} id
-  // @chainable
-  find(id) {
+  /**
+   * Finds a record by id
+   * @chainable
+   */
+  public find(id: RecordID | RecordID[]): Query<T> {
     if (!this._current_if) {
       return this;
     }
@@ -42,11 +106,11 @@ class Query {
     return this;
   }
 
-  //#
-  // Finds records by ids while preserving order.
-  // @param {Array<RecordID>} ids
-  // @chainable
-  findPreserve(ids) {
+  /**
+   * Finds records by ids while preserving order.
+   * @chainable
+   */
+  public findPreserve(ids: RecordID[]): Query<T> {
     if (!this._current_if) {
       return this;
     }
@@ -56,11 +120,11 @@ class Query {
     return this;
   }
 
-  //#
-  // Finds records near target
-  // @param {Object} target
-  // @chainable
-  near(target) {
+  /**
+   * Finds records near target
+   * @chainable
+   */
+  public near(target: object) {
     if (!this._current_if) {
       return this;
     }
@@ -68,25 +132,11 @@ class Query {
     return this;
   }
 
-  //#
-  // @private
-  _addCondition(condition) {
-    var keys;
-    if (this._options.group_fields) {
-      keys = Object.keys(condition);
-      if (keys.length === 1 && this._options.group_fields.hasOwnProperty(keys[0])) {
-        this._options.conditions_of_group.push(condition);
-        return;
-      }
-    }
-    return this._conditions.push(condition);
-  }
-
-  //#
-  // Finds records by condition
-  // @param {Object} condition
-  // @chainable
-  where(condition) {
+  /**
+   * Finds records by condition
+   * @chainable
+   */
+  public where(condition?: object) {
     if (!this._current_if) {
       return this;
     }
@@ -100,11 +150,11 @@ class Query {
     return this;
   }
 
-  //#
-  // Selects columns for result
-  // @param {String} columns
-  // @chainable
-  select(columns) {
+  /**
+   * Selects columns for result
+   * @chainable
+   */
+  public select(columns: string) {
     var intermediate_paths, schema_columns, select, select_raw;
     if (!this._current_if) {
       return this;
@@ -137,11 +187,11 @@ class Query {
     return this;
   }
 
-  //#
-  // Specifies orders of result
-  // @param {String} orders
-  // @chainable
-  order(orders) {
+  /**
+   * Specifies orders of result
+   * @chainable
+   */
+  public order(orders: string) {
     var avaliable_columns;
     if (!this._current_if) {
       return this;
@@ -167,12 +217,11 @@ class Query {
     return this;
   }
 
-  //#
-  // Groups result records
-  // @param {String} group_by
-  // @param {Object} fields
-  // @chainable
-  group(group_by, fields) {
+  /**
+   * Groups result records
+   * @chainable
+   */
+  public group<U = T>(group_by: string | null, fields: object) {
     var columns, schema_columns;
     if (!this._current_if) {
       return this;
@@ -189,12 +238,13 @@ class Query {
     return this;
   }
 
-  //#
-  // Returns only one record (or null if does not exists).
-
-  // This is different from limit(1). limit(1) returns array of length 1 while this returns an instance.
-  // @chainable
-  one() {
+  /**
+   * Returns only one record (or null if does not exists).
+   *
+   * This is different from limit(1). limit(1) returns array of length 1 while this returns an instance.
+   * @chainable
+   */
+  public one() {
     if (!this._current_if) {
       return this;
     }
@@ -203,11 +253,11 @@ class Query {
     return this;
   }
 
-  //#
-  // Sets limit of query
-  // @param {Number} limit
-  // @chainable
-  limit(limit) {
+  /**
+   * Sets limit of query
+   * @chainable
+   */
+  public limit(limit: number) {
     if (!this._current_if) {
       return this;
     }
@@ -215,11 +265,11 @@ class Query {
     return this;
   }
 
-  //#
-  // Sets skip of query
-  // @param {Number} skip
-  // @chainable
-  skip(skip) {
+  /**
+   * Sets skip of query
+   * @chainable
+   */
+  public skip(skip: number) {
     if (!this._current_if) {
       return this;
     }
@@ -227,12 +277,12 @@ class Query {
     return this;
   }
 
-  //#
-  // Returns raw instances instead of model instances
-  // @param {Boolean} lean=true
-  // @chainable
-  // @see Query::exec
-  lean(lean = true) {
+  /**
+   * Returns raw instances instead of model instances
+   * @chainable
+   * @see Query::exec
+   */
+  public lean(lean = true) {
     if (!this._current_if) {
       return this;
     }
@@ -240,22 +290,23 @@ class Query {
     return this;
   }
 
-  //#
-  // Makes a part of the query chain conditional
-  // @param {Boolean} condition
-  // @chainable
-  // @see Query::endif
-  if(condition) {
+  /**
+   * Makes a part of the query chain conditional
+   * @chainable
+   * @see Query::endif
+   */
+  public if(condition: boolean) {
     this._ifs.push(condition);
     this._current_if && (this._current_if = condition);
     return this;
   }
 
-  //#
-  // Ends last if
-  // @chainable
-  // @see Query::if
-  endif() {
+  /**
+   * Ends last if
+   * @chainable
+   * @see Query::if
+   */
+  public endif() {
     var condition, i, len, ref;
     this._ifs.pop();
     this._current_if = true;
@@ -267,19 +318,20 @@ class Query {
     return this;
   }
 
-  //#
-  // Cache result.
-
-  // If cache of key exists, actual query does not performed.
-  // If cache does not exist, query result will be saved in cache.
-
-  // Redis is used to cache.
-  // @param {Object} options
-  // @param {String} options.key
-  // @param {Number} options.ttl TTL in seconds
-  // @param {Boolean} options.refresh don't load from cache if true
-  // @chainable
-  cache(options) {
+  /**
+   * Cache result.
+   *
+   * If cache of key exists, actual query does not performed.
+   * If cache does not exist, query result will be saved in cache.
+   *
+   * Redis is used to cache.
+   * @param {Object} options
+   * @param {String} options.key
+   * @param {Number} options.ttl TTL in seconds
+   * @param {Boolean} options.refresh don't load from cache if true
+   * @chainable
+   */
+  public cache(options) {
     if (!this._current_if) {
       return this;
     }
@@ -287,12 +339,13 @@ class Query {
     return this;
   }
 
-  //#
-  // Returns associated objects also
-  // @param {String} column
-  // @param {String} [select]
-  // @chainable
-  include(column, select) {
+  /**
+   * Returns associated objects also
+   * @param {String} column
+   * @param {String} [select]
+   * @chainable
+   */
+  public include(column, select) {
     if (!this._current_if) {
       return this;
     }
@@ -303,9 +356,187 @@ class Query {
     return this;
   }
 
-  //#
-  // @private
-  async _exec(options) {
+  /**
+   * Executes the query
+   * @param {Object} [options]
+   * @param {Boolean} [options.skip_log=false]
+   * @return {Model|Array<Model>}
+   * @promise
+   * @see AdapterBase::findById
+   * @see AdapterBase::find
+   */
+  public async exec(options?) {
+    var cache_key, cache_options, error, records;
+    await this._model._checkReady();
+    if ((cache_options = this._options.cache) && (cache_key = cache_options.key)) {
+      try {
+        // try cache
+        return (await this._model._loadFromCache(cache_key, cache_options.refresh));
+      } catch (error1) {
+        error = error1;
+        // no cache, execute query
+        records = (await this._execAndInclude(options));
+        // save result to cache
+        await this._model._saveToCache(cache_key, cache_options.ttl, records);
+        return records;
+      }
+    } else {
+      return (await this._execAndInclude(options));
+    }
+  }
+
+  /**
+   * Executes the query and returns a readable stream
+   * @param {Object} [options]
+   * @param {Boolean} [options.skip_log=false]
+   * @return {Readable}
+   * @see AdapterBase::findById
+   * @see AdapterBase::find
+   */
+  public stream() {
+    var transformer;
+    transformer = new stream.Transform({
+      objectMode: true
+    });
+    transformer._transform = function(chunk, encoding, callback) {
+      this.push(chunk);
+      return callback();
+    };
+    this._model._checkReady().then(() => {
+      return this._adapter.stream(this._name, this._conditions, this._options).on('error', function(error) {
+        return transformer.emit('error', error);
+      }).pipe(transformer);
+    });
+    return transformer;
+  }
+
+  /**
+   * Explains the query
+   * @return {Object}
+   * @promise
+   */
+  public async explain() {
+    this._options.cache = null;
+    this._options.explain = true;
+    this._includes = [];
+    return (await this.exec({
+      skip_log: true
+    }));
+  }
+
+  /**
+   * Executes the query as a promise (.then == .exec().then)
+   * @param {Function} fulfilled
+   * @param {Function} rejected
+   * @promise
+   */
+  public then(fulfilled, rejected) {
+    return this.exec().then(fulfilled, rejected);
+  }
+
+  /**
+   * Executes the query as a count operation
+   * @return {Number}
+   * @promise
+   * @see AdapterBase::count
+   */
+  public async count() {
+    await this._model._checkReady();
+    if (this._id || this._find_single_id) {
+      this._conditions.push({
+        id: this._id
+      });
+      delete this._id;
+    }
+    return (await this._adapter.count(this._name, this._conditions, this._options));
+  }
+
+  /**
+   * Executes the query as a update operation
+   * @param {Object} updates
+   * @return {Number}
+   * @promise
+   * @see AdapterBase::count
+   */
+  public async update(updates): Promise<number> {
+    var data, errors;
+    await this._model._checkReady();
+    errors = [];
+    data = {};
+    this._validateAndBuildSaveData(errors, data, updates, '', updates);
+    if (errors.length > 0) {
+      throw new Error(errors.join(','));
+    }
+    if (this._id || this._find_single_id) {
+      this._conditions.push({
+        id: this._id
+      });
+      delete this._id;
+    }
+    this._connection.log(this._name, 'update', {
+      data: data,
+      conditions: this._conditions,
+      options: this._options
+    });
+    return (await this._adapter.updatePartial(this._name, data, this._conditions, this._options));
+  }
+
+  /**
+   * Executes the query as an insert or update operation
+   * @param {Object} updates
+   * @return {Number}
+   * @promise
+   * @see AdapterBase::count
+   */
+  public async upsert(updates): Promise<number> {
+    var data, errors;
+    await this._model._checkReady();
+    errors = [];
+    data = {};
+    this._validateAndBuildSaveData(errors, data, updates, '', updates);
+    if (errors.length > 0) {
+      throw new Error(errors.join(','));
+    }
+    if (this._id || this._find_single_id) {
+      this._conditions.push({
+        id: this._id
+      });
+      delete this._id;
+    }
+    this._connection.log(this._name, 'upsert', {
+      data: data,
+      conditions: this._conditions,
+      options: this._options
+    });
+    return (await this._adapter.upsert(this._name, data, this._conditions, this._options));
+  }
+
+  /**
+   * Executes the query as a delete operation
+   * @param {Object} [options]
+   * @param {Boolean} [options.skip_log=false]
+   * @return {Number}
+   * @promise
+   * @see AdapterBase::delete
+   */
+  public async delete(options?): Promise<number> {
+    await this._model._checkReady();
+    if (this._id || this._find_single_id) {
+      this._conditions.push({
+        id: this._id
+      });
+      delete this._id;
+    }
+    if (!(options != null ? options.skip_log : void 0)) {
+      this._connection.log(this._name, 'delete', {
+        conditions: this._conditions
+      });
+    }
+    await this._doArchiveAndIntegrity(options);
+    return (await this._adapter.delete(this._name, this._conditions));
+  }
+
+  private async _exec(options) {
     var error, expected_count, record, records;
     if (this._find_single_id && this._conditions.length === 0) {
       if (!(options != null ? options.skip_log : void 0)) {
@@ -384,9 +615,7 @@ class Query {
     }
   }
 
-  //#
-  // @private
-  async _execAndInclude(options) {
+  private async _execAndInclude(options) {
     var records;
     records = (await this._exec(options));
     await Promise.all(this._includes.map(async (include) => {
@@ -398,99 +627,7 @@ class Query {
     return records;
   }
 
-  //#
-  // Executes the query
-  // @param {Object} [options]
-  // @param {Boolean} [options.skip_log=false]
-  // @return {Model|Array<Model>}
-  // @promise
-  // @see AdapterBase::findById
-  // @see AdapterBase::find
-  async exec(options) {
-    var cache_key, cache_options, error, records;
-    await this._model._checkReady();
-    if ((cache_options = this._options.cache) && (cache_key = cache_options.key)) {
-      try {
-        // try cache
-        return (await this._model._loadFromCache(cache_key, cache_options.refresh));
-      } catch (error1) {
-        error = error1;
-        // no cache, execute query
-        records = (await this._execAndInclude(options));
-        // save result to cache
-        await this._model._saveToCache(cache_key, cache_options.ttl, records);
-        return records;
-      }
-    } else {
-      return (await this._execAndInclude(options));
-    }
-  }
-
-  //#
-  // Executes the query and returns a readable stream
-  // @param {Object} [options]
-  // @param {Boolean} [options.skip_log=false]
-  // @return {Readable}
-  // @see AdapterBase::findById
-  // @see AdapterBase::find
-  stream() {
-    var transformer;
-    transformer = new stream.Transform({
-      objectMode: true
-    });
-    transformer._transform = function(chunk, encoding, callback) {
-      this.push(chunk);
-      return callback();
-    };
-    this._model._checkReady().then(() => {
-      return this._adapter.stream(this._name, this._conditions, this._options).on('error', function(error) {
-        return transformer.emit('error', error);
-      }).pipe(transformer);
-    });
-    return transformer;
-  }
-
-  //#
-  // Explains the query
-  // @return {Object}
-  // @promise
-  async explain() {
-    this._options.cache = null;
-    this._options.explain = true;
-    this._includes = [];
-    return (await this.exec({
-      skip_log: true
-    }));
-  }
-
-  //#
-  // Executes the query as a promise (.then == .exec().then)
-  // @param {Function} fulfilled
-  // @param {Function} rejected
-  // @promise
-  then(fulfilled, rejected) {
-    return this.exec().then(fulfilled, rejected);
-  }
-
-  //#
-  // Executes the query as a count operation
-  // @return {Number}
-  // @promise
-  // @see AdapterBase::count
-  async count() {
-    await this._model._checkReady();
-    if (this._id || this._find_single_id) {
-      this._conditions.push({
-        id: this._id
-      });
-      delete this._id;
-    }
-    return (await this._adapter.count(this._name, this._conditions, this._options));
-  }
-
-  //#
-  // @private
-  _validateAndBuildSaveData(errors, data, updates, path, object) {
+  private _validateAndBuildSaveData(errors, data, updates, path, object) {
     var column, error, model, property, schema, temp;
     model = this._model;
     schema = model._schema;
@@ -520,65 +657,7 @@ class Query {
     }
   }
 
-  //#
-  // Executes the query as a update operation
-  // @param {Object} updates
-  // @return {Number}
-  // @promise
-  // @see AdapterBase::count
-  async update(updates) {
-    var data, errors;
-    await this._model._checkReady();
-    errors = [];
-    data = {};
-    this._validateAndBuildSaveData(errors, data, updates, '', updates);
-    if (errors.length > 0) {
-      throw new Error(errors.join(','));
-    }
-    if (this._id || this._find_single_id) {
-      this._conditions.push({
-        id: this._id
-      });
-      delete this._id;
-    }
-    this._connection.log(this._name, 'update', {
-      data: data,
-      conditions: this._conditions,
-      options: this._options
-    });
-    return (await this._adapter.updatePartial(this._name, data, this._conditions, this._options));
-  }
-
-  //#
-  // Executes the query as an insert or update operation
-  // @param {Object} updates
-  // @return {Number}
-  // @promise
-  // @see AdapterBase::count
-  async upsert(updates) {
-    var data, errors;
-    await this._model._checkReady();
-    errors = [];
-    data = {};
-    this._validateAndBuildSaveData(errors, data, updates, '', updates);
-    if (errors.length > 0) {
-      throw new Error(errors.join(','));
-    }
-    if (this._id || this._find_single_id) {
-      this._conditions.push({
-        id: this._id
-      });
-      delete this._id;
-    }
-    this._connection.log(this._name, 'upsert', {
-      data: data,
-      conditions: this._conditions,
-      options: this._options
-    });
-    return (await this._adapter.upsert(this._name, data, this._conditions, this._options));
-  }
-
-  async _doIntegrityActions(integrities, ids) {
+  private async _doIntegrityActions(integrities, ids) {
     var promises;
     promises = integrities.map(async (integrity) => {
       var count;
@@ -596,9 +675,7 @@ class Query {
     return (await Promise.all(promises));
   }
 
-  //#
-  // @private
-  async _doArchiveAndIntegrity(options) {
+  private async _doArchiveAndIntegrity(options) {
     var archive_records, ids, integrities, need_archive, need_child_archive, need_integrity, query, records;
     need_archive = this._model.archive;
     integrities = this._model._integrities.filter(function(integrity) {
@@ -640,28 +717,16 @@ class Query {
     await this._doIntegrityActions(integrities, ids);
   }
 
-  //#
-  // Executes the query as a delete operation
-  // @param {Object} [options]
-  // @param {Boolean} [options.skip_log=false]
-  // @return {Number}
-  // @promise
-  // @see AdapterBase::delete
-  async delete(options) {
-    await this._model._checkReady();
-    if (this._id || this._find_single_id) {
-      this._conditions.push({
-        id: this._id
-      });
-      delete this._id;
+  private _addCondition(condition) {
+    var keys;
+    if (this._options.group_fields) {
+      keys = Object.keys(condition);
+      if (keys.length === 1 && this._options.group_fields.hasOwnProperty(keys[0])) {
+        this._options.conditions_of_group.push(condition);
+        return;
+      }
     }
-    if (!(options != null ? options.skip_log : void 0)) {
-      this._connection.log(this._name, 'delete', {
-        conditions: this._conditions
-      });
-    }
-    await this._doArchiveAndIntegrity(options);
-    return (await this._adapter.delete(this._name, this._conditions));
+    return this._conditions.push(condition);
   }
 }
 

@@ -125,3 +125,23 @@ declare const CormoTypesText: ICormoTypesTextConstructor;
  */
 declare function _toCORMOType(type: ColumnType): ColumnTypeInternal;
 export { CormoTypesString as String, CormoTypesNumber as Number, CormoTypesBoolean as Boolean, CormoTypesInteger as Integer, CormoTypesGeoPoint as GeoPoint, CormoTypesDate as Date, CormoTypesObject as Object, CormoTypesRecordID as RecordID, CormoTypesText as Text, _toCORMOType, };
+/**
+ * A pseudo type represents a record's unique identifier.
+ *
+ * Its real type differs by adapters.
+ *
+ * * String for MongoDB
+ * * Integer for MySQL, SQLite3, PostegreSQL
+ * @namespace ptypes
+ */
+export declare type RecordID = string | number;
+/**
+ * A pseudo type represents an integer
+ * @namespace ptypes
+ */
+export declare type Integer = number;
+/**
+ * A pseudo type represents a two - dimensional point
+ * @namespace ptypes
+ */
+export declare type GeoPoint = [number, number];

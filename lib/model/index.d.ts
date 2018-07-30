@@ -1,7 +1,11 @@
+import { AdapterBase } from '../adapters/base';
+import { Connection } from '../connection';
+import { IQueryArray, IQuerySingle, Query } from '../query';
+import * as types from '../types';
 import { ModelCache } from './cache';
 import { ModelCallback } from './callback';
 import { ModelPersistence } from './persistence';
-import { ModelQuery } from './query';
+import { ModelQuery, ModelQueryMethod } from './query';
 import { ModelTimestamp } from './timestamp';
 import { ModelValidate } from './validate';
 /**
@@ -26,8 +30,45 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
      * Applies the lean option for all queries for this Model
      */
     static lean_query: boolean;
+    static tableName: string;
+    /**
+     * Indicates the connection associated to this model
+     * @see Model.connection
+     * @private
+     */
+    static _connection: Connection;
+    /**
+     * Indicates the adapter associated to this model
+     * @private
+     * @see Model.connection
+     */
+    static _adapter: AdapterBase;
+    static _name: string;
+    static query<T extends Model>(this: {
+        new (): T;
+    }): IQueryArray<T>;
+    static find<T extends Model>(this: {
+        new (): T;
+    }, id: types.RecordID): IQuerySingle<T>;
+    static find<T extends Model>(this: {
+        new (): T;
+    }, id: types.RecordID[]): IQueryArray<T>;
+    static findPreserve<T extends Model>(this: {
+        new (): T;
+    }, ids: types.RecordID[]): IQueryArray<T>;
+    static where<T extends Model>(this: {
+        new (): T;
+    }, condition?: object): IQueryArray<T>;
+    static select<T extends Model>(this: {
+        new (): T;
+    }, columns: string): IQueryArray<T>;
+    static order<T extends Model>(this: {
+        new (): T;
+    }, orders: string): IQueryArray<T>;
+    static _createQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T>;
+    static _createOptionalQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T>;
     static newModel(connection: any, name: any, schema: any): {
-        new (data: any): {
+        new (data?: object | undefined): {
             _defineProperty(object: any, key: any, path: any, enumerable: any): any;
             isDirty(): boolean;
             getChanged(): string[];
@@ -49,14 +90,37 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
          * Applies the lean option for all queries for this Model
          */
         lean_query: boolean;
+        tableName: string;
+        /**
+         * Indicates the connection associated to this model
+         * @see Model.connection
+         * @private
+         */
+        _connection: Connection;
+        /**
+         * Indicates the adapter associated to this model
+         * @private
+         * @see Model.connection
+         */
+        _adapter: AdapterBase;
+        _name: string;
+        query<T extends Model>(this: new () => T): IQueryArray<T>;
+        find<T extends Model>(this: new () => T, id: string | number): IQuerySingle<T>;
+        find<T extends Model>(this: new () => T, id: (string | number)[]): IQueryArray<T>;
+        findPreserve<T extends Model>(this: new () => T, ids: (string | number)[]): IQueryArray<T>;
+        where<T extends Model>(this: new () => T, condition?: object | undefined): IQueryArray<T>;
+        select<T extends Model>(this: new () => T, columns: string): IQueryArray<T>;
+        order<T extends Model>(this: new () => T, orders: string): IQueryArray<T>;
+        _createQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T>;
+        _createOptionalQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T>;
         newModel(connection: any, name: any, schema: any): any;
-        connection(connection: any, name: any): string | undefined;
+        connection(connection: any, name: any): void;
         _checkConnection(): any;
         _checkReady(): Promise<[any, any]>;
-        _getKeyType(target_connection?: any): any;
+        _getKeyType(target_connection?: Connection): any;
         column(path: any, property: any): true | undefined;
         index(columns: any, options: any): boolean;
-        drop(): Promise<any>;
+        drop(): Promise<void>;
         build(data: any): Model;
         _collapseNestedNulls(instance: any, selected_columns_raw: any, intermediates: any): (null | undefined)[];
         deleteAll(): Promise<any>;
@@ -65,15 +129,15 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
         belongsTo(target_model_or_column: any, options: any): void;
         inspect(depth: any): string;
     };
-    static connection(connection: any, name: any): string | undefined;
+    static connection(connection: any, name: any): void;
     static _checkConnection(): any;
     static _checkReady(): Promise<[any, any]>;
-    static _getKeyType(target_connection?: any): any;
+    static _getKeyType(target_connection?: Connection): any;
     static column(path: any, property: any): true | undefined;
     static index(columns: any, options: any): boolean;
-    static drop(): Promise<any>;
+    static drop(): Promise<void>;
     static build(data: any): Model;
-    constructor(data: any);
+    constructor(data?: object);
     static _collapseNestedNulls(instance: any, selected_columns_raw: any, intermediates: any): (null | undefined)[];
     _defineProperty(object: any, key: any, path: any, enumerable: any): any;
     isDirty(): boolean;
