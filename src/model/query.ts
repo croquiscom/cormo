@@ -1,6 +1,4 @@
-var Query;
-
-Query = require('../query');
+import { Query } from '../query';
 
 /**
  * Model query
