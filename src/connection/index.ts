@@ -1,17 +1,34 @@
-var redis;
+let redis: any;
 
 import { EventEmitter } from 'events';
 import * as Toposort from 'toposort-class';
 import { inspect } from 'util';
 import { Model } from '../model';
 
+import { AdapterBase } from '../adapters/base';
+import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
+import { IAdapterSettingsMySQL } from '../adapters/mysql';
+import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
+import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ConnectionAssociation } from './association';
 import { ConnectionManipulate } from './manipulate';
-import { AdapterBase } from '../adapters/base';
 
 try {
+  // tslint:disable-next-line:no-var-requires
   redis = require('redis');
-} catch (error) { }
+} catch (error) {
+  /**/
+}
+
+interface IConnectionSettings {
+  is_default?: boolean;
+  redis_cache?: {
+    client?: object,
+    host?: string,
+    port?: number,
+    database?: number,
+  };
+}
 
 /**
  * Manages connection to a database
@@ -19,12 +36,11 @@ try {
  * @uses ConnectionManipulate
  */
 class Connection extends EventEmitter implements ConnectionAssociation, ConnectionManipulate {
-  //#
-  // Default connection
-  // @property defaultConnection
-  // @type Connection
-  // @static
-  // @see Connection::constructor
+  /**
+   * Default connection
+   * @see Connection::constructor
+   */
+  public static defaultConnection?: Connection;
 
   /**
    * Indicates the adapter associated to this connection
@@ -33,35 +49,34 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
    */
   public _adapter: AdapterBase;
 
-  //#
-  // Model lists using this connection.
-  // Maps from model name to model class
-  // @property models
-  // @type StringMap<Class<Model>>
-  // @see Connection::constructor
+  /**
+   * Model lists using this connection.
+   * Maps from model name to model class
+   * @see Connection::constructor
+   */
+  public models: { [name: string]: typeof Model };
 
-  //#
-  // Creates a connection
-  // @param {String} adapater_name
-  // @param {Object} settings connection settings & adapter specific settings
-  // @param {Boolean} [settings.is_default=true] Connection.defaultConnection will be set to this if true
-  // @param {Object} [settings.redis_cache] Redis server settings to cache
-  // @param {RedisClient} [settings.redis_cache.client] Use this client instead of creating one
-  // @param {String} [settings.redis_cache.host='127.0.0.1']
-  // @param {Number} [settings.redis_cache.port=6379]
-  // @param {Number} [settings.redis_cache.database=0]
-  // @see MySQLAdapter::connect
-  // @see MongoDBAdapter::connect
-  // @see PostgreSQLAdapter::connect
-  // @see SQLite3Adapter::connect
-  // @see RedisAdapter::connect
-  constructor(adapter_name, settings) {
-    var redis_cache;
+  [name: string]: any;
+
+  /**
+   * Creates a connection
+   * @see MySQLAdapter::connect
+   * @see MongoDBAdapter::connect
+   * @see PostgreSQLAdapter::connect
+   * @see SQLite3Adapter::connect
+   * @see RedisAdapter::connect
+   */
+  constructor(adapter_name: 'mongodb', settings: IConnectionSettings & IAdapterSettingsMongoDB);
+  constructor(adapter_name: 'mysql', settings: IConnectionSettings & IAdapterSettingsMySQL);
+  constructor(adapter_name: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
+  constructor(adapter_name: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
+  constructor(adapter_name: 'sqlite3_memory', settings: IConnectionSettings);
+  constructor(adapter_name: string, settings: IConnectionSettings) {
     super();
     if (settings.is_default !== false) {
       Connection.defaultConnection = this;
     }
-    redis_cache = settings.redis_cache || {};
+    const redis_cache = settings.redis_cache || {};
     this._redis_cache_settings = redis_cache;
     this.connected = false;
     this.models = {};
@@ -69,120 +84,40 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
     this._schema_changed = false;
     this._adapter = require(__dirname + '/../adapters/' + adapter_name).default(this);
     this._promise_connection = this._adapter.connect(settings).then(() => {
-      return this.connected = true;
-    }).catch((error) => {
-      this._adapter = null;
-      return console.log('fail to connect', error);
+      this.connected = true;
+    }).catch((error: Error) => {
+      (this._adapter as any) = undefined;
+      console.log('fail to connect', error);
     });
     Object.defineProperty(this, 'adapter', {
-      get: function() {
-        return this._adapter;
-      }
+      get() { return this._adapter; },
     });
   }
 
-  //#
-  // Closes this connection.
-  // A closed connection can be used no more.
-  close() {
+  /**
+   * Closes this connection.
+   * A closed connection can be used no more.
+   */
+  public close() {
     if (Connection.defaultConnection === this) {
-      Connection.defaultConnection = null;
+      Connection.defaultConnection = undefined;
     }
     this._adapter.close();
-    return this._adapter = null;
+    (this._adapter as any) = undefined;
   }
 
-  //#
-  // Creates a model class
-  // @param {String} name
-  // @param {Object} schema
-  // @return {Class<Model>}
-  model(name, schema) {
+  /**
+   * Creates a model class
+   */
+  public model(name: string, schema: object) {
     return Model.newModel(this, name, schema);
   }
 
-  async _checkSchemaApplied() {
-    this._initializeModels();
-    if (!this._applying_schemas && !this._schema_changed) {
-      return;
-    }
-    return (await this.applySchemas());
-  }
-
-  _initializeModels() {
-    var model, modelClass, ref;
-    ref = this.models;
-    for (model in ref) {
-      modelClass = ref[model];
-      if (modelClass.initialize && !modelClass._initialize_called) {
-        modelClass.initialize();
-        modelClass._initialize_called = true;
-      }
-    }
-  }
-
-  _checkArchive() {
-    var _Archive, model, modelClass, ref;
-    ref = this.models;
-    for (model in ref) {
-      modelClass = ref[model];
-      if (modelClass.archive && !modelClass._connection.models.hasOwnProperty('_Archive')) {
-        _Archive = (function() {
-          class _Archive extends Model { };
-
-          _Archive.connection(modelClass._connection);
-
-          _Archive.archive = false;
-
-          _Archive.column('model', String);
-
-          _Archive.column('data', Object);
-
-          return _Archive;
-
-        }).call(this);
-      }
-    }
-  }
-
-  _getModelNamesByAssociationOrder() {
-    var association, model, modelClass, name, ref, ref1, ref2, t;
-    t = new Toposort();
-    ref = this.models;
-    for (model in ref) {
-      modelClass = ref[model];
-      t.add(model, []);
-      ref1 = modelClass._associations;
-      for (name in ref1) {
-        association = ref1[name];
-        // ignore association with models of other connection
-        if (association.target_model._connection !== this) {
-          continue;
-        }
-        // ignore self association
-        if (association.target_model === modelClass) {
-          continue;
-        }
-        if ((ref2 = association.type) === 'hasMany' || ref2 === 'hasOne') {
-          t.add(association.target_model._name, model);
-        } else if (association.type === 'belongsTo') {
-          t.add(model, association.target_model._name);
-        }
-      }
-    }
-    return t.sort();
-  }
-
-  //#
-  // Applies schemas
-  // @param {Object} [options]
-  // @param {Boolean} [options.verbose=false]
-  // @promise
-  // @see AdapterBase::applySchema
-  applySchemas(options) {
-    if (!options) {
-      options = {};
-    }
+  /**
+   * Applies schemas
+   * @see AdapterBase::applySchema
+   */
+  public async applySchemas(options: { verbose?: boolean } = {}) {
     this._initializeModels();
     if (!this._schema_changed) {
       return;
@@ -290,26 +225,92 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
     return this._promise_schema_applied;
   }
 
-  //#
-  // Drops all model tables
-  // @promise
-  async dropAllModels() {
-    var i, len, model, ref;
-    ref = this._getModelNamesByAssociationOrder();
-    for (i = 0, len = ref.length; i < len; i++) {
-      model = ref[i];
+  /**
+   * Drops all model tables
+   */
+  public async dropAllModels() {
+    for (const model of this._getModelNamesByAssociationOrder()) {
       await this.models[model].drop();
     }
   }
 
-  //#
-  // Logs
-  // @param {String} model
-  // @param {String} type
-  // @param {Object} data
-  log(model, type, data) { }
+  /**
+   * Logs
+   */
+  public log(model: string, type: string, data: object) { /**/ }
 
-  _connectRedisCache() {
+  public inspect() {
+    return inspect(this.models);
+  }
+
+  public addAssociation() { }
+  public getInconsistencies() { }
+  public fetchAssociated() { }
+  public manipulate() { }
+
+  private async _checkSchemaApplied() {
+    this._initializeModels();
+    if (!this._applying_schemas && !this._schema_changed) {
+      return;
+    }
+    return await this.applySchemas();
+  }
+
+  private _initializeModels() {
+    // tslint:disable-next-line:forin
+    for (const model in this.models) {
+      const modelClass = this.models[model];
+      if (modelClass.initialize && !modelClass._initialize_called) {
+        modelClass.initialize();
+        modelClass._initialize_called = true;
+      }
+    }
+  }
+
+  private _checkArchive() {
+    // tslint:disable-next-line:forin
+    for (const model in this.models) {
+      const modelClass = this.models[model];
+      if (modelClass.archive && !modelClass._connection.models.hasOwnProperty('_Archive')) {
+        // tslint:disable-next-line:max-classes-per-file
+        const _Archive = class extends Model { };
+        _Archive.connection(modelClass._connection);
+        _Archive.archive = false;
+        _Archive.column('model', String);
+        _Archive.column('data', Object);
+      }
+    }
+  }
+
+  private _getModelNamesByAssociationOrder(): string[] {
+    const t = new Toposort();
+    // tslint:disable-next-line:forin
+    for (const model in this.models) {
+      const modelClass = this.models[model];
+      t.add(model, []);
+      // tslint:disable-next-line:forin
+      for (const name in modelClass._associations) {
+        const association = modelClass._associations[name];
+        // ignore association with models of other connection
+        if (association.target_model._connection !== this) {
+          continue;
+        }
+        // ignore self association
+        if (association.target_model === modelClass) {
+          continue;
+        }
+        const type = association.type;
+        if (type === 'hasMany' || type === 'hasOne') {
+          t.add(association.target_model._name, model);
+        } else if (type === 'belongsTo') {
+          t.add(model, association.target_model._name);
+        }
+      }
+    }
+    return t.sort();
+  }
+
+  private _connectRedisCache() {
     var client, settings;
     if (this._redis_cache_client) {
       return this._redis_cache_client;
@@ -329,15 +330,6 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
       return client;
     }
   }
-
-  inspect(depth) {
-    return inspect(this.models);
-  }
-
-  addAssociation() { }
-  getInconsistencies() { }
-  fetchAssociated() { }
-  manipulate() { }
 }
 
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
@@ -355,7 +347,5 @@ function applyMixins(derivedCtor: any, baseCtors: any[]) {
 }
 
 applyMixins(Connection, [ConnectionAssociation, ConnectionManipulate]);
-
-Model._Connection = Connection;
 
 export { Connection };

@@ -181,7 +181,7 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
    *
    * If this methods was not called explicitly, this model will use Connection.defaultConnection
    */
-  public static connection(connection: Connection, name: string) {
+  public static connection(connection: Connection, name?: string) {
     if (this.hasOwnProperty('_connection')) {
       throw new Error('Model::connection was called twice');
     }
@@ -190,33 +190,15 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     }
     connection.models[name] = this;
     connection[name] = this;
-    Object.defineProperty(this, '_connection', {
-      value: connection
-    });
-    Object.defineProperty(this, '_adapter', {
-      value: connection._adapter
-    });
-    Object.defineProperty(this, '_associations', {
-      value: {}
-    });
-    Object.defineProperty(this, '_validators', {
-      value: []
-    });
-    Object.defineProperty(this, '_name', {
-      value: name
-    });
-    Object.defineProperty(this, '_schema', {
-      value: {}
-    });
-    Object.defineProperty(this, '_intermediate_paths', {
-      value: {}
-    });
-    Object.defineProperty(this, '_indexes', {
-      value: []
-    });
-    Object.defineProperty(this, '_integrities', {
-      value: []
-    });
+    Object.defineProperty(this, '_connection', { value: connection });
+    Object.defineProperty(this, '_adapter', { value: connection._adapter });
+    Object.defineProperty(this, '_associations', { value: {} });
+    Object.defineProperty(this, '_validators', { value: [] });
+    Object.defineProperty(this, '_name', { value: name });
+    Object.defineProperty(this, '_schema', { value: {} });
+    Object.defineProperty(this, '_intermediate_paths', { value: {} });
+    Object.defineProperty(this, '_indexes', { value: [] });
+    Object.defineProperty(this, '_integrities', { value: [] });
     if (!this.tableName) {
       this.tableName = tableize(name);
     }
@@ -226,10 +208,10 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     if (this.hasOwnProperty('_connection')) {
       return;
     }
-    if (Model._Connection.defaultConnection == null) {
+    if (Connection.defaultConnection == null) {
       throw new Error('Create a Connection before creating a Model');
     }
-    return this.connection(Model._Connection.defaultConnection);
+    return this.connection(Connection.defaultConnection);
   }
 
   public static async _checkReady() {

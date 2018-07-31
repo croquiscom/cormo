@@ -11,6 +11,14 @@ try {
 
 ObjectID = mongodb.ObjectID;
 
+export interface IAdapterSettingsMongoDB {
+  host?: string;
+  port?: number;
+  user?: string;
+  password?: string;
+  database: string;
+}
+
 class CormoTypesObjectId { }
 
 import * as _ from 'lodash';
@@ -868,34 +876,26 @@ class MongoDBAdapter extends AdapterBase {
     return result.result.n;
   }
 
-  //#
-  // Connects to the database
-  // @param {Object} settings
-  // @param {String} [settings.host='localhost']
-  // @param {Number} [settings.port=27017]
-  // @param {String} [settings.user]
-  // @param {String} [settings.password]
-  // @param {String} settings.database
-  async connect(settings) {
-    var client, url;
+  /**
+   * Connects to the database
+   */
+  public async connect(settings: IAdapterSettingsMongoDB) {
+    let url;
     if (settings.user || settings.password) {
       url = `mongodb://${settings.user}:${settings.password}@${settings.host || 'localhost'}:${settings.port || 27017}/${settings.database}`;
     } else {
       url = `mongodb://${settings.host || 'localhost'}:${settings.port || 27017}/${settings.database}`;
     }
     try {
-      client = (await mongodb.MongoClient.connect(url, {
-        useNewUrlParser: true
-      }));
+      const client = (await mongodb.MongoClient.connect(url, { useNewUrlParser: true }));
+      this._client = client;
+      this._db = client.db(settings.database);
     } catch (error) {
       throw MongoDBAdapter.wrapError('unknown error', error);
     }
-    this._client = client;
-    this._db = client.db(settings.database);
   }
 
-  //# @override AdapterBase::close
-  close() {
+  public close() {
     if (this._client) {
       this._client.close();
     }
@@ -903,9 +903,10 @@ class MongoDBAdapter extends AdapterBase {
     return this._db = null;
   }
 
-  //#
-  // Exposes mongodb module's a collection object
-  collection(model) {
+  /**
+   * Exposes mongodb module's a collection object
+   */
+  public collection(model) {
     return this._collection(model);
   }
 }

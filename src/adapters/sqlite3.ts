@@ -7,6 +7,10 @@ try {
   process.exit(1);
 }
 
+export interface IAdapterSettingsSQLite3 {
+  database: string;
+}
+
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
@@ -572,12 +576,10 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
-  //#
-  // Connects to the database
-  // @param {Object} settings
-  // @param {String} settings.database
-  async connect(settings) {
-    var error;
+  /**
+   * Connects to the database
+   */
+  public async connect(settings: IAdapterSettingsSQLite3) {
     try {
       this._client = (await new Promise((resolve, reject) => {
         var client;
@@ -591,30 +593,30 @@ class SQLite3Adapter extends SQLAdapterBase {
           return resolve(client);
         });
       }));
-    } catch (error1) {
-      error = error1;
+    } catch (error) {
       throw SQLite3Adapter.wrapError('failed to open', error);
     }
     await this._client.runAsync('PRAGMA foreign_keys=ON');
   }
 
-  //# @override AdapterBase::close
-  close() {
+  public close() {
     if (this._client) {
       this._client.close();
     }
     return this._client = null;
   }
 
-  //#
-  // Exposes sqlite3 module's run method
-  run() {
+  /**
+   * Exposes sqlite3 module's run method
+   */
+  public run() {
     return this._client.run.apply(this._client, arguments);
   }
 
-  //#
-  // Exposes sqlite3 module's all method
-  all() {
+  /**
+   * Exposes sqlite3 module's all method
+   */
+  public all() {
     return this._client.all.apply(this._client, arguments);
   }
 }

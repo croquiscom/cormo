@@ -8,6 +8,157 @@ import * as types from '../types';
  */
 class ConnectionAssociation {
   //#
+  // Applies pending associations
+  // @param {Connection} connection
+  // @param {Array<Object>} associations
+  // @param {String} associations.type 'hasMany' or 'belongsTo'
+  // @private
+  public _applyAssociations() {
+    var i, item, len, models, options, ref, ref1, ref2, target_model, this_model;
+    ref = this._pending_associations;
+    for (i = 0, len = ref.length; i < len; i++) {
+      item = ref[i];
+      this_model = item.this_model;
+      options = item.options;
+      if (typeof item.target_model_or_column === 'string') {
+        if ((ref1 = item.options) != null ? ref1.connection : void 0) {
+          models = item.options.connection.models;
+        } else {
+          models = this.models;
+        }
+        if ((ref2 = item.options) != null ? ref2.type : void 0) {
+          target_model = item.options.type;
+          options.as = item.target_model_or_column;
+        } else if (item.type === 'belongsTo' || item.type === 'hasOne') {
+          target_model = inflector.camelize(item.target_model_or_column);
+        } else {
+          target_model = inflector.classify(item.target_model_or_column);
+        }
+        if (!models[target_model]) {
+          throw new Error(`model ${target_model} does not exist`);
+        }
+        target_model = models[target_model];
+      } else {
+        target_model = item.target_model_or_column;
+      }
+      this['_' + item.type](this_model, target_model, options);
+    }
+    return this._pending_associations = [];
+  }
+
+  //#
+  // Adds an association
+  // @param {Object} association
+  // @param {String} association.type 'hasMany' or 'belongsTo'
+  // @param {Class<Model>} association.this_model
+  // @param {Class<Model>|String} association.target_model_or_column
+  // @param {Object} [association.options]
+  // @param {String} [association.options.type]
+  // @param {String} [association.options.as]
+  // @param {String} [association.options.foreign_key]
+  // @see Model.hasMany
+  // @see Model.belongsTo
+  public addAssociation(association) {
+    this._pending_associations.push(association);
+    return this._schema_changed = true;
+  }
+
+  //#
+  // Returns inconsistent records against associations
+  // @return {Object} Hash of model name to Array of RecordIDs
+  // @promise
+  public async getInconsistencies() {
+    var promises, result;
+    await this._checkSchemaApplied();
+    result = {};
+    promises = Object.keys(this.models).map(async (model) => {
+      var ids, integrities, modelClass, records, sub_promises;
+      modelClass = this.models[model];
+      integrities = modelClass._integrities.filter(function(integrity) {
+        return integrity.type.substr(0, 7) === 'parent_';
+      });
+      if (integrities.length > 0) {
+        records = (await modelClass.select(''));
+        ids = records.map(function(record) {
+          return record.id;
+        });
+        sub_promises = integrities.map(async (integrity) => {
+          var array, name, property, query;
+          query = integrity.child.select('');
+          query.where(_.zipObject([integrity.column], [
+            {
+              $not: {
+                $in: ids
+              }
+            }
+          ]));
+          property = integrity.child._schema[integrity.column];
+          if (!property.required) {
+            query.where(_.zipObject([integrity.column], [
+              {
+                $not: null
+              }
+            ]));
+          }
+          records = (await query.exec());
+          if (records.length > 0) {
+            array = result[name = integrity.child._name] || (result[name] = []);
+            [].push.apply(array, records.map(function(record) {
+              return record.id;
+            }));
+            return _.uniq(array);
+          }
+        });
+        return (await Promise.all(sub_promises));
+      }
+    });
+    await Promise.all(promises);
+    return result;
+  }
+  //#
+  // Fetches associated records
+  // @param {Model|Array<Model>} records
+  // @param {String} column
+  // @param {String} [select]
+  // @param {Object} [options]
+  // @promise
+  public async fetchAssociated(records, column, select, options) {
+    var association, record, ref, ref1;
+    if ((select != null) && typeof select === 'object') {
+      options = select;
+      select = null;
+    } else if (options == null) {
+      options = {};
+    }
+    await this._checkSchemaApplied();
+    record = Array.isArray(records) ? records[0] : records;
+    if (!record) {
+      return;
+    }
+    if (options.target_model) {
+      association = {
+        type: options.type || 'belongsTo',
+        target_model: options.target_model,
+        foreign_key: options.foreign_key
+      };
+    } else if (options.model) {
+      association = (ref = options.model._associations) != null ? ref[column] : void 0;
+    } else {
+      association = (ref1 = record.constructor._associations) != null ? ref1[column] : void 0;
+    }
+    if (!association) {
+      throw new Error(`unknown column '${column}'`);
+    }
+    if (association.type === 'belongsTo') {
+      return (await this._fetchAssociatedBelongsTo(records, association.target_model, column, select, options));
+    } else if (association.type === 'hasMany') {
+      return (await this._fetchAssociatedHasMany(records, association.target_model, association.foreign_key, column, select, options));
+    } else {
+      throw new Error(`unknown column '${column}'`);
+    }
+  }
+
+  //#
   // Adds a has-many association
   // @param {Class<Model>} this_model
   // @param {Class<Model>} target_model
@@ -226,115 +377,6 @@ class ConnectionAssociation {
     });
   }
 
-  //#
-  // Applies pending associations
-  // @param {Connection} connection
-  // @param {Array<Object>} associations
-  // @param {String} associations.type 'hasMany' or 'belongsTo'
-  // @private
-  _applyAssociations() {
-    var i, item, len, models, options, ref, ref1, ref2, target_model, this_model;
-    ref = this._pending_associations;
-    for (i = 0, len = ref.length; i < len; i++) {
-      item = ref[i];
-      this_model = item.this_model;
-      options = item.options;
-      if (typeof item.target_model_or_column === 'string') {
-        if ((ref1 = item.options) != null ? ref1.connection : void 0) {
-          models = item.options.connection.models;
-        } else {
-          models = this.models;
-        }
-        if ((ref2 = item.options) != null ? ref2.type : void 0) {
-          target_model = item.options.type;
-          options.as = item.target_model_or_column;
-        } else if (item.type === 'belongsTo' || item.type === 'hasOne') {
-          target_model = inflector.camelize(item.target_model_or_column);
-        } else {
-          target_model = inflector.classify(item.target_model_or_column);
-        }
-        if (!models[target_model]) {
-          throw new Error(`model ${target_model} does not exist`);
-        }
-        target_model = models[target_model];
-      } else {
-        target_model = item.target_model_or_column;
-      }
-      this['_' + item.type](this_model, target_model, options);
-    }
-    return this._pending_associations = [];
-  }
-
-  //#
-  // Adds an association
-  // @param {Object} association
-  // @param {String} association.type 'hasMany' or 'belongsTo'
-  // @param {Class<Model>} association.this_model
-  // @param {Class<Model>|String} association.target_model_or_column
-  // @param {Object} [association.options]
-  // @param {String} [association.options.type]
-  // @param {String} [association.options.as]
-  // @param {String} [association.options.foreign_key]
-  // @see Model.hasMany
-  // @see Model.belongsTo
-  addAssociation(association) {
-    this._pending_associations.push(association);
-    return this._schema_changed = true;
-  }
-
-  //#
-  // Returns inconsistent records against associations
-  // @return {Object} Hash of model name to Array of RecordIDs
-  // @promise
-  async getInconsistencies() {
-    var promises, result;
-    await this._checkSchemaApplied();
-    result = {};
-    promises = Object.keys(this.models).map(async (model) => {
-      var ids, integrities, modelClass, records, sub_promises;
-      modelClass = this.models[model];
-      integrities = modelClass._integrities.filter(function(integrity) {
-        return integrity.type.substr(0, 7) === 'parent_';
-      });
-      if (integrities.length > 0) {
-        records = (await modelClass.select(''));
-        ids = records.map(function(record) {
-          return record.id;
-        });
-        sub_promises = integrities.map(async (integrity) => {
-          var array, name, property, query;
-          query = integrity.child.select('');
-          query.where(_.zipObject([integrity.column], [
-            {
-              $not: {
-                $in: ids
-              }
-            }
-          ]));
-          property = integrity.child._schema[integrity.column];
-          if (!property.required) {
-            query.where(_.zipObject([integrity.column], [
-              {
-                $not: null
-              }
-            ]));
-          }
-          records = (await query.exec());
-          if (records.length > 0) {
-            array = result[name = integrity.child._name] || (result[name] = []);
-            [].push.apply(array, records.map(function(record) {
-              return record.id;
-            }));
-            return _.uniq(array);
-          }
-        });
-        return (await Promise.all(sub_promises));
-      }
-    });
-    await Promise.all(promises);
-    return result;
-  }
-
   private async _fetchAssociatedBelongsTo(records, target_model, column, select, options) {
     var error, id, id_column, id_to_record_map, ids, query, sub_record, sub_records;
     id_column = column + '_id';
@@ -499,48 +541,6 @@ class ConnectionAssociation {
     }
   }
 
-  //#
-  // Fetches associated records
-  // @param {Model|Array<Model>} records
-  // @param {String} column
-  // @param {String} [select]
-  // @param {Object} [options]
-  // @promise
-  async fetchAssociated(records, column, select, options) {
-    var association, record, ref, ref1;
-    if ((select != null) && typeof select === 'object') {
-      options = select;
-      select = null;
-    } else if (options == null) {
-      options = {};
-    }
-    await this._checkSchemaApplied();
-    record = Array.isArray(records) ? records[0] : records;
-    if (!record) {
-      return;
-    }
-    if (options.target_model) {
-      association = {
-        type: options.type || 'belongsTo',
-        target_model: options.target_model,
-        foreign_key: options.foreign_key
-      };
-    } else if (options.model) {
-      association = (ref = options.model._associations) != null ? ref[column] : void 0;
-    } else {
-      association = (ref1 = record.constructor._associations) != null ? ref1[column] : void 0;
-    }
-    if (!association) {
-      throw new Error(`unknown column '${column}'`);
-    }
-    if (association.type === 'belongsTo') {
-      return (await this._fetchAssociatedBelongsTo(records, association.target_model, column, select, options));
-    } else if (association.type === 'hasMany') {
-      return (await this._fetchAssociatedHasMany(records, association.target_model, association.foreign_key, column, select, options));
-    } else {
-      throw new Error(`unknown column '${column}'`);
-    }
-  }
 }
 
 export { ConnectionAssociation };

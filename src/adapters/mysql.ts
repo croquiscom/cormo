@@ -7,6 +7,17 @@ try {
   process.exit(1);
 }
 
+export interface IAdapterSettingsMySQL {
+  host?: string;
+  port?: number;
+  user?: string;
+  password?: string;
+  database: string;
+  charset?: string;
+  collation?: string;
+  pool_size?: number;
+}
+
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
@@ -643,18 +654,10 @@ class MySQLAdapter extends SQLAdapterBase {
     return result.affectedRows;
   }
 
-  //#
-  // Connects to the database
-  // @param {Object} settings
-  // @param {String} [settings.host]
-  // @param {Number} [settings.port]
-  // @param {String} [settings.user]
-  // @param {String} [settings.password]
-  // @param {String} settings.database
-  // @param {String} [settings.charset='utf8']
-  // @param {String} [settings.collation='utf8_unicode_ci']
-  // @param {Number} [settings.pool_size=10]
-  async connect(settings) {
+  /**
+   * Connects to the database
+   */
+  public async connect(settings: IAdapterSettingsMySQL) {
     var client, error;
     // connect
     client = mysql.createConnection({
@@ -739,17 +742,17 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
-  //# @override AdapterBase::close
-  close() {
+  public close() {
     if (this._client) {
       this._client.end();
     }
     return this._client = null;
   }
 
-  //#
-  // Exposes mysql module's query method
-  query() {
+  /**
+   * Exposes mysql module's query method
+   */
+  public query() {
     return this._client.queryAsync.apply(this._client, arguments);
   }
 }

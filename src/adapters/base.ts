@@ -22,6 +22,10 @@ class AdapterBase {
 
   public support_upsert = true;
 
+  public async connect(settings: {}) {
+    return;
+  }
+
   /**
    * Returns current schemas.
    * @abstract
@@ -31,7 +35,8 @@ class AdapterBase {
     return { tables: [] };
   }
 
-  /** Creates a table.
+  /**
+   * Creates a table.
    * @abstract
    * @see Connection::applySchemas
    */

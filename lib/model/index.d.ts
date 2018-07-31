@@ -197,8 +197,8 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
          *
          * If this methods was not called explicitly, this model will use Connection.defaultConnection
          */
-        connection(connection: Connection, name: string): void;
-        _checkConnection(): any;
+        connection(connection: Connection, name?: string | undefined): void;
+        _checkConnection(): void;
         _checkReady(): Promise<[any, any]>;
         column(path: any, property: any): true | undefined;
         index(columns: any, options: any): boolean;
@@ -254,8 +254,8 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
      *
      * If this methods was not called explicitly, this model will use Connection.defaultConnection
      */
-    static connection(connection: Connection, name: string): void;
-    static _checkConnection(): any;
+    static connection(connection: Connection, name?: string): void;
+    static _checkConnection(): void;
     static _checkReady(): Promise<[any, any]>;
     static column(path: any, property: any): true | undefined;
     static index(columns: any, options: any): boolean;

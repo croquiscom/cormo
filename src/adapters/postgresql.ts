@@ -11,6 +11,14 @@ try {
   QueryStream = require('pg-query-stream');
 } catch (error) { }
 
+export interface IAdapterSettingsPostgreSQL {
+  host?: string;
+  port?: number;
+  user?: string;
+  password?: string;
+  database: string;
+}
+
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as types from '../types';
@@ -640,15 +648,10 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return result.rowCount;
   }
 
-  //#
-  // Connects to the database
-  // @param {Object} settings
-  // @param {String} [settings.host]
-  // @param {Number} [settings.port]
-  // @param {String} [settings.user]
-  // @param {String} [settings.password]
-  // @param {String} settings.database
-  async connect(settings) {
+  /**
+   * Connects to the database
+   */
+  public async connect(settings: IAdapterSettingsPostgreSQL) {
     var client, error, pool;
     // connect
     pool = new pg.Pool({
@@ -671,15 +674,15 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
-  //# @override AdapterBase::close
-  close() {
+  public close() {
     this._pool.end();
     return this._pool = null;
   }
 
-  //#
-  // Exposes pg module's query method
-  query() {
+  /**
+   * Exposes pg module's query method
+   */
+  public query() {
     return this._pool.query.apply(this._pool, arguments);
   }
 }

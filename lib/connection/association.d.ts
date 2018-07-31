@@ -3,14 +3,14 @@
  * @namespace connection
  */
 declare class ConnectionAssociation {
-    private _hasMany;
-    private _hasOne;
-    private _belongsTo;
     _applyAssociations(): never[];
     addAssociation(association: any): boolean;
     getInconsistencies(): Promise<{}>;
+    fetchAssociated(records: any, column: any, select: any, options: any): Promise<void>;
+    private _hasMany;
+    private _hasOne;
+    private _belongsTo;
     private _fetchAssociatedBelongsTo;
     private _fetchAssociatedHasMany;
-    fetchAssociated(records: any, column: any, select: any, options: any): Promise<void>;
 }
 export { ConnectionAssociation };

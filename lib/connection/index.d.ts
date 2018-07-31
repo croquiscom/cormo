@@ -1,9 +1,22 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
 import { Model } from '../model';
+import { AdapterBase } from '../adapters/base';
+import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
+import { IAdapterSettingsMySQL } from '../adapters/mysql';
+import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
+import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ConnectionAssociation } from './association';
 import { ConnectionManipulate } from './manipulate';
-import { AdapterBase } from '../adapters/base';
+interface IConnectionSettings {
+    is_default?: boolean;
+    redis_cache?: {
+        client?: object;
+        host?: string;
+        port?: number;
+        database?: number;
+    };
+}
 /**
  * Manages connection to a database
  * @uses ConnectionAssociation
@@ -11,14 +24,47 @@ import { AdapterBase } from '../adapters/base';
  */
 declare class Connection extends EventEmitter implements ConnectionAssociation, ConnectionManipulate {
     /**
+     * Default connection
+     * @see Connection::constructor
+     */
+    static defaultConnection?: Connection;
+    /**
      * Indicates the adapter associated to this connection
      * @private
      * @see Connection::constructor
      */
     _adapter: AdapterBase;
-    constructor(adapter_name: any, settings: any);
-    close(): null;
-    model(name: any, schema: any): {
+    /**
+     * Model lists using this connection.
+     * Maps from model name to model class
+     * @see Connection::constructor
+     */
+    models: {
+        [name: string]: typeof Model;
+    };
+    [name: string]: any;
+    /**
+     * Creates a connection
+     * @see MySQLAdapter::connect
+     * @see MongoDBAdapter::connect
+     * @see PostgreSQLAdapter::connect
+     * @see SQLite3Adapter::connect
+     * @see RedisAdapter::connect
+     */
+    constructor(adapter_name: 'mongodb', settings: IConnectionSettings & IAdapterSettingsMongoDB);
+    constructor(adapter_name: 'mysql', settings: IConnectionSettings & IAdapterSettingsMySQL);
+    constructor(adapter_name: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
+    constructor(adapter_name: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
+    constructor(adapter_name: 'sqlite3_memory', settings: IConnectionSettings);
+    /**
+     * Closes this connection.
+     * A closed connection can be used no more.
+     */
+    close(): void;
+    /**
+     * Creates a model class
+     */
+    model(name: string, schema: object): {
         new (data?: object | undefined): {
             _runCallbacks(name: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackName, type: import("../../../../../../Users/zigzag/work/cormo/src/model/callback").ModelCallbackType): void;
             save(options?: {
@@ -70,8 +116,8 @@ declare class Connection extends EventEmitter implements ConnectionAssociation, 
         _createQueryAndRun<T extends Model>(criteria: import("../../../../../../Users/zigzag/work/cormo/src/model/query").ModelQueryMethod, data: any): import("../../../../../../Users/zigzag/work/cormo/src/query").Query<T>;
         _createOptionalQueryAndRun<T extends Model>(criteria: import("../../../../../../Users/zigzag/work/cormo/src/model/query").ModelQueryMethod, data: any): import("../../../../../../Users/zigzag/work/cormo/src/query").Query<T>;
         newModel(connection: Connection, name: string, schema: object): any;
-        connection(connection: Connection, name: string): void;
-        _checkConnection(): any;
+        connection(connection: Connection, name?: string | undefined): void;
+        _checkConnection(): void;
         _checkReady(): Promise<[any, any]>;
         column(path: any, property: any): true | undefined;
         index(columns: any, options: any): boolean;
@@ -85,18 +131,30 @@ declare class Connection extends EventEmitter implements ConnectionAssociation, 
         _getKeyType(target_connection?: Connection): any;
         _collapseNestedNulls(instance: any, selected_columns_raw: any, intermediates: any): (null | undefined)[];
     };
-    _checkSchemaApplied(): Promise<any>;
-    _initializeModels(): void;
-    _checkArchive(): void;
-    _getModelNamesByAssociationOrder(): any;
-    applySchemas(options: any): any;
+    /**
+     * Applies schemas
+     * @see AdapterBase::applySchema
+     */
+    applySchemas(options?: {
+        verbose?: boolean;
+    }): Promise<any>;
+    /**
+     * Drops all model tables
+     */
     dropAllModels(): Promise<void>;
-    log(model: any, type: any, data: any): void;
-    _connectRedisCache(): any;
-    inspect(depth: any): string;
+    /**
+     * Logs
+     */
+    log(model: string, type: string, data: object): void;
+    inspect(): string;
     addAssociation(): void;
     getInconsistencies(): void;
     fetchAssociated(): void;
     manipulate(): void;
+    private _checkSchemaApplied;
+    private _initializeModels;
+    private _checkArchive;
+    private _getModelNamesByAssociationOrder;
+    private _connectRedisCache;
 }
 export { Connection };

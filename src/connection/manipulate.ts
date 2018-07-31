@@ -1,10 +1,73 @@
 import * as inflector from '../util/inflector';
 
+type ManipulateCommand = string | object;
+
 /**
  * Manipulate data
  * @namespace connection
  */
 class ConnectionManipulate {
+  /**
+   * Manipulate data
+   */
+  public async manipulate(commands: ManipulateCommand[]): object {
+    var command, data, i, id, id_to_record_map, key, len, model, record, records;
+    this.log('<conn>', 'manipulate', commands);
+    await this._checkSchemaApplied();
+    id_to_record_map = {};
+    if (!Array.isArray(commands)) {
+      commands = [commands];
+    }
+    for (i = 0, len = commands.length; i < len; i++) {
+      command = commands[i];
+      if (typeof command === 'object') {
+        key = Object.keys(command);
+        if (key.length === 1) {
+          key = key[0];
+          data = command[key];
+        } else {
+          key = void 0;
+        }
+      } else if (typeof command === 'string') {
+        key = command;
+      }
+      if (!key) {
+        throw new Error('invalid command: ' + JSON.stringify(command));
+      } else if (key.substr(0, 7) === 'create_') {
+        model = key.substr(7);
+        id = data.id;
+        delete data.id;
+        this._manipulateConvertIds(id_to_record_map, model, data);
+        record = (await this._manipulateCreate(model, data));
+        if (id) {
+          id_to_record_map[id] = record;
+        }
+      } else if (key.substr(0, 7) === 'delete_') {
+        model = key.substr(7);
+        await this._manipulateDelete(model, data);
+      } else if (key === 'deleteAll') {
+        await this._manipulateDeleteAllModels();
+      } else if (key.substr(0, 5) === 'drop_') {
+        model = key.substr(5);
+        await this._manipulateDropModel(model);
+      } else if (key === 'dropAll') {
+        await this._manipulateDropAllModels();
+      } else if (key.substr(0, 5) === 'find_') {
+        model = key.substr(5);
+        id = data.id;
+        delete data.id;
+        if (!id) {
+          continue;
+        }
+        records = (await this._manipulateFind(model, data));
+        id_to_record_map[id] = records;
+      } else {
+        throw new Error('unknown command: ' + key);
+      }
+    }
+    return id_to_record_map;
+  }
+
   private async _manipulateCreate(model, data) {
     model = inflector.camelize(model);
     if (!this.models[model]) {
@@ -95,69 +158,6 @@ class ConnectionManipulate {
         }
       }
     }
-  }
-
-  //#
-  // Manipulate data
-  // @param {Array<Object>} commands
-  // @return {Object}
-  // @promise
-  async manipulate(commands) {
-    var command, data, i, id, id_to_record_map, key, len, model, record, records;
-    this.log('<conn>', 'manipulate', commands);
-    await this._checkSchemaApplied();
-    id_to_record_map = {};
-    if (!Array.isArray(commands)) {
-      commands = [commands];
-    }
-    for (i = 0, len = commands.length; i < len; i++) {
-      command = commands[i];
-      if (typeof command === 'object') {
-        key = Object.keys(command);
-        if (key.length === 1) {
-          key = key[0];
-          data = command[key];
-        } else {
-          key = void 0;
-        }
-      } else if (typeof command === 'string') {
-        key = command;
-      }
-      if (!key) {
-        throw new Error('invalid command: ' + JSON.stringify(command));
-      } else if (key.substr(0, 7) === 'create_') {
-        model = key.substr(7);
-        id = data.id;
-        delete data.id;
-        this._manipulateConvertIds(id_to_record_map, model, data);
-        record = (await this._manipulateCreate(model, data));
-        if (id) {
-          id_to_record_map[id] = record;
-        }
-      } else if (key.substr(0, 7) === 'delete_') {
-        model = key.substr(7);
-        await this._manipulateDelete(model, data);
-      } else if (key === 'deleteAll') {
-        await this._manipulateDeleteAllModels();
-      } else if (key.substr(0, 5) === 'drop_') {
-        model = key.substr(5);
-        await this._manipulateDropModel(model);
-      } else if (key === 'dropAll') {
-        await this._manipulateDropAllModels();
-      } else if (key.substr(0, 5) === 'find_') {
-        model = key.substr(5);
-        id = data.id;
-        delete data.id;
-        if (!id) {
-          continue;
-        }
-        records = (await this._manipulateFind(model, data));
-        id_to_record_map[id] = records;
-      } else {
-        throw new Error('unknown command: ' + key);
-      }
-    }
-    return id_to_record_map;
   }
 }
 

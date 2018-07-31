@@ -13,6 +13,7 @@ declare class AdapterBase {
     protected static wrapError(msg: string, cause: Error): Error;
     support_fractional_seconds: boolean;
     support_upsert: boolean;
+    connect(settings: {}): Promise<void>;
     /**
      * Returns current schemas.
      * @abstract
@@ -21,7 +22,8 @@ declare class AdapterBase {
     getSchemas(): Promise<{
         tables: any[];
     }>;
-    /** Creates a table.
+    /**
+     * Creates a table.
      * @abstract
      * @see Connection::applySchemas
      */
