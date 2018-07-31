@@ -93,12 +93,12 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
 
   public static _name: string;
 
-  // ModelCache interface
+  // ModelCache static interface
   public static async _loadFromCache(key: string, refresh?: boolean): Promise<any> { /**/ }
   public static async _saveToCache(key: string, ttl: number, data: any) { /**/ }
   public static async removeCache(key: string) { /**/ }
 
-  // ModelCallback interface
+  // ModelCallback static interface
   public static afterInitialize(method: ModelCallbackMethod) { /**/ }
   public static afterFind(method: ModelCallbackMethod) { /**/ }
   public static beforeSave(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
@@ -111,9 +111,18 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
   public static afterDestroy(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
   public static beforeValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
   public static afterValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-  public _runCallbacks(name: ModelCallbackName, type: ModelCallbackType) { /**/ }
 
-  // ModelQuery interface
+  // ModelPersistence static interface
+  public static async create<T extends Model, U extends T>(
+    this: { new(): T }, data?: U, options?: { skip_log: boolean },
+  ): Promise<T> {
+    return {} as T;
+  }
+  public static async createBulk<T extends Model, U extends T>(this: { new(): T }, data?: U[]): Promise<T[]> {
+    return [] as T[];
+  }
+
+  // ModelQuery static interface
   public static query<T extends Model>(this: { new(): T }): IQueryArray<T> {
     return {} as IQueryArray<T>;
   }
@@ -152,30 +161,27 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
   // @static
   // @see Model.connection
 
-  //#
-  // Returns a new model class extending Model
-  // @param {Connection} connection
-  // @param {String} name
-  // @param {Object} schema
-  // @return {Class<Model>}
-  static newModel(connection, name, schema) {
-    var NewModel, property;
-    NewModel = class NewModel extends Model { };
+  /**
+   * Returns a new model class extending Model
+   */
+  public static newModel(connection: Connection, name: string, schema: object) {
+    // tslint:disable-next-line:variable-name max-classes-per-file
+    const NewModel = class extends Model { };
     NewModel.connection(connection, name);
-    for (name in schema) {
-      property = schema[name];
-      NewModel.column(name, property);
+    // tslint:disable-next-line:forin
+    for (const column_name in schema) {
+      const property = schema[column_name];
+      NewModel.column(column_name, property);
     }
     return NewModel;
   }
 
-  //#
-  // Sets a connection of this model
-
-  // If this methods was not called explicitly, this model will use Connection.defaultConnection
-  // @param {Connection} connection
-  // @param {String} [name]
-  static connection(connection, name) {
+  /**
+   * Sets a connection of this model
+   *
+   * If this methods was not called explicitly, this model will use Connection.defaultConnection
+   */
+  public static connection(connection: Connection, name: string) {
     if (this.hasOwnProperty('_connection')) {
       throw new Error('Model::connection was called twice');
     }
@@ -216,7 +222,7 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     }
   }
 
-  static _checkConnection() {
+  public static _checkConnection() {
     if (this.hasOwnProperty('_connection')) {
       return;
     }
@@ -226,24 +232,16 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     return this.connection(Model._Connection.defaultConnection);
   }
 
-  static async _checkReady() {
+  public static async _checkReady() {
     this._checkConnection();
     return (await Promise.all([this._connection._checkSchemaApplied(), this._connection._promise_connection]));
-  }
-
-  static _getKeyType(target_connection = this._connection) {
-    if (this._connection === target_connection && target_connection._adapter.key_type_internal) {
-      return new target_connection._adapter.key_type_internal;
-    } else {
-      return new target_connection._adapter.key_type;
-    }
   }
 
   //#
   // Adds a column to this model
   // @param {String} path
   // @param {Function|String|ColumnProperty} property
-  static column(path, property) {
+  public static column(path, property) {
     var i, j, parts, ref, subcolumn, subproperty, type;
     this._checkConnection();
     // nested path
@@ -311,7 +309,7 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
   // @param {Object} columns hash of <column, order>
   // @param {Object} [options]
   // @param {Boolean} [options.unique]
-  static index(columns, options) {
+  public static index(columns, options) {
     this._checkConnection();
     options || (options = {});
     if (!options.name) {
@@ -328,7 +326,7 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
   // Drops this model from the database
   // @promise
   // @see AdapterBase::drop
-  static async drop() {
+  public static async drop() {
     try {
       // do not need to apply schema before drop, only waiting connection established
       await this._connection._promise_connection;
@@ -338,116 +336,98 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     }
   }
 
-  //#
-  // Creates a record.
-  // 'Model.build(data)' is the same as 'new Model(data)'
-  // @param {Object} [data={}]
-  // @return {Model}
-  static build(data) {
+  /**
+   * Creates a record.
+   * 'Model.build(data)' is the same as 'new Model(data)'
+   */
+  public static build<T extends Model, U extends T>(this: { new(data?: U): T }, data?: U): T {
     return new this(data);
   }
 
-  //#
-  // @property _prev_attributes
-  // @private
-
-  //#
-  // @property _attributes
-  // @private
-
-  //#
-  // @property _intermediates
-  // @private
-
-  //#
-  // Creates a record
-  // @param {Object} [data={}]
-  constructor(data?: object) {
-    var adapter, column, ctor, id, j, last, len, obj, parts, path, property, ref, schema, selected_columns, selected_columns_raw, value;
-    data = data || {};
-    ctor = this.constructor;
-    schema = ctor._schema;
-    adapter = ctor._adapter;
-    Object.defineProperty(this, '_prev_attributes', {
-      writable: true,
-      value: {}
-    });
-    if (ctor.dirty_tracking) {
-      Object.defineProperty(this, '_attributes', {
-        value: {}
-      });
-      Object.defineProperty(this, '_intermediates', {
-        value: {}
-      });
-      ref = Object.keys(ctor._intermediate_paths).sort();
-      for (j = 0, len = ref.length; j < len; j++) {
-        path = ref[j];
-        [obj, last] = util.getLeafOfPath(this, path);
-        this._intermediates[path] = {};
-        this._defineProperty(obj, last, path, false);
-      }
-      for (column in schema) {
-        property = schema[column];
-        [obj, last] = util.getLeafOfPath(this, property._parts);
-        this._defineProperty(obj, last, column, false);
-      }
-    } else {
-      Object.defineProperty(this, 'isDirty', {
-        value: _pf_isDirty
-      });
-      Object.defineProperty(this, 'getChanged', {
-        value: _pf_getChanged
-      });
-      Object.defineProperty(this, 'get', {
-        value: _pf_get
-      });
-      Object.defineProperty(this, 'getPrevious', {
-        value: _pf_getPrevious
-      });
-      Object.defineProperty(this, 'set', {
-        value: _pf_set
-      });
-      Object.defineProperty(this, 'reset', {
-        value: _pf_reset
-      });
-    }
-    if (id = arguments[1]) {
-      // if id exists, this is called from adapter with database record data
-      selected_columns = arguments[2];
-      selected_columns_raw = arguments[3];
-      adapter.setValuesFromDB(this, data, schema, selected_columns);
-      ctor._collapseNestedNulls(this, selected_columns_raw, ctor.dirty_tracking ? this._intermediates : void 0);
-      Object.defineProperty(this, 'id', {
-        configurable: false,
-        enumerable: true,
-        writable: false,
-        value: id
-      });
-      this._runCallbacks('find', 'after');
-    } else {
-      for (column in schema) {
-        property = schema[column];
-        parts = property._parts;
-        value = util.getPropertyOfPath(data, parts);
-        if (value === void 0) {
-          value = null;
-        }
-        util.setPropertyOfPath(this, parts, value);
-      }
-      ctor._collapseNestedNulls(this, null, ctor.dirty_tracking ? this._intermediates : void 0);
-      Object.defineProperty(this, 'id', {
-        configurable: true,
-        enumerable: true,
-        writable: false,
-        value: null
-      });
-    }
-    this._runCallbacks('initialize', 'after');
+  /**
+   * Deletes all records from the database
+   */
+  public static async deleteAll() {
+    return (await this.delete());
   }
 
-  //#
-  // Set nested object null if all children are null
-  static _collapseNestedNulls(instance, selected_columns_raw, intermediates) {
+  /**
+   * Adds a has-many association
+   * @param {Class<Model>|String} target_model_or_column
+   * @param {Object} [options]
+   * @param {String} [options.type]
+   * @param {String} [options.as]
+   * @param {String} [options.foreign_key]
+   * @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
+   */
+  public static hasMany(target_model_or_column, options) {
+    this._checkConnection();
+    this._connection.addAssociation({
+      type: 'hasMany',
+      this_model: this,
+      target_model_or_column: target_model_or_column,
+      options: options
+    });
+  }
+
+  /**
+   * Adds a has-one association
+   * @param {Class<Model>|String} target_model_or_column
+   * @param {Object} [options]
+   * @param {String} [options.type]
+   * @param {String} [options.as]
+   * @param {String} [options.foreign_key]
+   * @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
+   */
+  public static hasOne(target_model_or_column, options) {
+    this._checkConnection();
+    this._connection.addAssociation({
+      type: 'hasOne',
+      this_model: this,
+      target_model_or_column: target_model_or_column,
+      options: options
+    });
+  }
+
+  /**
+   * Adds a belongs-to association
+   * @param {Class<Model>|String} target_model_or_column
+   * @param {Object} [options]
+   * @param {String} [options.type]
+   * @param {String} [options.as]
+   * @param {String} [options.foreign_key]
+   * @param {Boolean} [options.required]
+   */
+  public static belongsTo(target_model_or_column, options) {
+    this._checkConnection();
+    this._connection.addAssociation({
+      type: 'belongsTo',
+      this_model: this,
+      target_model_or_column: target_model_or_column,
+      options: options
+    });
+  }
+
+  public static inspect(depth) {
+    var schema;
+    schema = Object.keys(this._schema || {}).sort().map((column) => {
+      return `${column}: ${this._schema[column].type}`;
+    }).join(', ');
+    return '\u001b[36m' + `[Model: ${this.name}(` + '\u001b[90m' + schema + '\u001b[36m' + ")]" + '\u001b[39m';
+  }
+
+  public static _getKeyType(target_connection = this._connection) {
+    if (this._connection === target_connection && target_connection._adapter.key_type_internal) {
+      return new target_connection._adapter.key_type_internal;
+    } else {
+      return new target_connection._adapter.key_type;
+    }
+  }
+
+  /**
+   * Set nested object null if all children are null
+   */
+  public static _collapseNestedNulls(instance, selected_columns_raw, intermediates) {
     var has_non_null, j, key, last, len, obj, path, ref, ref1, results, value;
     ref = Object.keys(this._intermediate_paths);
     results = [];
@@ -479,36 +459,106 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     return results;
   }
 
-  _defineProperty(object, key, path, enumerable) {
-    return Object.defineProperty(object, key, {
-      configurable: true,
-      enumerable: enumerable,
-      get: () => {
-        return this.get(path);
-      },
-      set: (value) => {
-        return this.set(path, value);
-      }
+  /**
+   * Creates a record
+   */
+  public constructor(data?: object) {
+    data = data || {};
+    const ctor = this.constructor;
+    const schema = ctor._schema;
+    const adapter = ctor._adapter;
+    Object.defineProperty(this, '_prev_attributes', {
+      writable: true,
+      value: {},
     });
+    if (ctor.dirty_tracking) {
+      Object.defineProperty(this, '_attributes', {
+        value: {},
+      });
+      Object.defineProperty(this, '_intermediates', {
+        value: {},
+      });
+      for (const path of Object.keys(ctor._intermediate_paths).sort()) {
+        const [obj, last] = util.getLeafOfPath(this, path);
+        this._intermediates[path] = {};
+        this._defineProperty(obj, last, path, false);
+      }
+      for (const column in schema) {
+        const property = schema[column];
+        const [obj, last] = util.getLeafOfPath(this, property._parts);
+        this._defineProperty(obj, last, column, false);
+      }
+    } else {
+      Object.defineProperty(this, 'isDirty', { value: _pf_isDirty });
+      Object.defineProperty(this, 'getChanged', { value: _pf_getChanged });
+      Object.defineProperty(this, 'get', { value: _pf_get });
+      Object.defineProperty(this, 'getPrevious', { value: _pf_getPrevious });
+      Object.defineProperty(this, 'set', { value: _pf_set });
+      Object.defineProperty(this, 'reset', { value: _pf_reset });
+    }
+    const id = arguments[1];
+    if (id) {
+      // if id exists, this is called from adapter with database record data
+      const selected_columns = arguments[2];
+      const selected_columns_raw = arguments[3];
+      adapter.setValuesFromDB(this, data, schema, selected_columns);
+      ctor._collapseNestedNulls(this, selected_columns_raw, ctor.dirty_tracking ? this._intermediates : void 0);
+      Object.defineProperty(this, 'id', {
+        configurable: false,
+        enumerable: true,
+        writable: false,
+        value: id,
+      });
+      this._runCallbacks('find', 'after');
+    } else {
+      for (const column in schema) {
+        const property = schema[column];
+        const parts = property._parts;
+        let value = util.getPropertyOfPath(data, parts);
+        if (value === undefined) {
+          value = null;
+        }
+        util.setPropertyOfPath(this, parts, value);
+      }
+      ctor._collapseNestedNulls(this, null, ctor.dirty_tracking ? this._intermediates : void 0);
+      Object.defineProperty(this, 'id', {
+        configurable: true,
+        enumerable: true,
+        writable: false,
+        value: null,
+      });
+    }
+    this._runCallbacks('initialize', 'after');
   }
 
-  //#
-  // Returns true if there is some changed columns
-  isDirty() {
+  // ModelCallback interface
+  public _runCallbacks(name: ModelCallbackName, type: ModelCallbackType) { /**/ }
+
+  // ModelPersistence interface
+  public async save(options: { skip_log?: boolean, validate?: boolean } = {}): Promise<this> {
+    return this;
+  }
+
+  /**
+   * Returns true if there is some changed columns
+   */
+  public isDirty() {
     return Object.keys(this._prev_attributes).length > 0;
   }
 
-  //#
-  // Returns the list of paths of changed columns
-  getChanged() {
+  /**
+   * Returns the list of paths of changed columns
+   */
+  public getChanged() {
     return Object.keys(this._prev_attributes);
   }
 
-  //#
-  // Returns the current value of the column of the given path
-  // @param {String} path
-  // @return {*}
-  get(path) {
+  /**
+   * Returns the current value of the column of the given path
+   * @param {String} path
+   * @return {*}
+   */
+  public get(path) {
     if (this._intermediates.hasOwnProperty(path)) {
       return this._intermediates[path];
     } else {
@@ -516,20 +566,22 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     }
   }
 
-  //#
-  // Returns the original value of the column of the given path
-  // @param {String} path
-  // @return {*}
-  getPrevious(path) {
+  /**
+   * Returns the original value of the column of the given path
+   * @param {String} path
+   * @return {*}
+   */
+  public getPrevious(path) {
     return this._prev_attributes[path];
   }
 
-  //#
-  // Changes the value of the column of the given path
-  // @param {String} path
-  // @param {*} value
-  // @return {*}
-  set(path, value) {
+  /**
+   * Changes the value of the column of the given path
+   * @param {String} path
+   * @param {*} value
+   * @return {*}
+   */
+  public set(path, value) {
     var k, last, obj, parts, prev_value, results, results1, v;
     if (this._intermediates.hasOwnProperty(path)) {
       obj = this._intermediates[path];
@@ -564,9 +616,10 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     }
   }
 
-  //#
-  // Resets all changes
-  reset() {
+  /**
+   * Resets all changes
+   */
+  public reset() {
     var path, ref, value;
     ref = this._prev_attributes;
     for (path in ref) {
@@ -576,10 +629,10 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     return this._prev_attributes = {};
   }
 
-  //#
-  // Destroys this record (remove from the database)
-  // @promise
-  async destroy() {
+  /**
+   * Destroys this record (remove from the database)
+   */
+  public async destroy() {
     this._runCallbacks('destroy', 'before');
     try {
       if (this.id) {
@@ -593,72 +646,28 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
   }
 
   //#
-  // Deletes all records from the database
-  // @promise
-  static async deleteAll() {
-    return (await this.delete());
-  }
+  // @property _prev_attributes
+  // @private
 
   //#
-  // Adds a has-many association
-  // @param {Class<Model>|String} target_model_or_column
-  // @param {Object} [options]
-  // @param {String} [options.type]
-  // @param {String} [options.as]
-  // @param {String} [options.foreign_key]
-  // @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
-  static hasMany(target_model_or_column, options) {
-    this._checkConnection();
-    this._connection.addAssociation({
-      type: 'hasMany',
-      this_model: this,
-      target_model_or_column: target_model_or_column,
-      options: options
-    });
-  }
+  // @property _attributes
+  // @private
 
   //#
-  // Adds a has-one association
-  // @param {Class<Model>|String} target_model_or_column
-  // @param {Object} [options]
-  // @param {String} [options.type]
-  // @param {String} [options.as]
-  // @param {String} [options.foreign_key]
-  // @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
-  static hasOne(target_model_or_column, options) {
-    this._checkConnection();
-    this._connection.addAssociation({
-      type: 'hasOne',
-      this_model: this,
-      target_model_or_column: target_model_or_column,
-      options: options
-    });
-  }
+  // @property _intermediates
+  // @private
 
-  //#
-  // Adds a belongs-to association
-  // @param {Class<Model>|String} target_model_or_column
-  // @param {Object} [options]
-  // @param {String} [options.type]
-  // @param {String} [options.as]
-  // @param {String} [options.foreign_key]
-  // @param {Boolean} [options.required]
-  static belongsTo(target_model_or_column, options) {
-    this._checkConnection();
-    this._connection.addAssociation({
-      type: 'belongsTo',
-      this_model: this,
-      target_model_or_column: target_model_or_column,
-      options: options
+  public _defineProperty(object, key, path, enumerable) {
+    return Object.defineProperty(object, key, {
+      configurable: true,
+      enumerable: enumerable,
+      get: () => {
+        return this.get(path);
+      },
+      set: (value) => {
+        return this.set(path, value);
+      }
     });
-  }
-
-  static inspect(depth) {
-    var schema;
-    schema = Object.keys(this._schema || {}).sort().map((column) => {
-      return `${column}: ${this._schema[column].type}`;
-    }).join(', ');
-    return '\u001b[36m' + `[Model: ${this.name}(` + '\u001b[90m' + schema + '\u001b[36m' + ")]" + '\u001b[39m';
   }
 }
 

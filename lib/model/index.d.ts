@@ -59,7 +59,14 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
     static afterDestroy(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
     static beforeValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
     static afterValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-    _runCallbacks(name: ModelCallbackName, type: ModelCallbackType): void;
+    static create<T extends Model, U extends T>(this: {
+        new (): T;
+    }, data?: U, options?: {
+        skip_log: boolean;
+    }): Promise<T>;
+    static createBulk<T extends Model, U extends T>(this: {
+        new (): T;
+    }, data?: U[]): Promise<T[]>;
     static query<T extends Model>(this: {
         new (): T;
     }): IQueryArray<T>;
@@ -83,17 +90,52 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
     }, orders: string): IQueryArray<T>;
     static _createQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T>;
     static _createOptionalQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T>;
-    static newModel(connection: any, name: any, schema: any): {
+    /**
+     * Returns a new model class extending Model
+     */
+    static newModel(connection: Connection, name: string, schema: object): {
         new (data?: object | undefined): {
             _runCallbacks(name: ModelCallbackName, type: ModelCallbackType): void;
-            _defineProperty(object: any, key: any, path: any, enumerable: any): any;
+            save(options?: {
+                skip_log?: boolean | undefined;
+                validate?: boolean | undefined;
+            }): Promise<any>;
+            /**
+             * Returns true if there is some changed columns
+             */
             isDirty(): boolean;
+            /**
+             * Returns the list of paths of changed columns
+             */
             getChanged(): string[];
+            /**
+             * Returns the current value of the column of the given path
+             * @param {String} path
+             * @return {*}
+             */
             get(path: any): any;
+            /**
+             * Returns the original value of the column of the given path
+             * @param {String} path
+             * @return {*}
+             */
             getPrevious(path: any): any;
+            /**
+             * Changes the value of the column of the given path
+             * @param {String} path
+             * @param {*} value
+             * @return {*}
+             */
             set(path: any, value: any): any;
+            /**
+             * Resets all changes
+             */
             reset(): {};
+            /**
+             * Destroys this record (remove from the database)
+             */
             destroy(): Promise<any>;
+            _defineProperty(object: any, key: any, path: any, enumerable: any): any;
         };
         /**
          * Tracks changes of a record if true
@@ -136,6 +178,10 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
         afterDestroy(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
         beforeValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
         afterValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
+        create<T extends Model, U extends T>(this: new () => T, data?: U | undefined, options?: {
+            skip_log: boolean;
+        } | undefined): Promise<T>;
+        createBulk<T extends Model, U extends T>(this: new () => T, data?: U[] | undefined): Promise<T[]>;
         query<T extends Model>(this: new () => T): IQueryArray<T>;
         find<T extends Model>(this: new () => T, id: string | number): IQuerySingle<T>;
         find<T extends Model>(this: new () => T, id: (string | number)[]): IQueryArray<T>;
@@ -145,44 +191,166 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
         order<T extends Model>(this: new () => T, orders: string): IQueryArray<T>;
         _createQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T>;
         _createOptionalQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T>;
-        newModel(connection: any, name: any, schema: any): any;
-        connection(connection: any, name: any): void;
+        newModel(connection: Connection, name: string, schema: object): any;
+        /**
+         * Sets a connection of this model
+         *
+         * If this methods was not called explicitly, this model will use Connection.defaultConnection
+         */
+        connection(connection: Connection, name: string): void;
         _checkConnection(): any;
         _checkReady(): Promise<[any, any]>;
-        _getKeyType(target_connection?: Connection): any;
         column(path: any, property: any): true | undefined;
         index(columns: any, options: any): boolean;
         drop(): Promise<void>;
-        build(data: any): Model;
-        _collapseNestedNulls(instance: any, selected_columns_raw: any, intermediates: any): (null | undefined)[];
+        /**
+         * Creates a record.
+         * 'Model.build(data)' is the same as 'new Model(data)'
+         */
+        build<T extends Model, U extends T>(this: new (data?: U | undefined) => T, data?: U | undefined): T;
+        /**
+         * Deletes all records from the database
+         */
         deleteAll(): Promise<any>;
+        /**
+         * Adds a has-many association
+         * @param {Class<Model>|String} target_model_or_column
+         * @param {Object} [options]
+         * @param {String} [options.type]
+         * @param {String} [options.as]
+         * @param {String} [options.foreign_key]
+         * @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
+         */
         hasMany(target_model_or_column: any, options: any): void;
+        /**
+         * Adds a has-one association
+         * @param {Class<Model>|String} target_model_or_column
+         * @param {Object} [options]
+         * @param {String} [options.type]
+         * @param {String} [options.as]
+         * @param {String} [options.foreign_key]
+         * @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
+         */
         hasOne(target_model_or_column: any, options: any): void;
+        /**
+         * Adds a belongs-to association
+         * @param {Class<Model>|String} target_model_or_column
+         * @param {Object} [options]
+         * @param {String} [options.type]
+         * @param {String} [options.as]
+         * @param {String} [options.foreign_key]
+         * @param {Boolean} [options.required]
+         */
         belongsTo(target_model_or_column: any, options: any): void;
         inspect(depth: any): string;
+        _getKeyType(target_connection?: Connection): any;
+        /**
+         * Set nested object null if all children are null
+         */
+        _collapseNestedNulls(instance: any, selected_columns_raw: any, intermediates: any): (null | undefined)[];
     };
-    static connection(connection: any, name: any): void;
+    /**
+     * Sets a connection of this model
+     *
+     * If this methods was not called explicitly, this model will use Connection.defaultConnection
+     */
+    static connection(connection: Connection, name: string): void;
     static _checkConnection(): any;
     static _checkReady(): Promise<[any, any]>;
-    static _getKeyType(target_connection?: Connection): any;
     static column(path: any, property: any): true | undefined;
     static index(columns: any, options: any): boolean;
     static drop(): Promise<void>;
-    static build(data: any): Model;
-    constructor(data?: object);
-    static _collapseNestedNulls(instance: any, selected_columns_raw: any, intermediates: any): (null | undefined)[];
-    _defineProperty(object: any, key: any, path: any, enumerable: any): any;
-    isDirty(): boolean;
-    getChanged(): string[];
-    get(path: any): any;
-    getPrevious(path: any): any;
-    set(path: any, value: any): any;
-    reset(): {};
-    destroy(): Promise<any>;
+    /**
+     * Creates a record.
+     * 'Model.build(data)' is the same as 'new Model(data)'
+     */
+    static build<T extends Model, U extends T>(this: {
+        new (data?: U): T;
+    }, data?: U): T;
+    /**
+     * Deletes all records from the database
+     */
     static deleteAll(): Promise<any>;
+    /**
+     * Adds a has-many association
+     * @param {Class<Model>|String} target_model_or_column
+     * @param {Object} [options]
+     * @param {String} [options.type]
+     * @param {String} [options.as]
+     * @param {String} [options.foreign_key]
+     * @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
+     */
     static hasMany(target_model_or_column: any, options: any): void;
+    /**
+     * Adds a has-one association
+     * @param {Class<Model>|String} target_model_or_column
+     * @param {Object} [options]
+     * @param {String} [options.type]
+     * @param {String} [options.as]
+     * @param {String} [options.foreign_key]
+     * @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
+     */
     static hasOne(target_model_or_column: any, options: any): void;
+    /**
+     * Adds a belongs-to association
+     * @param {Class<Model>|String} target_model_or_column
+     * @param {Object} [options]
+     * @param {String} [options.type]
+     * @param {String} [options.as]
+     * @param {String} [options.foreign_key]
+     * @param {Boolean} [options.required]
+     */
     static belongsTo(target_model_or_column: any, options: any): void;
     static inspect(depth: any): string;
+    static _getKeyType(target_connection?: Connection): any;
+    /**
+     * Set nested object null if all children are null
+     */
+    static _collapseNestedNulls(instance: any, selected_columns_raw: any, intermediates: any): (null | undefined)[];
+    /**
+     * Creates a record
+     */
+    constructor(data?: object);
+    _runCallbacks(name: ModelCallbackName, type: ModelCallbackType): void;
+    save(options?: {
+        skip_log?: boolean;
+        validate?: boolean;
+    }): Promise<this>;
+    /**
+     * Returns true if there is some changed columns
+     */
+    isDirty(): boolean;
+    /**
+     * Returns the list of paths of changed columns
+     */
+    getChanged(): string[];
+    /**
+     * Returns the current value of the column of the given path
+     * @param {String} path
+     * @return {*}
+     */
+    get(path: any): any;
+    /**
+     * Returns the original value of the column of the given path
+     * @param {String} path
+     * @return {*}
+     */
+    getPrevious(path: any): any;
+    /**
+     * Changes the value of the column of the given path
+     * @param {String} path
+     * @param {*} value
+     * @return {*}
+     */
+    set(path: any, value: any): any;
+    /**
+     * Resets all changes
+     */
+    reset(): {};
+    /**
+     * Destroys this record (remove from the database)
+     */
+    destroy(): Promise<any>;
+    _defineProperty(object: any, key: any, path: any, enumerable: any): any;
 }
 export { Model };
