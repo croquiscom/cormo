@@ -10,9 +10,12 @@ declare class AdapterBase {
      * @param msg CORMO's error message
      * @param cause adapter specific error object
      */
-    protected static wrapError(msg: string, cause: Error): Error;
+    static wrapError(msg: string, cause?: Error): Error;
+    _connection: any;
     support_fractional_seconds: boolean;
     support_upsert: boolean;
+    support_nested: boolean;
+    key_type: any;
     connect(settings: {}): Promise<void>;
     /**
      * Returns current schemas.
@@ -76,7 +79,7 @@ declare class AdapterBase {
      * Updates some fields of records that match conditions
      * @abstract
      */
-    updatePartial(model: string, data: any, conditions: any, options: any): Promise<void>;
+    updatePartial(model: string, data: any, conditions: any, options: any): Promise<number>;
     /**
      * Updates some fields of records that match conditions or inserts a new record
      * @abstract
@@ -93,7 +96,7 @@ declare class AdapterBase {
      * @throws {Error('not found')}
      * @see Query::exec
      */
-    findById(model: any, id: any, options: any): Promise<never>;
+    findById(model: any, id: any, options: any): Promise<any>;
     /**
      * Finds records
      * @abstract
@@ -104,7 +107,7 @@ declare class AdapterBase {
      * @promise
      * @see Query::exec
      */
-    find(model: any, conditions: any, options: any): Promise<never>;
+    find(model: any, conditions: any, options: any): Promise<any>;
     /**
      * Streams matching records
      * @abstract
@@ -125,7 +128,7 @@ declare class AdapterBase {
      * @promise
      * @see Query::count
      */
-    count(model: any, conditions: any, options: any): Promise<never>;
+    count(model: any, conditions: any, options: any): Promise<number>;
     /**
      * Deletes records from the database
      * @abstract
@@ -135,7 +138,7 @@ declare class AdapterBase {
      * @promise
      * @see Query::delete
      */
-    delete(model: any, conditions: any): Promise<never>;
+    delete(model: any, conditions: any): Promise<number>;
     /**
      * Closes connection
      */
@@ -143,7 +146,7 @@ declare class AdapterBase {
     protected _getModelID(data: any): any;
     protected valueToModel(value: any, property: any): any;
     protected _convertToModelInstance(model: any, data: any, options: any): any;
-    protected _convertToGroupInstance(model: any, data: any, group_by: any, group_fields: any): {};
+    protected _convertToGroupInstance(model: any, data: any, group_by: any, group_fields: any): any;
     protected _createBulkDefault(model: any, data: any): Promise<[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}]>;
 }
 export { AdapterBase };

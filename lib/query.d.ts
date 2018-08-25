@@ -195,7 +195,7 @@ declare class Query<T> {
      * @promise
      * @see AdapterBase::count
      */
-    count(): Promise<never>;
+    count(): Promise<number>;
     /**
      * Executes the query as a update operation
      * @param {Object} updates

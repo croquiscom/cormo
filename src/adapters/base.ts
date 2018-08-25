@@ -12,15 +12,21 @@ class AdapterBase {
    * @param msg CORMO's error message
    * @param cause adapter specific error object
    */
-  protected static wrapError(msg: string, cause: Error): Error {
+  public static wrapError(msg: string, cause?: Error): Error {
     const error = new Error(msg);
     (error as any).cause = cause;
     return error;
   }
 
+  public _connection: any;
+
   public support_fractional_seconds = true;
 
   public support_upsert = true;
+
+  public support_nested = false;
+
+  public key_type: any;
 
   public async connect(settings: {}) {
     return;
@@ -77,11 +83,11 @@ class AdapterBase {
     throw new Error('not implemented');
   }
 
-  public idToDB(value) {
+  public idToDB(value: any) {
     return value;
   }
 
-  public valueToDB(value, column, property) {
+  public valueToDB(value: any, column: any, property: any) {
     if (property.type_class === types.Object || property.array) {
       return JSON.stringify(value);
     } else if (value != null) {
@@ -91,18 +97,16 @@ class AdapterBase {
     }
   }
 
-  public setValuesFromDB(instance, data, schema, selected_columns) {
-    var column, i, len, parts, property, results, support_nested, value;
+  public setValuesFromDB(instance: any, data: any, schema: any, selected_columns: any) {
     if (!selected_columns) {
       selected_columns = Object.keys(schema);
     }
-    support_nested = this.support_nested;
-    results = [];
-    for (i = 0, len = selected_columns.length; i < len; i++) {
-      column = selected_columns[i];
-      property = schema[column];
-      parts = property._parts;
-      value = support_nested ? util.getPropertyOfPath(data, parts) : data[property._dbname];
+    const support_nested = this.support_nested;
+    const results = [];
+    for (const column of selected_columns) {
+      const property = schema[column];
+      const parts = property._parts;
+      let value = support_nested ? util.getPropertyOfPath(data, parts) : data[property._dbname];
       if (value != null) {
         value = this.valueToModel(value, property);
       } else {
@@ -146,7 +150,7 @@ class AdapterBase {
    * Updates some fields of records that match conditions
    * @abstract
    */
-  public async updatePartial(model: string, data: any, conditions: any, options: any) {
+  public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
     throw new Error('not implemented');
   }
 
@@ -169,8 +173,8 @@ class AdapterBase {
    * @throws {Error('not found')}
    * @see Query::exec
    */
-  public async findById(model, id, options) {
-    return Promise.reject(new Error('not implemented'));
+  public async findById(model: any, id: any, options: any): Promise<any> {
+    throw new Error('not implemented');
   }
 
   /**
@@ -183,8 +187,8 @@ class AdapterBase {
    * @promise
    * @see Query::exec
    */
-  public async find(model, conditions, options) {
-    return Promise.reject(new Error('not implemented'));
+  public async find(model: any, conditions: any, options: any): Promise<any> {
+    throw new Error('not implemented');
   }
 
   /**
@@ -196,13 +200,10 @@ class AdapterBase {
    * @return {Readable}
    * @see Query::stream
    */
-  public stream(model, conditions, options) {
-    var readable;
-    readable = new stream.Readable({
-      objectMode: true
-    });
-    readable._read = function() {
-      return readable.emit('error', new Error('not implemented'));
+  public stream(model: any, conditions: any, options: any): stream.Readable {
+    const readable = new stream.Readable({ objectMode: true });
+    readable._read = () => {
+      readable.emit('error', new Error('not implemented'));
     };
     return readable;
   }
@@ -217,8 +218,8 @@ class AdapterBase {
    * @promise
    * @see Query::count
    */
-  public async count(model, conditions, options) {
-    return Promise.reject(new Error('not implemented'));
+  public async count(model: any, conditions: any, options: any): Promise<number> {
+    throw new Error('not implemented');
   }
 
   /**
@@ -230,20 +231,20 @@ class AdapterBase {
    * @promise
    * @see Query::delete
    */
-  public async delete(model, conditions) {
-    return Promise.reject(new Error('not implemented'));
+  public async delete(model: any, conditions: any): Promise<number> {
+    throw new Error('not implemented');
   }
 
   /**
    * Closes connection
    */
-  public close() { }
+  public close() { /**/ }
 
-  protected _getModelID(data) {
+  protected _getModelID(data: any) {
     return data.id;
   }
 
-  protected valueToModel(value, property) {
+  protected valueToModel(value: any, property: any) {
     if (property.type_class === types.Object || property.array) {
       return JSON.parse(value);
     } else {
@@ -251,38 +252,36 @@ class AdapterBase {
     }
   }
 
-  protected _convertToModelInstance(model, data, options) {
-    var id, instance, modelClass;
+  protected _convertToModelInstance(model: any, data: any, options: any) {
     if (options.lean) {
       model = this._connection.models[model];
-      instance = {};
+      const instance: any = {};
       this.setValuesFromDB(instance, data, model._schema, options.select);
       model._collapseNestedNulls(instance, options.select_raw, null);
       instance.id = this._getModelID(data);
       return instance;
     } else {
-      id = this._getModelID(data);
-      modelClass = this._connection.models[model];
+      const id = this._getModelID(data);
+      const modelClass = this._connection.models[model];
       return new modelClass(data, id, options.select, options.select_raw);
     }
   }
 
-  protected _convertToGroupInstance(model, data, group_by, group_fields) {
-    var expr, field, i, instance, len, op, property, schema;
-    instance = {};
+  protected _convertToGroupInstance(model: any, data: any, group_by: any, group_fields: any) {
+    const instance: any = {};
     if (group_by) {
-      schema = this._connection.models[model]._schema;
-      for (i = 0, len = group_by.length; i < len; i++) {
-        field = group_by[i];
-        property = schema[field];
+      const schema = this._connection.models[model]._schema;
+      for (const field of group_by) {
+        const property = schema[field];
         if (property) {
           instance[field] = this.valueToModel(data[field], property);
         }
       }
     }
-    for (field in group_fields) {
-      expr = group_fields[field];
-      op = Object.keys(expr)[0];
+    // tslint:disable-next-line:forin
+    for (const field in group_fields) {
+      const expr = group_fields[field];
+      const op = Object.keys(expr)[0];
       if (op === '$sum' || op === '$max' || op === '$min') {
         instance[field] = Number(data[field]);
       }
@@ -290,8 +289,8 @@ class AdapterBase {
     return instance;
   }
 
-  protected async _createBulkDefault(model, data) {
-    return await Promise.all(data.map((item) => {
+  protected async _createBulkDefault(model: any, data: any) {
+    return await Promise.all(data.map((item: any) => {
       return this.create(model, item);
     }));
   }
