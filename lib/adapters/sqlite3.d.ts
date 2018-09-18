@@ -3,6 +3,7 @@ export interface IAdapterSettingsSQLite3 {
     database: string;
 }
 import * as stream from 'stream';
+import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 declare class SQLite3Adapter extends SQLAdapterBase {
     key_type: any;
@@ -11,10 +12,7 @@ declare class SQLite3Adapter extends SQLAdapterBase {
     protected _false_value: string;
     private _client;
     constructor(connection: any);
-    getSchemas(): Promise<{
-        tables: any[];
-        indexes: any[];
-    }>;
+    getSchemas(): Promise<ISchemas>;
     createTable(model: string): Promise<void>;
     addColumn(model: string, column_property: any): Promise<void>;
     createIndex(model: string, index: any): Promise<void>;

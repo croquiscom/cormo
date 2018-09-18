@@ -7,6 +7,7 @@ export interface IAdapterSettingsPostgreSQL {
     database: string;
 }
 import * as stream from 'stream';
+import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 declare class PostgreSQLAdapter extends SQLAdapterBase {
     key_type: any;
@@ -17,11 +18,7 @@ declare class PostgreSQLAdapter extends SQLAdapterBase {
     protected _regexp_op: string;
     private _pool;
     constructor(connection: any);
-    getSchemas(): Promise<{
-        tables: any[];
-        indexes: any[];
-        foreign_keys: any[];
-    }>;
+    getSchemas(): Promise<ISchemas>;
     createTable(model: string): Promise<void>;
     addColumn(model: string, column_property: any): Promise<void>;
     createIndex(model: string, index: any): Promise<void>;

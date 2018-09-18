@@ -10,6 +10,7 @@ export interface IAdapterSettingsMySQL {
     pool_size?: number;
 }
 import * as stream from 'stream';
+import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 declare class MySQLAdapter extends SQLAdapterBase {
     key_type: any;
@@ -21,11 +22,7 @@ declare class MySQLAdapter extends SQLAdapterBase {
     private _database?;
     private _settings?;
     constructor(connection: any);
-    getSchemas(): Promise<{
-        tables: any[];
-        indexes: any[];
-        foreign_keys: any[];
-    }>;
+    getSchemas(): Promise<ISchemas>;
     createTable(model: string): Promise<void>;
     addColumn(model: string, column_property: any): Promise<void>;
     createIndex(model: string, index: any): Promise<void>;

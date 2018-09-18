@@ -16,6 +16,7 @@ import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
 import * as types from '../types';
+import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: any) {
@@ -81,13 +82,13 @@ class SQLite3Adapter extends SQLAdapterBase {
     this._connection = connection;
   }
 
-  public async getSchemas(): Promise<{ tables: any[], indexes: any[] }> {
+  public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: any = {};
+    const table_schemas: { [tableName: string]: any } = {};
     const all_indexes: any = {};
     for (const table of tables) {
-      table_schemas[table] = (await this._getSchema(table));
-      all_indexes[table] = (await this._getIndexes(table));
+      table_schemas[table] = await this._getSchema(table);
+      all_indexes[table] = await this._getIndexes(table);
     }
     return {
       indexes: all_indexes,

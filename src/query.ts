@@ -21,7 +21,7 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
   endif(): IQuerySingle<T>;
   include(column: string, select?: string): IQuerySingle<T>;
 
-  exec(): PromiseLike<T>;
+  exec(options?: any): PromiseLike<T>;
   then<TResult1 = T, TResult2 = never>(
     onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
     onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
@@ -29,7 +29,7 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
   count(): PromiseLike<number>;
   update(updates: object): PromiseLike<number>;
   upsert(updates: object): PromiseLike<number>;
-  delete(): PromiseLike<number>;
+  delete(options?: any): PromiseLike<number>;
 }
 
 export interface IQueryArray<T> extends PromiseLike<T[]> {
@@ -47,7 +47,7 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   endif(): IQueryArray<T>;
   include(column: string, select?: string): IQueryArray<T>;
 
-  exec(): PromiseLike<T[]>;
+  exec(options?: any): PromiseLike<T[]>;
   then<TResult1 = T[], TResult2 = never>(
     onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null,
     onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
@@ -55,7 +55,7 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   count(): PromiseLike<number>;
   update(updates: object): PromiseLike<number>;
   upsert(updates: object): PromiseLike<number>;
-  delete(): PromiseLike<number>;
+  delete(options?: any): PromiseLike<number>;
 }
 
 export interface QueryOptions {

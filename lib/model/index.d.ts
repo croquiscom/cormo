@@ -44,6 +44,14 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
      */
     static _adapter: AdapterBase;
     static _name: string;
+    static _schema: any;
+    static _indexes: any[];
+    static _integrities: any[];
+    static _associations: {
+        [column: string]: any;
+    };
+    static _initialize_called: boolean;
+    static initialize(): void;
     static _loadFromCache(key: string, refresh?: boolean): Promise<any>;
     static _saveToCache(key: string, ttl: number, data: any): Promise<void>;
     static removeCache(key: string): Promise<void>;
@@ -93,162 +101,7 @@ declare class Model implements ModelCache, ModelCallback, ModelPersistence, Mode
     /**
      * Returns a new model class extending Model
      */
-    static newModel(connection: Connection, name: string, schema: object): {
-        new (data?: object | undefined): {
-            _runCallbacks(name: ModelCallbackName, type: ModelCallbackType): void;
-            save(options?: {
-                skip_log?: boolean | undefined;
-                validate?: boolean | undefined;
-            }): Promise<any>;
-            /**
-             * Returns true if there is some changed columns
-             */
-            isDirty(): boolean;
-            /**
-             * Returns the list of paths of changed columns
-             */
-            getChanged(): string[];
-            /**
-             * Returns the current value of the column of the given path
-             * @param {String} path
-             * @return {*}
-             */
-            get(path: any): any;
-            /**
-             * Returns the original value of the column of the given path
-             * @param {String} path
-             * @return {*}
-             */
-            getPrevious(path: any): any;
-            /**
-             * Changes the value of the column of the given path
-             * @param {String} path
-             * @param {*} value
-             * @return {*}
-             */
-            set(path: any, value: any): any;
-            /**
-             * Resets all changes
-             */
-            reset(): {};
-            /**
-             * Destroys this record (remove from the database)
-             */
-            destroy(): Promise<any>;
-            _defineProperty(object: any, key: any, path: any, enumerable: any): any;
-        };
-        /**
-         * Tracks changes of a record if true
-         */
-        dirty_tracking: boolean;
-        /**
-         * Archives deleted records in the archive table
-         */
-        archive: boolean;
-        /**
-         * Applies the lean option for all queries for this Model
-         */
-        lean_query: boolean;
-        tableName: string;
-        /**
-         * Indicates the connection associated to this model
-         * @see Model.connection
-         * @private
-         */
-        _connection: Connection;
-        /**
-         * Indicates the adapter associated to this model
-         * @private
-         * @see Model.connection
-         */
-        _adapter: AdapterBase;
-        _name: string;
-        _loadFromCache(key: string, refresh?: boolean | undefined): Promise<any>;
-        _saveToCache(key: string, ttl: number, data: any): Promise<void>;
-        removeCache(key: string): Promise<void>;
-        afterInitialize(method: ModelCallbackMethod): void;
-        afterFind(method: ModelCallbackMethod): void;
-        beforeSave(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-        afterSave(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-        beforeCreate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-        afterCreate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-        beforeUpdate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-        afterUpdate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-        beforeDestroy(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-        afterDestroy(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-        beforeValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-        afterValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod): void;
-        create<T extends Model, U extends T>(this: new () => T, data?: U | undefined, options?: {
-            skip_log: boolean;
-        } | undefined): Promise<T>;
-        createBulk<T extends Model, U extends T>(this: new () => T, data?: U[] | undefined): Promise<T[]>;
-        query<T extends Model>(this: new () => T): IQueryArray<T>;
-        find<T extends Model>(this: new () => T, id: string | number): IQuerySingle<T>;
-        find<T extends Model>(this: new () => T, id: (string | number)[]): IQueryArray<T>;
-        findPreserve<T extends Model>(this: new () => T, ids: (string | number)[]): IQueryArray<T>;
-        where<T extends Model>(this: new () => T, condition?: object | undefined): IQueryArray<T>;
-        select<T extends Model>(this: new () => T, columns: string): IQueryArray<T>;
-        order<T extends Model>(this: new () => T, orders: string): IQueryArray<T>;
-        _createQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T>;
-        _createOptionalQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T>;
-        newModel(connection: Connection, name: string, schema: object): any;
-        /**
-         * Sets a connection of this model
-         *
-         * If this methods was not called explicitly, this model will use Connection.defaultConnection
-         */
-        connection(connection: Connection, name?: string | undefined): void;
-        _checkConnection(): void;
-        _checkReady(): Promise<[any, any]>;
-        column(path: any, property: any): true | undefined;
-        index(columns: any, options: any): boolean;
-        drop(): Promise<void>;
-        /**
-         * Creates a record.
-         * 'Model.build(data)' is the same as 'new Model(data)'
-         */
-        build<T extends Model, U extends T>(this: new (data?: U | undefined) => T, data?: U | undefined): T;
-        /**
-         * Deletes all records from the database
-         */
-        deleteAll(): Promise<any>;
-        /**
-         * Adds a has-many association
-         * @param {Class<Model>|String} target_model_or_column
-         * @param {Object} [options]
-         * @param {String} [options.type]
-         * @param {String} [options.as]
-         * @param {String} [options.foreign_key]
-         * @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
-         */
-        hasMany(target_model_or_column: any, options: any): void;
-        /**
-         * Adds a has-one association
-         * @param {Class<Model>|String} target_model_or_column
-         * @param {Object} [options]
-         * @param {String} [options.type]
-         * @param {String} [options.as]
-         * @param {String} [options.foreign_key]
-         * @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
-         */
-        hasOne(target_model_or_column: any, options: any): void;
-        /**
-         * Adds a belongs-to association
-         * @param {Class<Model>|String} target_model_or_column
-         * @param {Object} [options]
-         * @param {String} [options.type]
-         * @param {String} [options.as]
-         * @param {String} [options.foreign_key]
-         * @param {Boolean} [options.required]
-         */
-        belongsTo(target_model_or_column: any, options: any): void;
-        inspect(depth: any): string;
-        _getKeyType(target_connection?: Connection): any;
-        /**
-         * Set nested object null if all children are null
-         */
-        _collapseNestedNulls(instance: any, selected_columns_raw: any, intermediates: any): (null | undefined)[];
-    };
+    static newModel(connection: Connection, name: string, schema: any): typeof Model;
     /**
      * Sets a connection of this model
      *

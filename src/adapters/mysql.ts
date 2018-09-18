@@ -23,6 +23,7 @@ import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
 import * as types from '../types';
+import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: any, support_fractional_seconds: any) {
@@ -105,9 +106,9 @@ class MySQLAdapter extends SQLAdapterBase {
     this._connection = connection;
   }
 
-  public async getSchemas(): Promise<{ tables: any[], indexes: any[], foreign_keys: any[] }> {
+  public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: any = {};
+    const table_schemas: { [tableName: string]: any } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
     }
@@ -541,7 +542,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return schema;
   }
 
-  private async _getIndexes(): Promise<any> {
+  private async _getIndexes(): Promise<{ [tableName: string]: any }> {
     const sql = 'SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX';
     const rows = await this._client.queryAsync(sql, [this._database]);
     const indexes: any = {};

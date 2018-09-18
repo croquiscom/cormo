@@ -25,7 +25,7 @@ class CormoTypesObjectId { }
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as types from '../types';
-import { AdapterBase } from './base';
+import { AdapterBase, ISchemas } from './base';
 
 function _convertValueToObjectID(value: any, key: any) {
   if (value == null) {
@@ -244,7 +244,7 @@ class MongoDBAdapter extends AdapterBase {
     this._collections = {};
   }
 
-  public async getSchemas(): Promise<any> {
+  public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
     const table_schemas: any = {};
     const all_indexes: any = {};

@@ -26,6 +26,7 @@ export interface IAdapterSettingsPostgreSQL {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as types from '../types';
+import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: any) {
@@ -107,9 +108,9 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     this._connection = connection;
   }
 
-  public async getSchemas(): Promise<{ tables: any[], indexes: any[], foreign_keys: any[] }> {
+  public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: any = {};
+    const table_schemas: { [tableName: string]: any } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
     }

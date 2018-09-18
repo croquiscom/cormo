@@ -2,6 +2,12 @@ import * as stream from 'stream';
 import * as types from '../types';
 import * as util from '../util';
 
+export interface ISchemas {
+  tables: { [tableName: string]: any };
+  indexes?: { [tableName: string]: any };
+  foreign_keys?: { [tableName: string]: any };
+}
+
 /**
  * Base class for adapters
  * @namespace adapter
@@ -37,8 +43,8 @@ class AdapterBase {
    * @abstract
    * @see Connection::applySchemas
    */
-  public async getSchemas(): Promise<{ tables: any[] }> {
-    return { tables: [] };
+  public async getSchemas(): Promise<ISchemas> {
+    return { tables: {} };
   }
 
   /**

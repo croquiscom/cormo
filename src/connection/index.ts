@@ -1,17 +1,18 @@
 let redis: any;
 
 import { EventEmitter } from 'events';
+import * as _ from 'lodash';
 import * as Toposort from 'toposort-class';
 import { inspect } from 'util';
-import { Model } from '../model';
 
 import { AdapterBase } from '../adapters/base';
 import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
 import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
-import { ConnectionAssociation } from './association';
-import { ConnectionManipulate } from './manipulate';
+import { Model } from '../model';
+import * as types from '../types';
+import * as inflector from '../util/inflector';
 
 try {
   // tslint:disable-next-line:no-var-requires
@@ -19,6 +20,8 @@ try {
 } catch (error) {
   /**/
 }
+
+type ManipulateCommand = string | { [key: string]: any };
 
 interface IConnectionSettings {
   is_default?: boolean;
@@ -32,10 +35,8 @@ interface IConnectionSettings {
 
 /**
  * Manages connection to a database
- * @uses ConnectionAssociation
- * @uses ConnectionManipulate
  */
-class Connection extends EventEmitter implements ConnectionAssociation, ConnectionManipulate {
+class Connection extends EventEmitter {
   /**
    * Default connection
    * @see Connection::constructor
@@ -109,7 +110,7 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
   /**
    * Creates a model class
    */
-  public model(name: string, schema: object) {
+  public model(name: string, schema: any) {
     return Model.newModel(this, name, schema);
   }
 
@@ -132,20 +133,20 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
       console.log('Applying schemas');
     }
     this._promise_schema_applied = this._promise_connection.then(async () => {
-      var add_columns_commands, args, column, current, current_foreign_key, foreign_keys_commands, i, index, indexes_commands, integrity, j, k, len, len1, len2, model, modelClass, property, ref, ref1, ref10, ref11, ref12, ref13, ref14, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9, results, tables_commands, type;
       try {
-        current = (await this._adapter.getSchemas());
-        add_columns_commands = [];
-        ref = this.models;
-        for (model in ref) {
-          modelClass = ref[model];
-          if (!((ref1 = current.tables) != null ? ref1[modelClass.tableName] : void 0) || ((ref2 = current.tables) != null ? ref2[modelClass.tableName] : void 0) === 'NO SCHEMA') {
+        const current = await this._adapter.getSchemas();
+        const add_columns_commands = [];
+        // tslint:disable-next-line:forin
+        for (const model in this.models) {
+          const modelClass = this.models[model];
+          const currentTable = current.tables && current.tables[modelClass.tableName];
+          if (!currentTable || currentTable === 'NO SCHEMA') {
             continue;
           }
-          ref3 = modelClass._schema;
-          for (column in ref3) {
-            property = ref3[column];
-            if (!((ref4 = current.tables) != null ? (ref5 = ref4[modelClass.tableName]) != null ? ref5[property._dbname] : void 0 : void 0)) {
+          // tslint:disable-next-line:forin
+          for (const column in modelClass._schema) {
+            const property = modelClass._schema[column];
+            if (!currentTable[property._dbname]) {
               if (options.verbose) {
                 console.log(`Adding column ${column} to ${modelClass.tableName}`);
               }
@@ -154,10 +155,11 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
           }
         }
         await Promise.all(add_columns_commands);
-        tables_commands = [];
-        ref6 = this.models;
-        for (model in ref6) {
-          modelClass = ref6[model];
+
+        const tables_commands = [];
+        // tslint:disable-next-line:forin
+        for (const model in this.models) {
+          const modelClass = this.models[model];
           if (!current.tables[modelClass.tableName]) {
             if (options.verbose) {
               console.log(`Creating table ${modelClass.tableName}`);
@@ -166,14 +168,14 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
           }
         }
         await Promise.all(tables_commands);
-        indexes_commands = [];
-        ref7 = this.models;
-        for (model in ref7) {
-          modelClass = ref7[model];
-          ref8 = modelClass._indexes;
-          for (i = 0, len = ref8.length; i < len; i++) {
-            index = ref8[i];
-            if (!((ref9 = current.indexes) != null ? (ref10 = ref9[modelClass.tableName]) != null ? ref10[index.options.name] : void 0 : void 0)) {
+
+        const indexes_commands = [];
+        // tslint:disable-next-line:forin
+        for (const model in this.models) {
+          const modelClass = this.models[model];
+          for (const index of modelClass._indexes) {
+            if (!(current.indexes && current.indexes[modelClass.tableName]
+              && current.indexes[modelClass.tableName][index.options.name])) {
               if (options.verbose) {
                 console.log(`Creating index on ${modelClass.tableName} ${Object.keys(index.columns)}`);
               }
@@ -182,14 +184,13 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
           }
         }
         await Promise.all(indexes_commands);
-        foreign_keys_commands = [];
-        ref11 = this.models;
-        for (model in ref11) {
-          modelClass = ref11[model];
-          ref12 = modelClass._integrities;
-          for (j = 0, len1 = ref12.length; j < len1; j++) {
-            integrity = ref12[j];
-            type = '';
+
+        const foreign_keys_commands = [];
+        // tslint:disable-next-line:forin
+        for (const model in this.models) {
+          const modelClass = this.models[model];
+          for (const integrity of modelClass._integrities) {
+            let type = '';
             if (integrity.type === 'child_nullify') {
               type = 'nullify';
             } else if (integrity.type === 'child_restrict') {
@@ -198,22 +199,21 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
               type = 'delete';
             }
             if (type) {
-              current_foreign_key = (ref13 = current.foreign_keys) != null ? (ref14 = ref13[modelClass.tableName]) != null ? ref14[integrity.column] : void 0 : void 0;
+              const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.tableName]
+                && current.foreign_keys[modelClass.tableName][integrity.column];
               if (!(current_foreign_key && current_foreign_key === integrity.parent.tableName)) {
                 if (options.verbose) {
-                  console.log(`Adding foreign key ${modelClass.tableName}.${integrity.column} to ${integrity.parent.tableName}`);
+                  const parentTableName = integrity.parent.tableName;
+                  console.log(`Adding foreign key ${modelClass.tableName}.${integrity.column} to ${parentTableName}`);
                 }
                 foreign_keys_commands.push([model, integrity.column, type, integrity.parent]);
               }
             }
           }
         }
-        results = [];
-        for (k = 0, len2 = foreign_keys_commands.length; k < len2; k++) {
-          args = foreign_keys_commands[k];
-          results.push((await this._adapter.createForeignKey.apply(this._adapter, args)));
+        for (const args of foreign_keys_commands) {
+          await this._adapter.createForeignKey.apply(this._adapter, args);
         }
-        return results;
       } finally {
         if (options.verbose) {
           console.log('Applying schemas done');
@@ -243,10 +243,149 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
     return inspect(this.models);
   }
 
-  public addAssociation() { }
-  public getInconsistencies() { }
-  public fetchAssociated() { }
-  public manipulate() { }
+  /**
+   * Manipulate data
+   */
+  public async manipulate(commands: ManipulateCommand[]): Promise<any> {
+    this.log('<conn>', 'manipulate', commands);
+    await this._checkSchemaApplied();
+    const id_to_record_map: { [id: string]: any } = {};
+    if (!Array.isArray(commands)) {
+      commands = [commands];
+    }
+    for (const command of commands) {
+      let key;
+      let data;
+      if (typeof command === 'object') {
+        key = Object.keys(command);
+        if (key.length === 1) {
+          key = key[0];
+          data = command[key];
+        } else {
+          key = void 0;
+        }
+      } else if (typeof command === 'string') {
+        key = command;
+      }
+      if (!key) {
+        throw new Error('invalid command: ' + JSON.stringify(command));
+      } else if (key.substr(0, 7) === 'create_') {
+        const model = key.substr(7);
+        const id = data.id;
+        delete data.id;
+        this._manipulateConvertIds(id_to_record_map, model, data);
+        const record = await this._manipulateCreate(model, data);
+        if (id) {
+          id_to_record_map[id] = record;
+        }
+      } else if (key.substr(0, 7) === 'delete_') {
+        const model = key.substr(7);
+        await this._manipulateDelete(model, data);
+      } else if (key === 'deleteAll') {
+        await this._manipulateDeleteAllModels();
+      } else if (key.substr(0, 5) === 'drop_') {
+        const model = key.substr(5);
+        await this._manipulateDropModel(model);
+      } else if (key === 'dropAll') {
+        await this._manipulateDropAllModels();
+      } else if (key.substr(0, 5) === 'find_') {
+        const model = key.substr(5);
+        const id = data.id;
+        delete data.id;
+        if (!id) {
+          continue;
+        }
+        const records = await this._manipulateFind(model, data);
+        id_to_record_map[id] = records;
+      } else {
+        throw new Error('unknown command: ' + key);
+      }
+    }
+    return id_to_record_map;
+  }
+
+  /**
+   * Adds an association
+   * @see Model.hasMany
+   * @see Model.belongsTo
+   */
+  public addAssociation(association: any) {
+    this._pending_associations.push(association);
+    this._schema_changed = true;
+  }
+
+  /**
+   * Returns inconsistent records against associations
+   */
+  public async getInconsistencies() {
+    await this._checkSchemaApplied();
+    const result: any = {};
+    const promises = Object.keys(this.models).map(async (model) => {
+      const modelClass = this.models[model];
+      const integrities = modelClass._integrities.filter((integrity) => integrity.type.substr(0, 7) === 'parent_');
+      if (integrities.length > 0) {
+        let records = await modelClass.select('');
+        const ids = records.map((record: any) => record.id);
+        const sub_promises = integrities.map(async (integrity) => {
+          const query = integrity.child.select('');
+          query.where(_.zipObject([integrity.column], [{ $not: { $in: ids } }]));
+          const property = integrity.child._schema[integrity.column];
+          if (!property.required) {
+            query.where(_.zipObject([integrity.column], [{ $not: null }]));
+          }
+          records = await query.exec();
+          if (records.length > 0) {
+            const array = result[integrity.child._name] || (result[integrity.child._name] = []);
+            [].push.apply(array, records.map((record: any) => record.id));
+            _.uniq(array);
+          }
+        });
+        await Promise.all(sub_promises);
+      }
+    });
+    await Promise.all(promises);
+    return result;
+  }
+
+  /**
+   * Fetches associated records
+   */
+  public async fetchAssociated(records: any, column: any, select: any, options: any) {
+    if ((select != null) && typeof select === 'object') {
+      options = select;
+      select = null;
+    } else if (options == null) {
+      options = {};
+    }
+    await this._checkSchemaApplied();
+    const record = Array.isArray(records) ? records[0] : records;
+    if (!record) {
+      return;
+    }
+    let association;
+    if (options.target_model) {
+      association = {
+        foreign_key: options.foreign_key,
+        target_model: options.target_model,
+        type: options.type || 'belongsTo',
+      };
+    } else if (options.model) {
+      association = options.model._associations && options.model._associations[column];
+    } else {
+      association = record.constructor._associations && record.constructor._associations[column];
+    }
+    if (!association) {
+      throw new Error(`unknown column '${column}'`);
+    }
+    if (association.type === 'belongsTo') {
+      return await this._fetchAssociatedBelongsTo(records, association.target_model, column, select, options);
+    } else if (association.type === 'hasMany') {
+      return await this._fetchAssociatedHasMany(records, association.target_model, association.foreign_key,
+        column, select, options);
+    } else {
+      throw new Error(`unknown column '${column}'`);
+    }
+  }
 
   private async _checkSchemaApplied() {
     this._initializeModels();
@@ -311,41 +450,421 @@ class Connection extends EventEmitter implements ConnectionAssociation, Connecti
   }
 
   private _connectRedisCache() {
-    var client, settings;
     if (this._redis_cache_client) {
       return this._redis_cache_client;
     } else if (!redis) {
       throw new Error('cache needs Redis');
     } else {
-      settings = this._redis_cache_settings;
-      this._redis_cache_client = client = settings.client || (redis.createClient(settings.port || 6379, settings.host || '127.0.0.1'));
+      const settings = this._redis_cache_settings;
+      const client = settings.client || (redis.createClient(settings.port || 6379, settings.host || '127.0.0.1'));
+      this._redis_cache_client = client;
       if (settings.database != null) {
         client.select(settings.database);
-        client.once('connect', function() {
+        client.once('connect', () => {
           client.send_anyways = true;
           client.select(settings.database);
-          return client.send_anyways = false;
+          client.send_anyways = false;
         });
       }
       return client;
     }
   }
-}
 
-function applyMixins(derivedCtor: any, baseCtors: any[]) {
-  for (const baseCtor of baseCtors) {
-    for (const name of Object.getOwnPropertyNames(baseCtor)) {
-      if (name === 'length' || name === 'prototype' || name === 'name') {
-        continue;
-      }
-      derivedCtor[name] = baseCtor[name];
+  private async _manipulateCreate(model: string, data: any) {
+    model = inflector.camelize(model);
+    if (!this.models[model]) {
+      throw new Error(`model ${model} does not exist`);
     }
-    for (const name of Object.getOwnPropertyNames(baseCtor.prototype)) {
-      derivedCtor.prototype[name] = baseCtor.prototype[name];
+    return await this.models[model].create(data, { skip_log: true });
+  }
+
+  private async _manipulateDelete(model: string, data: any) {
+    model = inflector.camelize(model);
+    if (!this.models[model]) {
+      throw new Error(`model ${model} does not exist`);
+    }
+    await this.models[model].where(data).delete({ skip_log: true });
+  }
+
+  private async _manipulateDeleteAllModels() {
+    for (const model of Object.keys(this.models)) {
+      if (model === '_Archive') {
+        return;
+      }
+      await this.models[model].where().delete({ skip_log: true });
+    }
+  }
+
+  private async _manipulateDropModel(model: string) {
+    model = inflector.camelize(model);
+    if (!this.models[model]) {
+      throw new Error(`model ${model} does not exist`);
+    }
+    await this.models[model].drop();
+  }
+
+  private async _manipulateDropAllModels() {
+    await this.dropAllModels();
+  }
+
+  private async _manipulateFind(model: string, data: any) {
+    model = inflector.camelize(inflector.singularize(model));
+    if (!this.models[model]) {
+      throw new Error(`model ${model} does not exist`);
+    }
+    return await this.models[model].where(data).exec({ skip_log: true });
+  }
+
+  private _manipulateConvertIds(id_to_record_map: { [id: string]: any; }, model: string, data: any) {
+    model = inflector.camelize(model);
+    if (!this.models[model]) {
+      return;
+    }
+    // tslint:disable-next-line:forin
+    for (const column in this.models[model]._schema) {
+      const property = this.models[model]._schema[column];
+      if (property.record_id && data.hasOwnProperty(column)) {
+        if (property.array && Array.isArray(data[column])) {
+          data[column] = data[column].map((value: any) => {
+            const record = id_to_record_map[value];
+            if (record) {
+              return record.id;
+            } else {
+              return value;
+            }
+          });
+        } else {
+          const record = id_to_record_map[data[column]];
+          if (record) {
+            data[column] = record.id;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Applies pending associations
+   */
+  private _applyAssociations() {
+    for (const item of this._pending_associations) {
+      const this_model = item.this_model;
+      const options = item.options;
+      let target_model;
+      if (typeof item.target_model_or_column === 'string') {
+        let models;
+        if (item.options && item.options.connection) {
+          models = item.options.connection.models;
+        } else {
+          models = this.models;
+        }
+        if (item.options && item.options.type) {
+          target_model = item.options.type;
+          options.as = item.target_model_or_column;
+        } else if (item.type === 'belongsTo' || item.type === 'hasOne') {
+          target_model = inflector.camelize(item.target_model_or_column);
+        } else {
+          target_model = inflector.classify(item.target_model_or_column);
+        }
+        if (!models[target_model]) {
+          throw new Error(`model ${target_model} does not exist`);
+        }
+        target_model = models[target_model];
+      } else {
+        target_model = item.target_model_or_column;
+      }
+      this['_' + item.type](this_model, target_model, options);
+    }
+    this._pending_associations = [];
+  }
+
+  /**
+   * Adds a has-many association
+   */
+  private _hasMany(this_model: any, target_model: any, options: any) {
+    let foreign_key: any;
+    if (options != null ? options.foreign_key : void 0) {
+      foreign_key = options.foreign_key;
+    } else if (options != null ? options.as : void 0) {
+      foreign_key = options.as + '_id';
+    } else {
+      foreign_key = inflector.foreign_key(this_model._name);
+    }
+    target_model.column(foreign_key, { type: types.RecordID, connection: this_model._connection });
+    const integrity = options && options.integrity || 'ignore';
+    target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
+    this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
+    const column = options && options.as || inflector.tableize(target_model._name);
+    const columnCache = '__cache_' + column;
+    const columnGetter = '__getter_' + column;
+    this_model._associations[column] = { type: 'hasMany', target_model, foreign_key };
+    Object.defineProperty(this_model.prototype, column, {
+      get() {
+        let getter: any;
+        // getter must be created per instance due to __scope
+        if (!this.hasOwnProperty(columnGetter)) {
+          getter = async (reload: any) => {
+            // this is getter.__scope in normal case (this_model_instance.target_model_name()),
+            // but use getter.__scope for safety
+            const self = getter.__scope;
+            if ((!self[columnCache] || reload) && self.id) {
+              const records = await target_model.where(_.zipObject([foreign_key], [self.id]));
+              self[columnCache] = records;
+              return records;
+            } else {
+              return self[columnCache] || [];
+            }
+          };
+          getter.build = (data: any) => {
+            // this is getter, so use getter.__scope instead
+            const self = getter.__scope;
+            const new_object = new target_model(data);
+            new_object[foreign_key] = self.id;
+            if (!self[columnCache]) {
+              self[columnCache] = [];
+            }
+            self[columnCache].push(new_object);
+            return new_object;
+          };
+          getter.__scope = this;
+          Object.defineProperty(this, columnCache, { value: null, writable: true });
+          Object.defineProperty(this, columnGetter, { value: getter });
+        }
+        return this[columnGetter];
+      },
+    });
+  }
+
+  /**
+   * Adds a has-one association
+   */
+  private _hasOne(this_model: any, target_model: any, options: any) {
+    let foreign_key: any;
+    if (options != null ? options.foreign_key : void 0) {
+      foreign_key = options.foreign_key;
+    } else if (options != null ? options.as : void 0) {
+      foreign_key = options.as + '_id';
+    } else {
+      foreign_key = inflector.foreign_key(this_model._name);
+    }
+    target_model.column(foreign_key, { type: types.RecordID, connection: this_model._connection });
+    const integrity = options && options.integrity || 'ignore';
+    target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
+    this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
+    const column = options && options.as || inflector.underscore(target_model._name);
+    const columnCache = '__cache_' + column;
+    const columnGetter = '__getter_' + column;
+    this_model._associations[column] = { type: 'hasOne', target_model };
+    Object.defineProperty(this_model.prototype, column, {
+      get() {
+        let getter: any;
+        // getter must be created per instance due to __scope
+        if (!this.hasOwnProperty(columnGetter)) {
+          getter = async (reload: any) => {
+            // this is getter.__scope in normal case (this_model_instance.target_model_name()),
+            // but use getter.__scope for safety
+            const self = getter.__scope;
+            if ((!self[columnCache] || reload) && self.id) {
+              const records = await target_model.where(_.zipObject([foreign_key], [self.id]));
+              if (records.length > 1) {
+                throw new Error('integrity error');
+              }
+              const record = records.length === 0 ? null : records[0];
+              self[columnCache] = record;
+              return record;
+            } else {
+              return self[columnCache];
+            }
+          };
+          getter.__scope = this;
+          Object.defineProperty(this, columnCache, { value: null, writable: true });
+          Object.defineProperty(this, columnGetter, { value: getter });
+        }
+        return this[columnGetter];
+      },
+    });
+  }
+
+  /**
+   * Adds a belongs-to association
+   */
+  private _belongsTo(this_model: any, target_model: any, options: any) {
+    let foreign_key: any;
+    if (options != null ? options.foreign_key : void 0) {
+      foreign_key = options.foreign_key;
+    } else if (options != null ? options.as : void 0) {
+      foreign_key = options.as + '_id';
+    } else {
+      foreign_key = inflector.foreign_key(target_model._name);
+    }
+    this_model.column(foreign_key, {
+      connection: target_model._connection,
+      required: options && options.required,
+      type: types.RecordID,
+    });
+    const column = options && options.as || inflector.underscore(target_model._name);
+    const columnCache = '__cache_' + column;
+    const columnGetter = '__getter_' + column;
+    this_model._associations[column] = { type: 'belongsTo', target_model };
+    Object.defineProperty(this_model.prototype, column, {
+      get() {
+        let getter: any;
+        // getter must be created per instance due to __scope
+        if (!this.hasOwnProperty(columnGetter)) {
+          getter = async (reload: any) => {
+            // this is getter.__scope in normal case (this_model_instance.target_model_name()),
+            // but use getter.__scope for safety
+            const self = getter.__scope;
+            if ((!self[columnCache] || reload) && self[foreign_key]) {
+              const record = await target_model.find(self[foreign_key]);
+              self[columnCache] = record;
+              return record;
+            } else {
+              return self[columnCache];
+            }
+          };
+          getter.__scope = this;
+          Object.defineProperty(this, columnCache, { value: null, writable: true });
+          Object.defineProperty(this, columnGetter, { value: getter });
+        }
+        return this[columnGetter];
+      },
+    });
+  }
+
+  private async _fetchAssociatedBelongsTo(records: any, target_model: any, column: any, select: any, options: any) {
+    const id_column = column + '_id';
+    if (Array.isArray(records)) {
+      const id_to_record_map: any = {};
+      records.forEach((record) => {
+        const id = record[id_column];
+        if (id) {
+          (id_to_record_map[id] || (id_to_record_map[id] = [])).push(record);
+        }
+      });
+      const ids = Object.keys(id_to_record_map);
+      const query = target_model.where({ id: ids });
+      if (select) {
+        query.select(select);
+      }
+      if (options.lean) {
+        query.lean();
+      }
+      try {
+        const sub_records: any[] = await query.exec();
+        sub_records.forEach((sub_record) => {
+          id_to_record_map[sub_record.id].forEach((record: any) => {
+            if (options.lean) {
+              record[column] = sub_record;
+            } else {
+              Object.defineProperty(record, column, { enumerable: true, value: sub_record });
+            }
+          });
+        });
+        records.forEach((record) => {
+          if (!record.hasOwnProperty(column)) {
+            if (options.lean) {
+              record[column] = null;
+            } else {
+              Object.defineProperty(record, column, { enumerable: true, value: null });
+            }
+          }
+        });
+      } catch (error) {
+        //
+      }
+    } else {
+      const id = records[id_column];
+      if (id) {
+        const query = target_model.find(id);
+        if (select) {
+          query.select(select);
+        }
+        if (options.lean) {
+          query.lean();
+        }
+        try {
+          const sub_record = await query.exec();
+          if (options.lean) {
+            records[column] = sub_record;
+          } else {
+            Object.defineProperty(records, column, { enumerable: true, value: sub_record });
+          }
+        } catch (error) {
+          if (error && error.message !== 'not found') {
+            throw error;
+          }
+          if (!records.hasOwnProperty(column)) {
+            if (options.lean) {
+              records[column] = null;
+            } else {
+              Object.defineProperty(records, column, { enumerable: true, value: null });
+            }
+          }
+        }
+      } else if (!records.hasOwnProperty(column)) {
+        if (options.lean) {
+          records[column] = null;
+        } else {
+          Object.defineProperty(records, column, { enumerable: true, value: null });
+        }
+      }
+    }
+  }
+
+  private async _fetchAssociatedHasMany(records: any, target_model: any, foreign_key: any,
+    column: any, select: any, options: any) {
+    if (Array.isArray(records)) {
+      const ids = records.map((record) => {
+        if (options.lean) {
+          record[column] = [];
+        } else {
+          Object.defineProperty(record, column, { enumerable: true, value: [] });
+        }
+        return record.id;
+      });
+      const query = target_model.where(_.zipObject([foreign_key], [{ $in: ids }]));
+      if (select) {
+        query.select(select + ' ' + foreign_key);
+      }
+      if (options.lean) {
+        query.lean();
+      }
+      try {
+        const sub_records = await query.exec();
+        sub_records.forEach((sub_record: any) => {
+          records.forEach((record) => {
+            if (record.id === sub_record[foreign_key]) {
+              record[column].push(sub_record);
+            }
+          });
+        });
+      } catch (error) {
+        //
+      }
+    } else {
+      if (options.lean) {
+        records[column] = [];
+      } else {
+        Object.defineProperty(records, column, { enumerable: true, value: [] });
+      }
+      const query = target_model.where(_.zipObject([foreign_key], [records.id]));
+      if (select) {
+        query.select(select + ' ' + foreign_key);
+      }
+      if (options.lean) {
+        query.lean();
+      }
+      try {
+        const sub_records = await query.exec();
+        sub_records.forEach((sub_record: any) => {
+          return records[column].push(sub_record);
+        });
+      } catch (error) {
+        //
+      }
     }
   }
 }
-
-applyMixins(Connection, [ConnectionAssociation, ConnectionManipulate]);
 
 export { Connection };

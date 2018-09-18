@@ -1,5 +1,16 @@
 /// <reference types="node" />
 import * as stream from 'stream';
+export interface ISchemas {
+    tables: {
+        [tableName: string]: any;
+    };
+    indexes?: {
+        [tableName: string]: any;
+    };
+    foreign_keys?: {
+        [tableName: string]: any;
+    };
+}
 /**
  * Base class for adapters
  * @namespace adapter
@@ -22,9 +33,7 @@ declare class AdapterBase {
      * @abstract
      * @see Connection::applySchemas
      */
-    getSchemas(): Promise<{
-        tables: any[];
-    }>;
+    getSchemas(): Promise<ISchemas>;
     /**
      * Creates a table.
      * @abstract

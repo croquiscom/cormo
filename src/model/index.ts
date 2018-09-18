@@ -93,6 +93,18 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
 
   public static _name: string;
 
+  public static _schema: any;
+
+  public static _indexes: any[];
+
+  public static _integrities: any[];
+
+  public static _associations: { [column: string]: any };
+
+  public static _initialize_called = false;
+
+  public static initialize() { /**/ }
+
   // ModelCache static interface
   public static async _loadFromCache(key: string, refresh?: boolean): Promise<any> { /**/ }
   public static async _saveToCache(key: string, ttl: number, data: any) { /**/ }
@@ -152,19 +164,10 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     return {} as Query<T>;
   }
 
-  //#
-  // Schema for this model.
-  // Maps from column path to property object
-  // @property _schema
-  // @type StringMap<Object>
-  // @private
-  // @static
-  // @see Model.connection
-
   /**
    * Returns a new model class extending Model
    */
-  public static newModel(connection: Connection, name: string, schema: object) {
+  public static newModel(connection: Connection, name: string, schema: any): typeof Model {
     // tslint:disable-next-line:variable-name max-classes-per-file
     const NewModel = class extends Model { };
     NewModel.connection(connection, name);

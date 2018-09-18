@@ -9,7 +9,7 @@ export interface IAdapterSettingsMongoDB {
 declare class CormoTypesObjectId {
 }
 import * as stream from 'stream';
-import { AdapterBase } from './base';
+import { AdapterBase, ISchemas } from './base';
 declare class MongoDBAdapter extends AdapterBase {
     key_type: any;
     key_type_internal: typeof CormoTypesObjectId;
@@ -19,7 +19,7 @@ declare class MongoDBAdapter extends AdapterBase {
     private _db;
     private _client;
     constructor(connection: any);
-    getSchemas(): Promise<any>;
+    getSchemas(): Promise<ISchemas>;
     createTable(model: any): Promise<void>;
     createIndex(model: any, index: any): Promise<void>;
     drop(model: any): Promise<void>;
