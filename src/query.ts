@@ -634,27 +634,26 @@ class Query<T> {
     return records;
   }
 
-  private _validateAndBuildSaveData(errors, data, updates, path, object) {
-    var column, error, model, property, schema, temp;
-    model = this._model;
-    schema = model._schema;
-    for (column in object) {
-      property = schema[path + column];
+  private _validateAndBuildSaveData(errors: any, data: any, updates: any, path: any, object: any) {
+    const model: any = this._model;
+    const schema = model._schema;
+    // tslint:disable-next-line:forin
+    for (let column in object) {
+      const property = schema[path + column];
       if (property) {
         try {
           model._validateColumn(updates, path + column, property, true);
-        } catch (error1) {
-          error = error1;
-          errors.push(error);
+        } catch (error) {
+          errors.push(error.message);
         }
         model._buildSaveDataColumn(data, updates, path + column, property, true);
       } else if (!object[column] && model._intermediate_paths[column]) {
         // set all nested columns null
         column += '.';
-        temp = {};
-        Object.keys(schema).forEach(function(sc) {
+        const temp: any = {};
+        Object.keys(schema).forEach((sc) => {
           if (sc.indexOf(column) === 0) {
-            return temp[sc.substr(column.length)] = null;
+            temp[sc.substr(column.length)] = null;
           }
         });
         this._validateAndBuildSaveData(errors, data, updates, path + column, temp);

@@ -98,11 +98,11 @@ declare class Connection extends EventEmitter {
      * Fetches associated records
      */
     fetchAssociated(records: any, column: any, select: any, options: any): Promise<void>;
-    private _checkSchemaApplied;
+    _checkSchemaApplied(): Promise<any>;
+    _connectRedisCache(): any;
     private _initializeModels;
     private _checkArchive;
     private _getModelNamesByAssociationOrder;
-    private _connectRedisCache;
     private _manipulateCreate;
     private _manipulateDelete;
     private _manipulateDeleteAllModels;

@@ -32,7 +32,12 @@ class AdapterBase {
 
   public support_nested = false;
 
+  public support_geopoint = false;
+
+  public support_string_type_with_length = false;
+
   public key_type: any;
+  public key_type_internal: any;
 
   public async connect(settings: {}) {
     return;

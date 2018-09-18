@@ -387,12 +387,33 @@ class Connection extends EventEmitter {
     }
   }
 
-  private async _checkSchemaApplied() {
+  public async _checkSchemaApplied() {
     this._initializeModels();
     if (!this._applying_schemas && !this._schema_changed) {
       return;
     }
     return await this.applySchemas();
+  }
+
+  public _connectRedisCache() {
+    if (this._redis_cache_client) {
+      return this._redis_cache_client;
+    } else if (!redis) {
+      throw new Error('cache needs Redis');
+    } else {
+      const settings = this._redis_cache_settings;
+      const client = settings.client || (redis.createClient(settings.port || 6379, settings.host || '127.0.0.1'));
+      this._redis_cache_client = client;
+      if (settings.database != null) {
+        client.select(settings.database);
+        client.once('connect', () => {
+          client.send_anyways = true;
+          client.select(settings.database);
+          client.send_anyways = false;
+        });
+      }
+      return client;
+    }
   }
 
   private _initializeModels() {
@@ -447,27 +468,6 @@ class Connection extends EventEmitter {
       }
     }
     return t.sort();
-  }
-
-  private _connectRedisCache() {
-    if (this._redis_cache_client) {
-      return this._redis_cache_client;
-    } else if (!redis) {
-      throw new Error('cache needs Redis');
-    } else {
-      const settings = this._redis_cache_settings;
-      const client = settings.client || (redis.createClient(settings.port || 6379, settings.host || '127.0.0.1'));
-      this._redis_cache_client = client;
-      if (settings.database != null) {
-        client.select(settings.database);
-        client.once('connect', () => {
-          client.send_anyways = true;
-          client.select(settings.database);
-          client.send_anyways = false;
-        });
-      }
-      return client;
-    }
   }
 
   private async _manipulateCreate(model: string, data: any) {

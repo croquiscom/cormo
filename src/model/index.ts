@@ -6,13 +6,13 @@ import { IQueryArray, IQuerySingle, Query } from '../query';
 import * as types from '../types';
 import * as util from '../util';
 import { tableize } from '../util/inflector';
+import * as inflector from '../util/inflector';
 
-import { ModelCache } from './cache';
-import { ModelCallback, ModelCallbackMethod, ModelCallbackName, ModelCallbackType } from './callback';
-import { ModelPersistence } from './persistence';
-import { ModelQuery, ModelQueryMethod } from './query';
-import { ModelTimestamp } from './timestamp';
-import { ModelValidate } from './validate';
+type ModelCallbackName = 'create' | 'destroy' | 'find' | 'initialize' | 'save' | 'update' | 'validate';
+type ModelCallbackType = 'after' | 'before';
+type ModelCallbackMethod = () => void | 'string';
+
+type ModelQueryMethod = 'find' | 'findPreserve' | 'where' | 'select' | 'order';
 
 function _pf_isDirty() {
   return true;
@@ -22,44 +22,28 @@ function _pf_getChanged() {
   return [];
 }
 
-function _pf_get(path) {
+function _pf_get(this: any, path: string) {
   return util.getPropertyOfPath(this, path.split('.'));
 }
 
-function _pf_getPrevious() { }
+function _pf_getPrevious() { /**/ }
 
-function _pf_set(path, value) {
+function _pf_set(this: any, path: string, value: any) {
   return util.setPropertyOfPath(this, path.split('.'), value);
 }
 
-function _pf_reset() { }
+function _pf_reset() { /**/ }
 
 interface IColumnProperty {
   type: types.ColumnType;
   required?: boolean;
   unique?: boolean;
-
-  //#
-  // @property _parts
-  // @private
-
-  //#
-  // Name for SQL dbs.
-  // e.g.) name.first -> name_first
-  // @property _dbname
-  // @private
 }
 
 /**
  * Base class for models
- * @uses ModelCache
- * @uses ModelCallback
- * @uses ModelPersistence
- * @uses ModelQuery
- * @uses ModelTimestamp
- * @uses ModelValidate
  */
-class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, ModelTimestamp, ModelValidate {
+class Model {
   /**
    * Tracks changes of a record if true
    */
@@ -104,65 +88,6 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
   public static _initialize_called = false;
 
   public static initialize() { /**/ }
-
-  // ModelCache static interface
-  public static async _loadFromCache(key: string, refresh?: boolean): Promise<any> { /**/ }
-  public static async _saveToCache(key: string, ttl: number, data: any) { /**/ }
-  public static async removeCache(key: string) { /**/ }
-
-  // ModelCallback static interface
-  public static afterInitialize(method: ModelCallbackMethod) { /**/ }
-  public static afterFind(method: ModelCallbackMethod) { /**/ }
-  public static beforeSave(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-  public static afterSave(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-  public static beforeCreate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-  public static afterCreate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-  public static beforeUpdate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-  public static afterUpdate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-  public static beforeDestroy(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-  public static afterDestroy(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-  public static beforeValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-  public static afterValidate(this: typeof Model & typeof ModelCallback, method: ModelCallbackMethod) { /**/ }
-
-  // ModelPersistence static interface
-  public static async create<T extends Model, U extends T>(
-    this: { new(): T }, data?: U, options?: { skip_log: boolean },
-  ): Promise<T> {
-    return {} as T;
-  }
-  public static async createBulk<T extends Model, U extends T>(this: { new(): T }, data?: U[]): Promise<T[]> {
-    return [] as T[];
-  }
-
-  // ModelQuery static interface
-  public static query<T extends Model>(this: { new(): T }): IQueryArray<T> {
-    return {} as IQueryArray<T>;
-  }
-  public static find<T extends Model>(this: { new(): T }, id: types.RecordID): IQuerySingle<T>;
-  public static find<T extends Model>(this: { new(): T }, id: types.RecordID[]): IQueryArray<T>;
-  public static find<T extends Model>(
-    this: { new(): T }, id: types.RecordID | types.RecordID[],
-  ): IQuerySingle<T> | IQueryArray<T> {
-    return {} as IQueryArray<T>;
-  }
-  public static findPreserve<T extends Model>(this: { new(): T }, ids: types.RecordID[]): IQueryArray<T> {
-    return {} as IQueryArray<T>;
-  }
-  public static where<T extends Model>(this: { new(): T }, condition?: object): IQueryArray<T> {
-    return {} as IQueryArray<T>;
-  }
-  public static select<T extends Model>(this: { new(): T }, columns: string): IQueryArray<T> {
-    return {} as IQueryArray<T>;
-  }
-  public static order<T extends Model>(this: { new(): T }, orders: string): IQueryArray<T> {
-    return {} as IQueryArray<T>;
-  }
-  public static _createQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T> {
-    return {} as Query<T>;
-  }
-  public static _createOptionalQueryAndRun<T extends Model>(criteria: ModelQueryMethod, data: any): Query<T> {
-    return {} as Query<T>;
-  }
 
   /**
    * Returns a new model class extending Model
@@ -219,20 +144,19 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
 
   public static async _checkReady() {
     this._checkConnection();
-    return (await Promise.all([this._connection._checkSchemaApplied(), this._connection._promise_connection]));
+    await Promise.all([this._connection._checkSchemaApplied(), this._connection._promise_connection]);
   }
 
-  //#
-  // Adds a column to this model
-  // @param {String} path
-  // @param {Function|String|ColumnProperty} property
-  public static column(path, property) {
-    var i, j, parts, ref, subcolumn, subproperty, type;
+  /**
+   * Adds a column to this model
+   */
+  public static column(path: string, property: any) {
     this._checkConnection();
     // nested path
     if (_.isPlainObject(property) && (!property.type || property.type.type)) {
-      for (subcolumn in property) {
-        subproperty = property[subcolumn];
+      // tslint:disable-next-line:forin
+      for (const subcolumn in property) {
+        const subproperty = property[subcolumn];
         this.column(path + '.' + subcolumn, subproperty);
       }
       return;
@@ -247,15 +171,13 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     }
     // convert simple type to property object
     if (!_.isPlainObject(property)) {
-      property = {
-        type: property
-      };
+      property = { type: property };
     }
     if (Array.isArray(property.type)) {
       property.array = true;
       property.type = property.type[0];
     }
-    type = types._toCORMOType(property.type);
+    let type: any = types._toCORMOType(property.type);
     if (type.constructor === types.RecordID) {
       type = this._getKeyType(property.connection);
       property.record_id = true;
@@ -267,9 +189,9 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     if (type.constructor === types.String && type.length && !this._adapter.support_string_type_with_length) {
       throw new Error('this adapter does not support String type with length');
     }
-    parts = path.split('.');
-    for (i = j = 0, ref = parts.length - 1; (0 <= ref ? j < ref : j > ref); i = 0 <= ref ? ++j : --j) {
-      this._intermediate_paths[parts.slice(0, +i + 1 || 9e9).join('.')] = 1;
+    const parts = path.split('.');
+    for (let i = 0; i < parts.length - 1; i++) {
+      this._intermediate_paths[parts.slice(0, i + 1).join('.')] = 1;
     }
     property.type = type;
     property.type_class = type.constructor;
@@ -281,41 +203,35 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
         columns: _.zipObject([property._dbname], [1]),
         options: {
           name: property._dbname,
+          required: property.required,
           unique: true,
-          required: property.required
-        }
+        },
       });
     }
-    return this._connection._schema_changed = true;
+    this._connection._schema_changed = true;
   }
 
-  //#
-  // Adds an index to this model
-  // @param {Object} columns hash of <column, order>
-  // @param {Object} [options]
-  // @param {Boolean} [options.unique]
-  public static index(columns, options) {
+  /**
+   * Adds an index to this model
+   */
+  public static index(columns: any, options: any = {}) {
     this._checkConnection();
-    options || (options = {});
     if (!options.name) {
       options.name = Object.keys(columns).join('_');
     }
-    this._indexes.push({
-      columns: columns,
-      options: options
-    });
-    return this._connection._schema_changed = true;
+    this._indexes.push({ columns, options });
+    this._connection._schema_changed = true;
   }
 
-  //#
-  // Drops this model from the database
-  // @promise
-  // @see AdapterBase::drop
+  /**
+   * Drops this model from the database
+   * @see AdapterBase::drop
+   */
   public static async drop() {
     try {
       // do not need to apply schema before drop, only waiting connection established
       await this._connection._promise_connection;
-      return (await this._adapter.drop(this._name));
+      await this._adapter.drop(this._name);
     } finally {
       this._connection._schema_changed = true;
     }
@@ -325,149 +241,536 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
    * Creates a record.
    * 'Model.build(data)' is the same as 'new Model(data)'
    */
-  public static build<T extends Model, U extends T>(this: { new(data?: U): T }, data?: U): T {
-    return new this(data);
+  public static build<T extends Model, U extends T>(data?: U): T {
+    return new (this as any)(data);
   }
 
   /**
    * Deletes all records from the database
    */
   public static async deleteAll() {
-    return (await this.delete());
+    await this.delete();
   }
 
   /**
    * Adds a has-many association
-   * @param {Class<Model>|String} target_model_or_column
-   * @param {Object} [options]
-   * @param {String} [options.type]
-   * @param {String} [options.as]
-   * @param {String} [options.foreign_key]
-   * @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
    */
-  public static hasMany(target_model_or_column, options) {
+  public static hasMany(target_model_or_column: any, options: any) {
     this._checkConnection();
-    this._connection.addAssociation({
-      type: 'hasMany',
-      this_model: this,
-      target_model_or_column: target_model_or_column,
-      options: options
-    });
+    this._connection.addAssociation({ type: 'hasMany', this_model: this, target_model_or_column, options });
   }
 
   /**
    * Adds a has-one association
-   * @param {Class<Model>|String} target_model_or_column
-   * @param {Object} [options]
-   * @param {String} [options.type]
-   * @param {String} [options.as]
-   * @param {String} [options.foreign_key]
-   * @param {String} [options.integrity='ignore'] 'ignore', 'nullify', 'restrict', or 'delete'
    */
-  public static hasOne(target_model_or_column, options) {
+  public static hasOne(target_model_or_column: any, options: any) {
     this._checkConnection();
-    this._connection.addAssociation({
-      type: 'hasOne',
-      this_model: this,
-      target_model_or_column: target_model_or_column,
-      options: options
-    });
+    this._connection.addAssociation({ type: 'hasOne', this_model: this, target_model_or_column, options });
   }
 
   /**
    * Adds a belongs-to association
-   * @param {Class<Model>|String} target_model_or_column
-   * @param {Object} [options]
-   * @param {String} [options.type]
-   * @param {String} [options.as]
-   * @param {String} [options.foreign_key]
-   * @param {Boolean} [options.required]
    */
-  public static belongsTo(target_model_or_column, options) {
+  public static belongsTo(target_model_or_column: any, options: any) {
     this._checkConnection();
-    this._connection.addAssociation({
-      type: 'belongsTo',
-      this_model: this,
-      target_model_or_column: target_model_or_column,
-      options: options
-    });
+    this._connection.addAssociation({ type: 'belongsTo', this_model: this, target_model_or_column, options });
   }
 
-  public static inspect(depth) {
-    var schema;
-    schema = Object.keys(this._schema || {}).sort().map((column) => {
-      return `${column}: ${this._schema[column].type}`;
-    }).join(', ');
-    return '\u001b[36m' + `[Model: ${this.name}(` + '\u001b[90m' + schema + '\u001b[36m' + ")]" + '\u001b[39m';
+  public static inspect(depth: number) {
+    const schema = Object.keys(this._schema || {}).sort()
+      .map((column) => `${column}: ${this._schema[column].type}`)
+      .join(', ');
+    return '\u001b[36m' + `[Model: ${this.name}(` + '\u001b[90m' + schema + '\u001b[36m' + ')]' + '\u001b[39m';
   }
 
   public static _getKeyType(target_connection = this._connection) {
     if (this._connection === target_connection && target_connection._adapter.key_type_internal) {
-      return new target_connection._adapter.key_type_internal;
+      return new target_connection._adapter.key_type_internal();
     } else {
-      return new target_connection._adapter.key_type;
+      return new target_connection._adapter.key_type();
     }
   }
 
   /**
    * Set nested object null if all children are null
    */
-  public static _collapseNestedNulls(instance, selected_columns_raw, intermediates) {
-    var has_non_null, j, key, last, len, obj, path, ref, ref1, results, value;
-    ref = Object.keys(this._intermediate_paths);
-    results = [];
-    for (j = 0, len = ref.length; j < len; j++) {
-      path = ref[j];
+  public static _collapseNestedNulls(instance: any, selected_columns_raw: any, intermediates: any) {
+    for (const path of Object.keys(this._intermediate_paths)) {
       if (selected_columns_raw && selected_columns_raw.indexOf(path) === -1) {
         continue;
       }
+      let obj;
+      let last: any;
       if (intermediates) {
         obj = intermediates;
         last = path;
       } else {
         [obj, last] = util.getLeafOfPath(instance, path);
       }
-      has_non_null = false;
-      ref1 = obj[last];
-      for (key in ref1) {
-        value = ref1[key];
+      let has_non_null = false;
+      // tslint:disable-next-line:forin
+      for (const key in obj[last]) {
+        const value = obj[last][key];
         if (value != null) {
           has_non_null = true;
         }
       }
       if (!has_non_null) {
-        results.push(obj[last] = null);
-      } else {
-        results.push(void 0);
+        obj[last] = null;
       }
     }
-    return results;
   }
+
+  public static async _loadFromCache(this: typeof Model, key: string, refresh?: boolean): Promise<any> {
+    if (refresh) {
+      throw new Error('error');
+    }
+    const redis = await this._connection._connectRedisCache();
+    key = 'CC.' + tableize(this._name) + ':' + key;
+    const value = await new Promise<string>((resolve, reject) => {
+      redis.get(key, (error: Error, v: string) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(v);
+      });
+    });
+    if (value == null) {
+      throw new Error('error');
+    }
+    return JSON.parse(value);
+  }
+
+  public static async _saveToCache(this: typeof Model, key: string, ttl: number, data: any) {
+    const redis = await this._connection._connectRedisCache();
+    key = 'CC.' + tableize(this._name) + ':' + key;
+    await new Promise((resolve, reject) => {
+      redis.setex(key, ttl, JSON.stringify(data), (error: Error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+
+  public static async removeCache(this: typeof Model, key: string) {
+    const redis = await this._connection._connectRedisCache();
+    key = 'CC.' + tableize(this._name) + ':' + key;
+    await new Promise((resolve) => {
+      redis.del(key, () => {
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * Adds a callback of after initializing
+   */
+  public static afterInitialize(method: ModelCallbackMethod) {
+    this.addCallback('after', 'initialize', method);
+  }
+
+  /**
+   * Adds a callback of after finding
+   */
+  public static afterFind(method: ModelCallbackMethod) {
+    this.addCallback('after', 'find', method);
+  }
+
+  /**
+   * Adds a callback of before saving
+   */
+  public static beforeSave(method: ModelCallbackMethod) {
+    this.addCallback('before', 'save', method);
+  }
+
+  /**
+   * Adds a callback of after saving
+   */
+  public static afterSave(method: ModelCallbackMethod) {
+    this.addCallback('after', 'save', method);
+  }
+
+  /**
+   * Adds a callback of before creating
+   */
+  public static beforeCreate(method: ModelCallbackMethod) {
+    this.addCallback('before', 'create', method);
+  }
+
+  /**
+   * Adds a callback of after creating
+   */
+  public static afterCreate(method: ModelCallbackMethod) {
+    this.addCallback('after', 'create', method);
+  }
+
+  /**
+   * Adds a callback of before updating
+   */
+  public static beforeUpdate(method: ModelCallbackMethod) {
+    this.addCallback('before', 'update', method);
+  }
+
+  /**
+   * Adds a callback of after updating
+   * @param {Function|String} method
+   */
+  public static afterUpdate(method: ModelCallbackMethod) {
+    this.addCallback('after', 'update', method);
+  }
+
+  /**
+   * Adds a callback of before destroying
+   * @param {Function|String} method
+   */
+  public static beforeDestroy(method: ModelCallbackMethod) {
+    this.addCallback('before', 'destroy', method);
+  }
+
+  /**
+   * Adds a callback of after destroying
+   * @param {Function|String} method
+   */
+  public static afterDestroy(method: ModelCallbackMethod) {
+    this.addCallback('after', 'destroy', method);
+  }
+
+  /**
+   * Adds a callback of before validating
+   * @param {Function|String} method
+   */
+  public static beforeValidate(method: ModelCallbackMethod) {
+    this.addCallback('before', 'validate', method);
+  }
+
+  /**
+   * Adds a callback of after validating
+   * @param {Function|String} method
+   */
+  public static afterValidate(method: ModelCallbackMethod) {
+    this.addCallback('after', 'validate', method);
+  }
+
+  /**
+   * Creates a record and saves it to the database
+   * 'Model.create(data)' is the same as 'Model.build(data).save()'
+   */
+  public static async create<T extends Model, U extends T>(data?: U, options?: { skip_log: boolean }): Promise<T> {
+    await this._checkReady();
+    return await (this.build<T, U>(data) as any).save(options);
+  }
+
+  /**
+   * Creates multiple records and saves them to the database.
+   */
+  public static async createBulk<T extends Model, U extends T>(this: typeof Model, data?: U[]): Promise<T[]> {
+    await this._checkReady();
+    if (!Array.isArray(data)) {
+      throw new Error('data is not an array');
+    }
+    if (data.length === 0) {
+      return [];
+    }
+    const records = data.map((item) => {
+      return this.build<T, U>(item);
+    });
+    await Promise.all(records.map((record) => record.validate()));
+    for (const record of records) {
+      record._runCallbacks('save', 'before');
+    }
+    for (const record of records) {
+      record._runCallbacks('create', 'before');
+    }
+    try {
+      return await this._createBulk(records);
+    } finally {
+      for (const record of records) {
+        record._runCallbacks('create', 'after');
+      }
+      for (const record of records) {
+        record._runCallbacks('save', 'after');
+      }
+    }
+  }
+
+  /**
+   * Creates q query object
+   */
+  public static query(this: typeof Model): IQueryArray<Model> {
+    return new Query(this);
+  }
+
+  /**
+   * Finds a record by id
+   * @throws {Error('not found')}
+   */
+  public static find(id: types.RecordID): IQuerySingle<Model>;
+  public static find(id: types.RecordID[]): IQueryArray<Model>;
+  public static find(
+    this: typeof Model, id: types.RecordID | types.RecordID[],
+  ): IQuerySingle<Model> | IQueryArray<Model> {
+    return new Query(this).find(id);
+  }
+
+  /**
+   * Finds records by ids while preserving order.
+   * @throws {Error('not found')}
+   */
+  public static findPreserve(ids: types.RecordID[]): IQueryArray<Model> {
+    return new Query(this).findPreserve(ids);
+  }
+
+  /**
+   * Finds records by conditions
+   */
+  public static where(condition?: object): IQueryArray<Model> {
+    return new Query(this).where(condition);
+  }
+
+  /**
+   * Selects columns for result
+   */
+  public static select(columns: string): IQueryArray<Model> {
+    return new Query(this).select(columns);
+  }
+
+  /**
+   * Specifies orders of result
+   */
+  public static order(orders: string): IQueryArray<Model> {
+    return new Query(this).order(orders);
+  }
+
+  /**
+   * Groups result records
+   */
+  public static group<U = Model>(this: typeof Model, group_by: string | null, fields: object): IQueryArray<U> {
+    const query = new Query(this);
+    query.group<U>(group_by, fields);
+    return query;
+  }
+
+  /**
+   * Counts records by conditions
+   */
+  public static async count(this: typeof Model, condition: object): Promise<number> {
+    return await new Query(this).where(condition).count();
+  }
+
+  /**
+   * Updates some fields of records that match conditions
+   */
+  public static async update(this: typeof Model, updates: object, condition: object): Promise<number> {
+    return await new Query(this).where(condition).update(updates);
+  }
+
+  /**
+   * Deletes records by conditions
+   * @param {Object} [condition]
+   * @return {Number}
+   * @promise
+   */
+  public static async delete(this: typeof Model, condition?: object): Promise<number> {
+    return await new Query(this).where(condition).delete();
+  }
+
+  /**
+   * Adds 'created_at' and 'updated_at' fields to records
+   */
+  public static timestamps() {
+    this.column('created_at', Date);
+    this.column('updated_at', Date);
+    this.beforeCreate(function(this: any) {
+      const d = new Date();
+      this.created_at = this.updated_at = d;
+    });
+    this.beforeUpdate(function(this: any) {
+      const d = new Date();
+      this.updated_at = d;
+    });
+  }
+
+  /**
+   * Adds a validator
+   * A validator must return false(boolean) or error message(string), or throw an Error exception if invalid
+   */
+  public static addValidator(validator: any) {
+    this._checkConnection();
+    this._validators.push(validator);
+  }
+
+  private static _intermediate_paths: any;
+
+  private static _validators: any[];
+
+  private static _callbacks_map: {
+    [key in ModelCallbackName]?: Array<{
+      type: ModelCallbackType,
+      method: ModelCallbackMethod,
+    }>;
+  };
+
+  /**
+   * Adds a callback
+   * @param {String} type
+   * @param {String} name
+   * @param {Function|String} method
+   */
+  private static addCallback(type: ModelCallbackType, name: ModelCallbackName, method: ModelCallbackMethod) {
+    this._checkConnection();
+    if (!(type === 'before' || type === 'after') || !name) {
+      return;
+    }
+    const callbacks_map = this._callbacks_map || (this._callbacks_map = {});
+    const callbacks = callbacks_map[name] || (callbacks_map[name] = []);
+    return callbacks.push({ type, method });
+  }
+
+  private static _buildSaveDataColumn(data: any, model: any, column: any, property: any, allow_null: any) {
+    const adapter = this._adapter;
+    const parts = property._parts;
+    let value = util.getPropertyOfPath(model, parts);
+    value = adapter.valueToDB(value, column, property);
+    if (allow_null || value !== void 0) {
+      if (adapter.support_nested) {
+        util.setPropertyOfPath(data, parts, value);
+      } else {
+        data[property._dbname] = value;
+      }
+    }
+  }
+
+  private static async _createBulk(records: any[]) {
+    let error;
+    const data_array = records.map((record) => {
+      try {
+        return record._buildSaveData();
+      } catch (e) {
+        error = e;
+      }
+    });
+    if (error) {
+      throw error;
+    }
+    this._connection.log(this._name, 'createBulk', data_array);
+    const ids = await this._adapter.createBulk(this._name, data_array);
+    records.forEach((record, i) => {
+      Object.defineProperty(record, 'id', {
+        configurable: false,
+        enumerable: true,
+        value: ids[i],
+        writable: false,
+      });
+    });
+    return records;
+  }
+
+  private static _validateType(column: any, type_class: any, value: any) {
+    switch (type_class) {
+      case types.Number:
+        value = Number(value);
+        if (isNaN(value)) {
+          throw new Error(`'${column}' is not a number`);
+        }
+        break;
+      case types.Boolean:
+        if (typeof value !== 'boolean') {
+          throw new Error(`'${column}' is not a boolean`);
+        }
+        break;
+      case types.Integer:
+        value = Number(value);
+        // value>>0 checkes integer and 32bit
+        // tslint:disable-next-line:no-bitwise
+        if (isNaN(value) || (value >> 0) !== value) {
+          throw new Error(`'${column}' is not an integer`);
+        }
+        break;
+      case types.GeoPoint:
+        if (!(Array.isArray(value) && value.length === 2)) {
+          throw new Error(`'${column}' is not a geo point`);
+        } else {
+          value[0] = Number(value[0]);
+          value[1] = Number(value[1]);
+        }
+        break;
+      case types.Date:
+        value = new Date(value);
+        if (isNaN(value.getTime())) {
+          throw new Error(`'${column}' is not a date`);
+        }
+    }
+    return value;
+  }
+
+  private static _validateColumn(data: any, column: any, property: any, for_update: any) {
+    let obj: any;
+    let last: any;
+    [obj, last] = util.getLeafOfPath(data, property._parts, false);
+    const value = obj && obj[last];
+    if (value != null) {
+      if (property.array) {
+        if (!Array.isArray(value)) {
+          throw new Error(`'${column}' is not an array`);
+        }
+        try {
+          for (let i = 0; i < value.length; i++) {
+            value[i] = this._validateType(column, property.type_class, value[i]);
+          }
+        } catch (error) {
+          // TODO: detail message like 'array of types'
+          throw new Error(`'${column}' is not an array`);
+        }
+      } else {
+        if (value.$inc != null) {
+          if (for_update) {
+            if (property.type_class === types.Number || property.type_class === types.Integer) {
+              obj[last] = { $inc: this._validateType(column, property.type_class, value.$inc) };
+            } else {
+              throw new Error(`'${column}' is not a number type`);
+            }
+          } else {
+            throw new Error('$inc is allowed only for update method');
+          }
+        } else {
+          obj[last] = this._validateType(column, property.type_class, value);
+        }
+      }
+    } else {
+      if (property.required) {
+        throw new Error(`'${column}' is required`);
+      }
+    }
+  }
+
+  public id: any;
+
+  private _intermediates: any;
+  private _prev_attributes: any;
+  private _attributes: any;
 
   /**
    * Creates a record
    */
   public constructor(data?: object) {
     data = data || {};
-    const ctor = this.constructor;
+    const ctor: any = this.constructor;
     const schema = ctor._schema;
     const adapter = ctor._adapter;
-    Object.defineProperty(this, '_prev_attributes', {
-      writable: true,
-      value: {},
-    });
+    Object.defineProperty(this, '_prev_attributes', { writable: true, value: {} });
     if (ctor.dirty_tracking) {
-      Object.defineProperty(this, '_attributes', {
-        value: {},
-      });
-      Object.defineProperty(this, '_intermediates', {
-        value: {},
-      });
+      Object.defineProperty(this, '_attributes', { value: {} });
+      Object.defineProperty(this, '_intermediates', { value: {} });
       for (const path of Object.keys(ctor._intermediate_paths).sort()) {
         const [obj, last] = util.getLeafOfPath(this, path);
         this._intermediates[path] = {};
         this._defineProperty(obj, last, path, false);
       }
+      // tslint:disable-next-line:forin
       for (const column in schema) {
         const property = schema[column];
         const [obj, last] = util.getLeafOfPath(this, property._parts);
@@ -491,11 +794,12 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
       Object.defineProperty(this, 'id', {
         configurable: false,
         enumerable: true,
-        writable: false,
         value: id,
+        writable: false,
       });
       this._runCallbacks('find', 'after');
     } else {
+      // tslint:disable-next-line:forin
       for (const column in schema) {
         const property = schema[column];
         const parts = property._parts;
@@ -509,19 +813,11 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
       Object.defineProperty(this, 'id', {
         configurable: true,
         enumerable: true,
-        writable: false,
         value: null,
+        writable: false,
       });
     }
     this._runCallbacks('initialize', 'after');
-  }
-
-  // ModelCallback interface
-  public _runCallbacks(name: ModelCallbackName, type: ModelCallbackType) { /**/ }
-
-  // ModelPersistence interface
-  public async save(options: { skip_log?: boolean, validate?: boolean } = {}): Promise<this> {
-    return this;
   }
 
   /**
@@ -543,7 +839,7 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
    * @param {String} path
    * @return {*}
    */
-  public get(path) {
+  public get(path: any) {
     if (this._intermediates.hasOwnProperty(path)) {
       return this._intermediates[path];
     } else {
@@ -556,7 +852,7 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
    * @param {String} path
    * @return {*}
    */
-  public getPrevious(path) {
+  public getPrevious(path: any) {
     return this._prev_attributes[path];
   }
 
@@ -566,38 +862,34 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
    * @param {*} value
    * @return {*}
    */
-  public set(path, value) {
-    var k, last, obj, parts, prev_value, results, results1, v;
+  public set(path: any, value: any) {
     if (this._intermediates.hasOwnProperty(path)) {
-      obj = this._intermediates[path];
-      for (k in obj) {
-        obj[k] = void 0;
+      const obj = this._intermediates[path];
+      // tslint:disable-next-line:forin
+      for (const k in obj) {
+        obj[k] = undefined;
       }
-      results = [];
-      for (k in value) {
-        v = value[k];
-        results.push(obj[k] = v);
+      // tslint:disable-next-line:forin
+      for (const k in value) {
+        obj[k] = value[k];
       }
-      return results;
     } else {
-      parts = path.split('.');
-      prev_value = util.getPropertyOfPath(this._attributes, parts);
+      const parts = path.split('.');
+      const prev_value = util.getPropertyOfPath(this._attributes, parts);
       if (prev_value === value) {
         return;
       }
       if (!this._prev_attributes.hasOwnProperty(path)) {
         this._prev_attributes[path] = prev_value;
       }
-      [obj, last] = util.getLeafOfPath(this, parts);
+      let [obj, last] = util.getLeafOfPath(this, parts);
       this._defineProperty(obj, last, path, true);
       util.setPropertyOfPath(this._attributes, parts, value);
-      results1 = [];
       while (parts.length > 1) {
         parts.pop();
         [obj, last] = util.getLeafOfPath(this, parts);
-        results1.push(this._defineProperty(obj, last, parts.join('.'), true));
+        this._defineProperty(obj, last, parts.join('.'), true);
       }
-      return results1;
     }
   }
 
@@ -605,13 +897,12 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
    * Resets all changes
    */
   public reset() {
-    var path, ref, value;
-    ref = this._prev_attributes;
-    for (path in ref) {
-      value = ref[path];
+    // tslint:disable-next-line:forin
+    for (const path in this._prev_attributes) {
+      const value = this._prev_attributes[path];
       this.set(path, value);
     }
-    return this._prev_attributes = {};
+    this._prev_attributes = {};
   }
 
   /**
@@ -621,55 +912,196 @@ class Model implements ModelCache, ModelCallback, ModelPersistence, ModelQuery, 
     this._runCallbacks('destroy', 'before');
     try {
       if (this.id) {
-        return (await this.constructor.delete({
-          id: this.id
-        }));
+        await (this.constructor as any).delete({ id: this.id });
       }
     } finally {
       this._runCallbacks('destroy', 'after');
     }
   }
 
-  //#
-  // @property _prev_attributes
-  // @private
-
-  //#
-  // @property _attributes
-  // @private
-
-  //#
-  // @property _intermediates
-  // @private
-
-  public _defineProperty(object, key, path, enumerable) {
-    return Object.defineProperty(object, key, {
+  public _defineProperty(object: any, key: any, path: any, enumerable: any) {
+    Object.defineProperty(object, key, {
       configurable: true,
-      enumerable: enumerable,
+      enumerable,
       get: () => {
         return this.get(path);
       },
       set: (value) => {
         return this.set(path, value);
-      }
+      },
     });
   }
-}
 
-function applyMixins(derivedCtor: any, baseCtors: any[]) {
-  for (const baseCtor of baseCtors) {
-    for (const name of Object.getOwnPropertyNames(baseCtor)) {
-      if (name === 'length' || name === 'prototype' || name === 'name') {
-        continue;
-      }
-      derivedCtor[name] = baseCtor[name];
+  /**
+   * Saves data to the database
+   * @param {Object} [options]
+   * @param {Boolean} [options.validate=true]
+   * @param {Boolean} [options.skip_log=false]
+   * @return {Model} this
+   * @promise
+   */
+  public async save(
+    this: Model & { constructor: typeof Model },
+    options: { skip_log?: boolean, validate?: boolean } = {},
+  ): Promise<Model & { constructor: typeof Model }> {
+    await this.constructor._checkReady();
+    if (options.validate !== false) {
+      await this.validate();
+      return await this.save({ ...options, validate: false });
     }
-    for (const name of Object.getOwnPropertyNames(baseCtor.prototype)) {
-      derivedCtor.prototype[name] = baseCtor.prototype[name];
+    this._runCallbacks('save', 'before');
+    if (this.id) {
+      this._runCallbacks('update', 'before');
+      try {
+        await this._update(options);
+      } finally {
+        this._runCallbacks('update', 'after');
+        this._runCallbacks('save', 'after');
+      }
+    } else {
+      this._runCallbacks('create', 'before');
+      try {
+        await this._create(options);
+      } finally {
+        this._runCallbacks('create', 'after');
+        this._runCallbacks('save', 'after');
+      }
+    }
+    return this;
+  }
+
+  /**
+   * Validates data
+   */
+  public validate() {
+    this._runCallbacks('validate', 'before');
+    const errors: any[] = [];
+    const ctor: any = this.constructor;
+    const schema = ctor._schema;
+    // tslint:disable-next-line:forin
+    for (const column in schema) {
+      const property = schema[column];
+      try {
+        ctor._validateColumn(this, column, property);
+      } catch (error) {
+        errors.push(error.message);
+      }
+    }
+    ctor._validators.forEach((validator: any) => {
+      try {
+        const r = validator(this);
+        if (r === false) {
+          errors.push('validation failed');
+        } else if (typeof r === 'string') {
+          errors.push(r);
+        }
+      } catch (e) {
+        errors.push(e.message);
+      }
+    });
+    if (errors.length > 0) {
+      this._runCallbacks('validate', 'after');
+      throw new Error(errors.join(','));
+    } else {
+      this._runCallbacks('validate', 'after');
+    }
+  }
+
+  private _runCallbacks(name: ModelCallbackName, type: ModelCallbackType) {
+    let callbacks = (this.constructor as any)._callbacks_map && (this.constructor as any)._callbacks_map[name];
+    if (!callbacks) {
+      return;
+    }
+    callbacks = callbacks.filter((callback: any) => callback.type === type);
+    for (const callback of callbacks) {
+      let method = callback.method;
+      if (typeof method === 'string') {
+        if (!(this as any)[method]) {
+          throw new Error(`The method '${method}' doesn't exist`);
+        }
+        method = (this as any)[method];
+      }
+      if (typeof method !== 'function') {
+        throw new Error('Cannot execute method');
+      }
+      method.call(this);
+    }
+  }
+
+  private _buildSaveData() {
+    const data: any = {};
+    const ctor: any = this.constructor;
+    const schema = ctor._schema;
+    // tslint:disable-next-line:forin
+    for (const column in schema) {
+      const property = schema[column];
+      ctor._buildSaveDataColumn(data, this, column, property);
+    }
+    if (this.id != null) {
+      data.id = ctor._adapter.idToDB(this.id);
+    }
+    return data;
+  }
+
+  private async _create(options: any) {
+    const data = this._buildSaveData();
+    const ctor: any = this.constructor;
+    if (!(options && options.skip_log)) {
+      ctor._connection.log(ctor._name, 'create', data);
+    }
+    const id = await ctor._adapter.create(ctor._name, data);
+    Object.defineProperty(this, 'id', {
+      configurable: false,
+      enumerable: true,
+      value: id,
+      writable: false,
+    });
+    // save sub objects of each association
+    const foreign_key = inflector.foreign_key(ctor._name);
+    const promises = Object.keys(ctor._associations).map(async (column) => {
+      const sub_promises = ((this as any)['__cache_' + column] || []).map((sub: any) => {
+        sub[foreign_key] = id;
+        return sub.save();
+      });
+      return (await Promise.all(sub_promises));
+    });
+    try {
+      await Promise.all(promises);
+    } catch (error) {
+      //
+    }
+    return this._prev_attributes = {};
+  }
+
+  private async _update(options: any) {
+    const ctor: any = this.constructor;
+    if (ctor.dirty_tracking) {
+      // update changed values only
+      if (!this.isDirty()) {
+        return;
+      }
+      const data = {};
+      const adapter = ctor._adapter;
+      const schema = ctor._schema;
+      // tslint:disable-next-line:forin
+      for (const path in this._prev_attributes) {
+        ctor._buildSaveDataColumn(data, this._attributes, path, schema[path], true);
+      }
+      if (!(options != null ? options.skip_log : void 0)) {
+        ctor._connection.log(ctor._name, 'update', data);
+      }
+      await adapter.updatePartial(ctor._name, data, { id: this.id }, {});
+      return this._prev_attributes = {};
+    } else {
+      // update all
+      const data = this._buildSaveData();
+      if (!(options != null ? options.skip_log : void 0)) {
+        ctor._connection.log(ctor._name, 'update', data);
+      }
+      await ctor._adapter.update(ctor._name, data);
+      return this._prev_attributes = {};
     }
   }
 }
-
-applyMixins(Model, [ModelCache, ModelCallback, ModelPersistence, ModelQuery, ModelTimestamp, ModelValidate]);
 
 export { Model };

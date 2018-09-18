@@ -26,7 +26,10 @@ declare class AdapterBase {
     support_fractional_seconds: boolean;
     support_upsert: boolean;
     support_nested: boolean;
+    support_geopoint: boolean;
+    support_string_type_with_length: boolean;
     key_type: any;
+    key_type_internal: any;
     connect(settings: {}): Promise<void>;
     /**
      * Returns current schemas.
