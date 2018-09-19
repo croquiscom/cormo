@@ -4,7 +4,7 @@ import { AdapterBase } from './base';
 
 // Base class for SQL adapters
 // @namespace adapter
-class SQLAdapterBase extends AdapterBase {
+abstract class SQLAdapterBase extends AdapterBase {
   protected _contains_op = 'LIKE';
   protected _regexp_op: string | null = 'REGEXP';
   protected _false_value = 'FALSE';

@@ -1,5 +1,5 @@
 import { AdapterBase } from './base';
-declare class SQLAdapterBase extends AdapterBase {
+declare abstract class SQLAdapterBase extends AdapterBase {
     protected _contains_op: string;
     protected _regexp_op: string | null;
     protected _false_value: string;

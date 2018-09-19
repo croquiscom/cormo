@@ -324,7 +324,7 @@ class Connection extends EventEmitter {
       const modelClass = this.models[model];
       const integrities = modelClass._integrities.filter((integrity) => integrity.type.substr(0, 7) === 'parent_');
       if (integrities.length > 0) {
-        let records = await modelClass.select('');
+        let records = await modelClass.select('').exec();
         const ids = records.map((record: any) => record.id);
         const sub_promises = integrities.map(async (integrity) => {
           const query = integrity.child.select('');

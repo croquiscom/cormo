@@ -18,8 +18,5 @@ export declare function getPropertyOfPath(obj: object, path: string | string[]):
 /**
  * Sets a value to object by path
  * @memberOf util
- * @param {Object} obj
- * @param {String|Array<String>} path
- * @param {*} value
  */
 export declare function setPropertyOfPath(obj: object, path: string | string[], value: any): void;

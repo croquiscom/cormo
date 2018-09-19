@@ -15,6 +15,7 @@ export interface IAdapterSettingsRedis {
 }
 
 import * as _ from 'lodash';
+import * as stream from 'stream';
 import * as util from 'util';
 import * as types from '../types';
 import { tableize } from '../util/inflector';
@@ -134,6 +135,10 @@ class RedisAdapter extends AdapterBase {
     return keys.length;
   }
 
+  public async upsert(model: string, data: any, conditions: any, options: any): Promise<void> {
+    throw new Error('not implemented');
+  }
+
   public async findById(model: any, id: any, options: any): Promise<any> {
     let result;
     try {
@@ -165,6 +170,14 @@ class RedisAdapter extends AdapterBase {
     });
   }
 
+  public stream(model: any, conditions: any, options: any): stream.Readable {
+    throw new Error('not implemented');
+  }
+
+  public async count(model: any, conditions: any, options: any): Promise<number> {
+    throw new Error('not implemented');
+  }
+
   public async delete(model: any, conditions: any): Promise<number> {
     const keys = await this._getKeys(tableize(model), conditions);
     if (keys.length === 0) {
@@ -177,6 +190,10 @@ class RedisAdapter extends AdapterBase {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     return count;
+  }
+
+  public close(): void {
+    //
   }
 
   /**

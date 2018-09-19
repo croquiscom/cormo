@@ -7,7 +7,6 @@ import * as path from 'path';
 class Command {
   /**
    * Runs a command
-   * @param {Array<String>} argv
    */
   public static run(argv: string[]) {
     const command = argv[2];

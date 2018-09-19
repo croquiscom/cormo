@@ -12,7 +12,7 @@ export interface ISchemas {
  * Base class for adapters
  * @namespace adapter
  */
-class AdapterBase {
+abstract class AdapterBase {
   /**
    * Wraps adapter specific errors
    * @param msg CORMO's error message
@@ -132,126 +132,63 @@ class AdapterBase {
 
   /**
    * Creates a record
-   * @abstract
-   * @promise
    */
-  public async create(model: string, data: object): Promise<any> {
-    throw new Error('not implemented');
-  }
+  public abstract async create(model: string, data: object): Promise<any>;
 
   /**
    * Creates records
-   * @abstract
-   * @param {String} model
-   * @param {Array<Object>} data
-   * @return {Array<RecordID>}
-   * @promise
    */
-  public async createBulk(model: string, data: object[]): Promise<any[]> {
-    throw new Error('not implemented');
-  }
+  public abstract async createBulk(model: string, data: object[]): Promise<any[]>;
 
   /**
    * Updates a record
-   * @abstract
    */
-  public async update(model: string, data: any) {
-    throw new Error('not implemented');
-  }
+  public abstract async update(model: string, data: any): Promise<void>;
 
   /**
    * Updates some fields of records that match conditions
-   * @abstract
    */
-  public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
-    throw new Error('not implemented');
-  }
+  public abstract async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number>;
 
   /**
    * Updates some fields of records that match conditions or inserts a new record
-   * @abstract
    */
-  public async upsert(model: string, data: any, conditions: any, options: any) {
-    throw new Error('not implemented');
-  }
+  public abstract async upsert(model: string, data: any, conditions: any, options: any): Promise<void>;
 
   /**
    * Finds a record by id
-   * @abstract
-   * @param {String} model
-   * @param {RecordID} id
-   * @param {Object} options
-   * @return {Model}
-   * @promise
-   * @throws {Error('not found')}
    * @see Query::exec
    */
-  public async findById(model: any, id: any, options: any): Promise<any> {
-    throw new Error('not implemented');
-  }
+  public abstract async findById(model: any, id: any, options: any): Promise<any>;
 
   /**
    * Finds records
-   * @abstract
-   * @param {String} model
-   * @param {Object} conditions
-   * @param {Object} options
-   * @return {Array<Model>}
-   * @promise
    * @see Query::exec
    */
-  public async find(model: any, conditions: any, options: any): Promise<any> {
-    throw new Error('not implemented');
-  }
+  public abstract async find(model: any, conditions: any, options: any): Promise<any>;
 
   /**
    * Streams matching records
-   * @abstract
-   * @param {String} model
-   * @param {Object} conditions
-   * @param {Object} options
-   * @return {Readable}
    * @see Query::stream
    */
-  public stream(model: any, conditions: any, options: any): stream.Readable {
-    const readable = new stream.Readable({ objectMode: true });
-    readable._read = () => {
-      readable.emit('error', new Error('not implemented'));
-    };
-    return readable;
-  }
+  public abstract stream(model: any, conditions: any, options: any): stream.Readable;
 
   /**
    * Counts records
-   * @abstract
-   * @param {String} model
-   * @param {Object} conditions
-   * @param {Object} options
-   * @return {Number}
-   * @promise
    * @see Query::count
    */
-  public async count(model: any, conditions: any, options: any): Promise<number> {
-    throw new Error('not implemented');
-  }
+  public abstract async count(model: any, conditions: any, options: any): Promise<number>;
 
   /**
    * Deletes records from the database
-   * @abstract
-   * @param {String} model
-   * @param {Object} conditions
-   * @return {Number}
-   * @promise
    * @see Query::delete
    */
-  public async delete(model: any, conditions: any): Promise<number> {
-    throw new Error('not implemented');
-  }
+  public abstract async delete(model: any, conditions: any): Promise<number>;
 
   /**
    * Closes connection
    */
-  public close() { /**/ }
+  public abstract close(): void;
 
   protected _getModelID(data: any) {
     return data.id;

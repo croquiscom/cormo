@@ -2,48 +2,6 @@
 import * as stream from 'stream';
 import { Model } from './model';
 import { RecordID } from './types';
-export interface IQuerySingle<T> extends PromiseLike<T> {
-    find(id: RecordID): IQuerySingle<T>;
-    find(id: RecordID[]): IQueryArray<T>;
-    findPreserve(id: RecordID[]): IQueryArray<T>;
-    where(condition?: object): IQuerySingle<T>;
-    select(columns: string): IQuerySingle<T>;
-    order(orders: string): IQuerySingle<T>;
-    group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
-    one(): IQuerySingle<T>;
-    limit(limit?: number): IQuerySingle<T>;
-    skip(skip?: number): IQuerySingle<T>;
-    if(condition: boolean): IQuerySingle<T>;
-    endif(): IQuerySingle<T>;
-    include(column: string, select?: string): IQuerySingle<T>;
-    exec(options?: any): PromiseLike<T>;
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2>;
-    count(): PromiseLike<number>;
-    update(updates: object): PromiseLike<number>;
-    upsert(updates: object): PromiseLike<void>;
-    delete(options?: any): PromiseLike<number>;
-}
-export interface IQueryArray<T> extends PromiseLike<T[]> {
-    find(id: RecordID): IQuerySingle<T>;
-    find(id: RecordID[]): IQueryArray<T>;
-    findPreserve(id: RecordID[]): IQueryArray<T>;
-    where(condition?: object): IQueryArray<T>;
-    select(columns: string): IQueryArray<T>;
-    order(orders: string): IQueryArray<T>;
-    group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
-    one(): IQuerySingle<T>;
-    limit(limit?: number): IQueryArray<T>;
-    skip(skip?: number): IQueryArray<T>;
-    if(condition: boolean): IQueryArray<T>;
-    endif(): IQueryArray<T>;
-    include(column: string, select?: string): IQueryArray<T>;
-    exec(options?: any): PromiseLike<T[]>;
-    then<TResult1 = T[], TResult2 = never>(onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2>;
-    count(): PromiseLike<number>;
-    update(updates: object): PromiseLike<number>;
-    upsert(updates: object): PromiseLike<void>;
-    delete(options?: any): PromiseLike<number>;
-}
 interface IQueryOptions {
     conditions_of_group: any[];
     lean: boolean;

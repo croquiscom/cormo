@@ -1,6 +1,6 @@
 import { AdapterBase } from '../adapters/base';
 import { Connection } from '../connection';
-import { IQueryArray, IQuerySingle } from '../query';
+import { Query } from '../query';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
 /**
@@ -127,27 +127,22 @@ declare class Model {
     static beforeUpdate(method: ModelCallbackMethod): void;
     /**
      * Adds a callback of after updating
-     * @param {Function|String} method
      */
     static afterUpdate(method: ModelCallbackMethod): void;
     /**
      * Adds a callback of before destroying
-     * @param {Function|String} method
      */
     static beforeDestroy(method: ModelCallbackMethod): void;
     /**
      * Adds a callback of after destroying
-     * @param {Function|String} method
      */
     static afterDestroy(method: ModelCallbackMethod): void;
     /**
      * Adds a callback of before validating
-     * @param {Function|String} method
      */
     static beforeValidate(method: ModelCallbackMethod): void;
     /**
      * Adds a callback of after validating
-     * @param {Function|String} method
      */
     static afterValidate(method: ModelCallbackMethod): void;
     /**
@@ -164,34 +159,33 @@ declare class Model {
     /**
      * Creates q query object
      */
-    static query(this: typeof Model): IQueryArray<Model>;
+    static query(this: typeof Model): Query<Model>;
     /**
      * Finds a record by id
      * @throws {Error('not found')}
      */
-    static find(id: types.RecordID): IQuerySingle<Model>;
-    static find(id: types.RecordID[]): IQueryArray<Model>;
+    static find(this: typeof Model, id: types.RecordID | types.RecordID[]): Query<Model>;
     /**
      * Finds records by ids while preserving order.
      * @throws {Error('not found')}
      */
-    static findPreserve(ids: types.RecordID[]): IQueryArray<Model>;
+    static findPreserve(ids: types.RecordID[]): Query<Model>;
     /**
      * Finds records by conditions
      */
-    static where(condition?: object): IQueryArray<Model>;
+    static where(condition?: object): Query<Model>;
     /**
      * Selects columns for result
      */
-    static select(columns: string): IQueryArray<Model>;
+    static select(columns: string): Query<Model>;
     /**
      * Specifies orders of result
      */
-    static order(orders: string): IQueryArray<Model>;
+    static order(orders: string): Query<Model>;
     /**
      * Groups result records
      */
-    static group<U = Model>(this: typeof Model, group_by: string | null, fields: object): IQueryArray<U>;
+    static group<U = Model>(this: typeof Model, group_by: string | null, fields: object): Query<U>;
     /**
      * Counts records by conditions
      */
@@ -202,9 +196,6 @@ declare class Model {
     static update(this: typeof Model, updates: object, condition: object): Promise<number>;
     /**
      * Deletes records by conditions
-     * @param {Object} [condition]
-     * @return {Number}
-     * @promise
      */
     static delete(this: typeof Model, condition?: object): Promise<number>;
     /**
@@ -220,9 +211,6 @@ declare class Model {
     private static _callbacks_map;
     /**
      * Adds a callback
-     * @param {String} type
-     * @param {String} name
-     * @param {Function|String} method
      */
     private static addCallback;
     private static _buildSaveDataColumn;
@@ -247,21 +235,14 @@ declare class Model {
     getChanged(): string[];
     /**
      * Returns the current value of the column of the given path
-     * @param {String} path
-     * @return {*}
      */
     get(path: any): any;
     /**
      * Returns the original value of the column of the given path
-     * @param {String} path
-     * @return {*}
      */
     getPrevious(path: any): any;
     /**
      * Changes the value of the column of the given path
-     * @param {String} path
-     * @param {*} value
-     * @return {*}
      */
     set(path: any, value: any): void;
     /**
@@ -275,11 +256,6 @@ declare class Model {
     _defineProperty(object: any, key: any, path: any, enumerable: any): void;
     /**
      * Saves data to the database
-     * @param {Object} [options]
-     * @param {Boolean} [options.validate=true]
-     * @param {Boolean} [options.skip_log=false]
-     * @return {Model} this
-     * @promise
      */
     save(this: Model & {
         constructor: typeof Model;

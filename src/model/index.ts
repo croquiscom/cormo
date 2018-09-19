@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 
 import { AdapterBase } from '../adapters/base';
 import { Connection } from '../connection';
-import { IQueryArray, IQuerySingle, Query } from '../query';
+import { Query } from '../query';
 import * as types from '../types';
 import * as util from '../util';
 import { tableize } from '../util/inflector';
@@ -11,8 +11,6 @@ import * as inflector from '../util/inflector';
 type ModelCallbackName = 'create' | 'destroy' | 'find' | 'initialize' | 'save' | 'update' | 'validate';
 type ModelCallbackType = 'after' | 'before';
 type ModelCallbackMethod = () => void | 'string';
-
-type ModelQueryMethod = 'find' | 'findPreserve' | 'where' | 'select' | 'order';
 
 function _pf_isDirty() {
   return true;
@@ -419,7 +417,6 @@ class Model {
 
   /**
    * Adds a callback of after updating
-   * @param {Function|String} method
    */
   public static afterUpdate(method: ModelCallbackMethod) {
     this.addCallback('after', 'update', method);
@@ -427,7 +424,6 @@ class Model {
 
   /**
    * Adds a callback of before destroying
-   * @param {Function|String} method
    */
   public static beforeDestroy(method: ModelCallbackMethod) {
     this.addCallback('before', 'destroy', method);
@@ -435,7 +431,6 @@ class Model {
 
   /**
    * Adds a callback of after destroying
-   * @param {Function|String} method
    */
   public static afterDestroy(method: ModelCallbackMethod) {
     this.addCallback('after', 'destroy', method);
@@ -443,7 +438,6 @@ class Model {
 
   /**
    * Adds a callback of before validating
-   * @param {Function|String} method
    */
   public static beforeValidate(method: ModelCallbackMethod) {
     this.addCallback('before', 'validate', method);
@@ -451,7 +445,6 @@ class Model {
 
   /**
    * Adds a callback of after validating
-   * @param {Function|String} method
    */
   public static afterValidate(method: ModelCallbackMethod) {
     this.addCallback('after', 'validate', method);
@@ -502,7 +495,7 @@ class Model {
   /**
    * Creates q query object
    */
-  public static query(this: typeof Model): IQueryArray<Model> {
+  public static query(this: typeof Model): Query<Model> {
     return new Query(this);
   }
 
@@ -510,11 +503,7 @@ class Model {
    * Finds a record by id
    * @throws {Error('not found')}
    */
-  public static find(id: types.RecordID): IQuerySingle<Model>;
-  public static find(id: types.RecordID[]): IQueryArray<Model>;
-  public static find(
-    this: typeof Model, id: types.RecordID | types.RecordID[],
-  ): IQuerySingle<Model> | IQueryArray<Model> {
+  public static find(this: typeof Model, id: types.RecordID | types.RecordID[]): Query<Model> {
     return new Query(this).find(id);
   }
 
@@ -522,35 +511,35 @@ class Model {
    * Finds records by ids while preserving order.
    * @throws {Error('not found')}
    */
-  public static findPreserve(ids: types.RecordID[]): IQueryArray<Model> {
+  public static findPreserve(ids: types.RecordID[]): Query<Model> {
     return new Query(this).findPreserve(ids);
   }
 
   /**
    * Finds records by conditions
    */
-  public static where(condition?: object): IQueryArray<Model> {
+  public static where(condition?: object): Query<Model> {
     return new Query(this).where(condition);
   }
 
   /**
    * Selects columns for result
    */
-  public static select(columns: string): IQueryArray<Model> {
+  public static select(columns: string): Query<Model> {
     return new Query(this).select(columns);
   }
 
   /**
    * Specifies orders of result
    */
-  public static order(orders: string): IQueryArray<Model> {
+  public static order(orders: string): Query<Model> {
     return new Query(this).order(orders);
   }
 
   /**
    * Groups result records
    */
-  public static group<U = Model>(this: typeof Model, group_by: string | null, fields: object): IQueryArray<U> {
+  public static group<U = Model>(this: typeof Model, group_by: string | null, fields: object): Query<U> {
     const query = new Query(this);
     query.group<U>(group_by, fields);
     return query;
@@ -572,9 +561,6 @@ class Model {
 
   /**
    * Deletes records by conditions
-   * @param {Object} [condition]
-   * @return {Number}
-   * @promise
    */
   public static async delete(this: typeof Model, condition?: object): Promise<number> {
     return await new Query(this).where(condition).delete();
@@ -616,9 +602,6 @@ class Model {
 
   /**
    * Adds a callback
-   * @param {String} type
-   * @param {String} name
-   * @param {Function|String} method
    */
   private static addCallback(type: ModelCallbackType, name: ModelCallbackName, method: ModelCallbackMethod) {
     this._checkConnection();
@@ -836,8 +819,6 @@ class Model {
 
   /**
    * Returns the current value of the column of the given path
-   * @param {String} path
-   * @return {*}
    */
   public get(path: any) {
     if (this._intermediates.hasOwnProperty(path)) {
@@ -849,8 +830,6 @@ class Model {
 
   /**
    * Returns the original value of the column of the given path
-   * @param {String} path
-   * @return {*}
    */
   public getPrevious(path: any) {
     return this._prev_attributes[path];
@@ -858,9 +837,6 @@ class Model {
 
   /**
    * Changes the value of the column of the given path
-   * @param {String} path
-   * @param {*} value
-   * @return {*}
    */
   public set(path: any, value: any) {
     if (this._intermediates.hasOwnProperty(path)) {
@@ -934,11 +910,6 @@ class Model {
 
   /**
    * Saves data to the database
-   * @param {Object} [options]
-   * @param {Boolean} [options.validate=true]
-   * @param {Boolean} [options.skip_log=false]
-   * @return {Model} this
-   * @promise
    */
   public async save(
     this: Model & { constructor: typeof Model },

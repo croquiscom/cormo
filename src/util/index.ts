@@ -43,9 +43,6 @@ export function getPropertyOfPath(obj: object, path: string | string[]): any {
 /**
  * Sets a value to object by path
  * @memberOf util
- * @param {Object} obj
- * @param {String|Array<String>} path
- * @param {*} value
  */
 export function setPropertyOfPath(obj: object, path: string | string[], value: any) {
   const [child, last] = getLeafOfPath(obj, path);
