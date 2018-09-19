@@ -87,6 +87,8 @@ class Model {
 
   public static _initialize_called = false;
 
+  public static _intermediate_paths: any;
+
   public static initialize() { /**/ }
 
   /**
@@ -602,8 +604,6 @@ class Model {
     this._checkConnection();
     this._validators.push(validator);
   }
-
-  private static _intermediate_paths: any;
 
   private static _validators: any[];
 

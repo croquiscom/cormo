@@ -40,6 +40,7 @@ declare class Model {
         [column: string]: any;
     };
     static _initialize_called: boolean;
+    static _intermediate_paths: any;
     static initialize(): void;
     /**
      * Returns a new model class extending Model
@@ -215,7 +216,6 @@ declare class Model {
      * A validator must return false(boolean) or error message(string), or throw an Error exception if invalid
      */
     static addValidator(validator: any): void;
-    private static _intermediate_paths;
     private static _validators;
     private static _callbacks_map;
     /**

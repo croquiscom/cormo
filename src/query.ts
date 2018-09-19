@@ -28,7 +28,7 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
   ): PromiseLike<TResult1 | TResult2>;
   count(): PromiseLike<number>;
   update(updates: object): PromiseLike<number>;
-  upsert(updates: object): PromiseLike<number>;
+  upsert(updates: object): PromiseLike<void>;
   delete(options?: any): PromiseLike<number>;
 }
 
@@ -50,16 +50,28 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   exec(options?: any): PromiseLike<T[]>;
   then<TResult1 = T[], TResult2 = never>(
     onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null,
-    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
   ): PromiseLike<TResult1 | TResult2>;
   count(): PromiseLike<number>;
   update(updates: object): PromiseLike<number>;
-  upsert(updates: object): PromiseLike<number>;
+  upsert(updates: object): PromiseLike<void>;
   delete(options?: any): PromiseLike<number>;
 }
 
-export interface QueryOptions {
-  cache: {
+interface IQueryOptions {
+  conditions_of_group: any[];
+  lean: boolean;
+  orders: any[];
+  near?: any;
+  select?: any;
+  select_raw?: any;
+  group_fields?: any;
+  group_by?: any;
+  limit?: number;
+  skip?: number;
+  one?: boolean;
+  explain?: boolean;
+  cache?: {
     key: string,
     ttl: number,
     refresh?: boolean,
@@ -76,7 +88,12 @@ class Query<T> {
   private _adapter: AdapterBase;
   private _ifs: boolean[];
   private _current_if: boolean;
-  private _options: QueryOptions;
+  private _options: IQueryOptions;
+  private _conditions: any[];
+  private _includes: any[];
+  private _id: any;
+  private _find_single_id = false;
+  private _preserve_order_ids?: any[];
 
   /**
    * Creates a query instance
@@ -99,9 +116,8 @@ class Query<T> {
 
   /**
    * Finds a record by id
-   * @chainable
    */
-  public find(id: RecordID | RecordID[]): Query<T> {
+  public find(id: RecordID | RecordID[]): this {
     if (!this._current_if) {
       return this;
     }
@@ -117,9 +133,8 @@ class Query<T> {
 
   /**
    * Finds records by ids while preserving order.
-   * @chainable
    */
-  public findPreserve(ids: RecordID[]): Query<T> {
+  public findPreserve(ids: RecordID[]): this {
     if (!this._current_if) {
       return this;
     }
@@ -131,9 +146,8 @@ class Query<T> {
 
   /**
    * Finds records near target
-   * @chainable
    */
-  public near(target: object) {
+  public near(target: object): this {
     if (!this._current_if) {
       return this;
     }
@@ -143,9 +157,8 @@ class Query<T> {
 
   /**
    * Finds records by condition
-   * @chainable
    */
-  public where(condition?: object) {
+  public where(condition?: object): this {
     if (!this._current_if) {
       return this;
     }
@@ -161,31 +174,29 @@ class Query<T> {
 
   /**
    * Selects columns for result
-   * @chainable
    */
-  public select(columns: string) {
-    var intermediate_paths, schema_columns, select, select_raw;
+  public select(columns: string): this {
     if (!this._current_if) {
       return this;
     }
     this._options.select = null;
     this._options.select_raw = null;
     if (typeof columns === 'string') {
-      schema_columns = Object.keys(this._model._schema);
-      intermediate_paths = this._model._intermediate_paths;
-      select = [];
-      select_raw = [];
-      columns.split(/\s+/).forEach(function(column) {
+      const schema_columns = Object.keys(this._model._schema);
+      const intermediate_paths = this._model._intermediate_paths;
+      const select: any[] = [];
+      const select_raw: any[] = [];
+      columns.split(/\s+/).forEach((column) => {
         if (schema_columns.indexOf(column) >= 0) {
           select.push(column);
-          return select_raw.push(column);
+          select_raw.push(column);
         } else if (intermediate_paths[column]) {
           // select all nested columns
           select_raw.push(column);
           column += '.';
-          return schema_columns.forEach(function(sc) {
+          schema_columns.forEach((sc) => {
             if (sc.indexOf(column) === 0) {
-              return select.push(sc);
+              select.push(sc);
             }
           });
         }
@@ -198,28 +209,25 @@ class Query<T> {
 
   /**
    * Specifies orders of result
-   * @chainable
    */
-  public order(orders: string) {
-    var avaliable_columns;
+  public order(orders: string): this {
     if (!this._current_if) {
       return this;
     }
     if (typeof orders === 'string') {
-      avaliable_columns = ['id'];
+      const avaliable_columns = ['id'];
       [].push.apply(avaliable_columns, Object.keys(this._model._schema));
       if (this._options.group_fields) {
         [].push.apply(avaliable_columns, Object.keys(this._options.group_fields));
       }
       orders.split(/\s+/).forEach((order) => {
-        var asc;
-        asc = true;
+        let asc = true;
         if (order[0] === '-') {
           asc = false;
           order = order.slice(1);
         }
         if (avaliable_columns.indexOf(order) >= 0) {
-          return this._options.orders.push(asc ? order : '-' + order);
+          this._options.orders.push(asc ? order : '-' + order);
         }
       });
     }
@@ -228,17 +236,15 @@ class Query<T> {
 
   /**
    * Groups result records
-   * @chainable
    */
-  public group<U = T>(group_by: string | null, fields: object) {
-    var columns, schema_columns;
+  public group<U = T>(group_by: string | null, fields: object): this {
     if (!this._current_if) {
       return this;
     }
     this._options.group_by = null;
-    schema_columns = Object.keys(this._model._schema);
+    const schema_columns = Object.keys(this._model._schema);
     if (typeof group_by === 'string') {
-      columns = group_by.split(/\s+/).filter(function(column) {
+      const columns = group_by.split(/\s+/).filter((column) => {
         return schema_columns.indexOf(column) >= 0;
       });
       this._options.group_by = columns;
@@ -251,9 +257,8 @@ class Query<T> {
    * Returns only one record (or null if does not exists).
    *
    * This is different from limit(1). limit(1) returns array of length 1 while this returns an instance.
-   * @chainable
    */
-  public one() {
+  public one(): this {
     if (!this._current_if) {
       return this;
     }
@@ -264,9 +269,8 @@ class Query<T> {
 
   /**
    * Sets limit of query
-   * @chainable
    */
-  public limit(limit: number) {
+  public limit(limit: number): this {
     if (!this._current_if) {
       return this;
     }
@@ -276,9 +280,8 @@ class Query<T> {
 
   /**
    * Sets skip of query
-   * @chainable
    */
-  public skip(skip: number) {
+  public skip(skip: number): this {
     if (!this._current_if) {
       return this;
     }
@@ -288,10 +291,9 @@ class Query<T> {
 
   /**
    * Returns raw instances instead of model instances
-   * @chainable
    * @see Query::exec
    */
-  public lean(lean = true) {
+  public lean(lean = true): this {
     if (!this._current_if) {
       return this;
     }
@@ -301,12 +303,11 @@ class Query<T> {
 
   /**
    * Makes a part of the query chain conditional
-   * @chainable
    * @see Query::endif
    */
-  public if(condition: boolean) {
+  public if(condition: boolean): this {
     this._ifs.push(condition);
-    this._current_if && (this._current_if = condition);
+    this._current_if = this._current_if && condition;
     return this;
   }
 
@@ -316,13 +317,10 @@ class Query<T> {
    * @see Query::if
    */
   public endif() {
-    var condition, i, len, ref;
     this._ifs.pop();
     this._current_if = true;
-    ref = this._ifs;
-    for (i = 0, len = ref.length; i < len; i++) {
-      condition = ref[i];
-      this._current_if && (this._current_if = condition);
+    for (const condition of this._ifs) {
+      this._current_if = this._current_if && condition;
     }
     return this;
   }
@@ -334,13 +332,8 @@ class Query<T> {
    * If cache does not exist, query result will be saved in cache.
    *
    * Redis is used to cache.
-   * @param {Object} options
-   * @param {String} options.key
-   * @param {Number} options.ttl TTL in seconds
-   * @param {Boolean} options.refresh don't load from cache if true
-   * @chainable
    */
-  public cache(options: QueryOptions['cache']) {
+  public cache(options: IQueryOptions['cache']): this {
     if (!this._current_if) {
       return this;
     }
@@ -350,31 +343,21 @@ class Query<T> {
 
   /**
    * Returns associated objects also
-   * @param {String} column
-   * @param {String} [select]
-   * @chainable
    */
-  public include(column, select) {
+  public include(column: any, select: any): this {
     if (!this._current_if) {
       return this;
     }
-    this._includes.push({
-      column: column,
-      select: select
-    });
+    this._includes.push({ column, select });
     return this;
   }
 
   /**
    * Executes the query
-   * @param {Object} [options]
-   * @param {Boolean} [options.skip_log=false]
-   * @return {Model|Array<Model>}
-   * @promise
    * @see AdapterBase::findById
    * @see AdapterBase::find
    */
-  public async exec(options?) {
+  public async exec(options?: any) {
     await this._model._checkReady();
     if (this._options.cache && this._options.cache.key) {
       try {
@@ -382,7 +365,7 @@ class Query<T> {
         return await this._model._loadFromCache(this._options.cache.key, this._options.cache.refresh);
       } catch (error) {
         // no cache, execute query
-        const records = (await this._execAndInclude(options));
+        const records = await this._execAndInclude(options);
         // save result to cache
         await this._model._saveToCache(this._options.cache.key, this._options.cache.ttl, records);
         return records;
@@ -394,171 +377,123 @@ class Query<T> {
 
   /**
    * Executes the query and returns a readable stream
-   * @param {Object} [options]
-   * @param {Boolean} [options.skip_log=false]
-   * @return {Readable}
    * @see AdapterBase::findById
    * @see AdapterBase::find
    */
-  public stream() {
-    var transformer;
-    transformer = new stream.Transform({
-      objectMode: true
-    });
+  public stream(): stream.Readable {
+    const transformer = new stream.Transform({ objectMode: true });
     transformer._transform = function(chunk, encoding, callback) {
       this.push(chunk);
-      return callback();
+      callback();
     };
     this._model._checkReady().then(() => {
-      return this._adapter.stream(this._name, this._conditions, this._options).on('error', function(error) {
-        return transformer.emit('error', error);
-      }).pipe(transformer);
+      this._adapter.stream(this._name, this._conditions, this._options)
+        .on('error', (error) => {
+          transformer.emit('error', error);
+        }).pipe(transformer);
     });
     return transformer;
   }
 
   /**
    * Explains the query
-   * @return {Object}
-   * @promise
    */
   public async explain() {
-    this._options.cache = null;
+    this._options.cache = undefined;
     this._options.explain = true;
     this._includes = [];
-    return (await this.exec({
-      skip_log: true
-    }));
+    return await this.exec({ skip_log: true });
   }
 
   /**
    * Executes the query as a promise (.then == .exec().then)
-   * @param {Function} fulfilled
-   * @param {Function} rejected
-   * @promise
    */
-  public then(fulfilled, rejected) {
+  public then(fulfilled: any, rejected: any) {
     return this.exec().then(fulfilled, rejected);
   }
 
   /**
    * Executes the query as a count operation
-   * @return {Number}
-   * @promise
    * @see AdapterBase::count
    */
-  public async count() {
+  public async count(): Promise<number> {
     await this._model._checkReady();
     if (this._id || this._find_single_id) {
-      this._conditions.push({
-        id: this._id
-      });
+      this._conditions.push({ id: this._id });
       delete this._id;
     }
-    return (await this._adapter.count(this._name, this._conditions, this._options));
+    return await this._adapter.count(this._name, this._conditions, this._options);
   }
 
   /**
    * Executes the query as a update operation
-   * @param {Object} updates
-   * @return {Number}
-   * @promise
-   * @see AdapterBase::count
+   * @see AdapterBase::update
    */
-  public async update(updates): Promise<number> {
-    var data, errors;
+  public async update(updates: any): Promise<number> {
     await this._model._checkReady();
-    errors = [];
-    data = {};
+    const errors: any[] = [];
+    const data = {};
     this._validateAndBuildSaveData(errors, data, updates, '', updates);
     if (errors.length > 0) {
       throw new Error(errors.join(','));
     }
     if (this._id || this._find_single_id) {
-      this._conditions.push({
-        id: this._id
-      });
+      this._conditions.push({ id: this._id });
       delete this._id;
     }
-    this._connection.log(this._name, 'update', {
-      data: data,
-      conditions: this._conditions,
-      options: this._options
-    });
-    return (await this._adapter.updatePartial(this._name, data, this._conditions, this._options));
+    this._connection.log(this._name, 'update', { data, conditions: this._conditions, options: this._options });
+    return await this._adapter.updatePartial(this._name, data, this._conditions, this._options);
   }
 
   /**
    * Executes the query as an insert or update operation
-   * @param {Object} updates
-   * @return {Number}
-   * @promise
-   * @see AdapterBase::count
+   * @see AdapterBase::upsert
    */
-  public async upsert(updates): Promise<number> {
-    var data, errors;
+  public async upsert(updates: any): Promise<void> {
     await this._model._checkReady();
-    errors = [];
-    data = {};
+    const errors: any[] = [];
+    const data = {};
     this._validateAndBuildSaveData(errors, data, updates, '', updates);
     if (errors.length > 0) {
       throw new Error(errors.join(','));
     }
     if (this._id || this._find_single_id) {
-      this._conditions.push({
-        id: this._id
-      });
+      this._conditions.push({ id: this._id });
       delete this._id;
     }
-    this._connection.log(this._name, 'upsert', {
-      data: data,
-      conditions: this._conditions,
-      options: this._options
-    });
-    return (await this._adapter.upsert(this._name, data, this._conditions, this._options));
+    this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options: this._options });
+    return await this._adapter.upsert(this._name, data, this._conditions, this._options);
   }
 
   /**
    * Executes the query as a delete operation
-   * @param {Object} [options]
-   * @param {Boolean} [options.skip_log=false]
-   * @return {Number}
-   * @promise
    * @see AdapterBase::delete
    */
-  public async delete(options?): Promise<number> {
+  public async delete(options?: any): Promise<number> {
     await this._model._checkReady();
     if (this._id || this._find_single_id) {
-      this._conditions.push({
-        id: this._id
-      });
+      this._conditions.push({ id: this._id });
       delete this._id;
     }
     if (!(options != null ? options.skip_log : void 0)) {
-      this._connection.log(this._name, 'delete', {
-        conditions: this._conditions
-      });
+      this._connection.log(this._name, 'delete', { conditions: this._conditions });
     }
     await this._doArchiveAndIntegrity(options);
-    return (await this._adapter.delete(this._name, this._conditions));
+    return await this._adapter.delete(this._name, this._conditions);
   }
 
-  private async _exec(options) {
-    var error, expected_count, record, records;
+  private async _exec(options: any) {
     if (this._find_single_id && this._conditions.length === 0) {
-      if (!(options != null ? options.skip_log : void 0)) {
-        this._connection.log(this._name, 'find by id', {
-          id: this._id,
-          options: this._options
-        });
+      if (!(options && options.skip_log)) {
+        this._connection.log(this._name, 'find by id', { id: this._id, options: this._options });
       }
       if (!this._id) {
         throw new Error('not found');
       }
+      let record;
       try {
         record = (await this._adapter.findById(this._name, this._id, this._options));
-      } catch (error1) {
-        error = error1;
+      } catch (error) {
         throw new Error('not found');
       }
       if (!record) {
@@ -566,42 +501,31 @@ class Query<T> {
       }
       return record;
     }
-    expected_count = void 0;
+    let expected_count: number | undefined;
     if (this._id || this._find_single_id) {
       if (Array.isArray(this._id)) {
         if (this._id.length === 0) {
           return [];
         }
-        this._conditions.push({
-          id: {
-            $in: this._id
-          }
-        });
+        this._conditions.push({ id: { $in: this._id } });
         expected_count = this._id.length;
       } else {
-        this._conditions.push({
-          id: this._id
-        });
+        this._conditions.push({ id: this._id });
         expected_count = 1;
       }
     }
-    if (!(options != null ? options.skip_log : void 0)) {
-      this._connection.log(this._name, 'find', {
-        conditions: this._conditions,
-        options: this._options
-      });
+    if (!(options && options.skip_log)) {
+      this._connection.log(this._name, 'find', { conditions: this._conditions, options: this._options });
     }
-    records = (await this._adapter.find(this._name, this._conditions, this._options));
+    let records = await this._adapter.find(this._name, this._conditions, this._options);
     if (expected_count != null) {
       if (records.length !== expected_count) {
         throw new Error('not found');
       }
     }
     if (this._preserve_order_ids) {
-      records = this._preserve_order_ids.map(function(id) {
-        var i, len;
-        for (i = 0, len = records.length; i < len; i++) {
-          record = records[i];
+      records = this._preserve_order_ids.map((id) => {
+        for (const record of records) {
           if (record.id === id) {
             return record;
           }
@@ -622,14 +546,13 @@ class Query<T> {
     }
   }
 
-  private async _execAndInclude(options) {
-    var records;
-    records = (await this._exec(options));
+  private async _execAndInclude(options?: any) {
+    const records = await this._exec(options);
     await Promise.all(this._includes.map(async (include) => {
-      return (await this._connection.fetchAssociated(records, include.column, include.select, {
+      await this._connection.fetchAssociated(records, include.column, include.select, {
+        lean: this._options.lean,
         model: this._model,
-        lean: this._options.lean
-      }));
+      });
     }));
     return records;
   }
@@ -663,53 +586,41 @@ class Query<T> {
     }
   }
 
-  private async _doIntegrityActions(integrities, ids) {
-    var promises;
-    promises = integrities.map(async (integrity) => {
-      var count;
+  private async _doIntegrityActions(integrities: any, ids: any) {
+    const promises = integrities.map(async (integrity: any) => {
       if (integrity.type === 'parent_nullify') {
-        return (await integrity.child.update(_.zipObject([integrity.column], [null]), _.zipObject([integrity.column], [ids])));
+        await integrity.child.update(_.zipObject([integrity.column], [null]), _.zipObject([integrity.column], [ids]));
       } else if (integrity.type === 'parent_restrict') {
-        count = (await integrity.child.count(_.zipObject([integrity.column], [ids])));
+        const count = (await integrity.child.count(_.zipObject([integrity.column], [ids])));
         if (count > 0) {
           throw new Error('rejected');
         }
       } else if (integrity.type === 'parent_delete') {
-        return (await integrity.child.delete(_.zipObject([integrity.column], [ids])));
+        await integrity.child.delete(_.zipObject([integrity.column], [ids]));
       }
     });
-    return (await Promise.all(promises));
+    await Promise.all(promises);
   }
 
-  private async _doArchiveAndIntegrity(options) {
-    var archive_records, ids, integrities, need_archive, need_child_archive, need_integrity, query, records;
-    need_archive = this._model.archive;
-    integrities = this._model._integrities.filter(function(integrity) {
-      return integrity.type.substr(0, 7) === 'parent_';
-    });
-    need_child_archive = integrities.some((integrity) => {
-      return integrity.child.archive;
-    });
-    need_integrity = need_child_archive || (integrities.length > 0 && !this._adapter.native_integrity);
+  private async _doArchiveAndIntegrity(options: any) {
+    const need_archive = this._model.archive;
+    const integrities = this._model._integrities.filter((integrity) => integrity.type.substr(0, 7) === 'parent_');
+    const need_child_archive = integrities.some((integrity) => integrity.child.archive);
+    const need_integrity = need_child_archive || (integrities.length > 0 && !this._adapter.native_integrity);
     if (!need_archive && !need_integrity) {
       return;
     }
     // find all records to be deleted
-    query = this._model.where(this._conditions);
+    const query = this._model.where(this._conditions);
     if (!need_archive) { // we need only id field for integrity
       query.select('');
     }
-    records = (await query.exec({
-      skip_log: options != null ? options.skip_log : void 0
-    }));
+    const records = await query.exec({ skip_log: options && options.skip_log });
     if (need_archive) {
-      archive_records = records.map((record) => {
-        return {
-          model: this._name,
-          data: record
-        };
+      const archive_records: any[] = records.map((record) => {
+        return { model: this._name, data: record };
       });
-      await this._connection.models['_Archive'].createBulk(archive_records);
+      await this._connection.models._Archive.createBulk(archive_records);
     }
     if (!need_integrity) {
       return;
@@ -717,16 +628,13 @@ class Query<T> {
     if (records.length === 0) {
       return;
     }
-    ids = records.map(function(record) {
-      return record.id;
-    });
+    const ids = records.map((record) => record.id);
     await this._doIntegrityActions(integrities, ids);
   }
 
-  private _addCondition(condition) {
-    var keys;
+  private _addCondition(condition: any) {
     if (this._options.group_fields) {
-      keys = Object.keys(condition);
+      const keys = Object.keys(condition);
       if (keys.length === 1 && this._options.group_fields.hasOwnProperty(keys[0])) {
         this._options.conditions_of_group.push(condition);
         return;

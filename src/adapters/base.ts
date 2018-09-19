@@ -39,6 +39,8 @@ class AdapterBase {
   public key_type: any;
   public key_type_internal: any;
 
+  public native_integrity = false;
+
   public async connect(settings: {}) {
     return;
   }

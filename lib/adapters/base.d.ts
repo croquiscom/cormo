@@ -30,6 +30,7 @@ declare class AdapterBase {
     support_string_type_with_length: boolean;
     key_type: any;
     key_type_internal: any;
+    native_integrity: boolean;
     connect(settings: {}): Promise<void>;
     /**
      * Returns current schemas.

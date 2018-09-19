@@ -20,7 +20,7 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
     then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2>;
     count(): PromiseLike<number>;
     update(updates: object): PromiseLike<number>;
-    upsert(updates: object): PromiseLike<number>;
+    upsert(updates: object): PromiseLike<void>;
     delete(options?: any): PromiseLike<number>;
 }
 export interface IQueryArray<T> extends PromiseLike<T[]> {
@@ -41,11 +41,23 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
     then<TResult1 = T[], TResult2 = never>(onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2>;
     count(): PromiseLike<number>;
     update(updates: object): PromiseLike<number>;
-    upsert(updates: object): PromiseLike<number>;
+    upsert(updates: object): PromiseLike<void>;
     delete(options?: any): PromiseLike<number>;
 }
-export interface QueryOptions {
-    cache: {
+interface IQueryOptions {
+    conditions_of_group: any[];
+    lean: boolean;
+    orders: any[];
+    near?: any;
+    select?: any;
+    select_raw?: any;
+    group_fields?: any;
+    group_by?: any;
+    limit?: number;
+    skip?: number;
+    one?: boolean;
+    explain?: boolean;
+    cache?: {
         key: string;
         ttl: number;
         refresh?: boolean;
@@ -62,71 +74,64 @@ declare class Query<T> {
     private _ifs;
     private _current_if;
     private _options;
+    private _conditions;
+    private _includes;
+    private _id;
+    private _find_single_id;
+    private _preserve_order_ids?;
     /**
      * Creates a query instance
      */
     constructor(model: typeof Model);
     /**
      * Finds a record by id
-     * @chainable
      */
-    find(id: RecordID | RecordID[]): Query<T>;
+    find(id: RecordID | RecordID[]): this;
     /**
      * Finds records by ids while preserving order.
-     * @chainable
      */
-    findPreserve(ids: RecordID[]): Query<T>;
+    findPreserve(ids: RecordID[]): this;
     /**
      * Finds records near target
-     * @chainable
      */
     near(target: object): this;
     /**
      * Finds records by condition
-     * @chainable
      */
     where(condition?: object): this;
     /**
      * Selects columns for result
-     * @chainable
      */
     select(columns: string): this;
     /**
      * Specifies orders of result
-     * @chainable
      */
     order(orders: string): this;
     /**
      * Groups result records
-     * @chainable
      */
     group<U = T>(group_by: string | null, fields: object): this;
     /**
      * Returns only one record (or null if does not exists).
      *
      * This is different from limit(1). limit(1) returns array of length 1 while this returns an instance.
-     * @chainable
      */
     one(): this;
     /**
      * Sets limit of query
-     * @chainable
      */
     limit(limit: number): this;
     /**
      * Sets skip of query
-     * @chainable
      */
     skip(skip: number): this;
     /**
      * Returns raw instances instead of model instances
-     * @chainable
      * @see Query::exec
      */
     lean(lean?: boolean): this;
     /**
      * Makes a part of the query chain conditional
-     * @chainable
      * @see Query::endif
      */
     if(condition: boolean): this;
@@ -143,81 +148,49 @@ declare class Query<T> {
      * If cache does not exist, query result will be saved in cache.
      *
      * Redis is used to cache.
-     * @param {Object} options
-     * @param {String} options.key
-     * @param {Number} options.ttl TTL in seconds
-     * @param {Boolean} options.refresh don't load from cache if true
-     * @chainable
      */
-    cache(options: QueryOptions['cache']): this;
+    cache(options: IQueryOptions['cache']): this;
     /**
      * Returns associated objects also
-     * @param {String} column
-     * @param {String} [select]
-     * @chainable
      */
     include(column: any, select: any): this;
     /**
      * Executes the query
-     * @param {Object} [options]
-     * @param {Boolean} [options.skip_log=false]
-     * @return {Model|Array<Model>}
-     * @promise
      * @see AdapterBase::findById
      * @see AdapterBase::find
      */
     exec(options?: any): Promise<any>;
     /**
      * Executes the query and returns a readable stream
-     * @param {Object} [options]
-     * @param {Boolean} [options.skip_log=false]
-     * @return {Readable}
      * @see AdapterBase::findById
      * @see AdapterBase::find
      */
-    stream(): stream.Transform;
+    stream(): stream.Readable;
     /**
      * Explains the query
-     * @return {Object}
-     * @promise
      */
     explain(): Promise<any>;
     /**
      * Executes the query as a promise (.then == .exec().then)
-     * @param {Function} fulfilled
-     * @param {Function} rejected
-     * @promise
      */
     then(fulfilled: any, rejected: any): Promise<any>;
     /**
      * Executes the query as a count operation
-     * @return {Number}
-     * @promise
      * @see AdapterBase::count
      */
     count(): Promise<number>;
     /**
      * Executes the query as a update operation
-     * @param {Object} updates
-     * @return {Number}
-     * @promise
-     * @see AdapterBase::count
+     * @see AdapterBase::update
      */
     update(updates: any): Promise<number>;
     /**
      * Executes the query as an insert or update operation
-     * @param {Object} updates
-     * @return {Number}
-     * @promise
-     * @see AdapterBase::count
+     * @see AdapterBase::upsert
      */
-    upsert(updates: any): Promise<number>;
+    upsert(updates: any): Promise<void>;
     /**
      * Executes the query as a delete operation
-     * @param {Object} [options]
-     * @param {Boolean} [options.skip_log=false]
-     * @return {Number}
-     * @promise
      * @see AdapterBase::delete
      */
     delete(options?: any): Promise<number>;
