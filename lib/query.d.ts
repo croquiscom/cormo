@@ -26,7 +26,7 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
     find(id: RecordID[]): IQueryArray<T>;
     findPreserve(id: RecordID[]): IQueryArray<T>;
     where(condition?: object): IQuerySingle<T>;
-    select(columns: string): IQuerySingle<T>;
+    select<K extends keyof T>(columns: string): IQuerySingle<Pick<T, K>>;
     order(orders: string): IQuerySingle<T>;
     group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
     one(): IQuerySingle<T>;
@@ -46,7 +46,7 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
     find(id: RecordID[]): IQueryArray<T>;
     findPreserve(id: RecordID[]): IQueryArray<T>;
     where(condition?: object): IQueryArray<T>;
-    select(columns: string): IQueryArray<T>;
+    select<K extends keyof T>(columns: string): IQueryArray<Pick<T, K>>;
     order(orders: string): IQueryArray<T>;
     group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
     one(): IQuerySingle<T>;
@@ -101,7 +101,8 @@ declare class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
     /**
      * Selects columns for result
      */
-    select(columns: string): this;
+    select<K extends keyof T>(columns: string): IQuerySingle<Pick<T, K>>;
+    select<K extends keyof T>(columns: string): IQueryArray<Pick<T, K>>;
     /**
      * Specifies orders of result
      */

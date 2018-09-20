@@ -3,6 +3,7 @@ import { Connection } from '../connection';
 import { IQueryArray, IQuerySingle } from '../query';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
+export declare type ModelEntity<T> = Pick<T, Exclude<keyof T, keyof Model>>;
 /**
  * Base class for models
  */
@@ -73,7 +74,7 @@ declare class Model {
      */
     static build<T extends Model>(this: {
         new (data?: any): T;
-    }, data?: Pick<T, Exclude<keyof T, keyof Model>>): T;
+    }, data?: ModelEntity<T>): T;
     /**
      * Deletes all records from the database
      */
@@ -81,15 +82,15 @@ declare class Model {
     /**
      * Adds a has-many association
      */
-    static hasMany(target_model_or_column: any, options: any): void;
+    static hasMany(target_model_or_column: any, options?: any): void;
     /**
      * Adds a has-one association
      */
-    static hasOne(target_model_or_column: any, options: any): void;
+    static hasOne(target_model_or_column: any, options?: any): void;
     /**
      * Adds a belongs-to association
      */
-    static belongsTo(target_model_or_column: any, options: any): void;
+    static belongsTo(target_model_or_column: any, options?: any): void;
     static inspect(depth: number): string;
     static _getKeyType(target_connection?: Connection): any;
     /**
@@ -153,7 +154,7 @@ declare class Model {
      */
     static create<T extends Model>(this: {
         new (data?: any): T;
-    } & typeof Model, data?: Pick<T, Exclude<keyof T, keyof Model>>, options?: {
+    } & typeof Model, data?: ModelEntity<T>, options?: {
         skip_log: boolean;
     }): Promise<T>;
     /**
@@ -161,7 +162,7 @@ declare class Model {
      */
     static createBulk<T extends Model>(this: {
         new (data?: any): T;
-    } & typeof Model, data?: Array<Pick<T, Exclude<keyof T, keyof Model>>>): Promise<T[]>;
+    } & typeof Model, data?: Array<ModelEntity<T>>): Promise<T[]>;
     /**
      * Creates q query object
      */
@@ -194,9 +195,9 @@ declare class Model {
     /**
      * Selects columns for result
      */
-    static select<T extends Model>(this: {
+    static select<T extends Model, K extends keyof T>(this: {
         new (data?: any): T;
-    } & typeof Model, columns: string): IQueryArray<T>;
+    } & typeof Model, columns: string): IQueryArray<Pick<T, K>>;
     /**
      * Specifies orders of result
      */
@@ -240,10 +241,10 @@ declare class Model {
     private static _createBulk;
     private static _validateType;
     private static _validateColumn;
-    id: any;
-    private _intermediates;
-    private _prev_attributes;
-    private _attributes;
+    id?: any;
+    private _intermediates?;
+    private _prev_attributes?;
+    private _attributes?;
     /**
      * Creates a record
      */

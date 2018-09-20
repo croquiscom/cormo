@@ -12,6 +12,8 @@ type ModelCallbackName = 'create' | 'destroy' | 'find' | 'initialize' | 'save' |
 type ModelCallbackType = 'after' | 'before';
 type ModelCallbackMethod = () => void | 'string';
 
+export type ModelEntity<T> = Pick<T, Exclude<keyof T, keyof Model>>;
+
 function _pf_isDirty() {
   return true;
 }
@@ -243,7 +245,7 @@ class Model {
    */
   public static build<T extends Model>(
     this: { new(data?: any): T },
-    data?: Pick<T, Exclude<keyof T, keyof Model>>,
+    data?: ModelEntity<T>,
   ): T {
     return new this(data);
   }
@@ -258,7 +260,7 @@ class Model {
   /**
    * Adds a has-many association
    */
-  public static hasMany(target_model_or_column: any, options: any) {
+  public static hasMany(target_model_or_column: any, options?: any) {
     this._checkConnection();
     this._connection.addAssociation({ type: 'hasMany', this_model: this, target_model_or_column, options });
   }
@@ -266,7 +268,7 @@ class Model {
   /**
    * Adds a has-one association
    */
-  public static hasOne(target_model_or_column: any, options: any) {
+  public static hasOne(target_model_or_column: any, options?: any) {
     this._checkConnection();
     this._connection.addAssociation({ type: 'hasOne', this_model: this, target_model_or_column, options });
   }
@@ -274,7 +276,7 @@ class Model {
   /**
    * Adds a belongs-to association
    */
-  public static belongsTo(target_model_or_column: any, options: any) {
+  public static belongsTo(target_model_or_column: any, options?: any) {
     this._checkConnection();
     this._connection.addAssociation({ type: 'belongsTo', this_model: this, target_model_or_column, options });
   }
@@ -459,7 +461,7 @@ class Model {
    */
   public static async create<T extends Model>(
     this: { new(data?: any): T } & typeof Model,
-    data?: Pick<T, Exclude<keyof T, keyof Model>>,
+    data?: ModelEntity<T>,
     options?: { skip_log: boolean },
   ): Promise<T> {
     await this._checkReady();
@@ -471,7 +473,7 @@ class Model {
    */
   public static async createBulk<T extends Model>(
     this: { new(data?: any): T } & typeof Model,
-    data?: Array<Pick<T, Exclude<keyof T, keyof Model>>>,
+    data?: Array<ModelEntity<T>>,
   ): Promise<T[]> {
     await this._checkReady();
     if (!Array.isArray(data)) {
@@ -554,11 +556,11 @@ class Model {
   /**
    * Selects columns for result
    */
-  public static select<T extends Model>(
+  public static select<T extends Model, K extends keyof T>(
     this: { new(data?: any): T } & typeof Model,
     columns: string,
-  ): IQueryArray<T> {
-    return this.query().select(columns);
+  ): IQueryArray<Pick<T, K>> {
+    return this.query().select<K>(columns);
   }
 
   /**
@@ -767,11 +769,11 @@ class Model {
     }
   }
 
-  public id: any;
+  public id?: any;
 
-  private _intermediates: any;
-  private _prev_attributes: any;
-  private _attributes: any;
+  private _intermediates?: any;
+  private _prev_attributes?: any;
+  private _attributes?: any;
 
   /**
    * Creates a record

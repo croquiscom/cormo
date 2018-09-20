@@ -13,13 +13,15 @@ export { Connection } from './connection';
  * Exports [[#Model]] class
  * @memberOf cormo
  */
-export { Model } from './model';
+export { Model, ModelEntity } from './model';
 
 /**
  * Exports [[#Command]] class
  * @memberOf cormo
  */
 export { Command } from './command';
+
+export { IQueryArray, IQuerySingle, Query } from './query';
 
 /**
  * Exports [[#types]] module
