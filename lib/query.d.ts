@@ -21,10 +21,50 @@ interface IQueryOptions {
         refresh?: boolean;
     };
 }
+export interface IQuerySingle<T> extends PromiseLike<T> {
+    find(id: RecordID): IQuerySingle<T>;
+    find(id: RecordID[]): IQueryArray<T>;
+    findPreserve(id: RecordID[]): IQueryArray<T>;
+    where(condition?: object): IQuerySingle<T>;
+    select(columns: string): IQuerySingle<T>;
+    order(orders: string): IQuerySingle<T>;
+    group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
+    one(): IQuerySingle<T>;
+    limit(limit?: number): IQuerySingle<T>;
+    skip(skip?: number): IQuerySingle<T>;
+    if(condition: boolean): IQuerySingle<T>;
+    endif(): IQuerySingle<T>;
+    include(column: string, select?: string): IQuerySingle<T>;
+    exec(options?: any): PromiseLike<T>;
+    count(): PromiseLike<number>;
+    update(updates: object): PromiseLike<number>;
+    upsert(updates: object): PromiseLike<void>;
+    delete(options?: any): PromiseLike<number>;
+}
+export interface IQueryArray<T> extends PromiseLike<T[]> {
+    find(id: RecordID): IQuerySingle<T>;
+    find(id: RecordID[]): IQueryArray<T>;
+    findPreserve(id: RecordID[]): IQueryArray<T>;
+    where(condition?: object): IQueryArray<T>;
+    select(columns: string): IQueryArray<T>;
+    order(orders: string): IQueryArray<T>;
+    group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
+    one(): IQuerySingle<T>;
+    limit(limit?: number): IQueryArray<T>;
+    skip(skip?: number): IQueryArray<T>;
+    if(condition: boolean): IQueryArray<T>;
+    endif(): IQueryArray<T>;
+    include(column: string, select?: string): IQueryArray<T>;
+    exec(options?: any): PromiseLike<T[]>;
+    count(): PromiseLike<number>;
+    update(updates: object): PromiseLike<number>;
+    upsert(updates: object): PromiseLike<void>;
+    delete(options?: any): PromiseLike<number>;
+}
 /**
  * Collects conditions to query
  */
-declare class Query<T> {
+declare class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
     private _model;
     private _name;
     private _connection;
@@ -44,11 +84,12 @@ declare class Query<T> {
     /**
      * Finds a record by id
      */
-    find(id: RecordID | RecordID[]): this;
+    find(id: RecordID): IQuerySingle<T>;
+    find(id: RecordID[]): IQueryArray<T>;
     /**
      * Finds records by ids while preserving order.
      */
-    findPreserve(ids: RecordID[]): this;
+    findPreserve(ids: RecordID[]): IQueryArray<T>;
     /**
      * Finds records near target
      */
@@ -68,7 +109,8 @@ declare class Query<T> {
     /**
      * Groups result records
      */
-    group<U = T>(group_by: string | null, fields: object): this;
+    group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
+    group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
     /**
      * Returns only one record (or null if does not exists).
      *
@@ -131,7 +173,7 @@ declare class Query<T> {
     /**
      * Executes the query as a promise (.then == .exec().then)
      */
-    then(fulfilled: any, rejected: any): Promise<any>;
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2>;
     /**
      * Executes the query as a count operation
      * @see AdapterBase::count

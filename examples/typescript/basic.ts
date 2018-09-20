@@ -1,4 +1,4 @@
-import * as cormo from '../..';
+import * as cormo from '../../src';
 
 const connection = new cormo.Connection('mysql', {
   database: 'cormo_test',
@@ -12,7 +12,7 @@ class User extends cormo.Model {
     this.column('age', Number);
   }
 
-  public name?: string;
+  public name!: string;
   public age?: number;
 }
 
@@ -22,7 +22,20 @@ async function create1() {
 }
 
 async function create2() {
-  await User.create({ name: 'foobar', age: 5 });
+  const user = await User.create({ name: 'foobar', age: 5 });
+  console.log(user.name);
+}
+
+async function save() {
+  const user = await new User({ name: 'cormo' });
+  user.save();
+  console.log(user.name);
+}
+
+async function build() {
+  const user = await User.build({ name: 'rinore' });
+  await user.save();
+  console.log(user.name);
 }
 
 async function getAll() {
@@ -37,11 +50,19 @@ async function query() {
   console.log(`name of age 5 is ${foobar.name}`);
 }
 
+async function count() {
+  const c = await User.count();
+  console.log(c);
+}
+
 async function run() {
   await create1();
   await create2();
+  await save();
+  await build();
   await getAll();
   await query();
+  await count();
   await User.drop();
 }
 

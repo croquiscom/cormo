@@ -1,6 +1,6 @@
 import { AdapterBase } from '../adapters/base';
 import { Connection } from '../connection';
-import { Query } from '../query';
+import { IQueryArray, IQuerySingle } from '../query';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
 /**
@@ -71,7 +71,9 @@ declare class Model {
      * Creates a record.
      * 'Model.build(data)' is the same as 'new Model(data)'
      */
-    static build<T extends Model, U extends T>(data?: U): T;
+    static build<T extends Model>(this: {
+        new (data?: any): T;
+    }, data?: Pick<T, Exclude<keyof T, keyof Model>>): T;
     /**
      * Deletes all records from the database
      */
@@ -149,51 +151,72 @@ declare class Model {
      * Creates a record and saves it to the database
      * 'Model.create(data)' is the same as 'Model.build(data).save()'
      */
-    static create<T extends Model, U extends T>(data?: U, options?: {
+    static create<T extends Model>(this: {
+        new (data?: any): T;
+    } & typeof Model, data?: Pick<T, Exclude<keyof T, keyof Model>>, options?: {
         skip_log: boolean;
     }): Promise<T>;
     /**
      * Creates multiple records and saves them to the database.
      */
-    static createBulk<T extends Model, U extends T>(this: typeof Model, data?: U[]): Promise<T[]>;
+    static createBulk<T extends Model>(this: {
+        new (data?: any): T;
+    } & typeof Model, data?: Array<Pick<T, Exclude<keyof T, keyof Model>>>): Promise<T[]>;
     /**
      * Creates q query object
      */
-    static query(this: typeof Model): Query<Model>;
+    static query<T extends Model>(this: {
+        new (data?: any): T;
+    } & typeof Model): IQueryArray<T>;
     /**
      * Finds a record by id
      * @throws {Error('not found')}
      */
-    static find(this: typeof Model, id: types.RecordID | types.RecordID[]): Query<Model>;
+    static find<T extends Model>(this: {
+        new (data?: any): T;
+    } & typeof Model, id: types.RecordID): IQuerySingle<T>;
+    static find<T extends Model>(this: {
+        new (data?: any): T;
+    } & typeof Model, id: types.RecordID[]): IQueryArray<T>;
     /**
      * Finds records by ids while preserving order.
      * @throws {Error('not found')}
      */
-    static findPreserve(ids: types.RecordID[]): Query<Model>;
+    static findPreserve<T extends Model>(this: {
+        new (data?: any): T;
+    } & typeof Model, ids: types.RecordID[]): IQueryArray<T>;
     /**
      * Finds records by conditions
      */
-    static where(condition?: object): Query<Model>;
+    static where<T extends Model>(this: {
+        new (data?: any): T;
+    } & typeof Model, condition?: object): IQueryArray<T>;
     /**
      * Selects columns for result
      */
-    static select(columns: string): Query<Model>;
+    static select<T extends Model>(this: {
+        new (data?: any): T;
+    } & typeof Model, columns: string): IQueryArray<T>;
     /**
      * Specifies orders of result
      */
-    static order(orders: string): Query<Model>;
+    static order<T extends Model>(this: {
+        new (data?: any): T;
+    } & typeof Model, orders: string): IQueryArray<T>;
     /**
      * Groups result records
      */
-    static group<U = Model>(this: typeof Model, group_by: string | null, fields: object): Query<U>;
+    static group<T extends Model, U = T>(this: {
+        new (data?: any): T;
+    } & typeof Model, group_by: string | null, fields: object): IQuerySingle<U> | IQueryArray<U>;
     /**
      * Counts records by conditions
      */
-    static count(this: typeof Model, condition: object): Promise<number>;
+    static count(condition?: object): Promise<number>;
     /**
      * Updates some fields of records that match conditions
      */
-    static update(this: typeof Model, updates: object, condition: object): Promise<number>;
+    static update(updates: any, condition?: object): Promise<number>;
     /**
      * Deletes records by conditions
      */
@@ -257,14 +280,10 @@ declare class Model {
     /**
      * Saves data to the database
      */
-    save(this: Model & {
-        constructor: typeof Model;
-    }, options?: {
+    save(options?: {
         skip_log?: boolean;
         validate?: boolean;
-    }): Promise<Model & {
-        constructor: typeof Model;
-    }>;
+    }): Promise<this>;
     /**
      * Validates data
      */

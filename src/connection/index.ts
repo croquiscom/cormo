@@ -2,8 +2,10 @@ let redis: any;
 
 import { EventEmitter } from 'events';
 import * as _ from 'lodash';
-import * as Toposort from 'toposort-class';
 import { inspect } from 'util';
+
+// tslint:disable-next-line:no-var-requires variable-name
+const Toposort = require('toposort-class');
 
 import { AdapterBase } from '../adapters/base';
 import { IAdapterSettingsMongoDB } from '../adapters/mongodb';

@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 
 import { AdapterBase } from '../adapters/base';
 import { Connection } from '../connection';
-import { Query } from '../query';
+import { IQueryArray, IQuerySingle, Query } from '../query';
 import * as types from '../types';
 import * as util from '../util';
 import { tableize } from '../util/inflector';
@@ -241,8 +241,11 @@ class Model {
    * Creates a record.
    * 'Model.build(data)' is the same as 'new Model(data)'
    */
-  public static build<T extends Model, U extends T>(data?: U): T {
-    return new (this as any)(data);
+  public static build<T extends Model>(
+    this: { new(data?: any): T },
+    data?: Pick<T, Exclude<keyof T, keyof Model>>,
+  ): T {
+    return new this(data);
   }
 
   /**
@@ -454,15 +457,22 @@ class Model {
    * Creates a record and saves it to the database
    * 'Model.create(data)' is the same as 'Model.build(data).save()'
    */
-  public static async create<T extends Model, U extends T>(data?: U, options?: { skip_log: boolean }): Promise<T> {
+  public static async create<T extends Model>(
+    this: { new(data?: any): T } & typeof Model,
+    data?: Pick<T, Exclude<keyof T, keyof Model>>,
+    options?: { skip_log: boolean },
+  ): Promise<T> {
     await this._checkReady();
-    return await (this.build<T, U>(data) as any).save(options);
+    return await this.build<T>(data).save(options);
   }
 
   /**
    * Creates multiple records and saves them to the database.
    */
-  public static async createBulk<T extends Model, U extends T>(this: typeof Model, data?: U[]): Promise<T[]> {
+  public static async createBulk<T extends Model>(
+    this: { new(data?: any): T } & typeof Model,
+    data?: Array<Pick<T, Exclude<keyof T, keyof Model>>>,
+  ): Promise<T[]> {
     await this._checkReady();
     if (!Array.isArray(data)) {
       throw new Error('data is not an array');
@@ -471,7 +481,7 @@ class Model {
       return [];
     }
     const records = data.map((item) => {
-      return this.build<T, U>(item);
+      return this.build(item);
     });
     await Promise.all(records.map((record) => record.validate()));
     for (const record of records) {
@@ -495,75 +505,102 @@ class Model {
   /**
    * Creates q query object
    */
-  public static query(this: typeof Model): Query<Model> {
-    return new Query(this);
+  public static query<T extends Model>(
+    this: { new(data?: any): T } & typeof Model,
+  ): IQueryArray<T> {
+    return new Query<T>(this);
   }
 
   /**
    * Finds a record by id
    * @throws {Error('not found')}
    */
-  public static find(this: typeof Model, id: types.RecordID | types.RecordID[]): Query<Model> {
-    return new Query(this).find(id);
+  public static find<T extends Model>(
+    this: { new(data?: any): T } & typeof Model,
+    id: types.RecordID,
+  ): IQuerySingle<T>;
+  public static find<T extends Model>(
+    this: { new(data?: any): T } & typeof Model,
+    id: types.RecordID[],
+  ): IQueryArray<T>;
+  public static find<T extends Model>(
+    this: { new(data?: any): T } & typeof Model,
+    id: types.RecordID | types.RecordID[],
+  ): IQuerySingle<T> | IQueryArray<T> {
+    return this.query().find(id as types.RecordID);
   }
 
   /**
    * Finds records by ids while preserving order.
    * @throws {Error('not found')}
    */
-  public static findPreserve(ids: types.RecordID[]): Query<Model> {
-    return new Query(this).findPreserve(ids);
+  public static findPreserve<T extends Model>(
+    this: { new(data?: any): T } & typeof Model,
+    ids: types.RecordID[],
+  ): IQueryArray<T> {
+    return this.query().findPreserve(ids);
   }
 
   /**
    * Finds records by conditions
    */
-  public static where(condition?: object): Query<Model> {
-    return new Query(this).where(condition);
+  public static where<T extends Model>(
+    this: { new(data?: any): T } & typeof Model,
+    condition?: object,
+  ): IQueryArray<T> {
+    return this.query().where(condition);
   }
 
   /**
    * Selects columns for result
    */
-  public static select(columns: string): Query<Model> {
-    return new Query(this).select(columns);
+  public static select<T extends Model>(
+    this: { new(data?: any): T } & typeof Model,
+    columns: string,
+  ): IQueryArray<T> {
+    return this.query().select(columns);
   }
 
   /**
    * Specifies orders of result
    */
-  public static order(orders: string): Query<Model> {
-    return new Query(this).order(orders);
+  public static order<T extends Model>(
+    this: { new(data?: any): T } & typeof Model,
+    orders: string,
+  ): IQueryArray<T> {
+    return this.query().order(orders);
   }
 
   /**
    * Groups result records
    */
-  public static group<U = Model>(this: typeof Model, group_by: string | null, fields: object): Query<U> {
-    const query = new Query(this);
-    query.group<U>(group_by, fields);
-    return query;
+  public static group<T extends Model, U = T>(
+    this: { new(data?: any): T } & typeof Model,
+    group_by: string | null,
+    fields: object,
+  ): IQuerySingle<U> | IQueryArray<U> {
+    return this.query().group<U>(group_by, fields);
   }
 
   /**
    * Counts records by conditions
    */
-  public static async count(this: typeof Model, condition: object): Promise<number> {
-    return await new Query(this).where(condition).count();
+  public static async count(condition?: object): Promise<number> {
+    return await this.query().where(condition).count();
   }
 
   /**
    * Updates some fields of records that match conditions
    */
-  public static async update(this: typeof Model, updates: object, condition: object): Promise<number> {
-    return await new Query(this).where(condition).update(updates);
+  public static async update(updates: any, condition?: object): Promise<number> {
+    return await this.query().where(condition).update(updates);
   }
 
   /**
    * Deletes records by conditions
    */
   public static async delete(this: typeof Model, condition?: object): Promise<number> {
-    return await new Query(this).where(condition).delete();
+    return await this.query().where(condition).delete();
   }
 
   /**
@@ -741,7 +778,7 @@ class Model {
    */
   public constructor(data?: object) {
     data = data || {};
-    const ctor: any = this.constructor;
+    const ctor = this.constructor as typeof Model;
     const schema = ctor._schema;
     const adapter = ctor._adapter;
     Object.defineProperty(this, '_prev_attributes', { writable: true, value: {} });
@@ -912,10 +949,9 @@ class Model {
    * Saves data to the database
    */
   public async save(
-    this: Model & { constructor: typeof Model },
     options: { skip_log?: boolean, validate?: boolean } = {},
-  ): Promise<Model & { constructor: typeof Model }> {
-    await this.constructor._checkReady();
+  ): Promise<this> {
+    await (this.constructor as typeof Model)._checkReady();
     if (options.validate !== false) {
       await this.validate();
       return await this.save({ ...options, validate: false });

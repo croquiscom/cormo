@@ -26,10 +26,54 @@ interface IQueryOptions {
   };
 }
 
+export interface IQuerySingle<T> extends PromiseLike<T> {
+  find(id: RecordID): IQuerySingle<T>;
+  find(id: RecordID[]): IQueryArray<T>;
+  findPreserve(id: RecordID[]): IQueryArray<T>;
+  where(condition?: object): IQuerySingle<T>;
+  select(columns: string): IQuerySingle<T>;
+  order(orders: string): IQuerySingle<T>;
+  group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
+  one(): IQuerySingle<T>;
+  limit(limit?: number): IQuerySingle<T>;
+  skip(skip?: number): IQuerySingle<T>;
+  if(condition: boolean): IQuerySingle<T>;
+  endif(): IQuerySingle<T>;
+  include(column: string, select?: string): IQuerySingle<T>;
+
+  exec(options?: any): PromiseLike<T>;
+  count(): PromiseLike<number>;
+  update(updates: object): PromiseLike<number>;
+  upsert(updates: object): PromiseLike<void>;
+  delete(options?: any): PromiseLike<number>;
+}
+
+export interface IQueryArray<T> extends PromiseLike<T[]> {
+  find(id: RecordID): IQuerySingle<T>;
+  find(id: RecordID[]): IQueryArray<T>;
+  findPreserve(id: RecordID[]): IQueryArray<T>;
+  where(condition?: object): IQueryArray<T>;
+  select(columns: string): IQueryArray<T>;
+  order(orders: string): IQueryArray<T>;
+  group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
+  one(): IQuerySingle<T>;
+  limit(limit?: number): IQueryArray<T>;
+  skip(skip?: number): IQueryArray<T>;
+  if(condition: boolean): IQueryArray<T>;
+  endif(): IQueryArray<T>;
+  include(column: string, select?: string): IQueryArray<T>;
+
+  exec(options?: any): PromiseLike<T[]>;
+  count(): PromiseLike<number>;
+  update(updates: object): PromiseLike<number>;
+  upsert(updates: object): PromiseLike<void>;
+  delete(options?: any): PromiseLike<number>;
+}
+
 /**
  * Collects conditions to query
  */
-class Query<T> {
+class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   private _model: typeof Model;
   private _name: string;
   private _connection: Connection;
@@ -65,7 +109,9 @@ class Query<T> {
   /**
    * Finds a record by id
    */
-  public find(id: RecordID | RecordID[]): this {
+  public find(id: RecordID): IQuerySingle<T>;
+  public find(id: RecordID[]): IQueryArray<T>;
+  public find(id: RecordID | RecordID[]): IQuerySingle<T> | IQueryArray<T> {
     if (!this._current_if) {
       return this;
     }
@@ -82,7 +128,7 @@ class Query<T> {
   /**
    * Finds records by ids while preserving order.
    */
-  public findPreserve(ids: RecordID[]): this {
+  public findPreserve(ids: RecordID[]): IQueryArray<T> {
     if (!this._current_if) {
       return this;
     }
@@ -185,9 +231,11 @@ class Query<T> {
   /**
    * Groups result records
    */
-  public group<U = T>(group_by: string | null, fields: object): this {
+  public group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
+  public group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
+  public group<U = T>(group_by: string | null, fields: object): IQuerySingle<U> | IQueryArray<U> {
     if (!this._current_if) {
-      return this;
+      return this as any;
     }
     this._options.group_by = null;
     const schema_columns = Object.keys(this._model._schema);
@@ -198,7 +246,7 @@ class Query<T> {
       this._options.group_by = columns;
     }
     this._options.group_fields = fields;
-    return this;
+    return this as any;
   }
 
   /**
@@ -356,8 +404,16 @@ class Query<T> {
   /**
    * Executes the query as a promise (.then == .exec().then)
    */
-  public then(fulfilled: any, rejected: any) {
-    return this.exec().then(fulfilled, rejected);
+  public then<TResult1 = T, TResult2 = never>(
+    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) |
+      ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+  ): PromiseLike<TResult1 | TResult2>;
+  public then<TResult1 = T, TResult2 = never>(
+    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+  ): PromiseLike<TResult1 | TResult2> {
+    return this.exec().then(onfulfilled, onrejected);
   }
 
   /**
