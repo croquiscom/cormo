@@ -46,7 +46,7 @@ async function getAll() {
 }
 
 async function query() {
-  const foobar = await User.where({ age: 5 }).select('name').one() as { name: string };
+  const foobar = await User.where({ age: 5 }).select<'name'>('name').one();
   console.log(`name of age 5 is ${foobar.name}`);
 }
 
