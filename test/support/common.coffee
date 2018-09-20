@@ -46,19 +46,35 @@ if process.env.TRAVIS is 'true'
 else
   _g.db_configs =
     mysql:
+      port: 21860
       database: 'cormo_test'
       user: 'cormo_test'
       password: 'cormo_test'
+      redis_cache:
+        port: 21863
     mongodb:
+      port: 21861
       database: 'test'
+      redis_cache:
+        port: 21863
     sqlite3:
       database: __dirname + '/test.sqlite3'
-    sqlite3_memory: {}
+      redis_cache:
+        port: 21863
+    sqlite3_memory:
+      redis_cache:
+        port: 21863
     postgresql:
+      port: 21862
       database: 'cormo_test'
       user: 'cormo_test'
       password: 'cormo_test'
+      redis_cache:
+        port: 21863
     redis:
+      port: 21863
       database: 1
+      redis_cache:
+        port: 21863
 
 module.exports = _g
