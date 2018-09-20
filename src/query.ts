@@ -30,18 +30,23 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
   find(id: RecordID): IQuerySingle<T>;
   find(id: RecordID[]): IQueryArray<T>;
   findPreserve(id: RecordID[]): IQueryArray<T>;
+  near(target: object): IQuerySingle<T>;
   where(condition?: object): IQuerySingle<T>;
-  select<K extends keyof T>(columns: string): IQuerySingle<Pick<T, K>>;
+  select<K extends Exclude<keyof T, Exclude<keyof Model, 'id'>>>(columns: string): IQuerySingle<Pick<T, K>>;
   order(orders: string): IQuerySingle<T>;
   group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
   one(): IQuerySingle<T>;
   limit(limit?: number): IQuerySingle<T>;
   skip(skip?: number): IQuerySingle<T>;
+  lean(lean?: boolean): IQuerySingle<T>;
   if(condition: boolean): IQuerySingle<T>;
   endif(): IQuerySingle<T>;
+  cache(options: IQueryOptions['cache']): IQuerySingle<T>;
   include(column: string, select?: string): IQuerySingle<T>;
 
   exec(options?: any): PromiseLike<T>;
+  stream(): stream.Readable;
+  explain(): PromiseLike<any>;
   count(): PromiseLike<number>;
   update(updates: object): PromiseLike<number>;
   upsert(updates: object): PromiseLike<void>;
@@ -52,18 +57,23 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   find(id: RecordID): IQuerySingle<T>;
   find(id: RecordID[]): IQueryArray<T>;
   findPreserve(id: RecordID[]): IQueryArray<T>;
+  near(target: object): IQueryArray<T>;
   where(condition?: object): IQueryArray<T>;
-  select<K extends keyof T>(columns: string): IQueryArray<Pick<T, K>>;
+  select<K extends Exclude<keyof T, Exclude<keyof Model, 'id'>>>(columns: string): IQueryArray<Pick<T, K>>;
   order(orders: string): IQueryArray<T>;
   group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
   one(): IQuerySingle<T>;
   limit(limit?: number): IQueryArray<T>;
   skip(skip?: number): IQueryArray<T>;
+  lean(lean?: boolean): IQueryArray<T>;
   if(condition: boolean): IQueryArray<T>;
   endif(): IQueryArray<T>;
+  cache(options: IQueryOptions['cache']): IQueryArray<T>;
   include(column: string, select?: string): IQueryArray<T>;
 
   exec(options?: any): PromiseLike<T[]>;
+  stream(): stream.Readable;
+  explain(): PromiseLike<any>;
   count(): PromiseLike<number>;
   update(updates: object): PromiseLike<number>;
   upsert(updates: object): PromiseLike<void>;
@@ -111,7 +121,7 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
    */
   public find(id: RecordID): IQuerySingle<T>;
   public find(id: RecordID[]): IQueryArray<T>;
-  public find(id: RecordID | RecordID[]): IQuerySingle<T> | IQueryArray<T> {
+  public find(id: RecordID | RecordID[]): this {
     if (!this._current_if) {
       return this;
     }

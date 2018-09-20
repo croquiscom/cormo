@@ -556,7 +556,7 @@ class Model {
   /**
    * Selects columns for result
    */
-  public static select<T extends Model, K extends keyof T>(
+  public static select<T extends Model, K extends Exclude<keyof T, Exclude<keyof Model, 'id'>>>(
     this: { new(data?: any): T } & typeof Model,
     columns: string,
   ): IQueryArray<Pick<T, K>> {
