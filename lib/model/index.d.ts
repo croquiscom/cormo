@@ -3,7 +3,7 @@ import { Connection } from '../connection';
 import { IQueryArray, IQuerySingle } from '../query';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
-export declare type ModelEntity<T> = Pick<T, Exclude<keyof T, keyof Model>>;
+export declare type PickModelAttributes<T> = Pick<T, Exclude<keyof T, keyof Model>>;
 /**
  * Base class for models
  */
@@ -74,7 +74,7 @@ declare class Model {
      */
     static build<T extends Model>(this: {
         new (data?: any): T;
-    }, data?: ModelEntity<T>): T;
+    }, data?: PickModelAttributes<T>): T;
     /**
      * Deletes all records from the database
      */
@@ -154,7 +154,7 @@ declare class Model {
      */
     static create<T extends Model>(this: {
         new (data?: any): T;
-    } & typeof Model, data?: ModelEntity<T>, options?: {
+    } & typeof Model, data?: PickModelAttributes<T>, options?: {
         skip_log: boolean;
     }): Promise<T>;
     /**
@@ -162,7 +162,7 @@ declare class Model {
      */
     static createBulk<T extends Model>(this: {
         new (data?: any): T;
-    } & typeof Model, data?: Array<ModelEntity<T>>): Promise<T[]>;
+    } & typeof Model, data?: Array<PickModelAttributes<T>>): Promise<T[]>;
     /**
      * Creates q query object
      */

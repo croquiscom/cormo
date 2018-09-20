@@ -12,7 +12,7 @@ type ModelCallbackName = 'create' | 'destroy' | 'find' | 'initialize' | 'save' |
 type ModelCallbackType = 'after' | 'before';
 type ModelCallbackMethod = () => void | 'string';
 
-export type ModelEntity<T> = Pick<T, Exclude<keyof T, keyof Model>>;
+export type PickModelAttributes<T> = Pick<T, Exclude<keyof T, keyof Model>>;
 
 function _pf_isDirty() {
   return true;
@@ -245,7 +245,7 @@ class Model {
    */
   public static build<T extends Model>(
     this: { new(data?: any): T },
-    data?: ModelEntity<T>,
+    data?: PickModelAttributes<T>,
   ): T {
     return new this(data);
   }
@@ -461,7 +461,7 @@ class Model {
    */
   public static async create<T extends Model>(
     this: { new(data?: any): T } & typeof Model,
-    data?: ModelEntity<T>,
+    data?: PickModelAttributes<T>,
     options?: { skip_log: boolean },
   ): Promise<T> {
     await this._checkReady();
@@ -473,7 +473,7 @@ class Model {
    */
   public static async createBulk<T extends Model>(
     this: { new(data?: any): T } & typeof Model,
-    data?: Array<ModelEntity<T>>,
+    data?: Array<PickModelAttributes<T>>,
   ): Promise<T[]> {
     await this._checkReady();
     if (!Array.isArray(data)) {
