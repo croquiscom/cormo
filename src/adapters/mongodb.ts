@@ -270,7 +270,7 @@ class MongoDBAdapter extends AdapterBase {
       }
     }
     for (const index of indexes) {
-      await collection.ensureIndex(index[0], index[1]);
+      await collection.createIndex(index[0], index[1]);
     }
   }
 
@@ -285,7 +285,7 @@ class MongoDBAdapter extends AdapterBase {
       options.sparse = true;
     }
     try {
-      await collection.ensureIndex(index.columns, options);
+      await collection.createIndex(index.columns, options);
     } catch (error) {
       throw MongoDBAdapter.wrapError('unknown error', error);
     }
@@ -326,7 +326,7 @@ class MongoDBAdapter extends AdapterBase {
   public async create(model: any, data: any) {
     let result: any;
     try {
-      result = await this._collection(model).insert(data, { safe: true });
+      result = await this._collection(model).insertOne(data, { safe: true });
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -355,7 +355,7 @@ class MongoDBAdapter extends AdapterBase {
     }
     let result: any;
     try {
-      result = (await this._collection(model).insert(data, { safe: true }));
+      result = (await this._collection(model).insertMany(data, { safe: true }));
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -380,7 +380,7 @@ class MongoDBAdapter extends AdapterBase {
     const id = data.id;
     delete data.id;
     try {
-      await this._collection(model).update({ _id: id }, data, { safe: true });
+      await this._collection(model).replaceOne({ _id: id }, data, { safe: true });
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -408,7 +408,7 @@ class MongoDBAdapter extends AdapterBase {
       delete update_ops.$inc;
     }
     try {
-      const result = await this._collection(model).update(conditions, update_ops, { safe: true, multi: true });
+      const result = await this._collection(model).updateMany(conditions, update_ops, { safe: true, multi: true });
       return result.result.n;
     } catch (error) {
       throw _processSaveError(error);
@@ -442,7 +442,7 @@ class MongoDBAdapter extends AdapterBase {
       delete update_ops.$inc;
     }
     try {
-      await this._collection(model).update(conditions, update_ops, { safe: true, upsert: true });
+      await this._collection(model).updateMany(conditions, update_ops, { safe: true, upsert: true });
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -615,7 +615,7 @@ class MongoDBAdapter extends AdapterBase {
     conditions = _buildWhere(model_class._schema, conditions);
     try {
       // console.log(JSON.stringify(conditions))
-      const result = await this._collection(model).remove(conditions, { safe: true });
+      const result = await this._collection(model).deleteMany(conditions, { safe: true });
       return result.result.n;
     } catch (error) {
       throw MongoDBAdapter.wrapError('unknown error', error);
@@ -790,7 +790,7 @@ class MongoDBAdapter extends AdapterBase {
       skip: options.skip,
     };
     if (fields) {
-      client_options.fields = fields;
+      client_options.projection = fields;
     }
     if (orders) {
       client_options.sort = orders;

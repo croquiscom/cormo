@@ -31,31 +31,31 @@
   },
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "commander": "^2.16.0",
+    "commander": "^2.18.0",
     "inflected": "^2.0.4",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "toposort-class": "^1.0.1"
   },
   "devDependencies": {
     "@types/inflected": "^1.1.29",
-    "@types/lodash": "^4.14.115",
-    "@types/node": "^8.10.22",
+    "@types/lodash": "^4.14.116",
+    "@types/node": "^8.10.29",
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
     "coffee-coverage": "^3.0.0",
-    "coffeescript": "^2.3.1",
+    "coffeescript": "^2.3.2",
     "crojsdoc": "^0.8.20",
     "microtime": "^2.1.8",
     "mocha": "^5.2.0",
-    "mongodb": "^3.1.1",
+    "mongodb": "^3.1.6",
     "mysql": "^2.16.0",
     "pg": "^7.4.3",
     "pg-query-stream": "^1.0.0",
     "redis": "^2.7.1",
     "rimraf": "^2.6.2",
     "sqlite3": "^4.0.2",
-    "ts-node": "^7.0.0",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
-    "typescript": "^2.9.2"
+    "typescript": "^3.0.3"
   }
 }
