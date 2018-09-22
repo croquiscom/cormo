@@ -1,5 +1,3 @@
-// tslint:disable:max-classes-per-file
-
 import * as cormo from '..';
 import cases, { User as UserRef } from './cases/basic';
 import _g = require('./support/common');
@@ -45,6 +43,7 @@ _dbs.forEach((db) => {
       await connection!.dropAllModels();
       connection!.close();
       connection = null;
+      _g.connection = null;
     });
 
     cases(models);
