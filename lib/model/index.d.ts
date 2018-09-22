@@ -3,7 +3,10 @@ import { Connection } from '../connection';
 import { IQueryArray, IQuerySingle } from '../query';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
-export declare type ModelValueObject<T> = Pick<T, Exclude<keyof T, keyof Model>>;
+export declare type ModelColumnNames<T> = Exclude<keyof T, keyof Model>;
+export declare type ModelColumnNamesWithId<T> = Exclude<keyof T, Exclude<keyof Model, 'id'>>;
+export declare type ModelValueObject<T> = Pick<T, ModelColumnNames<T>>;
+export declare type ModelValueObjectWithId<T> = Pick<T, ModelColumnNamesWithId<T>>;
 /**
  * Base class for models
  */
@@ -195,7 +198,7 @@ declare class Model {
     /**
      * Selects columns for result
      */
-    static select<T extends Model, K extends Exclude<keyof T, Exclude<keyof Model, 'id'>>>(this: {
+    static select<T extends Model, K extends ModelColumnNamesWithId<T>>(this: {
         new (data?: any): T;
     } & typeof Model, columns: string): IQueryArray<Pick<T, K>>;
     /**

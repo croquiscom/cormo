@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import * as stream from 'stream';
-import { Model } from './model';
+import { Model, ModelColumnNamesWithId } from './model';
 import { RecordID } from './types';
 interface IQueryOptions {
     conditions_of_group: any[];
@@ -27,7 +27,7 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
     findPreserve(id: RecordID[]): IQueryArray<T>;
     near(target: object): IQuerySingle<T>;
     where(condition?: object): IQuerySingle<T>;
-    select<K extends Exclude<keyof T, Exclude<keyof Model, 'id'>>>(columns: string): IQuerySingle<Pick<T, K>>;
+    select<K extends ModelColumnNamesWithId<T>>(columns: string): IQuerySingle<Pick<T, K>>;
     order(orders: string): IQuerySingle<T>;
     group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
     one(): IQuerySingle<T>;
@@ -52,7 +52,7 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
     findPreserve(id: RecordID[]): IQueryArray<T>;
     near(target: object): IQueryArray<T>;
     where(condition?: object): IQueryArray<T>;
-    select<K extends Exclude<keyof T, Exclude<keyof Model, 'id'>>>(columns: string): IQueryArray<Pick<T, K>>;
+    select<K extends ModelColumnNamesWithId<T>>(columns: string): IQueryArray<Pick<T, K>>;
     order(orders: string): IQueryArray<T>;
     group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
     one(): IQuerySingle<T>;
@@ -111,8 +111,8 @@ declare class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
     /**
      * Selects columns for result
      */
-    select<K extends keyof T>(columns: string): IQuerySingle<Pick<T, K>>;
-    select<K extends keyof T>(columns: string): IQueryArray<Pick<T, K>>;
+    select<K extends ModelColumnNamesWithId<T>>(columns: string): IQuerySingle<Pick<T, K>>;
+    select<K extends ModelColumnNamesWithId<T>>(columns: string): IQueryArray<Pick<T, K>>;
     /**
      * Specifies orders of result
      */

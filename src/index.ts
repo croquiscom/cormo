@@ -13,7 +13,7 @@ export { Connection } from './connection';
  * Exports [[#Model]] class
  * @memberOf cormo
  */
-export { Model, ModelValueObject } from './model';
+export { Model, ModelValueObject, ModelValueObjectWithId } from './model';
 
 /**
  * Exports [[#Command]] class

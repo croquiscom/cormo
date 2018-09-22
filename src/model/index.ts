@@ -12,7 +12,10 @@ type ModelCallbackName = 'create' | 'destroy' | 'find' | 'initialize' | 'save' |
 type ModelCallbackType = 'after' | 'before';
 type ModelCallbackMethod = () => void | 'string';
 
-export type ModelValueObject<T> = Pick<T, Exclude<keyof T, keyof Model>>;
+export type ModelColumnNames<T> = Exclude<keyof T, keyof Model>;
+export type ModelColumnNamesWithId<T> = Exclude<keyof T, Exclude<keyof Model, 'id'>>;
+export type ModelValueObject<T> = Pick<T, ModelColumnNames<T>>;
+export type ModelValueObjectWithId<T> = Pick<T, ModelColumnNamesWithId<T>>;
 
 function _pf_isDirty() {
   return true;
@@ -556,7 +559,7 @@ class Model {
   /**
    * Selects columns for result
    */
-  public static select<T extends Model, K extends Exclude<keyof T, Exclude<keyof Model, 'id'>>>(
+  public static select<T extends Model, K extends ModelColumnNamesWithId<T>>(
     this: { new(data?: any): T } & typeof Model,
     columns: string,
   ): IQueryArray<Pick<T, K>> {

@@ -3,7 +3,7 @@ import * as stream from 'stream';
 
 import { AdapterBase } from './adapters/base';
 import { Connection } from './connection';
-import { Model } from './model';
+import { Model, ModelColumnNamesWithId } from './model';
 import { RecordID } from './types';
 
 interface IQueryOptions {
@@ -32,7 +32,7 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
   findPreserve(id: RecordID[]): IQueryArray<T>;
   near(target: object): IQuerySingle<T>;
   where(condition?: object): IQuerySingle<T>;
-  select<K extends Exclude<keyof T, Exclude<keyof Model, 'id'>>>(columns: string): IQuerySingle<Pick<T, K>>;
+  select<K extends ModelColumnNamesWithId<T>>(columns: string): IQuerySingle<Pick<T, K>>;
   order(orders: string): IQuerySingle<T>;
   group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
   one(): IQuerySingle<T>;
@@ -59,7 +59,7 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   findPreserve(id: RecordID[]): IQueryArray<T>;
   near(target: object): IQueryArray<T>;
   where(condition?: object): IQueryArray<T>;
-  select<K extends Exclude<keyof T, Exclude<keyof Model, 'id'>>>(columns: string): IQueryArray<Pick<T, K>>;
+  select<K extends ModelColumnNamesWithId<T>>(columns: string): IQueryArray<Pick<T, K>>;
   order(orders: string): IQueryArray<T>;
   group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
   one(): IQuerySingle<T>;
@@ -79,6 +79,8 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   upsert(updates: object): PromiseLike<void>;
   delete(options?: any): PromiseLike<number>;
 }
+
+type IQuery<T> = IQuerySingle<T> | IQueryArray<T>;
 
 /**
  * Collects conditions to query
@@ -121,7 +123,7 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
    */
   public find(id: RecordID): IQuerySingle<T>;
   public find(id: RecordID[]): IQueryArray<T>;
-  public find(id: RecordID | RecordID[]): this {
+  public find(id: RecordID | RecordID[]): IQuery<T> {
     if (!this._current_if) {
       return this;
     }
@@ -179,9 +181,9 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   /**
    * Selects columns for result
    */
-  public select<K extends keyof T>(columns: string): IQuerySingle<Pick<T, K>>;
-  public select<K extends keyof T>(columns: string): IQueryArray<Pick<T, K>>;
-  public select<K extends keyof T>(columns: string): IQuerySingle<Pick<T, K>> | IQueryArray<Pick<T, K>> {
+  public select<K extends ModelColumnNamesWithId<T>>(columns: string): IQuerySingle<Pick<T, K>>;
+  public select<K extends ModelColumnNamesWithId<T>>(columns: string): IQueryArray<Pick<T, K>>;
+  public select<K extends ModelColumnNamesWithId<T>>(columns: string): IQuery<Pick<T, K>> {
     if (!this._current_if) {
       return this;
     }
@@ -245,7 +247,7 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
    */
   public group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
   public group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
-  public group<U = T>(group_by: string | null, fields: object): IQuerySingle<U> | IQueryArray<U> {
+  public group<U = T>(group_by: string | null, fields: object): IQuery<U> {
     if (!this._current_if) {
       return this as any;
     }

@@ -13,6 +13,7 @@ class User extends cormo.Model {
     this.column('age', Number);
   }
 
+  public id!: number;
   public name!: string;
   public age?: number;
 }
@@ -47,8 +48,8 @@ async function getAll() {
 }
 
 async function query() {
-  const foobar = await User.where({ age: 5 }).select<'name'>('name').one();
-  console.log(`name of age 5 is ${foobar.name}`);
+  const foobar = await User.where({ age: 5 }).select<'id' | 'name'>('name').one();
+  console.log(`name of age 5 is #${foobar.id} ${foobar.name}`);
 }
 
 async function count() {
