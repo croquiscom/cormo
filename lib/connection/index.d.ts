@@ -5,7 +5,7 @@ import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
 import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
-import { Model } from '../model';
+import { BaseModel } from '../model';
 declare type ManipulateCommand = string | {
     [key: string]: any;
 };
@@ -39,7 +39,7 @@ declare class Connection extends EventEmitter {
      * @see Connection::constructor
      */
     models: {
-        [name: string]: typeof Model;
+        [name: string]: typeof BaseModel;
     };
     [name: string]: any;
     /**
@@ -63,7 +63,7 @@ declare class Connection extends EventEmitter {
     /**
      * Creates a model class
      */
-    model(name: string, schema: any): typeof Model;
+    model(name: string, schema: any): typeof BaseModel;
     /**
      * Applies schemas
      * @see AdapterBase::applySchema
@@ -86,8 +86,8 @@ declare class Connection extends EventEmitter {
     manipulate(commands: ManipulateCommand[]): Promise<any>;
     /**
      * Adds an association
-     * @see Model.hasMany
-     * @see Model.belongsTo
+     * @see BaseModel.hasMany
+     * @see BaseModel.belongsTo
      */
     addAssociation(association: any): void;
     /**

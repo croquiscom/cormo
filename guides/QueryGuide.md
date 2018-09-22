@@ -188,7 +188,7 @@ function getUsers(options) {
 
 # Retrieve records
 
-[[#Query::exec]] retrieves records. 
+[[#Query::exec]] retrieves records.
 
 It normally returns an array of Model instances.
 But if you use [[#Query::find]] for a single ID, it will return a single Model instance.
@@ -345,7 +345,7 @@ But [[#ModelPersistence::save]] has some weaknesses.
     * In normal application, retrieved data may not be used usually.
 * This requires to read all fields from database and send all fields to database.
     * If you save projected([[#Query::select]]) record, other fields will set to null.
-    * CORMO has the partial update option([[#Model.dirty_tracking]]). But currently it rather is slow. So it is turned off by default.
+    * CORMO has the partial update option([[#BaseModel.dirty_tracking]]). But currently it rather is slow. So it is turned off by default.
 
 [[#Query::update]] updates selected records.
 
@@ -395,8 +395,8 @@ User.find(1, function (error, user) {
 
 # Delete records
 
-[[#Query::delete]] or [[#Model::destroy]] deletes some records.
-[[#Model::destroy]] is similar to [[#Query::delete]] on the model's ID.
+[[#Query::delete]] or [[#BaseModel::destroy]] deletes some records.
+[[#BaseModel::destroy]] is similar to [[#Query::delete]] on the model's ID.
 
 <table class='table table-bordered'><thead><tr>
   <th>CORMO</th><th>SQL</th><th>MongoDB</th>

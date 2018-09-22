@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import * as stream from 'stream';
-import { Model, ModelColumnNamesWithId } from './model';
+import { BaseModel, ModelColumnNamesWithId } from './model';
 import { RecordID } from './types';
 interface IQueryOptions {
     conditions_of_group: any[];
@@ -90,7 +90,7 @@ declare class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
     /**
      * Creates a query instance
      */
-    constructor(model: typeof Model);
+    constructor(model: typeof BaseModel);
     /**
      * Finds a record by id
      */

@@ -3,7 +3,7 @@ import * as stream from 'stream';
 
 import { AdapterBase } from './adapters/base';
 import { Connection } from './connection';
-import { Model, ModelColumnNamesWithId } from './model';
+import { BaseModel, ModelColumnNamesWithId } from './model';
 import { RecordID } from './types';
 
 interface IQueryOptions {
@@ -86,7 +86,7 @@ type IQuery<T> = IQuerySingle<T> | IQueryArray<T>;
  * Collects conditions to query
  */
 class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
-  private _model: typeof Model;
+  private _model: typeof BaseModel;
   private _name: string;
   private _connection: Connection;
   private _adapter: AdapterBase;
@@ -102,7 +102,7 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   /**
    * Creates a query instance
    */
-  constructor(model: typeof Model) {
+  constructor(model: typeof BaseModel) {
     this._model = model;
     this._name = model._name;
     this._connection = model._connection;

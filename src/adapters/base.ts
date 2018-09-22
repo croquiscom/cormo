@@ -90,7 +90,7 @@ abstract class AdapterBase {
   /**
    * Drops a model from the database
    * @abstract
-   * @see Model.drop
+   * @see BaseModel.drop
    */
   public async drop(model: string) {
     throw new Error('not implemented');

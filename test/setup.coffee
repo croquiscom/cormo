@@ -24,18 +24,18 @@ _dbs.forEach (db) ->
     it 'association order', ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-      class Ace extends _g.Model
+      class Ace extends _g.BaseModel
         @hasOne 'car', integrity: 'delete'
         @belongsTo 'bear'
 
-      class Bear extends _g.Model
+      class Bear extends _g.BaseModel
         @hasMany 'aces', integrity: 'delete'
         @belongsTo 'dog'
 
-      class Car extends _g.Model
+      class Car extends _g.BaseModel
         @belongsTo 'bear'
 
-      class Dog extends _g.Model
+      class Dog extends _g.BaseModel
         @hasMany 'aces', integrity: 'delete'
 
       _g.connection.applySchemas()

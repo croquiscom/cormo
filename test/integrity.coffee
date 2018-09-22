@@ -10,11 +10,11 @@ _dbs.forEach (db) ->
       return
 
     beforeEach ->
-      class Team extends _g.Model
+      class Team extends _g.BaseModel
         @column 'name', String
-      class Event extends _g.Model
+      class Event extends _g.BaseModel
         @column 'time', Date
-      class Comment extends _g.Model
+      class Comment extends _g.BaseModel
         @column 'content', String
       await _g.connection.dropAllModels()
       return

@@ -2,7 +2,7 @@ async = require 'async'
 Benchmark = require 'benchmark'
 cormo = require '../index'
 Connection = cormo.Connection
-Model = cormo.Model
+Model = cormo.BaseModel
 
 _dbs =
   mysql:

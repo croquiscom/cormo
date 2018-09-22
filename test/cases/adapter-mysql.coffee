@@ -4,7 +4,7 @@ _g = require '../support/common'
 module.exports = () ->
   describe 'issues', ->
     it 'reserved words', ->
-      class Reference extends _g.Model
+      class Reference extends _g.BaseModel
         @index group: 1
         @column 'group', 'integer'
       data = [
@@ -22,7 +22,7 @@ module.exports = () ->
       return
 
     it '#5 invalid json value', ->
-      class Test extends _g.Model
+      class Test extends _g.BaseModel
         @column 'name', String
       await Test.create name: 'croquis'
       Test.column 'object', type: Object, required: true
@@ -35,7 +35,7 @@ module.exports = () ->
 
   describe 'query', ->
     it 'basic', ->
-      class User extends _g.Model
+      class User extends _g.BaseModel
         @column 'name', String
         @column 'age', Number
       data = [

@@ -62,7 +62,7 @@ declare abstract class AdapterBase {
     /**
      * Drops a model from the database
      * @abstract
-     * @see Model.drop
+     * @see BaseModel.drop
      */
     drop(model: string): Promise<void>;
     idToDB(value: any): any;

@@ -4,7 +4,7 @@ _g = require '../support/common'
 module.exports = () ->
   it 'string length(function)', ->
     try
-      class TypeOptionsString1 extends _g.Model
+      class TypeOptionsString1 extends _g.BaseModel
         @column 'col', _g.cormo.types.String(5)
     catch error
       # MongoDB, Sqlite3 does not support String type with length, just skip
@@ -23,7 +23,7 @@ module.exports = () ->
 
   it 'string length(string)', ->
     try
-      class TypeOptionsString2 extends _g.Model
+      class TypeOptionsString2 extends _g.BaseModel
         @column 'col', 'string(5)'
     catch error
       # MongoDB, Sqlite3 does not support String type with length, just skip

@@ -7,7 +7,7 @@ If you want custom validations, add a validator using [[#ModelValidate.addValida
 If a record is invalid, throw an error, or return false or an error string in the validator.
 
 ```coffeescript
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @column 'name', String
   @column 'age', Number
   @column 'email', String
@@ -15,7 +15,7 @@ class User extends cormo.Model
   @addValidator (record) ->
     if record.age < 18
       return 'too young'
-  
+
   @addValidator (record) ->
     if record.email and not /^\w+@.+$/.test record.email
       throw new Error 'invalid email'

@@ -1,11 +1,11 @@
 Currently, CORMO supports only near query of 2D location in MongoDB, MySQL and PostgreSQL.
 
 ```coffeescript
-class Place extends cormo.Model
+class Place extends cormo.BaseModel
   @column 'name', String
   @column 'location', cormo.types.GeoPoint
 
-# create 
+# create
 Place.create name: 'Carrier Dome', location: [-76.136131, 43.036240]
 
 # query

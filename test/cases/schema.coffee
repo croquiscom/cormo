@@ -7,7 +7,7 @@ module.exports = () ->
     return
 
   it 'add index', ->
-    class User extends _g.Model
+    class User extends _g.BaseModel
       @column 'name', String
       @column 'age', Number
 
@@ -33,7 +33,7 @@ module.exports = () ->
     return
 
   it 'applySchemas successes if an index already exist', ->
-    class User extends _g.Model
+    class User extends _g.BaseModel
       @index { name: 1, age: 1 }
       @column 'name', String
       @column 'age', Number
@@ -46,7 +46,7 @@ module.exports = () ->
     return
 
   it 'add column', ->
-    class User extends _g.Model
+    class User extends _g.BaseModel
       @column 'name', String
       @column 'age', Number
 

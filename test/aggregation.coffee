@@ -9,7 +9,7 @@ _dbs.forEach (db) ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
       if _g.use_coffeescript_class
-        class Order extends _g.Model
+        class Order extends _g.BaseModel
           @column 'customer', String
           @column 'date', Date
           @column 'price', Number

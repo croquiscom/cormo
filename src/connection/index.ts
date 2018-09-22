@@ -12,7 +12,7 @@ import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
 import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
-import { Model } from '../model';
+import { BaseModel } from '../model';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
 
@@ -57,7 +57,7 @@ class Connection extends EventEmitter {
    * Maps from model name to model class
    * @see Connection::constructor
    */
-  public models: { [name: string]: typeof Model };
+  public models: { [name: string]: typeof BaseModel };
 
   [name: string]: any;
 
@@ -113,7 +113,7 @@ class Connection extends EventEmitter {
    * Creates a model class
    */
   public model(name: string, schema: any) {
-    return Model.newModel(this, name, schema);
+    return BaseModel.newModel(this, name, schema);
   }
 
   /**
@@ -308,8 +308,8 @@ class Connection extends EventEmitter {
 
   /**
    * Adds an association
-   * @see Model.hasMany
-   * @see Model.belongsTo
+   * @see BaseModel.hasMany
+   * @see BaseModel.belongsTo
    */
   public addAssociation(association: any) {
     this._pending_associations.push(association);
@@ -435,7 +435,7 @@ class Connection extends EventEmitter {
       const modelClass = this.models[model];
       if (modelClass.archive && !modelClass._connection.models.hasOwnProperty('_Archive')) {
         // tslint:disable-next-line:max-classes-per-file
-        const _Archive = class extends Model { };
+        const _Archive = class extends BaseModel { };
         _Archive.connection(modelClass._connection);
         _Archive.archive = false;
         _Archive.column('model', String);

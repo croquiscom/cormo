@@ -7,7 +7,7 @@ const connection = new cormo.Connection('mysql', {
   user: 'cormo_test',
 });
 
-class User extends cormo.Model {
+class User extends cormo.BaseModel {
   public static initialize() {
     this.column('name', { type: String, required: true });
     this.column('age', Number);

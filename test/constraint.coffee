@@ -10,13 +10,13 @@ _dbs.forEach (db) ->
         _g.connection = new _g.Connection db, _g.db_configs[db]
 
         if _g.use_coffeescript_class
-          class User extends _g.Model
+          class User extends _g.BaseModel
             @column 'name', { type: String, required: true }
             @column 'age', { type: Number, required: true }
             @column 'email', { type: String, unique: true, required: true }
             @column 'facebook_id', { type: String, unique: true }
 
-          class Post extends _g.Model
+          class Post extends _g.BaseModel
             @column 'title', String
             @column 'body', String
             @belongsTo 'user', required: true
@@ -52,7 +52,7 @@ _dbs.forEach (db) ->
         _g.connection = new _g.Connection db, _g.db_configs[db]
 
         if _g.use_coffeescript_class
-          class Version extends _g.Model
+          class Version extends _g.BaseModel
             @column 'major', 'number'
             @column 'minor', 'number'
             @index { major: 1, minor: 1 }, { unique: true }

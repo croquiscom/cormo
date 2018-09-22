@@ -12,8 +12,8 @@ type ModelCallbackName = 'create' | 'destroy' | 'find' | 'initialize' | 'save' |
 type ModelCallbackType = 'after' | 'before';
 type ModelCallbackMethod = () => void | 'string';
 
-export type ModelColumnNames<T> = Exclude<keyof T, keyof Model>;
-export type ModelColumnNamesWithId<T> = Exclude<keyof T, Exclude<keyof Model, 'id'>>;
+export type ModelColumnNames<T> = Exclude<keyof T, keyof BaseModel>;
+export type ModelColumnNamesWithId<T> = Exclude<keyof T, Exclude<keyof BaseModel, 'id'>>;
 export type ModelValueObject<T> = Pick<T, ModelColumnNames<T>>;
 export type ModelValueObjectWithId<T> = Pick<T, ModelColumnNamesWithId<T>>;
 
@@ -46,7 +46,7 @@ interface IColumnProperty {
 /**
  * Base class for models
  */
-class Model {
+class BaseModel {
   /**
    * Tracks changes of a record if true
    */
@@ -66,15 +66,11 @@ class Model {
 
   /**
    * Indicates the connection associated to this model
-   * @see Model.connection
-   * @private
    */
   public static _connection: Connection;
 
   /**
    * Indicates the adapter associated to this model
-   * @private
-   * @see Model.connection
    */
   public static _adapter: AdapterBase;
 
@@ -95,11 +91,11 @@ class Model {
   public static initialize() { /**/ }
 
   /**
-   * Returns a new model class extending Model
+   * Returns a new model class extending BaseModel
    */
-  public static newModel(connection: Connection, name: string, schema: any): typeof Model {
+  public static newModel(connection: Connection, name: string, schema: any): typeof BaseModel {
     // tslint:disable-next-line:variable-name max-classes-per-file
-    const NewModel = class extends Model { };
+    const NewModel = class extends BaseModel { };
     NewModel.connection(connection, name);
     // tslint:disable-next-line:forin
     for (const column_name in schema) {
@@ -246,7 +242,7 @@ class Model {
    * Creates a record.
    * 'Model.build(data)' is the same as 'new Model(data)'
    */
-  public static build<T extends Model>(
+  public static build<T extends BaseModel>(
     this: { new(data?: any): T },
     data?: ModelValueObject<T>,
   ): T {
@@ -329,7 +325,7 @@ class Model {
     }
   }
 
-  public static async _loadFromCache(this: typeof Model, key: string, refresh?: boolean): Promise<any> {
+  public static async _loadFromCache(key: string, refresh?: boolean): Promise<any> {
     if (refresh) {
       throw new Error('error');
     }
@@ -350,7 +346,7 @@ class Model {
     return JSON.parse(value);
   }
 
-  public static async _saveToCache(this: typeof Model, key: string, ttl: number, data: any) {
+  public static async _saveToCache(key: string, ttl: number, data: any) {
     const redis = await this._connection._connectRedisCache();
     key = 'CC.' + tableize(this._name) + ':' + key;
     await new Promise((resolve, reject) => {
@@ -364,7 +360,7 @@ class Model {
     });
   }
 
-  public static async removeCache(this: typeof Model, key: string) {
+  public static async removeCache(key: string) {
     const redis = await this._connection._connectRedisCache();
     key = 'CC.' + tableize(this._name) + ':' + key;
     await new Promise((resolve) => {
@@ -462,8 +458,8 @@ class Model {
    * Creates a record and saves it to the database
    * 'Model.create(data)' is the same as 'Model.build(data).save()'
    */
-  public static async create<T extends Model>(
-    this: { new(data?: any): T } & typeof Model,
+  public static async create<T extends BaseModel>(
+    this: { new(data?: any): T } & typeof BaseModel,
     data?: ModelValueObject<T>,
     options?: { skip_log: boolean },
   ): Promise<T> {
@@ -474,8 +470,8 @@ class Model {
   /**
    * Creates multiple records and saves them to the database.
    */
-  public static async createBulk<T extends Model>(
-    this: { new(data?: any): T } & typeof Model,
+  public static async createBulk<T extends BaseModel>(
+    this: { new(data?: any): T } & typeof BaseModel,
     data?: Array<ModelValueObject<T>>,
   ): Promise<T[]> {
     await this._checkReady();
@@ -510,8 +506,8 @@ class Model {
   /**
    * Creates q query object
    */
-  public static query<T extends Model>(
-    this: { new(data?: any): T } & typeof Model,
+  public static query<T extends BaseModel>(
+    this: { new(data?: any): T } & typeof BaseModel,
   ): IQueryArray<T> {
     return new Query<T>(this);
   }
@@ -520,16 +516,16 @@ class Model {
    * Finds a record by id
    * @throws {Error('not found')}
    */
-  public static find<T extends Model>(
-    this: { new(data?: any): T } & typeof Model,
+  public static find<T extends BaseModel>(
+    this: { new(data?: any): T } & typeof BaseModel,
     id: types.RecordID,
   ): IQuerySingle<T>;
-  public static find<T extends Model>(
-    this: { new(data?: any): T } & typeof Model,
+  public static find<T extends BaseModel>(
+    this: { new(data?: any): T } & typeof BaseModel,
     id: types.RecordID[],
   ): IQueryArray<T>;
-  public static find<T extends Model>(
-    this: { new(data?: any): T } & typeof Model,
+  public static find<T extends BaseModel>(
+    this: { new(data?: any): T } & typeof BaseModel,
     id: types.RecordID | types.RecordID[],
   ): IQuerySingle<T> | IQueryArray<T> {
     return this.query().find(id as types.RecordID);
@@ -539,8 +535,8 @@ class Model {
    * Finds records by ids while preserving order.
    * @throws {Error('not found')}
    */
-  public static findPreserve<T extends Model>(
-    this: { new(data?: any): T } & typeof Model,
+  public static findPreserve<T extends BaseModel>(
+    this: { new(data?: any): T } & typeof BaseModel,
     ids: types.RecordID[],
   ): IQueryArray<T> {
     return this.query().findPreserve(ids);
@@ -549,8 +545,8 @@ class Model {
   /**
    * Finds records by conditions
    */
-  public static where<T extends Model>(
-    this: { new(data?: any): T } & typeof Model,
+  public static where<T extends BaseModel>(
+    this: { new(data?: any): T } & typeof BaseModel,
     condition?: object,
   ): IQueryArray<T> {
     return this.query().where(condition);
@@ -559,8 +555,8 @@ class Model {
   /**
    * Selects columns for result
    */
-  public static select<T extends Model, K extends ModelColumnNamesWithId<T>>(
-    this: { new(data?: any): T } & typeof Model,
+  public static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(
+    this: { new(data?: any): T } & typeof BaseModel,
     columns: string,
   ): IQueryArray<Pick<T, K>> {
     return this.query().select<K>(columns);
@@ -569,8 +565,8 @@ class Model {
   /**
    * Specifies orders of result
    */
-  public static order<T extends Model>(
-    this: { new(data?: any): T } & typeof Model,
+  public static order<T extends BaseModel>(
+    this: { new(data?: any): T } & typeof BaseModel,
     orders: string,
   ): IQueryArray<T> {
     return this.query().order(orders);
@@ -579,8 +575,8 @@ class Model {
   /**
    * Groups result records
    */
-  public static group<T extends Model, U = T>(
-    this: { new(data?: any): T } & typeof Model,
+  public static group<T extends BaseModel, U = T>(
+    this: { new(data?: any): T } & typeof BaseModel,
     group_by: string | null,
     fields: object,
   ): IQuerySingle<U> | IQueryArray<U> {
@@ -604,7 +600,7 @@ class Model {
   /**
    * Deletes records by conditions
    */
-  public static async delete(this: typeof Model, condition?: object): Promise<number> {
+  public static async delete(condition?: object): Promise<number> {
     return await this.query().where(condition).delete();
   }
 
@@ -783,7 +779,7 @@ class Model {
    */
   public constructor(data?: object) {
     data = data || {};
-    const ctor = this.constructor as typeof Model;
+    const ctor = this.constructor as typeof BaseModel;
     const schema = ctor._schema;
     const adapter = ctor._adapter;
     Object.defineProperty(this, '_prev_attributes', { writable: true, value: {} });
@@ -956,7 +952,7 @@ class Model {
   public async save(
     options: { skip_log?: boolean, validate?: boolean } = {},
   ): Promise<this> {
-    await (this.constructor as typeof Model)._checkReady();
+    await (this.constructor as typeof BaseModel)._checkReady();
     if (options.validate !== false) {
       await this.validate();
       return await this.save({ ...options, validate: false });
@@ -1116,4 +1112,4 @@ class Model {
   }
 }
 
-export { Model };
+export { BaseModel };

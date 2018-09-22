@@ -8,13 +8,13 @@ _dbs.forEach (db) ->
     before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-      class User extends _g.Model
+      class User extends _g.BaseModel
         @column 'name', String
         @column 'age', Number
         @hasMany 'posts', integrity: 'delete'
         @archive: true
 
-      class Post extends _g.Model
+      class Post extends _g.BaseModel
         @column 'title', String
         @column 'body', String
         @belongsTo 'user'

@@ -1,9 +1,9 @@
 ```coffeescript
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @column 'name', String
   @column 'age', Number
 
-class Post extends cormo.Model
+class Post extends cormo.BaseModel
   @column 'title', String
   @column 'body', String
 
@@ -90,14 +90,14 @@ post.save(function (error) {
 });
 ```
 
-See [[#Model.hasMany]], [[#Model.belongsTo]] for more details.
+See [[#BaseModel.hasMany]], [[#BaseModel.belongsTo]] for more details.
 
 ### keep data consistent
 
 CORMO supports foreign key constraints by DBMS for SQL-based DBMS or by framework for MongoDB.
 (CORMO does not guarantee integrity for MongoDB even if using this feature)
 
-To use constraints, give an integrity options on [[#Model.hasMany]].
+To use constraints, give an integrity options on [[#BaseModel.hasMany]].
 
 ```coffeescript
 # the same as "CREATE TABLE posts ( user_id INT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
