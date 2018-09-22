@@ -37,7 +37,7 @@ function _pf_set(this: any, path: string, value: any) {
 
 function _pf_reset() { /**/ }
 
-interface IColumnProperty {
+export interface IColumnProperty {
   type: types.ColumnType;
   required?: boolean;
   unique?: boolean;
@@ -151,6 +151,7 @@ class BaseModel {
   /**
    * Adds a column to this model
    */
+  public static column(path: string, property: types.ColumnType | IColumnProperty): void;
   public static column(path: string, property: any) {
     this._checkConnection();
     // nested path

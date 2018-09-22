@@ -7,6 +7,11 @@ export declare type ModelColumnNames<T> = Exclude<keyof T, keyof BaseModel>;
 export declare type ModelColumnNamesWithId<T> = Exclude<keyof T, Exclude<keyof BaseModel, 'id'>>;
 export declare type ModelValueObject<T> = Pick<T, ModelColumnNames<T>>;
 export declare type ModelValueObjectWithId<T> = Pick<T, ModelColumnNamesWithId<T>>;
+export interface IColumnProperty {
+    type: types.ColumnType;
+    required?: boolean;
+    unique?: boolean;
+}
 /**
  * Base class for models
  */
@@ -57,7 +62,7 @@ declare class BaseModel {
     /**
      * Adds a column to this model
      */
-    static column(path: string, property: any): void;
+    static column(path: string, property: types.ColumnType | IColumnProperty): void;
     /**
      * Adds an index to this model
      */
