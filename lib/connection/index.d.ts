@@ -18,6 +18,34 @@ interface IConnectionSettings {
         database?: number;
     };
 }
+declare type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
+export interface IAssociationHasManyOptions {
+    connection?: Connection;
+    type?: string;
+    as?: string;
+    foreign_key?: string;
+    integrity?: AssociationIntegrityType;
+}
+export interface IAssociationHasOneOptions {
+    connection?: Connection;
+    type?: string;
+    as?: string;
+    foreign_key?: string;
+    integrity?: AssociationIntegrityType;
+}
+export interface IAssociationBelongsToOptions {
+    connection?: Connection;
+    type?: string;
+    as?: string;
+    foreign_key?: string;
+    required?: boolean;
+}
+interface IAssociation {
+    type: 'hasMany' | 'hasOne' | 'belongsTo';
+    this_model: typeof BaseModel;
+    target_model_or_column: string | typeof BaseModel;
+    options?: IAssociationHasManyOptions | IAssociationHasOneOptions | IAssociationBelongsToOptions;
+}
 /**
  * Manages connection to a database
  */
@@ -41,6 +69,8 @@ declare class Connection extends EventEmitter {
     models: {
         [name: string]: typeof BaseModel;
     };
+    private _promise_schema_applied?;
+    private _pending_associations;
     [name: string]: any;
     /**
      * Creates a connection
@@ -70,7 +100,7 @@ declare class Connection extends EventEmitter {
      */
     applySchemas(options?: {
         verbose?: boolean;
-    }): Promise<any>;
+    }): Promise<void>;
     /**
      * Drops all model tables
      */
@@ -83,13 +113,15 @@ declare class Connection extends EventEmitter {
     /**
      * Manipulate data
      */
-    manipulate(commands: ManipulateCommand[]): Promise<any>;
+    manipulate(commands: ManipulateCommand[]): Promise<{
+        [id: string]: any;
+    }>;
     /**
      * Adds an association
      * @see BaseModel.hasMany
      * @see BaseModel.belongsTo
      */
-    addAssociation(association: any): void;
+    addAssociation(association: IAssociation): void;
     /**
      * Returns inconsistent records against associations
      */
@@ -98,7 +130,7 @@ declare class Connection extends EventEmitter {
      * Fetches associated records
      */
     fetchAssociated(records: any, column: any, select: any, options: any): Promise<void>;
-    _checkSchemaApplied(): Promise<any>;
+    _checkSchemaApplied(): Promise<void>;
     _connectRedisCache(): any;
     private _initializeModels;
     private _checkArchive;

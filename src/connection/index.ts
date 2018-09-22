@@ -12,7 +12,7 @@ import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
 import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
-import { BaseModel } from '../model';
+import { BaseModel, IColumnProperty } from '../model';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
 
@@ -33,6 +33,39 @@ interface IConnectionSettings {
     port?: number,
     database?: number,
   };
+}
+
+type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
+
+export interface IAssociationHasManyOptions {
+  connection?: Connection;
+  type?: string;
+  as?: string;
+  foreign_key?: string;
+  integrity?: AssociationIntegrityType;
+}
+
+export interface IAssociationHasOneOptions {
+  connection?: Connection;
+  type?: string;
+  as?: string;
+  foreign_key?: string;
+  integrity?: AssociationIntegrityType;
+}
+
+export interface IAssociationBelongsToOptions {
+  connection?: Connection;
+  type?: string;
+  as?: string;
+  foreign_key?: string;
+  required?: boolean;
+}
+
+interface IAssociation {
+  type: 'hasMany' | 'hasOne' | 'belongsTo';
+  this_model: typeof BaseModel;
+  target_model_or_column: string | typeof BaseModel;
+  options?: IAssociationHasManyOptions | IAssociationHasOneOptions | IAssociationBelongsToOptions;
 }
 
 /**
@@ -58,6 +91,10 @@ class Connection extends EventEmitter {
    * @see Connection::constructor
    */
   public models: { [name: string]: typeof BaseModel };
+
+  private _promise_schema_applied?: Promise<void>;
+
+  private _pending_associations: IAssociation[];
 
   [name: string]: any;
 
@@ -248,7 +285,7 @@ class Connection extends EventEmitter {
   /**
    * Manipulate data
    */
-  public async manipulate(commands: ManipulateCommand[]): Promise<any> {
+  public async manipulate(commands: ManipulateCommand[]): Promise<{ [id: string]: any }> {
     this.log('<conn>', 'manipulate', commands);
     await this._checkSchemaApplied();
     const id_to_record_map: { [id: string]: any } = {};
@@ -311,7 +348,7 @@ class Connection extends EventEmitter {
    * @see BaseModel.hasMany
    * @see BaseModel.belongsTo
    */
-  public addAssociation(association: any) {
+  public addAssociation(association: IAssociation) {
     this._pending_associations.push(association);
     this._schema_changed = true;
   }
@@ -552,26 +589,27 @@ class Connection extends EventEmitter {
     for (const item of this._pending_associations) {
       const this_model = item.this_model;
       const options = item.options;
-      let target_model;
+      let target_model: typeof BaseModel;
       if (typeof item.target_model_or_column === 'string') {
         let models;
-        if (item.options && item.options.connection) {
-          models = item.options.connection.models;
+        if (options && options.connection) {
+          models = options.connection.models;
         } else {
           models = this.models;
         }
-        if (item.options && item.options.type) {
-          target_model = item.options.type;
+        let target_model_name: string;
+        if (options && options.type) {
+          target_model_name = options.type;
           options.as = item.target_model_or_column;
         } else if (item.type === 'belongsTo' || item.type === 'hasOne') {
-          target_model = inflector.camelize(item.target_model_or_column);
+          target_model_name = inflector.camelize(item.target_model_or_column);
         } else {
-          target_model = inflector.classify(item.target_model_or_column);
+          target_model_name = inflector.classify(item.target_model_or_column);
         }
-        if (!models[target_model]) {
-          throw new Error(`model ${target_model} does not exist`);
+        if (!models[target_model_name]) {
+          throw new Error(`model ${target_model_name} does not exist`);
         }
-        target_model = models[target_model];
+        target_model = models[target_model_name];
       } else {
         target_model = item.target_model_or_column;
       }
@@ -583,16 +621,22 @@ class Connection extends EventEmitter {
   /**
    * Adds a has-many association
    */
-  private _hasMany(this_model: any, target_model: any, options: any) {
-    let foreign_key: any;
-    if (options != null ? options.foreign_key : void 0) {
+  private _hasMany(
+    this_model: typeof BaseModel, target_model: typeof BaseModel,
+    options?: IAssociationHasManyOptions,
+  ) {
+    let foreign_key: string;
+    if (options && options.foreign_key) {
       foreign_key = options.foreign_key;
-    } else if (options != null ? options.as : void 0) {
+    } else if (options && options.as) {
       foreign_key = options.as + '_id';
     } else {
       foreign_key = inflector.foreign_key(this_model._name);
     }
-    target_model.column(foreign_key, { type: types.RecordID, connection: this_model._connection });
+    target_model.column(foreign_key, {
+      connection: this_model._connection,
+      type: types.RecordID,
+    } as IColumnProperty);
     const integrity = options && options.integrity || 'ignore';
     target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
     this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
@@ -620,7 +664,7 @@ class Connection extends EventEmitter {
           getter.build = (data: any) => {
             // this is getter, so use getter.__scope instead
             const self = getter.__scope;
-            const new_object = new target_model(data);
+            const new_object: any = new target_model(data);
             new_object[foreign_key] = self.id;
             if (!self[columnCache]) {
               self[columnCache] = [];
@@ -640,16 +684,22 @@ class Connection extends EventEmitter {
   /**
    * Adds a has-one association
    */
-  private _hasOne(this_model: any, target_model: any, options: any) {
+  private _hasOne(
+    this_model: typeof BaseModel, target_model: typeof BaseModel,
+    options?: IAssociationHasOneOptions,
+  ) {
     let foreign_key: any;
-    if (options != null ? options.foreign_key : void 0) {
+    if (options && options.foreign_key) {
       foreign_key = options.foreign_key;
-    } else if (options != null ? options.as : void 0) {
+    } else if (options && options.as) {
       foreign_key = options.as + '_id';
     } else {
       foreign_key = inflector.foreign_key(this_model._name);
     }
-    target_model.column(foreign_key, { type: types.RecordID, connection: this_model._connection });
+    target_model.column(foreign_key, {
+      connection: this_model._connection,
+      type: types.RecordID,
+    } as IColumnProperty);
     const integrity = options && options.integrity || 'ignore';
     target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
     this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
@@ -690,11 +740,14 @@ class Connection extends EventEmitter {
   /**
    * Adds a belongs-to association
    */
-  private _belongsTo(this_model: any, target_model: any, options: any) {
+  private _belongsTo(
+    this_model: typeof BaseModel, target_model: typeof BaseModel,
+    options?: IAssociationBelongsToOptions,
+  ) {
     let foreign_key: any;
-    if (options != null ? options.foreign_key : void 0) {
+    if (options && options.foreign_key) {
       foreign_key = options.foreign_key;
-    } else if (options != null ? options.as : void 0) {
+    } else if (options && options.as) {
       foreign_key = options.as + '_id';
     } else {
       foreign_key = inflector.foreign_key(target_model._name);
@@ -703,7 +756,7 @@ class Connection extends EventEmitter {
       connection: target_model._connection,
       required: options && options.required,
       type: types.RecordID,
-    });
+    } as IColumnProperty);
     const column = options && options.as || inflector.underscore(target_model._name);
     const columnCache = '__cache_' + column;
     const columnGetter = '__getter_' + column;

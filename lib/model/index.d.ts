@@ -1,5 +1,5 @@
 import { AdapterBase } from '../adapters/base';
-import { Connection } from '../connection';
+import { Connection, IAssociationBelongsToOptions, IAssociationHasManyOptions, IAssociationHasOneOptions } from '../connection';
 import { IQueryArray, IQuerySingle } from '../query';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
@@ -11,6 +11,7 @@ export interface IColumnProperty {
     type: types.ColumnType;
     required?: boolean;
     unique?: boolean;
+    connetion?: Connection;
 }
 /**
  * Base class for models
@@ -86,15 +87,15 @@ declare class BaseModel {
     /**
      * Adds a has-many association
      */
-    static hasMany(target_model_or_column: any, options?: any): void;
+    static hasMany(target_model_or_column: string | typeof BaseModel, options?: IAssociationHasManyOptions): void;
     /**
      * Adds a has-one association
      */
-    static hasOne(target_model_or_column: any, options?: any): void;
+    static hasOne(target_model_or_column: string | typeof BaseModel, options?: IAssociationHasOneOptions): void;
     /**
      * Adds a belongs-to association
      */
-    static belongsTo(target_model_or_column: any, options?: any): void;
+    static belongsTo(target_model_or_column: string | typeof BaseModel, options?: IAssociationBelongsToOptions): void;
     static inspect(depth: number): string;
     static _getKeyType(target_connection?: Connection): any;
     /**

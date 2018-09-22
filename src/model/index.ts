@@ -1,7 +1,12 @@
 import * as _ from 'lodash';
 
 import { AdapterBase } from '../adapters/base';
-import { Connection } from '../connection';
+import {
+  Connection,
+  IAssociationBelongsToOptions,
+  IAssociationHasManyOptions,
+  IAssociationHasOneOptions,
+} from '../connection';
 import { IQueryArray, IQuerySingle, Query } from '../query';
 import * as types from '../types';
 import * as util from '../util';
@@ -41,6 +46,7 @@ export interface IColumnProperty {
   type: types.ColumnType;
   required?: boolean;
   unique?: boolean;
+  connetion?: Connection;
 }
 
 /**
@@ -260,7 +266,7 @@ class BaseModel {
   /**
    * Adds a has-many association
    */
-  public static hasMany(target_model_or_column: any, options?: any) {
+  public static hasMany(target_model_or_column: string | typeof BaseModel, options?: IAssociationHasManyOptions) {
     this._checkConnection();
     this._connection.addAssociation({ type: 'hasMany', this_model: this, target_model_or_column, options });
   }
@@ -268,7 +274,7 @@ class BaseModel {
   /**
    * Adds a has-one association
    */
-  public static hasOne(target_model_or_column: any, options?: any) {
+  public static hasOne(target_model_or_column: string | typeof BaseModel, options?: IAssociationHasOneOptions) {
     this._checkConnection();
     this._connection.addAssociation({ type: 'hasOne', this_model: this, target_model_or_column, options });
   }
@@ -276,7 +282,7 @@ class BaseModel {
   /**
    * Adds a belongs-to association
    */
-  public static belongsTo(target_model_or_column: any, options?: any) {
+  public static belongsTo(target_model_or_column: string | typeof BaseModel, options?: IAssociationBelongsToOptions) {
     this._checkConnection();
     this._connection.addAssociation({ type: 'belongsTo', this_model: this, target_model_or_column, options });
   }
