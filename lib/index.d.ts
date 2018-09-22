@@ -11,7 +11,7 @@ export { Connection } from './connection';
  * Exports [[#Model]] class
  * @memberOf cormo
  */
-export { Model, PickModelAttributes } from './model';
+export { Model, ModelValueObject } from './model';
 /**
  * Exports [[#Command]] class
  * @memberOf cormo
