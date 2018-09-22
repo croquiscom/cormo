@@ -8,7 +8,7 @@ _dbs.forEach (db) ->
     before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-      if _g.use_coffeescript_class
+      if _g.use_class
         class User extends _g.BaseModel
           @column 'name', String
           @column 'age', Number

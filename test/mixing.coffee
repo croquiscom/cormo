@@ -6,7 +6,7 @@ describe 'mixing several database', ->
     mysql = new _g.Connection 'mysql', _g.db_configs.mysql
     mongodb = new _g.Connection 'mongodb', _g.db_configs.mongodb
 
-    if _g.use_coffeescript_class
+    if _g.use_class
       class User extends _g.BaseModel
         @connection mongodb
         @column 'name', String

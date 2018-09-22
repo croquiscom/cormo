@@ -245,7 +245,7 @@ declare class BaseModel {
     private static _createBulk;
     private static _validateType;
     private static _validateColumn;
-    id?: any;
+    readonly id?: any;
     private _intermediates?;
     private _prev_attributes?;
     private _attributes?;

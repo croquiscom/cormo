@@ -769,7 +769,7 @@ class BaseModel {
     }
   }
 
-  public id?: any;
+  public readonly id?: any;
 
   private _intermediates?: any;
   private _prev_attributes?: any;

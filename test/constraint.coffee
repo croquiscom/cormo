@@ -9,7 +9,7 @@ _dbs.forEach (db) ->
       before ->
         _g.connection = new _g.Connection db, _g.db_configs[db]
 
-        if _g.use_coffeescript_class
+        if _g.use_class
           class User extends _g.BaseModel
             @column 'name', { type: String, required: true }
             @column 'age', { type: Number, required: true }
@@ -51,7 +51,7 @@ _dbs.forEach (db) ->
       before ->
         _g.connection = new _g.Connection db, _g.db_configs[db]
 
-        if _g.use_coffeescript_class
+        if _g.use_class
           class Version extends _g.BaseModel
             @column 'major', 'number'
             @column 'minor', 'number'
