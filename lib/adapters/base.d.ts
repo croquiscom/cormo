@@ -2,13 +2,13 @@
 import * as stream from 'stream';
 export interface ISchemas {
     tables: {
-        [tableName: string]: any;
+        [table_name: string]: any;
     };
     indexes?: {
-        [tableName: string]: any;
+        [table_name: string]: any;
     };
     foreign_keys?: {
-        [tableName: string]: any;
+        [table_name: string]: any;
     };
 }
 /**

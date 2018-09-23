@@ -292,7 +292,7 @@ class MongoDBAdapter extends AdapterBase {
   }
 
   public async drop(model: any) {
-    const name = this._connection.models[model].tableName;
+    const name = this._connection.models[model].table_name;
     delete this._collections[name];
     try {
       await this._db.dropCollection(_getMongoDBColName(name));
@@ -675,7 +675,7 @@ class MongoDBAdapter extends AdapterBase {
   }
 
   private _collection(model: any): any {
-    const name = this._connection.models[model].tableName;
+    const name = this._connection.models[model].table_name;
     if (!this._collections[name]) {
       return this._collections[name] = this._db.collection(_getMongoDBColName(name));
     } else {

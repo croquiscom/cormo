@@ -65,7 +65,7 @@ function _propertyToSQL(property: any) {
   }
 }
 
-function _processSaveError(tableName: any, error: any) {
+function _processSaveError(table_name: any, error: any) {
   if (error.code === '42P01') {
     return new Error('table does not exist');
   } else if (error.code === '23505') {
@@ -73,7 +73,7 @@ function _processSaveError(tableName: any, error: any) {
     let key = error.message.match(/unique constraint \"(.*)\"/);
     if (key != null) {
       column = key[1];
-      key = column.match(new RegExp(`${tableName}_([^']*)_key`));
+      key = column.match(new RegExp(`${table_name}_([^']*)_key`));
       if (key != null) {
         column = key[1];
       }
@@ -110,7 +110,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
 
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: { [tableName: string]: any } = {};
+    const table_schemas: { [table_name: string]: any } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
     }
@@ -125,7 +125,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
 
   public async createTable(model: string) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     const column_sqls = [];
     column_sqls.push('id SERIAL PRIMARY KEY');
     // tslint:disable-next-line:forin
@@ -136,7 +136,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
         column_sqls.push(`"${property._dbname}" ${column_sql}`);
       }
     }
-    const sql = `CREATE TABLE "${tableName}" ( ${column_sqls.join(',')} )`;
+    const sql = `CREATE TABLE "${table_name}" ( ${column_sqls.join(',')} )`;
     try {
       await this._pool.query(sql);
     } catch (error) {
@@ -146,8 +146,8 @@ class PostgreSQLAdapter extends SQLAdapterBase {
 
   public async addColumn(model: string, column_property: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
-    const sql = `ALTER TABLE "${tableName}" ADD COLUMN "${column_property._dbname}" ${_propertyToSQL(column_property)}`;
+    const table_name = model_class.table_name;
+    const sql = `ALTER TABLE "${table_name}" ADD COLUMN "${column_property._dbname}" ${_propertyToSQL(column_property)}`;
     try {
       await this._pool.query(sql);
     } catch (error) {
@@ -157,7 +157,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
 
   public async createIndex(model: string, index: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     const columns = [];
     // tslint:disable-next-line:forin
     for (const column in index.columns) {
@@ -165,7 +165,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
       columns.push(`"${column}" ${(order === -1 ? 'DESC' : 'ASC')}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
-    const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${tableName}" (${columns.join(',')})`;
+    const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
     try {
       await this._pool.query(sql);
     } catch (error) {
@@ -175,7 +175,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
 
   public async createForeignKey(model: string, column: string, type: string, references: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     let action = '';
     switch (type) {
       case 'nullify':
@@ -188,8 +188,8 @@ class PostgreSQLAdapter extends SQLAdapterBase {
         action = 'CASCADE';
         break;
     }
-    const sql = `ALTER TABLE "${tableName}" ADD FOREIGN KEY ("${column}")
-      REFERENCES "${references.tableName}"(id) ON DELETE ${action}`;
+    const sql = `ALTER TABLE "${table_name}" ADD FOREIGN KEY ("${column}")
+      REFERENCES "${references.table_name}"(id) ON DELETE ${action}`;
     try {
       await this._pool.query(sql);
     } catch (error) {
@@ -198,24 +198,24 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   public async drop(model: string) {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     try {
-      await this._pool.query(`DROP TABLE IF EXISTS "${tableName}"`);
+      await this._pool.query(`DROP TABLE IF EXISTS "${table_name}"`);
     } catch (error) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
   }
 
   public async create(model: string, data: object): Promise<any> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields, places] = this._buildUpdateSet(model, data, values, true);
-    const sql = `INSERT INTO "${tableName}" (${fields}) VALUES (${places}) RETURNING id`;
+    const sql = `INSERT INTO "${table_name}" (${fields}) VALUES (${places}) RETURNING id`;
     let result;
     try {
       result = await this._pool.query(sql, values);
     } catch (error) {
-      throw _processSaveError(tableName, error);
+      throw _processSaveError(table_name, error);
     }
     const rows = result && result.rows;
     if (rows && rows.length === 1 && rows[0].id) {
@@ -226,7 +226,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   public async createBulk(model: string, data: object[]): Promise<any[]> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     let fields: any;
     const places: any[] = [];
@@ -235,12 +235,12 @@ class PostgreSQLAdapter extends SQLAdapterBase {
       [fields, places_sub] = this._buildUpdateSet(model, item, values, true);
       places.push('(' + places_sub + ')');
     });
-    const sql = `INSERT INTO "${tableName}" (${fields}) VALUES ${places.join(',')} RETURNING id`;
+    const sql = `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')} RETURNING id`;
     let result;
     try {
       result = await this._pool.query(sql, values);
     } catch (error) {
-      throw _processSaveError(tableName, error);
+      throw _processSaveError(table_name, error);
     }
     const ids = result && result.rows.map((row: any) => row.id);
     if (ids && ids.length === data.length) {
@@ -251,23 +251,23 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   public async update(model: string, data: any) {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildUpdateSet(model, data, values);
     values.push(data.id);
-    const sql = `UPDATE "${tableName}" SET ${fields} WHERE id=$${values.length}`;
+    const sql = `UPDATE "${table_name}" SET ${fields} WHERE id=$${values.length}`;
     try {
       await this._pool.query(sql, values);
     } catch (error) {
-      throw _processSaveError(tableName, error);
+      throw _processSaveError(table_name, error);
     }
   }
 
   public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildPartialUpdateSet(model, data, values);
-    let sql = `UPDATE "${tableName}" SET ${fields}`;
+    let sql = `UPDATE "${table_name}" SET ${fields}`;
     if (conditions.length > 0) {
       try {
         sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
@@ -279,15 +279,15 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     try {
       result = (await this._pool.query(sql, values));
     } catch (error) {
-      throw _processSaveError(tableName, error);
+      throw _processSaveError(table_name, error);
     }
     return result.rowCount;
   }
 
   public async findById(model: any, id: any, options: any): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
-    const tableName = this._connection.models[model].tableName;
-    const sql = `SELECT ${select} FROM "${tableName}" WHERE id=$1 LIMIT 1`;
+    const table_name = this._connection.models[model].table_name;
+    const sql = `SELECT ${select} FROM "${table_name}" WHERE id=$1 LIMIT 1`;
     if (options.explain) {
       return (await this._pool.query(`EXPLAIN ${sql}`, [id]));
     }
@@ -361,8 +361,8 @@ class PostgreSQLAdapter extends SQLAdapterBase {
 
   public async count(model: any, conditions: any, options: any): Promise<number> {
     const params: any = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `SELECT COUNT(*) AS count FROM "${tableName}"`;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `SELECT COUNT(*) AS count FROM "${table_name}"`;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
@@ -388,8 +388,8 @@ class PostgreSQLAdapter extends SQLAdapterBase {
 
   public async delete(model: any, conditions: any): Promise<number> {
     const params: any = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `DELETE FROM "${tableName}"`;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `DELETE FROM "${table_name}"`;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
@@ -605,8 +605,8 @@ class PostgreSQLAdapter extends SQLAdapterBase {
       select += `,ST_Distance("${field}",ST_Point(${location[0]},${location[1]})) AS "${field}_distance"`;
     }
     const params: any[] = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `SELECT ${select} FROM "${tableName}"`;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `SELECT ${select} FROM "${table_name}"`;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }

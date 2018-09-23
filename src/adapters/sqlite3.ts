@@ -84,7 +84,7 @@ class SQLite3Adapter extends SQLAdapterBase {
 
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: { [tableName: string]: any } = {};
+    const table_schemas: { [table_name: string]: any } = {};
     const all_indexes: any = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
@@ -98,7 +98,7 @@ class SQLite3Adapter extends SQLAdapterBase {
 
   public async createTable(model: string) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     const column_sqls: any[] = [];
     column_sqls.push('id INTEGER PRIMARY KEY AUTOINCREMENT');
     // tslint:disable-next-line:forin
@@ -110,16 +110,16 @@ class SQLite3Adapter extends SQLAdapterBase {
       }
     }
     for (const integrity of model_class._integrities) {
-      const parentTableName = integrity.parent && integrity.parent.tableName || '';
+      const parenttable_name = integrity.parent && integrity.parent.table_name || '';
       if (integrity.type === 'child_nullify') {
-        column_sqls.push(`FOREIGN KEY ("${integrity.column}") REFERENCES "${parentTableName}"(id) ON DELETE SET NULL`);
+        column_sqls.push(`FOREIGN KEY ("${integrity.column}") REFERENCES "${parenttable_name}"(id) ON DELETE SET NULL`);
       } else if (integrity.type === 'child_restrict') {
-        column_sqls.push(`FOREIGN KEY ("${integrity.column}") REFERENCES "${parentTableName}"(id) ON DELETE RESTRICT`);
+        column_sqls.push(`FOREIGN KEY ("${integrity.column}") REFERENCES "${parenttable_name}"(id) ON DELETE RESTRICT`);
       } else if (integrity.type === 'child_delete') {
-        column_sqls.push(`FOREIGN KEY ("${integrity.column}") REFERENCES "${parentTableName}"(id) ON DELETE CASCADE`);
+        column_sqls.push(`FOREIGN KEY ("${integrity.column}") REFERENCES "${parenttable_name}"(id) ON DELETE CASCADE`);
       }
     }
-    const sql = `CREATE TABLE "${tableName}" ( ${column_sqls.join(',')} )`;
+    const sql = `CREATE TABLE "${table_name}" ( ${column_sqls.join(',')} )`;
     try {
       await this._client.runAsync(sql);
     } catch (error) {
@@ -129,8 +129,8 @@ class SQLite3Adapter extends SQLAdapterBase {
 
   public async addColumn(model: string, column_property: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
-    const sql = `ALTER TABLE "${tableName}" ADD COLUMN "${column_property._dbname}" ${_propertyToSQL(column_property)}`;
+    const table_name = model_class.table_name;
+    const sql = `ALTER TABLE "${table_name}" ADD COLUMN "${column_property._dbname}" ${_propertyToSQL(column_property)}`;
     try {
       await this._client.runAsync(sql);
     } catch (error) {
@@ -140,7 +140,7 @@ class SQLite3Adapter extends SQLAdapterBase {
 
   public async createIndex(model: string, index: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     const columns = [];
     // tslint:disable-next-line:forin
     for (const column in index.columns) {
@@ -148,7 +148,7 @@ class SQLite3Adapter extends SQLAdapterBase {
       columns.push(`"${column}" ${(order === -1 ? 'DESC' : 'ASC')}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
-    const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${tableName}" (${columns.join(',')})`;
+    const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
     try {
       await this._client.runAsync(sql);
     } catch (error) {
@@ -157,19 +157,19 @@ class SQLite3Adapter extends SQLAdapterBase {
   }
 
   public async drop(model: string) {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     try {
-      await this._client.runAsync(`DROP TABLE IF EXISTS "${tableName}"`);
+      await this._client.runAsync(`DROP TABLE IF EXISTS "${table_name}"`);
     } catch (error) {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
   }
 
   public async create(model: string, data: object): Promise<any> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields, places] = this._buildUpdateSet(model, data, values, true);
-    const sql = `INSERT INTO "${tableName}" (${fields}) VALUES (${places})`;
+    const sql = `INSERT INTO "${table_name}" (${fields}) VALUES (${places})`;
     let id;
     try {
       id = await new Promise((resolve, reject) => {
@@ -188,7 +188,7 @@ class SQLite3Adapter extends SQLAdapterBase {
   }
 
   public async createBulk(model: string, data: object[]): Promise<any[]> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     let fields: any;
     const places: any[] = [];
@@ -197,7 +197,7 @@ class SQLite3Adapter extends SQLAdapterBase {
       [fields, places_sub] = this._buildUpdateSet(model, item, values, true);
       return places.push('(' + places_sub + ')');
     });
-    const sql = `INSERT INTO "${tableName}" (${fields}) VALUES ${places.join(',')}`;
+    const sql = `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')}`;
     let id: any;
     try {
       id = await new Promise((resolve, reject) => {
@@ -221,11 +221,11 @@ class SQLite3Adapter extends SQLAdapterBase {
   }
 
   public async update(model: string, data: any) {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildUpdateSet(model, data, values);
     values.push(data.id);
-    const sql = `UPDATE "${tableName}" SET ${fields} WHERE id=?`;
+    const sql = `UPDATE "${table_name}" SET ${fields} WHERE id=?`;
     try {
       await this._client.runAsync(sql, values);
     } catch (error) {
@@ -234,10 +234,10 @@ class SQLite3Adapter extends SQLAdapterBase {
   }
 
   public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildPartialUpdateSet(model, data, values);
-    let sql = `UPDATE "${tableName}" SET ${fields}`;
+    let sql = `UPDATE "${table_name}" SET ${fields}`;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
     }
@@ -258,8 +258,8 @@ class SQLite3Adapter extends SQLAdapterBase {
 
   public async findById(model: any, id: any, options: any): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
-    const tableName = this._connection.models[model].tableName;
-    const sql = `SELECT ${select} FROM "${tableName}" WHERE id=? LIMIT 1`;
+    const table_name = this._connection.models[model].table_name;
+    const sql = `SELECT ${select} FROM "${table_name}" WHERE id=? LIMIT 1`;
     if (options.explain) {
       return await this._client.allAsync(`EXPLAIN QUERY PLAN ${sql}`, id);
     }
@@ -326,8 +326,8 @@ class SQLite3Adapter extends SQLAdapterBase {
 
   public async count(model: any, conditions: any, options: any): Promise<number> {
     const params: any = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `SELECT COUNT(*) AS count FROM "${tableName}"`;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `SELECT COUNT(*) AS count FROM "${table_name}"`;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
@@ -352,8 +352,8 @@ class SQLite3Adapter extends SQLAdapterBase {
 
   public async delete(model: any, conditions: any): Promise<number> {
     const params: any = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `DELETE FROM "${tableName}"`;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `DELETE FROM "${table_name}"`;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
@@ -531,9 +531,9 @@ class SQLite3Adapter extends SQLAdapterBase {
     } else {
       select = this._buildSelect(this._connection.models[model], options.select);
     }
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const params: any[] = [];
-    let sql = `SELECT ${select} FROM "${tableName}"`;
+    let sql = `SELECT ${select} FROM "${table_name}"`;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }

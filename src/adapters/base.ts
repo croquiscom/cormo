@@ -3,9 +3,9 @@ import * as types from '../types';
 import * as util from '../util';
 
 export interface ISchemas {
-  tables: { [tableName: string]: any };
-  indexes?: { [tableName: string]: any };
-  foreign_keys?: { [tableName: string]: any };
+  tables: { [table_name: string]: any };
+  indexes?: { [table_name: string]: any };
+  foreign_keys?: { [table_name: string]: any };
 }
 
 /**

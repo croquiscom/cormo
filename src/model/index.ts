@@ -68,7 +68,7 @@ class BaseModel {
    */
   public static lean_query = false;
 
-  public static tableName: string;
+  public static table_name: string;
 
   /**
    * Indicates the connection associated to this model
@@ -136,8 +136,8 @@ class BaseModel {
     Object.defineProperty(this, '_intermediate_paths', { value: {} });
     Object.defineProperty(this, '_indexes', { value: [] });
     Object.defineProperty(this, '_integrities', { value: [] });
-    if (!this.tableName) {
-      this.tableName = tableize(name);
+    if (!this.table_name) {
+      this.table_name = tableize(name);
     }
   }
 

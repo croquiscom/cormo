@@ -29,7 +29,7 @@ declare class BaseModel {
      * Applies the lean option for all queries for this Model
      */
     static lean_query: boolean;
-    static tableName: string;
+    static table_name: string;
     /**
      * Indicates the connection associated to this model
      */

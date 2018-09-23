@@ -108,7 +108,7 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: { [tableName: string]: any } = {};
+    const table_schemas: { [table_name: string]: any } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
     }
@@ -123,7 +123,7 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async createTable(model: string) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     const column_sqls = [];
     column_sqls.push('id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY');
     // tslint:disable-next-line:forin
@@ -134,7 +134,7 @@ class MySQLAdapter extends SQLAdapterBase {
         column_sqls.push(`\`${property._dbname}\` ${column_sql}`);
       }
     }
-    let sql = `CREATE TABLE \`${tableName}\` ( ${column_sqls.join(',')} )`;
+    let sql = `CREATE TABLE \`${table_name}\` ( ${column_sqls.join(',')} )`;
     sql += ` DEFAULT CHARSET=${this._settings!.charset || 'utf8'}`;
     sql += ` COLLATE=${this._settings!.collation || 'utf8_unicode_ci'}`;
     try {
@@ -146,9 +146,9 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async addColumn(model: string, column_property: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     const column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
-    const sql = `ALTER TABLE \`${tableName}\` ADD COLUMN \`${column_property._dbname}\` ${column_sql}`;
+    const sql = `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname}\` ${column_sql}`;
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
@@ -158,7 +158,7 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async createIndex(model: string, index: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     const columns = [];
     // tslint:disable-next-line:forin
     for (const column in index.columns) {
@@ -166,7 +166,7 @@ class MySQLAdapter extends SQLAdapterBase {
       columns.push(`\`${column}\` ${(order === -1 ? 'DESC' : 'ASC')}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
-    const sql = `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${tableName}\` (${columns.join(',')})`;
+    const sql = `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${table_name}\` (${columns.join(',')})`;
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
@@ -176,7 +176,7 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async createForeignKey(model: string, column: string, type: string, references: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     let action = '';
     switch (type) {
       case 'nullify':
@@ -189,8 +189,8 @@ class MySQLAdapter extends SQLAdapterBase {
         action = 'CASCADE';
         break;
     }
-    const sql = `ALTER TABLE \`${tableName}\` ADD FOREIGN KEY (\`${column}\`)
-      REFERENCES \`${references.tableName}\`(id) ON DELETE ${action}`;
+    const sql = `ALTER TABLE \`${table_name}\` ADD FOREIGN KEY (\`${column}\`)
+      REFERENCES \`${references.table_name}\`(id) ON DELETE ${action}`;
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
@@ -199,19 +199,19 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   public async drop(model: string) {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     try {
-      await this._client.queryAsync(`DROP TABLE IF EXISTS \`${tableName}\``);
+      await this._client.queryAsync(`DROP TABLE IF EXISTS \`${table_name}\``);
     } catch (error) {
       throw MySQLAdapter.wrapError('unknown error', error);
     }
   }
 
   public async create(model: string, data: object): Promise<any> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields, places] = this._buildUpdateSet(model, data, values, true);
-    const sql = `INSERT INTO \`${tableName}\` (${fields}) VALUES (${places})`;
+    const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
     let result;
     try {
       result = (await this._client.queryAsync(sql, values));
@@ -227,7 +227,7 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   public async createBulk(model: string, data: object[]): Promise<any[]> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     let fields: any;
     const places: any[] = [];
@@ -236,7 +236,7 @@ class MySQLAdapter extends SQLAdapterBase {
       [fields, places_sub] = this._buildUpdateSet(model, item, values, true);
       places.push('(' + places_sub + ')');
     });
-    const sql = `INSERT INTO \`${tableName}\` (${fields}) VALUES ${places.join(',')}`;
+    const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES ${places.join(',')}`;
     let result;
     try {
       result = (await this._client.queryAsync(sql, values));
@@ -252,11 +252,11 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   public async update(model: string, data: any) {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildUpdateSet(model, data, values);
     values.push(data.id);
-    const sql = `UPDATE \`${tableName}\` SET ${fields} WHERE id=?`;
+    const sql = `UPDATE \`${table_name}\` SET ${fields} WHERE id=?`;
     try {
       await this._client.queryAsync(sql, values);
     } catch (error) {
@@ -265,10 +265,10 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildPartialUpdateSet(model, data, values);
-    let sql = `UPDATE \`${tableName}\` SET ${fields}`;
+    let sql = `UPDATE \`${table_name}\` SET ${fields}`;
     if (conditions.length > 0) {
       try {
         sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
@@ -289,7 +289,7 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   public async upsert(model: string, data: any, conditions: any, options: any) {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const insert_data: any = {};
     // tslint:disable-next-line:forin
     for (const key in data) {
@@ -311,7 +311,7 @@ class MySQLAdapter extends SQLAdapterBase {
     let fields;
     let places;
     [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
-    let sql = `INSERT INTO \`${tableName}\` (${fields}) VALUES (${places})`;
+    let sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
     [fields] = this._buildPartialUpdateSet(model, data, values);
     sql += ` ON DUPLICATE KEY UPDATE ${fields}`;
     try {
@@ -324,8 +324,8 @@ class MySQLAdapter extends SQLAdapterBase {
   public async findById(model: any, id: any, options: any): Promise<any> {
     id = this._convertValueType(id, this.key_type);
     const select = this._buildSelect(this._connection.models[model], options.select);
-    const tableName = this._connection.models[model].tableName;
-    const sql = `SELECT ${select} FROM \`${tableName}\` WHERE id=? LIMIT 1`;
+    const table_name = this._connection.models[model].table_name;
+    const sql = `SELECT ${select} FROM \`${table_name}\` WHERE id=? LIMIT 1`;
     if (options.explain) {
       return await this._client.queryAsync(`EXPLAIN ${sql}`, id);
     }
@@ -389,8 +389,8 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async count(model: any, conditions: any, options: any): Promise<number> {
     const params: any = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `SELECT COUNT(*) AS count FROM \`${tableName}\``;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `SELECT COUNT(*) AS count FROM \`${table_name}\``;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
@@ -415,8 +415,8 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async delete(model: any, conditions: any): Promise<number> {
     const params: any = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `DELETE FROM \`${tableName}\``;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `DELETE FROM \`${table_name}\``;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
@@ -542,7 +542,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return schema;
   }
 
-  private async _getIndexes(): Promise<{ [tableName: string]: any }> {
+  private async _getIndexes(): Promise<{ [table_name: string]: any }> {
     const sql = 'SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX';
     const rows = await this._client.queryAsync(sql, [this._database]);
     const indexes: any = {};
@@ -631,8 +631,8 @@ class MySQLAdapter extends SQLAdapterBase {
       select += `,GLENGTH(LINESTRING(\`${field}\`,POINT(${location[0]},${location[1]}))) AS \`${field}_distance\``;
     }
     const params: any[] = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `SELECT ${select} FROM \`${tableName}\``;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `SELECT ${select} FROM \`${table_name}\``;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
