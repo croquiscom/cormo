@@ -1,13 +1,22 @@
 import { AdapterBase } from '../adapters/base';
-import { Connection } from '../connection';
+import { Connection, IAssociationBelongsToOptions, IAssociationHasManyOptions, IAssociationHasOneOptions } from '../connection';
 import { IQueryArray, IQuerySingle } from '../query';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
-export declare type PickModelAttributes<T> = Pick<T, Exclude<keyof T, keyof Model>>;
+export declare type ModelColumnNames<T> = Exclude<keyof T, keyof BaseModel>;
+export declare type ModelColumnNamesWithId<T> = Exclude<keyof T, Exclude<keyof BaseModel, 'id'>>;
+export declare type ModelValueObject<T> = Pick<T, ModelColumnNames<T>>;
+export declare type ModelValueObjectWithId<T> = Pick<T, ModelColumnNamesWithId<T>>;
+export interface IColumnProperty {
+    type: types.ColumnType;
+    required?: boolean;
+    unique?: boolean;
+    connetion?: Connection;
+}
 /**
  * Base class for models
  */
-declare class Model {
+declare class BaseModel {
     /**
      * Tracks changes of a record if true
      */
@@ -23,14 +32,10 @@ declare class Model {
     static tableName: string;
     /**
      * Indicates the connection associated to this model
-     * @see Model.connection
-     * @private
      */
     static _connection: Connection;
     /**
      * Indicates the adapter associated to this model
-     * @private
-     * @see Model.connection
      */
     static _adapter: AdapterBase;
     static _name: string;
@@ -42,11 +47,12 @@ declare class Model {
     };
     static _initialize_called: boolean;
     static _intermediate_paths: any;
+    static _property_decorators: any[];
     static initialize(): void;
     /**
-     * Returns a new model class extending Model
+     * Returns a new model class extending BaseModel
      */
-    static newModel(connection: Connection, name: string, schema: any): typeof Model;
+    static newModel(connection: Connection, name: string, schema: any): typeof BaseModel;
     /**
      * Sets a connection of this model
      *
@@ -58,11 +64,16 @@ declare class Model {
     /**
      * Adds a column to this model
      */
-    static column(path: string, property: any): void;
+    static column(path: string, property: types.ColumnType | IColumnProperty): void;
     /**
      * Adds an index to this model
      */
-    static index(columns: any, options?: any): void;
+    static index(columns: {
+        [column: string]: 1 | -1;
+    }, options?: {
+        name?: string;
+        unique?: boolean;
+    }): void;
     /**
      * Drops this model from the database
      * @see AdapterBase::drop
@@ -72,9 +83,9 @@ declare class Model {
      * Creates a record.
      * 'Model.build(data)' is the same as 'new Model(data)'
      */
-    static build<T extends Model>(this: {
+    static build<T extends BaseModel>(this: {
         new (data?: any): T;
-    }, data?: PickModelAttributes<T>): T;
+    }, data?: ModelValueObject<T>): T;
     /**
      * Deletes all records from the database
      */
@@ -82,24 +93,24 @@ declare class Model {
     /**
      * Adds a has-many association
      */
-    static hasMany(target_model_or_column: any, options?: any): void;
+    static hasMany(target_model_or_column: string | typeof BaseModel, options?: IAssociationHasManyOptions): void;
     /**
      * Adds a has-one association
      */
-    static hasOne(target_model_or_column: any, options?: any): void;
+    static hasOne(target_model_or_column: string | typeof BaseModel, options?: IAssociationHasOneOptions): void;
     /**
      * Adds a belongs-to association
      */
-    static belongsTo(target_model_or_column: any, options?: any): void;
+    static belongsTo(target_model_or_column: string | typeof BaseModel, options?: IAssociationBelongsToOptions): void;
     static inspect(depth: number): string;
     static _getKeyType(target_connection?: Connection): any;
     /**
      * Set nested object null if all children are null
      */
     static _collapseNestedNulls(instance: any, selected_columns_raw: any, intermediates: any): void;
-    static _loadFromCache(this: typeof Model, key: string, refresh?: boolean): Promise<any>;
-    static _saveToCache(this: typeof Model, key: string, ttl: number, data: any): Promise<void>;
-    static removeCache(this: typeof Model, key: string): Promise<void>;
+    static _loadFromCache(key: string, refresh?: boolean): Promise<any>;
+    static _saveToCache(key: string, ttl: number, data: any): Promise<void>;
+    static removeCache(key: string): Promise<void>;
     /**
      * Adds a callback of after initializing
      */
@@ -152,64 +163,64 @@ declare class Model {
      * Creates a record and saves it to the database
      * 'Model.create(data)' is the same as 'Model.build(data).save()'
      */
-    static create<T extends Model>(this: {
+    static create<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof Model, data?: PickModelAttributes<T>, options?: {
+    } & typeof BaseModel, data?: ModelValueObject<T>, options?: {
         skip_log: boolean;
     }): Promise<T>;
     /**
      * Creates multiple records and saves them to the database.
      */
-    static createBulk<T extends Model>(this: {
+    static createBulk<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof Model, data?: Array<PickModelAttributes<T>>): Promise<T[]>;
+    } & typeof BaseModel, data?: Array<ModelValueObject<T>>): Promise<T[]>;
     /**
      * Creates q query object
      */
-    static query<T extends Model>(this: {
+    static query<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof Model): IQueryArray<T>;
+    } & typeof BaseModel): IQueryArray<T>;
     /**
      * Finds a record by id
      * @throws {Error('not found')}
      */
-    static find<T extends Model>(this: {
+    static find<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof Model, id: types.RecordID): IQuerySingle<T>;
-    static find<T extends Model>(this: {
+    } & typeof BaseModel, id: types.RecordID): IQuerySingle<T>;
+    static find<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof Model, id: types.RecordID[]): IQueryArray<T>;
+    } & typeof BaseModel, id: types.RecordID[]): IQueryArray<T>;
     /**
      * Finds records by ids while preserving order.
      * @throws {Error('not found')}
      */
-    static findPreserve<T extends Model>(this: {
+    static findPreserve<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof Model, ids: types.RecordID[]): IQueryArray<T>;
+    } & typeof BaseModel, ids: types.RecordID[]): IQueryArray<T>;
     /**
      * Finds records by conditions
      */
-    static where<T extends Model>(this: {
+    static where<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof Model, condition?: object): IQueryArray<T>;
+    } & typeof BaseModel, condition?: object): IQueryArray<T>;
     /**
      * Selects columns for result
      */
-    static select<T extends Model, K extends Exclude<keyof T, Exclude<keyof Model, 'id'>>>(this: {
+    static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(this: {
         new (data?: any): T;
-    } & typeof Model, columns: string): IQueryArray<Pick<T, K>>;
+    } & typeof BaseModel, columns: string): IQueryArray<Pick<T, K>>;
     /**
      * Specifies orders of result
      */
-    static order<T extends Model>(this: {
+    static order<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof Model, orders: string): IQueryArray<T>;
+    } & typeof BaseModel, orders: string): IQueryArray<T>;
     /**
      * Groups result records
      */
-    static group<T extends Model, U = T>(this: {
+    static group<T extends BaseModel, U = T>(this: {
         new (data?: any): T;
-    } & typeof Model, group_by: string | null, fields: object): IQuerySingle<U> | IQueryArray<U>;
+    } & typeof BaseModel, group_by: string | null, fields: object): IQuerySingle<U> | IQueryArray<U>;
     /**
      * Counts records by conditions
      */
@@ -221,7 +232,7 @@ declare class Model {
     /**
      * Deletes records by conditions
      */
-    static delete(this: typeof Model, condition?: object): Promise<number>;
+    static delete(condition?: object): Promise<number>;
     /**
      * Adds 'created_at' and 'updated_at' fields to records
      */
@@ -241,7 +252,7 @@ declare class Model {
     private static _createBulk;
     private static _validateType;
     private static _validateColumn;
-    id?: any;
+    readonly id?: any;
     private _intermediates?;
     private _prev_attributes?;
     private _attributes?;
@@ -294,4 +305,4 @@ declare class Model {
     private _create;
     private _update;
 }
-export { Model };
+export { BaseModel };

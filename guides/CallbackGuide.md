@@ -16,7 +16,7 @@ CORMO supports following callbacks:
 You can register a callback as a method name or an anonymous function
 
 ```coffeescript
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @afterInitialize 'onAfterInitialie'
   onAfterInitialie: ->
     console.log 'initialized'
@@ -37,7 +37,7 @@ User.afterCreate(function () {
 });
 ```
 
-[[#Model::constructor]] or [[#Model.build]] triggers following callbacks:
+[[#BaseModel::constructor]] or [[#BaseModel.build]] triggers following callbacks:
 
 1. [[#ModelCallback.afterInitialize]]
 
@@ -65,7 +65,7 @@ User.afterCreate(function () {
 5. [[#ModelCallback.afterUpdate]]
 6. [[#ModelCallback.afterSave]]
 
-[[#Model::destroy]] triggers following callbacks:
+[[#BaseModel::destroy]] triggers following callbacks:
 
 1. [[#ModelCallback.beforeDestroy]]
 2. [[#ModelCallback.afterDestroy]]

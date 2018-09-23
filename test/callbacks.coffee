@@ -7,7 +7,7 @@ _dbs.forEach (db) ->
   describe 'callbacks-' + db, ->
     beforeEach ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
-      class User extends _g.Model
+      class User extends _g.BaseModel
         @column 'name', String
         @column 'age', Number
       await _g.connection.dropAllModels()

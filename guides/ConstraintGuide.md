@@ -10,7 +10,7 @@ If required constraint is violated, '&lt;column name&gt;' is required' error wil
 The column unique but not required can have multiple null values.
 
 ```coffeescript
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @column 'name', type: String, required: true
   @column 'age', type: Number, required: true
   @column 'email', type: String, unique: true, required: true

@@ -5,7 +5,7 @@ import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
 import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
-import { Model } from '../model';
+import { BaseModel } from '../model';
 declare type ManipulateCommand = string | {
     [key: string]: any;
 };
@@ -17,6 +17,34 @@ interface IConnectionSettings {
         port?: number;
         database?: number;
     };
+}
+declare type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
+export interface IAssociationHasManyOptions {
+    connection?: Connection;
+    type?: string;
+    as?: string;
+    foreign_key?: string;
+    integrity?: AssociationIntegrityType;
+}
+export interface IAssociationHasOneOptions {
+    connection?: Connection;
+    type?: string;
+    as?: string;
+    foreign_key?: string;
+    integrity?: AssociationIntegrityType;
+}
+export interface IAssociationBelongsToOptions {
+    connection?: Connection;
+    type?: string;
+    as?: string;
+    foreign_key?: string;
+    required?: boolean;
+}
+interface IAssociation {
+    type: 'hasMany' | 'hasOne' | 'belongsTo';
+    this_model: typeof BaseModel;
+    target_model_or_column: string | typeof BaseModel;
+    options?: IAssociationHasManyOptions | IAssociationHasOneOptions | IAssociationBelongsToOptions;
 }
 /**
  * Manages connection to a database
@@ -39,8 +67,10 @@ declare class Connection extends EventEmitter {
      * @see Connection::constructor
      */
     models: {
-        [name: string]: typeof Model;
+        [name: string]: typeof BaseModel;
     };
+    private _promise_schema_applied?;
+    private _pending_associations;
     [name: string]: any;
     /**
      * Creates a connection
@@ -63,14 +93,14 @@ declare class Connection extends EventEmitter {
     /**
      * Creates a model class
      */
-    model(name: string, schema: any): typeof Model;
+    model(name: string, schema: any): typeof BaseModel;
     /**
      * Applies schemas
      * @see AdapterBase::applySchema
      */
     applySchemas(options?: {
         verbose?: boolean;
-    }): Promise<any>;
+    }): Promise<void>;
     /**
      * Drops all model tables
      */
@@ -83,13 +113,15 @@ declare class Connection extends EventEmitter {
     /**
      * Manipulate data
      */
-    manipulate(commands: ManipulateCommand[]): Promise<any>;
+    manipulate(commands: ManipulateCommand[]): Promise<{
+        [id: string]: any;
+    }>;
     /**
      * Adds an association
-     * @see Model.hasMany
-     * @see Model.belongsTo
+     * @see BaseModel.hasMany
+     * @see BaseModel.belongsTo
      */
-    addAssociation(association: any): void;
+    addAssociation(association: IAssociation): void;
     /**
      * Returns inconsistent records against associations
      */
@@ -97,8 +129,8 @@ declare class Connection extends EventEmitter {
     /**
      * Fetches associated records
      */
-    fetchAssociated(records: any, column: any, select: any, options: any): Promise<void>;
-    _checkSchemaApplied(): Promise<any>;
+    fetchAssociated(records: any, column: any, select?: any, options?: any): Promise<void>;
+    _checkSchemaApplied(): Promise<void>;
     _connectRedisCache(): any;
     private _initializeModels;
     private _checkArchive;

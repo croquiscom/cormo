@@ -14,17 +14,17 @@ var connection = new cormo.Connection('mysql', { database: 'test' });
 Available adapters are 'mysql', 'mongodb', 'postgresql', 'sqlite3', and 'sqlite3_memory'.
 See documents for each adapter([[#AdapterBase]]) for detail settings.
 
-Then, you can define [[#Model]]s using the extends keyword.
+Then, you can define [[#BaseModel]]s using the extends keyword.
 Or if you want to use CORMO in JavaScript, use [[#Connection::model]] instead.
 
 ```coffeescript
 # this will create two tables - users, posts - in the database.
 
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @column 'name', type: String
   @column 'age', type: cormo.types.Integer
 
-class Post extends cormo.Model
+class Post extends cormo.BaseModel
   @column 'title', String # `String` is the same as `type: String`
   @column 'body', 'string' # you can also use `string` to specify a string type
   @column 'date', Date
@@ -80,19 +80,19 @@ Please note that you must use 'cormo.types.String', not 'String'.
 
 You can use two or more databases at the same time.
 
-Use [[#Model.connection]] to specify the connection which the model uses if you use CoffeeScript.
+Use [[#BaseModel.connection]] to specify the connection which the model uses if you use CoffeeScript.
 
 ```coffeescript
 cormo = require 'cormo'
 mysql = new cormo.Connection 'mysql', database: 'test'
 mongodb = new cormo.Connection 'mongodb', database: 'test'
 
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @connection mysql
   @column 'name', String
   @column 'age', cormo.types.Integer
 
-class Post extends cormo.Model
+class Post extends cormo.BaseModel
   @connection mongodb
   @column 'title', String
   @column 'body', String

@@ -7,7 +7,7 @@ User.timestamps()
 User.timestamps();
 ```
 
-If [[#Model.archive]] is true, deleted records are archived in the \_Archive table.
+If [[#BaseModel.archive]] is true, deleted records are archived in the \_Archive table.
 
 ```coffeescript
 User.archive = true

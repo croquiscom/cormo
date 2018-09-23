@@ -5,7 +5,7 @@ _g = require '../support/common'
 module.exports = () ->
   describe 'issues', ->
     it 'insert more than 1000', ->
-      class Simple extends _g.Model
+      class Simple extends _g.BaseModel
         @column 'value', Number
       records = await _g.connection.Simple.createBulk [1..1500].map((i) -> value: i)
       for i in [1..1500]
@@ -14,7 +14,7 @@ module.exports = () ->
 
   describe 'collection', ->
     it 'find', ->
-      class User extends _g.Model
+      class User extends _g.BaseModel
         @column 'name', String
         @column 'age', Number
       data = [

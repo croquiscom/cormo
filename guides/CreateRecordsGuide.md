@@ -1,4 +1,4 @@
-You can build a record using [[#Model::constructor]] or [[#Model.build]].
+You can build a record using [[#BaseModel::constructor]] or [[#BaseModel.build]].
 
 ```coffeescript
 user1 = new User()

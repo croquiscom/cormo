@@ -30,11 +30,11 @@ connection = new cormo.Connection 'mysql', database: 'test'
 
 # this will create two tables - users, posts - in the database.
 
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @column 'name', type: String
   @column 'age', type: cormo.types.Integer
 
-class Post extends cormo.Model
+class Post extends cormo.BaseModel
   @column 'title', String # `String` is the same as `type: String`
   @column 'body', 'string' # you can also use `string` to specify a string type
   @column 'date', Date
@@ -175,7 +175,7 @@ User.delete({age: 27}, function (error, count) {
 ## Constraint
 
 ```coffeescript
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @column 'name', type: String, required: true
   @column 'age', type: Number, required: true
   @column 'email', type: String, unique: true, required: true
@@ -191,7 +191,7 @@ var User = connection.model('User', {
 ## Validation
 
 ```coffeescript
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @column 'name', String
   @column 'age', Number
   @column 'email', String
@@ -217,7 +217,7 @@ User.addValidator(function (record) {
 ## Callbacks
 
 ```coffeescript
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @column 'name', String
   @column 'age', Number
 
@@ -238,12 +238,12 @@ User.beforeSave(function () {
 ## Associations
 
 ```coffeescript
-class User extends cormo.Model
+class User extends cormo.BaseModel
   @column 'name', String
   @column 'age', Number
   @hasMany 'posts'
 
-class Post extends cormo.Model
+class Post extends cormo.BaseModel
   @column 'title', String
   @column 'body', String
   @belongsTo 'user'
@@ -289,7 +289,7 @@ Order.group('customer', {min_price: {$min: '$price'}, max_price: {$max: '$price'
 ## Geospatial query
 
 ```coffeescript
-class Place extends cormo.Model
+class Place extends cormo.BaseModel
   @column 'name', String
   @column 'location', cormo.types.GeoPoint
 

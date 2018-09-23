@@ -7,7 +7,7 @@ _dbs.forEach (db) ->
   describe 'nested-' + db, ->
     beforeEach ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
-      class User extends _g.Model
+      class User extends _g.BaseModel
         @connection _g.connection
       await _g.connection.dropAllModels()
       return

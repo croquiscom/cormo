@@ -8,8 +8,8 @@ _dbs.forEach (db) ->
     before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-      if _g.use_coffeescript_class
-        class Type extends _g.Model
+      if _g.use_class
+        class Type extends _g.BaseModel
           @column 'number', 'number'
           @column 'int_c', 'integer'
           @column 'date', 'date'

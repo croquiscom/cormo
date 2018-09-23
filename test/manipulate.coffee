@@ -8,13 +8,13 @@ _dbs.forEach (db) ->
     before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-      if _g.use_coffeescript_class
-        class User extends _g.Model
+      if _g.use_class
+        class User extends _g.BaseModel
           @column 'name', String
           @column 'age', Number
           @hasMany 'posts'
 
-        class Post extends _g.Model
+        class Post extends _g.BaseModel
           @column 'title', String
           @column 'body', String
           @belongsTo 'user'

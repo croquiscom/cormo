@@ -8,11 +8,11 @@ _dbs.forEach (db) ->
     before ->
       _g.connection = new _g.Connection db, _g.db_configs[db]
 
-      if _g.use_coffeescript_class
-        class User extends _g.Model
+      if _g.use_class
+        class User extends _g.BaseModel
           @column 'name', String
           @column 'age', Number
-        class UserUnique extends _g.Model
+        class UserUnique extends _g.BaseModel
           @column 'name', type: String, unique: true
           @column 'age', Number
       else

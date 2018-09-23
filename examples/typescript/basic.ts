@@ -7,13 +7,15 @@ const connection = new cormo.Connection('mysql', {
   user: 'cormo_test',
 });
 
-class User extends cormo.Model {
-  public static initialize() {
-    this.column('name', { type: String, required: true });
-    this.column('age', Number);
-  }
+@cormo.Model({ connection })
+@cormo.Index({ name: 1, age: 1 })
+class User extends cormo.BaseModel {
+  public id!: number;
 
+  @cormo.Column({ type: String, required: true })
   public name!: string;
+
+  @cormo.Column(Number)
   public age?: number;
 }
 
@@ -47,8 +49,8 @@ async function getAll() {
 }
 
 async function query() {
-  const foobar = await User.where({ age: 5 }).select<'name'>('name').one();
-  console.log(`name of age 5 is ${foobar.name}`);
+  const foobar = await User.where({ age: 5 }).select<'id' | 'name'>('name').one();
+  console.log(`name of age 5 is #${foobar.id} ${foobar.name}`);
 }
 
 async function count() {

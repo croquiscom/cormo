@@ -8,16 +8,17 @@
  */
 export { Connection } from './connection';
 /**
- * Exports [[#Model]] class
+ * Exports [[#BaseModel]] class
  * @memberOf cormo
  */
-export { Model, PickModelAttributes } from './model';
+export { BaseModel, ModelValueObject, ModelValueObjectWithId } from './model';
 /**
  * Exports [[#Command]] class
  * @memberOf cormo
  */
 export { Command } from './command';
 export { IQueryArray, IQuerySingle, Query } from './query';
+export * from './decorators';
 /**
  * Exports [[#types]] module
  * @memberOf cormo
