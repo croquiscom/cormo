@@ -62,4 +62,28 @@ export default function(models: {
     expect(user2).to.have.keys('id', 'name', 'age', 'address');
     expect((user2 as any).address).to.eql('Moon');
   });
+
+  it('table name', async () => {
+    // default table name is a pluralized form
+    class Person extends cormo.BaseModel { }
+    Person.column('name', String);
+
+    // explicitly set name
+    class User extends cormo.BaseModel { }
+    User.table_name = 'User';
+    User.column('name', String);
+
+    // using Decorator
+    @cormo.Model({ name: 'Guest' })
+    class Guest extends cormo.BaseModel {
+      @cormo.Column(String)
+      public name!: string;
+    }
+
+    await models.connection!.applySchemas();
+
+    const schema = await models.connection!._adapter.getSchemas();
+    const table_names = Object.keys(schema.tables);
+    expect(table_names.sort()).to.eql(['Guest', 'User', 'people']);
+  });
 }

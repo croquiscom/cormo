@@ -260,8 +260,12 @@ class MongoDBAdapter extends AdapterBase {
 
   public async createTable(model: any) {
     const collection = this._collection(model);
+    const model_class = this._connection.models[model];
+    const schema = model_class._schema;
+
+    await this._db.createCollection(_getMongoDBColName(model_class.table_name));
+
     const indexes: any[] = [];
-    const schema = this._connection.models[model]._schema;
     // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];

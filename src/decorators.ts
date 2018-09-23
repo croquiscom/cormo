@@ -10,10 +10,13 @@ import {
 } from './model';
 import * as types from './types';
 
-export function Model(options?: { connection?: Connection }) {
+export function Model(options: { connection?: Connection, name?: string } = {}) {
   return (ctor: typeof BaseModel) => {
     ctor._initialize_called = true;
-    if (options && options.connection) {
+    if (options.name) {
+      ctor.table_name = options.name;
+    }
+    if (options.connection) {
       ctor.connection(options.connection);
     }
     if (ctor._property_decorators) {

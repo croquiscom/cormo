@@ -3,6 +3,7 @@ import { BaseModel, IColumnProperty } from './model';
 import * as types from './types';
 export declare function Model(options?: {
     connection?: Connection;
+    name?: string;
 }): (ctor: typeof BaseModel) => void;
 export declare function Column(column_property: IColumnProperty | types.ColumnType): (target: BaseModel, propertyKey: string) => void;
 export declare function HasMany(options?: IAssociationHasManyOptions): (target: BaseModel, propertyKey: string) => void;

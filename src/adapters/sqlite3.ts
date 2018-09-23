@@ -440,7 +440,9 @@ class SQLite3Adapter extends SQLAdapterBase {
   }
 
   private async _getTables() {
-    let tables = await this._client.allAsync("SELECT name FROM sqlite_master WHERE type='table'");
+    const query = `SELECT name FROM sqlite_master
+      WHERE type='table' and name!='sqlite_sequence'`;
+    let tables = await this._client.allAsync(query);
     tables = tables.map((table: any) => table.name);
     return tables;
   }
