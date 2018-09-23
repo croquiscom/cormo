@@ -30,7 +30,7 @@ if (_g.db_configs.mysql && _g.db_configs.mongodb) {
           @cormo.Column(Number)
           public age?: number | null;
 
-          @cormo.HasMany()
+          @cormo.HasMany({ connection: mysql })
           public posts?: { build: (data: any) => PostRef } & ((reload?: boolean) => PostRef[]);
         }
         models.User = User;
