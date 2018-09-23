@@ -389,7 +389,7 @@ class Connection extends EventEmitter {
   /**
    * Fetches associated records
    */
-  public async fetchAssociated(records: any, column: any, select: any, options: any) {
+  public async fetchAssociated(records: any, column: any, select?: any, options?: any) {
     if ((select != null) && typeof select === 'object') {
       options = select;
       select = null;
@@ -649,7 +649,7 @@ class Connection extends EventEmitter {
         let getter: any;
         // getter must be created per instance due to __scope
         if (!this.hasOwnProperty(columnGetter)) {
-          getter = async (reload: any) => {
+          getter = async (reload?: boolean) => {
             // this is getter.__scope in normal case (this_model_instance.target_model_name()),
             // but use getter.__scope for safety
             const self = getter.__scope;
