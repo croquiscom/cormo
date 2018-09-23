@@ -8,6 +8,7 @@ const connection = new cormo.Connection('mysql', {
 });
 
 @cormo.Model({ connection })
+@cormo.Index({ name: 1, age: 1 })
 class User extends cormo.BaseModel {
   public id!: number;
 

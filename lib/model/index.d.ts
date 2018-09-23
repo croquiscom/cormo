@@ -68,7 +68,12 @@ declare class BaseModel {
     /**
      * Adds an index to this model
      */
-    static index(columns: any, options?: any): void;
+    static index(columns: {
+        [column: string]: 1 | -1;
+    }, options?: {
+        name?: string;
+        unique?: boolean;
+    }): void;
     /**
      * Drops this model from the database
      * @see AdapterBase::drop

@@ -224,7 +224,7 @@ class BaseModel {
   /**
    * Adds an index to this model
    */
-  public static index(columns: any, options: any = {}) {
+  public static index(columns: { [column: string]: 1 | -1 }, options: { name?: string, unique?: boolean } = {}) {
     this._checkConnection();
     if (!options.name) {
       options.name = Object.keys(columns).join('_');

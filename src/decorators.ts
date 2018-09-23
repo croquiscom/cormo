@@ -12,6 +12,7 @@ import * as types from './types';
 
 export function Model(options?: { connection?: Connection }) {
   return (ctor: typeof BaseModel) => {
+    ctor._initialize_called = true;
     if (options && options.connection) {
       ctor.connection(options.connection);
     }
@@ -25,6 +26,8 @@ export function Model(options?: { connection?: Connection }) {
           ctor.hasOne(decorator.propertyKey, decorator.options);
         } else if (decorator.type === 'belongsTo') {
           ctor.belongsTo(decorator.propertyKey, decorator.options);
+        } else if (decorator.type === 'index') {
+          ctor.index(decorator.columns, decorator.options);
         }
       }
     }
@@ -68,5 +71,15 @@ export function BelongsTo(options?: IAssociationBelongsToOptions) {
       ctor._property_decorators = [];
     }
     ctor._property_decorators.push({ type: 'belongsTo', propertyKey, options });
+  };
+}
+
+export function Index(columns: { [column: string]: 1 | -1 }, options?: { name?: string, unique?: boolean }) {
+  return (ctor: typeof BaseModel) => {
+    if (ctor._initialize_called) {
+      ctor.index(columns, options);
+    } else {
+      ctor._property_decorators.push({ type: 'index', columns, options });
+    }
   };
 }
