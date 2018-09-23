@@ -7,6 +7,7 @@ const connection = new cormo.Connection('mysql', {
   user: 'cormo_test',
 });
 
+@cormo.Model({ connection })
 class User extends cormo.BaseModel {
   public id!: number;
 

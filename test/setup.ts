@@ -37,6 +37,7 @@ _dbs.forEach((db) => {
 
     it('association order', async () => {
       connection = new cormo.Connection(db as any, _g.db_configs[db]);
+      @cormo.Model()
       class Ace extends cormo.BaseModel {
         @cormo.HasOne({ integrity: 'delete' })
         public car!: Car | null;
@@ -45,6 +46,7 @@ _dbs.forEach((db) => {
         public bear!: Bear | null;
       }
 
+      @cormo.Model()
       class Bear extends cormo.BaseModel {
         @cormo.HasMany({ integrity: 'delete' })
         public aces!: Ace[];
@@ -53,11 +55,13 @@ _dbs.forEach((db) => {
         public dog!: Dog | null;
       }
 
+      @cormo.Model()
       class Car extends cormo.BaseModel {
         @cormo.BelongsTo()
         public bear!: Bear | null;
       }
 
+      @cormo.Model()
       class Dog extends cormo.BaseModel {
         @cormo.HasMany({ integrity: 'delete' })
         public aces!: Ace[];

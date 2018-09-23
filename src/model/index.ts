@@ -94,6 +94,8 @@ class BaseModel {
 
   public static _intermediate_paths: any;
 
+  public static _property_decorators: any[];
+
   public static initialize() { /**/ }
 
   /**

@@ -47,6 +47,7 @@ declare class BaseModel {
     };
     static _initialize_called: boolean;
     static _intermediate_paths: any;
+    static _property_decorators: any[];
     static initialize(): void;
     /**
      * Returns a new model class extending BaseModel

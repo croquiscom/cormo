@@ -18,6 +18,7 @@ _dbs.forEach((db) => {
     before(async () => {
       _g.connection = connection = new cormo.Connection(db as any, _g.db_configs[db]);
       if (_g.use_class) {
+        @cormo.Model()
         class User extends cormo.BaseModel {
           @cormo.Column(String)
           public name!: string | null;
