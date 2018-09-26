@@ -18,7 +18,8 @@ export interface IColumnPropertyInternal extends IColumnProperty {
     record_id?: boolean;
     type_class: any;
     _parts: string[];
-    _dbname: string;
+    _dbname_dot: string;
+    _dbname_us: string;
 }
 export interface IModelSchema {
     [path: string]: IColumnPropertyInternal;

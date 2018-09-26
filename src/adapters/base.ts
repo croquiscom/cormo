@@ -119,7 +119,7 @@ abstract class AdapterBase {
     for (const column of selected_columns) {
       const property = schema[column];
       const parts = property._parts;
-      let value = support_nested ? util.getPropertyOfPath(data, parts) : data[property._dbname];
+      let value = support_nested ? util.getPropertyOfPath(data, parts) : data[property._dbname_us];
       if (value != null) {
         value = this.valueToModel(value, property);
       } else {

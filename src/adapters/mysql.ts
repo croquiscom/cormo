@@ -131,7 +131,7 @@ class MySQLAdapter extends SQLAdapterBase {
       const property = model_class._schema[column];
       const column_sql = _propertyToSQL(property, this.support_fractional_seconds);
       if (column_sql) {
-        column_sqls.push(`\`${property._dbname}\` ${column_sql}`);
+        column_sqls.push(`\`${property._dbname_us}\` ${column_sql}`);
       }
     }
     let sql = `CREATE TABLE \`${table_name}\` ( ${column_sqls.join(',')} )`;
@@ -148,7 +148,7 @@ class MySQLAdapter extends SQLAdapterBase {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
-    const sql = `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname}\` ${column_sql}`;
+    const sql = `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname_us}\` ${column_sql}`;
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
@@ -568,7 +568,7 @@ class MySQLAdapter extends SQLAdapterBase {
   private _buildUpdateSetOfColumn(
     property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
   ) {
-    const dbname = property._dbname;
+    const dbname = property._dbname_us;
     const value = data[dbname];
     if (property.type_class === types.GeoPoint) {
       values.push(value[0]);
@@ -612,7 +612,7 @@ class MySQLAdapter extends SQLAdapterBase {
     // tslint:disable-next-line:forin
     for (const column in data) {
       const value = data[column];
-      const property = _.find(schema, (item) => item._dbname === column);
+      const property = _.find(schema, (item) => item._dbname_us === column);
       this._buildUpdateSetOfColumn(property, data, values, fields, places);
     }
     return [fields.join(','), places.join(',')];
@@ -656,7 +656,7 @@ class MySQLAdapter extends SQLAdapterBase {
           column = order;
           order = 'ASC';
         }
-        column = schema[column] && schema[column]._dbname || column;
+        column = schema[column] && schema[column]._dbname_us || column;
         return `\`${column}\` ${order}`;
       });
       if (order_by) {

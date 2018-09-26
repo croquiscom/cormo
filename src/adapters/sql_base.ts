@@ -262,7 +262,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       if (select.length > 0) {
         const schema = model_class._schema;
         const escape_ch = this._escape_ch;
-        select = select.map((column: any) => `${escape_ch}${schema[column]._dbname}${escape_ch}`);
+        select = select.map((column: any) => `${escape_ch}${schema[column]._dbname_us}${escape_ch}`);
         return 'id,' + select.join(',');
       } else {
         return 'id';

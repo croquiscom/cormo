@@ -133,7 +133,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
       const property = model_class._schema[column];
       const column_sql = _propertyToSQL(property);
       if (column_sql) {
-        column_sqls.push(`"${property._dbname}" ${column_sql}`);
+        column_sqls.push(`"${property._dbname_us}" ${column_sql}`);
       }
     }
     const sql = `CREATE TABLE "${table_name}" ( ${column_sqls.join(',')} )`;
@@ -147,7 +147,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   public async addColumn(model: string, column_property: any) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
-    const column_name = column_property._dbname;
+    const column_name = column_property._dbname_us;
     const sql = `ALTER TABLE "${table_name}" ADD COLUMN "${column_name}" ${_propertyToSQL(column_property)}`;
     try {
       await this._pool.query(sql);
@@ -466,7 +466,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
       const escape_ch = this._escape_ch;
       select = select.map((column: any) => {
         const property = schema[column];
-        column = escape_ch + schema[column]._dbname + escape_ch;
+        column = escape_ch + schema[column]._dbname_us + escape_ch;
         if (property.type_class === types.GeoPoint) {
           return `ARRAY[ST_X(${column}), ST_Y(${column})] AS ${column}`;
         } else {
@@ -543,7 +543,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   private _buildUpdateSetOfColumn(
     property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
   ) {
-    const dbname = property._dbname;
+    const dbname = property._dbname_us;
     const value = data[dbname];
     if (property.type_class === types.GeoPoint) {
       values.push(value[0]);
@@ -587,7 +587,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     // tslint:disable-next-line:forin
     for (const column in data) {
       const value = data[column];
-      const property = _.find(schema, (item) => item._dbname === column);
+      const property = _.find(schema, (item) => item._dbname_us === column);
       this._buildUpdateSetOfColumn(property, data, values, fields, places);
     }
     return [fields.join(','), places.join(',')];
@@ -631,7 +631,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
           column = order;
           order = 'ASC';
         }
-        column = schema[column] && schema[column]._dbname || column;
+        column = schema[column] && schema[column]._dbname_us || column;
         return `"${column}" ${order}`;
       });
       if (order_by) {

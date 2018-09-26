@@ -54,7 +54,8 @@ export interface IColumnPropertyInternal extends IColumnProperty {
   record_id?: boolean;
   type_class: any;
   _parts: string[];
-  _dbname: string;
+  _dbname_dot: string;
+  _dbname_us: string;
 }
 
 export interface IModelSchema {
@@ -219,13 +220,14 @@ class BaseModel {
     property.type = type;
     property.type_class = type.constructor;
     property._parts = parts;
-    property._dbname = path.replace(/\./g, '_');
+    property._dbname_dot = path;
+    property._dbname_us = path.replace(/\./g, '_');
     this._schema[path] = property;
     if (property.unique) {
       this._indexes.push({
-        columns: _.zipObject([property._dbname], [1]),
+        columns: _.zipObject([property._dbname_us], [1]),
         options: {
-          name: property._dbname,
+          name: property._dbname_us,
           required: property.required,
           unique: true,
         },
@@ -684,7 +686,7 @@ class BaseModel {
       if (adapter.support_nested) {
         util.setPropertyOfPath(data, parts, value);
       } else {
-        data[property._dbname] = value;
+        data[property._dbname_us] = value;
       }
     }
   }

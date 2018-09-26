@@ -185,7 +185,7 @@ class Connection extends EventEmitter {
           // tslint:disable-next-line:forin
           for (const column in modelClass._schema) {
             const property = modelClass._schema[column];
-            if (!currentTable[property._dbname]) {
+            if (!currentTable[property._dbname_us]) {
               if (options.verbose) {
                 console.log(`Adding column ${column} to ${modelClass.table_name}`);
               }
