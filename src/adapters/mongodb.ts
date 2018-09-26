@@ -24,6 +24,7 @@ class CormoTypesObjectId { }
 
 import * as _ from 'lodash';
 import * as stream from 'stream';
+import { IColumnPropertyInternal, IModelSchema } from '../model';
 import * as types from '../types';
 import { AdapterBase, ISchemas } from './base';
 
@@ -42,11 +43,11 @@ function _objectIdToString(oid: any) {
   return oid.toString();
 }
 
-function _buildWhereSingle(property: any, key: any, value: any, not_op?: any): any {
+function _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: any, not_op?: any): any {
   if (key !== 'id' && (property == null)) {
     throw new Error(`unknown column '${key}'`);
   }
-  const property_type_class = property != null ? property.type_class : void 0;
+  const property_type_class = property && property.type_class;
   const is_objectid = key === 'id' || property_type_class === CormoTypesObjectId;
   if (Array.isArray(value)) {
     if (is_objectid) {
@@ -132,7 +133,7 @@ function _buildWhereSingle(property: any, key: any, value: any, not_op?: any): a
   return _.zipObject([key], [value]);
 }
 
-function _buildWhere(schema: any, conditions: any, conjunction = '$and'): any {
+function _buildWhere(schema: IModelSchema, conditions: any, conjunction = '$and'): any {
   let subs: any;
   if (Array.isArray(conditions)) {
     subs = conditions.map((condition) => _buildWhere(schema, condition));
@@ -207,7 +208,7 @@ function _processSaveError(error: any) {
     if (!key) {
       key = error.message.match(/index: [\w-.]+\$(\w+)(_1)?/);
     }
-    return new Error('duplicated ' + (key != null ? key[1] : void 0));
+    return new Error('duplicated ' + (key && key[1]));
   } else {
     return MongoDBAdapter.wrapError('unknown error', error);
   }
@@ -706,8 +707,7 @@ class MongoDBAdapter extends AdapterBase {
     return indexes;
   }
 
-  private _buildUpdateOps(schema: any, update_ops: any, data: any, path: any, object: any): any {
-    const results = [];
+  private _buildUpdateOps(schema: IModelSchema, update_ops: any, data: any, path: any, object: any): any {
     // tslint:disable-next-line:forin
     for (const column in object) {
       const value = object[column];
@@ -715,20 +715,17 @@ class MongoDBAdapter extends AdapterBase {
       if (property) {
         if (value != null) {
           if (value.$inc != null) {
-            results.push(update_ops.$inc[path + column] = value.$inc);
+            update_ops.$inc[path + column] = value.$inc;
           } else {
-            results.push(update_ops.$set[path + column] = value);
+            update_ops.$set[path + column] = value;
           }
         } else {
-          results.push(update_ops.$unset[path + column] = '');
+          update_ops.$unset[path + column] = '';
         }
       } else if (typeof object[column] === 'object') {
-        results.push(this._buildUpdateOps(schema, update_ops, data, path + column + '.', object[column]));
-      } else {
-        results.push(void 0);
+        this._buildUpdateOps(schema, update_ops, data, path + column + '.', object[column]);
       }
     }
-    return results;
   }
 
   private _buildConditionsForFind(model: any, conditions: any, options: any) {

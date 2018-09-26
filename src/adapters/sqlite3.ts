@@ -130,7 +130,8 @@ class SQLite3Adapter extends SQLAdapterBase {
   public async addColumn(model: string, column_property: any) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
-    const sql = `ALTER TABLE "${table_name}" ADD COLUMN "${column_property._dbname}" ${_propertyToSQL(column_property)}`;
+    const column_name = column_property._dbname;
+    const sql = `ALTER TABLE "${table_name}" ADD COLUMN "${column_name}" ${_propertyToSQL(column_property)}`;
     try {
       await this._client.runAsync(sql);
     } catch (error) {
@@ -480,28 +481,30 @@ class SQLite3Adapter extends SQLAdapterBase {
     return indexes;
   }
 
-  private _buildUpdateSetOfColumn(property: any, data: any, values: any, fields: any[], places: any[], insert?: any) {
+  private _buildUpdateSetOfColumn(
+    property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
+  ) {
     const dbname = property._dbname;
     const value = data[dbname];
     if (value && value.$inc != null) {
       values.push(value.$inc);
-      return fields.push(`"${dbname}"="${dbname}"+?`);
+      fields.push(`"${dbname}"="${dbname}"+?`);
     } else {
       if (property.type_class === types.Date) {
-        values.push(value != null ? value.getTime() : void 0);
+        values.push(value && value.getTime());
       } else {
         values.push(value);
       }
       if (insert) {
         fields.push(`"${dbname}"`);
-        return places.push('?');
+        places.push('?');
       } else {
-        return fields.push(`"${dbname}"=?`);
+        fields.push(`"${dbname}"=?`);
       }
     }
   }
 
-  private _buildUpdateSet(model: string, data: any, values: any, insert?: boolean) {
+  private _buildUpdateSet(model: string, data: any, values: any, insert: boolean = false) {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
     const places: any[] = [];
@@ -562,12 +565,12 @@ class SQLite3Adapter extends SQLAdapterBase {
       });
       sql += ' ORDER BY ' + orders.join(',');
     }
-    if ((options != null ? options.limit : void 0) != null) {
+    if (options && options.limit) {
       sql += ' LIMIT ' + options.limit;
-      if ((options != null ? options.skip : void 0) != null) {
+      if (options && options.skip) {
         sql += ' OFFSET ' + options.skip;
       }
-    } else if ((options != null ? options.skip : void 0) != null) {
+    } else if (options && options.skip) {
       sql += ' LIMIT 2147483647 OFFSET ' + options.skip;
     }
     return [sql, params];

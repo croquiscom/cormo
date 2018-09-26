@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import * as stream from 'stream';
+import { Connection } from '../connection';
 export interface ISchemas {
     tables: {
         [table_name: string]: any;
@@ -22,7 +23,7 @@ declare abstract class AdapterBase {
      * @param cause adapter specific error object
      */
     static wrapError(msg: string, cause?: Error): Error;
-    _connection: any;
+    _connection: Connection;
     support_fractional_seconds: boolean;
     support_upsert: boolean;
     support_nested: boolean;
@@ -67,7 +68,7 @@ declare abstract class AdapterBase {
     drop(model: string): Promise<void>;
     idToDB(value: any): any;
     valueToDB(value: any, column: any, property: any): any;
-    setValuesFromDB(instance: any, data: any, schema: any, selected_columns: any): void[];
+    setValuesFromDB(instance: any, data: any, schema: any, selected_columns: any): void;
     /**
      * Creates a record
      */

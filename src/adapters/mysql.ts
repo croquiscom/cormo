@@ -72,10 +72,10 @@ function _processSaveError(error: any) {
     return new Error('table does not exist');
   } else if (error.code === 'ER_DUP_ENTRY') {
     const key = error.message.match(/for key '([^']*)'/);
-    return new Error('duplicated ' + (key != null ? key[1] : void 0));
+    return new Error('duplicated ' + (key && key[1]));
   } else if (error.code === 'ER_BAD_NULL_ERROR') {
     const key = error.message.match(/Column '([^']*)'/);
-    return new Error(`'${(key != null ? key[1] : void 0)}' is required`);
+    return new Error(`'${key && key[1]}' is required`);
   } else {
     return MySQLAdapter.wrapError('unknown error', error);
   }
@@ -294,7 +294,7 @@ class MySQLAdapter extends SQLAdapterBase {
     // tslint:disable-next-line:forin
     for (const key in data) {
       const value = data[key];
-      if ((value != null ? value.$inc : void 0) != null) {
+      if (value && value.$inc != null) {
         insert_data[key] = value.$inc;
       } else {
         insert_data[key] = value;
@@ -565,7 +565,9 @@ class MySQLAdapter extends SQLAdapterBase {
     return foreign_keys;
   }
 
-  private _buildUpdateSetOfColumn(property: any, data: any, values: any, fields: any[], places: any[], insert?: any) {
+  private _buildUpdateSetOfColumn(
+    property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
+  ) {
     const dbname = property._dbname;
     const value = data[dbname];
     if (property.type_class === types.GeoPoint) {
@@ -573,25 +575,25 @@ class MySQLAdapter extends SQLAdapterBase {
       values.push(value[1]);
       if (insert) {
         fields.push(`\`${dbname}\``);
-        return places.push('POINT(?,?)');
+        places.push('POINT(?,?)');
       } else {
-        return fields.push(`\`${dbname}\`=POINT(?,?)`);
+        fields.push(`\`${dbname}\`=POINT(?,?)`);
       }
-    } else if ((value != null ? value.$inc : void 0) != null) {
+    } else if (value && value.$inc != null) {
       values.push(value.$inc);
-      return fields.push(`\`${dbname}\`=\`${dbname}\`+?`);
+      fields.push(`\`${dbname}\`=\`${dbname}\`+?`);
     } else {
       values.push(value);
       if (insert) {
         fields.push(`\`${dbname}\``);
-        return places.push('?');
+        places.push('?');
       } else {
-        return fields.push(`\`${dbname}\`=?`);
+        fields.push(`\`${dbname}\`=?`);
       }
     }
   }
 
-  private _buildUpdateSet(model: string, data: any, values: any, insert?: boolean) {
+  private _buildUpdateSet(model: string, data: any, values: any, insert: boolean = false) {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
     const places: any[] = [];
@@ -662,12 +664,12 @@ class MySQLAdapter extends SQLAdapterBase {
       }
       sql += ' ORDER BY ' + orders.join(',');
     }
-    if ((options != null ? options.limit : void 0) != null) {
+    if (options && options.limit) {
       sql += ' LIMIT ' + options.limit;
-      if ((options != null ? options.skip : void 0) != null) {
+      if (options && options.skip) {
         sql += ' OFFSET ' + options.skip;
       }
-    } else if ((options != null ? options.skip : void 0) != null) {
+    } else if (options && options.skip) {
       sql += ' LIMIT 2147483647 OFFSET ' + options.skip;
     }
     return [sql, params];

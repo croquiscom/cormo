@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import { IColumnPropertyInternal, IModelSchema } from '../model';
 import * as types from '../types';
 import { AdapterBase } from './base';
 
@@ -19,7 +20,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     // tslint:disable-next-line:forin
     for (const key in data) {
       const value = data[key];
-      if ((value != null ? value.$inc : void 0) != null) {
+      if (value && value.$inc != null) {
         insert_data[key] = value.$inc;
       } else {
         insert_data[key] = value;
@@ -64,7 +65,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     return value;
   }
 
-  protected _buildWhereSingle(property: any, key: any, value: any, params: any): any {
+  protected _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: any, params: any): any {
     let property_type_class;
     if (key === 'id') {
       property_type_class = this.key_type;
@@ -172,7 +173,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     return column + op + this._param_place_holder(params.length);
   }
 
-  protected _buildWhere(schema: any, conditions: any, params: any, conjunction = 'AND'): any {
+  protected _buildWhere(schema: IModelSchema, conditions: any, params: any, conjunction = 'AND'): any {
     let subs: any[] = [];
     let keys: string[];
     if (Array.isArray(conditions)) {

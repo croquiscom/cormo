@@ -170,7 +170,7 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
     }
     if (Array.isArray(condition)) {
       condition.forEach((cond) => {
-        return this._addCondition(cond);
+        this._addCondition(cond);
       });
     } else if (condition != null) {
       this._addCondition(condition);
@@ -493,7 +493,7 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
       this._conditions.push({ id: this._id });
       delete this._id;
     }
-    if (!(options != null ? options.skip_log : void 0)) {
+    if (!(options && options.skip_log)) {
       this._connection.log(this._name, 'delete', { conditions: this._conditions });
     }
     await this._doArchiveAndIntegrity(options);
@@ -655,10 +655,10 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
       const keys = Object.keys(condition);
       if (keys.length === 1 && this._options.group_fields.hasOwnProperty(keys[0])) {
         this._options.conditions_of_group.push(condition);
-        return;
       }
+    } else {
+      this._conditions.push(condition);
     }
-    return this._conditions.push(condition);
   }
 }
 

@@ -540,7 +540,9 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return foreign_keys;
   }
 
-  private _buildUpdateSetOfColumn(property: any, data: any, values: any, fields: any[], places: any[], insert?: any) {
+  private _buildUpdateSetOfColumn(
+    property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
+  ) {
     const dbname = property._dbname;
     const value = data[dbname];
     if (property.type_class === types.GeoPoint) {
@@ -548,25 +550,25 @@ class PostgreSQLAdapter extends SQLAdapterBase {
       values.push(value[1]);
       if (insert) {
         fields.push(`"${dbname}"`);
-        return places.push(`ST_Point($${values.length - 1}, $${values.length})`);
+        places.push(`ST_Point($${values.length - 1}, $${values.length})`);
       } else {
-        return fields.push(`"${dbname}"=ST_Point($${values.length - 1}, $${values.length})`);
+        fields.push(`"${dbname}"=ST_Point($${values.length - 1}, $${values.length})`);
       }
-    } else if ((value != null ? value.$inc : void 0) != null) {
+    } else if (value && value.$inc != null) {
       values.push(value.$inc);
-      return fields.push(`"${dbname}"="${dbname}"+$${values.length}`);
+      fields.push(`"${dbname}"="${dbname}"+$${values.length}`);
     } else {
       values.push(value);
       if (insert) {
         fields.push(`"${dbname}"`);
-        return places.push('$' + values.length);
+        places.push('$' + values.length);
       } else {
-        return fields.push(`"${dbname}"=$${values.length}`);
+        fields.push(`"${dbname}"=$${values.length}`);
       }
     }
   }
 
-  private _buildUpdateSet(model: string, data: any, values: any, insert?: boolean) {
+  private _buildUpdateSet(model: string, data: any, values: any, insert: boolean = false) {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
     const places: any[] = [];
@@ -637,12 +639,12 @@ class PostgreSQLAdapter extends SQLAdapterBase {
       }
       sql += ' ORDER BY ' + orders.join(',');
     }
-    if ((options != null ? options.limit : void 0) != null) {
+    if (options && options.limit) {
       sql += ' LIMIT ' + options.limit;
-      if ((options != null ? options.skip : void 0) != null) {
+      if (options && options.skip) {
         sql += ' OFFSET ' + options.skip;
       }
-    } else if ((options != null ? options.skip : void 0) != null) {
+    } else if (options && options.skip) {
       sql += ' LIMIT ALL OFFSET ' + options.skip;
     }
     return [sql, params];

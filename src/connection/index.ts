@@ -302,7 +302,7 @@ class Connection extends EventEmitter {
           key = key[0];
           data = command[key];
         } else {
-          key = void 0;
+          key = undefined;
         }
       } else if (typeof command === 'string') {
         key = command;

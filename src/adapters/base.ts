@@ -1,4 +1,5 @@
 import * as stream from 'stream';
+import { Connection } from '../connection';
 import * as types from '../types';
 import * as util from '../util';
 
@@ -24,7 +25,7 @@ abstract class AdapterBase {
     return error;
   }
 
-  public _connection: any;
+  public _connection!: Connection;
 
   public support_fractional_seconds = true;
 
@@ -115,7 +116,6 @@ abstract class AdapterBase {
       selected_columns = Object.keys(schema);
     }
     const support_nested = this.support_nested;
-    const results = [];
     for (const column of selected_columns) {
       const property = schema[column];
       const parts = property._parts;
@@ -125,9 +125,8 @@ abstract class AdapterBase {
       } else {
         value = null;
       }
-      results.push(util.setPropertyOfPath(instance, parts, value));
+      util.setPropertyOfPath(instance, parts, value);
     }
-    return results;
   }
 
   /**
@@ -212,7 +211,7 @@ abstract class AdapterBase {
       return instance;
     } else {
       const id = this._getModelID(data);
-      const modelClass = this._connection.models[model];
+      const modelClass: any = this._connection.models[model];
       return new modelClass(data, id, options.select, options.select_raw);
     }
   }
