@@ -6,6 +6,7 @@ import {
 } from './connection';
 import {
   BaseModel,
+  IColumnNestedProperty,
   IColumnProperty,
 } from './model';
 import * as types from './types';
@@ -37,7 +38,7 @@ export function Model(options: { connection?: Connection, name?: string } = {}) 
   };
 }
 
-export function Column(column_property: IColumnProperty | types.ColumnType) {
+export function Column(column_property: types.ColumnType | IColumnProperty | IColumnNestedProperty) {
   return (target: BaseModel, propertyKey: string) => {
     const ctor = target.constructor as typeof BaseModel;
     if (!ctor._property_decorators) {

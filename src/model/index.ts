@@ -61,6 +61,10 @@ export interface IColumnPropertyInternal extends IColumnProperty {
   _dbname_us: string;
 }
 
+export interface IColumnNestedProperty {
+  [subcolumn: string]: types.ColumnType | IColumnProperty | IColumnNestedProperty;
+}
+
 export interface IModelSchema {
   [path: string]: IColumnPropertyInternal;
 }
@@ -175,7 +179,9 @@ class BaseModel {
   /**
    * Adds a column to this model
    */
-  public static column(path: string, type_or_property: types.ColumnType | IColumnProperty): void;
+  public static column(
+    path: string, type_or_property: types.ColumnType | IColumnProperty | IColumnNestedProperty,
+  ): void;
   public static column(path: string, type_or_property: any) {
     this._checkConnection();
     // nested path

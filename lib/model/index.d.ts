@@ -24,6 +24,9 @@ export interface IColumnPropertyInternal extends IColumnProperty {
     _dbname_dot: string;
     _dbname_us: string;
 }
+export interface IColumnNestedProperty {
+    [subcolumn: string]: types.ColumnType | IColumnProperty | IColumnNestedProperty;
+}
 export interface IModelSchema {
     [path: string]: IColumnPropertyInternal;
 }
@@ -78,7 +81,7 @@ declare class BaseModel {
     /**
      * Adds a column to this model
      */
-    static column(path: string, type_or_property: types.ColumnType | IColumnProperty): void;
+    static column(path: string, type_or_property: types.ColumnType | IColumnProperty | IColumnNestedProperty): void;
     /**
      * Adds an index to this model
      */
