@@ -576,7 +576,7 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   }
 
   private _validateAndBuildSaveData(errors: any, data: any, updates: any, path: any, object: any) {
-    const model: any = this._model;
+    const model = this._model;
     const schema = model._schema;
     // tslint:disable-next-line:forin
     for (let column in object) {

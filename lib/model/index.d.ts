@@ -14,6 +14,7 @@ export interface IColumnProperty {
     unique?: boolean;
     connection?: Connection;
     name?: string;
+    default_value?: string | number | (() => string | number);
 }
 export interface IColumnPropertyInternal extends IColumnProperty {
     record_id?: boolean;
@@ -255,16 +256,16 @@ declare class BaseModel {
      * A validator must return false(boolean) or error message(string), or throw an Error exception if invalid
      */
     static addValidator(validator: any): void;
+    static _buildSaveDataColumn(data: any, model: any, column: string, property: IColumnPropertyInternal, allow_null?: boolean): void;
+    static _validateColumn(data: any, column: string, property: IColumnPropertyInternal, for_update?: boolean): void;
     private static _validators;
     private static _callbacks_map;
     /**
      * Adds a callback
      */
     private static addCallback;
-    private static _buildSaveDataColumn;
     private static _createBulk;
     private static _validateType;
-    private static _validateColumn;
     readonly id?: any;
     private _intermediates?;
     private _prev_attributes?;

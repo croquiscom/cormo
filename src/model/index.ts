@@ -49,6 +49,7 @@ export interface IColumnProperty {
   unique?: boolean;
   connection?: Connection;
   name?: string;
+  default_value?: string | number | (() => string | number);
 }
 
 export interface IColumnPropertyInternal extends IColumnProperty {
@@ -656,6 +657,63 @@ class BaseModel {
     this._validators.push(validator);
   }
 
+  public static _buildSaveDataColumn(
+    data: any, model: any, column: string, property: IColumnPropertyInternal, allow_null: boolean = false,
+  ) {
+    const adapter = this._adapter;
+    let value = util.getPropertyOfPath(model, property._parts);
+    value = adapter.valueToDB(value, column, property);
+    if (allow_null || value !== undefined) {
+      if (adapter.support_nested) {
+        util.setPropertyOfPath(data, property._parts_db, value);
+      } else {
+        data[property._dbname_us] = value;
+      }
+    }
+  }
+
+  public static _validateColumn(
+    data: any, column: string, property: IColumnPropertyInternal, for_update: boolean = false,
+  ) {
+    let obj: any;
+    let last: any;
+    [obj, last] = util.getLeafOfPath(data, property._parts, false);
+    const value = obj && obj[last];
+    if (value != null) {
+      if (property.array) {
+        if (!Array.isArray(value)) {
+          throw new Error(`'${column}' is not an array`);
+        }
+        try {
+          for (let i = 0; i < value.length; i++) {
+            value[i] = this._validateType(column, property.type_class, value[i]);
+          }
+        } catch (error) {
+          // TODO: detail message like 'array of types'
+          throw new Error(`'${column}' is not an array`);
+        }
+      } else {
+        if (value.$inc != null) {
+          if (for_update) {
+            if (property.type_class === types.Number || property.type_class === types.Integer) {
+              obj[last] = { $inc: this._validateType(column, property.type_class, value.$inc) };
+            } else {
+              throw new Error(`'${column}' is not a number type`);
+            }
+          } else {
+            throw new Error('$inc is allowed only for update method');
+          }
+        } else {
+          obj[last] = this._validateType(column, property.type_class, value);
+        }
+      }
+    } else {
+      if (property.required) {
+        throw new Error(`'${column}' is required`);
+      }
+    }
+  }
+
   private static _validators: any[];
 
   private static _callbacks_map: {
@@ -676,21 +734,6 @@ class BaseModel {
     const callbacks_map = this._callbacks_map || (this._callbacks_map = {});
     const callbacks = callbacks_map[name] || (callbacks_map[name] = []);
     return callbacks.push({ type, method });
-  }
-
-  private static _buildSaveDataColumn(
-    data: any, model: any, column: string, property: IColumnPropertyInternal, allow_null: boolean = false,
-  ) {
-    const adapter = this._adapter;
-    let value = util.getPropertyOfPath(model, property._parts);
-    value = adapter.valueToDB(value, column, property);
-    if (allow_null || value !== undefined) {
-      if (adapter.support_nested) {
-        util.setPropertyOfPath(data, property._parts_db, value);
-      } else {
-        data[property._dbname_us] = value;
-      }
-    }
   }
 
   private static async _createBulk(records: any[]) {
@@ -754,48 +797,6 @@ class BaseModel {
         }
     }
     return value;
-  }
-
-  private static _validateColumn(
-    data: any, column: string, property: IColumnPropertyInternal, for_update: boolean = false,
-  ) {
-    let obj: any;
-    let last: any;
-    [obj, last] = util.getLeafOfPath(data, property._parts, false);
-    const value = obj && obj[last];
-    if (value != null) {
-      if (property.array) {
-        if (!Array.isArray(value)) {
-          throw new Error(`'${column}' is not an array`);
-        }
-        try {
-          for (let i = 0; i < value.length; i++) {
-            value[i] = this._validateType(column, property.type_class, value[i]);
-          }
-        } catch (error) {
-          // TODO: detail message like 'array of types'
-          throw new Error(`'${column}' is not an array`);
-        }
-      } else {
-        if (value.$inc != null) {
-          if (for_update) {
-            if (property.type_class === types.Number || property.type_class === types.Integer) {
-              obj[last] = { $inc: this._validateType(column, property.type_class, value.$inc) };
-            } else {
-              throw new Error(`'${column}' is not a number type`);
-            }
-          } else {
-            throw new Error('$inc is allowed only for update method');
-          }
-        } else {
-          obj[last] = this._validateType(column, property.type_class, value);
-        }
-      }
-    } else {
-      if (property.required) {
-        throw new Error(`'${column}' is required`);
-      }
-    }
   }
 
   public readonly id?: any;
@@ -985,6 +986,22 @@ class BaseModel {
   ): Promise<this> {
     const ctor = this.constructor as typeof BaseModel;
     await ctor._checkReady();
+    if (!this.id) {
+      // apply default values
+      const schema = ctor._schema;
+      // tslint:disable-next-line:forin
+      for (const column in schema) {
+        const property = schema[column];
+        const value = util.getPropertyOfPath(this, property._parts);
+        if (value == null && property.default_value !== undefined) {
+          if (_.isFunction(property.default_value)) {
+            util.setPropertyOfPath(this, property._parts, property.default_value());
+          } else {
+            util.setPropertyOfPath(this, property._parts, property.default_value);
+          }
+        }
+      }
+    }
     if (options.validate !== false) {
       await this.validate();
       return await this.save({ ...options, validate: false });

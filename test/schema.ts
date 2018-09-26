@@ -10,21 +10,6 @@ _dbs.forEach((db) => {
   }
 
   describe('schema-' + db, () => {
-    const models = {
-      connection: null as cormo.Connection | null,
-    };
-
-    before(async () => {
-      models.connection = new cormo.Connection(db as any, _g.db_configs[db]);
-      await models.connection.dropAllModels();
-    });
-
-    after(async () => {
-      await models.connection!.dropAllModels();
-      models.connection!.close();
-      models.connection = null;
-    });
-
-    cases(models);
+    cases(db, _g.db_configs[db]);
   });
 });

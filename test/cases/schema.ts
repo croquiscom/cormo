@@ -1,13 +1,22 @@
 // tslint:disable:max-classes-per-file
 
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 import * as cormo from '../..';
 
-export default function(models: {
-  connection: cormo.Connection | null,
-}) {
+export default function(db: any, db_config: any) {
+  let connection!: cormo.Connection;
+  let sandbox: sinon.SinonSandbox;
+
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+    connection = new cormo.Connection(db, db_config);
+  });
+
   afterEach(async () => {
-    await models.connection!.dropAllModels();
+    await connection!.dropAllModels();
+    connection!.close();
+    sandbox.restore();
   });
 
   it('add index', async () => {
@@ -24,7 +33,7 @@ export default function(models: {
     // add unique index
     User.index({ age: 1 }, { unique: true });
 
-    await models.connection!.applySchemas();
+    await connection.applySchemas();
     try {
       // can not add same age with unique index
       await User.create({ name: 'Jone Doe', age: 27 });
@@ -41,11 +50,11 @@ export default function(models: {
     User.column('name', String);
     User.column('age', Number);
 
-    await models.connection!.applySchemas();
+    await connection.applySchemas();
 
     User.column('address', String);
 
-    await models.connection!.applySchemas();
+    await connection.applySchemas();
   });
 
   it('add column', async () => {
@@ -53,7 +62,7 @@ export default function(models: {
     User.column('name', String);
     User.column('age', Number);
 
-    await models.connection!.applySchemas();
+    await connection.applySchemas();
 
     User.column('address', String);
 
@@ -80,9 +89,9 @@ export default function(models: {
       public name!: string;
     }
 
-    await models.connection!.applySchemas();
+    await connection.applySchemas();
 
-    const schema = await models.connection!._adapter.getSchemas();
+    const schema = await connection._adapter.getSchemas();
     const table_names = Object.keys(schema.tables);
     expect(table_names.sort()).to.eql(['Guest', 'User', 'people']);
   });
@@ -98,7 +107,7 @@ export default function(models: {
     }
 
     // must create table before define an alias Model
-    await models.connection!.applySchemas();
+    await connection.applySchemas();
 
     @cormo.Model({ name: 'users' })
     class User2 extends cormo.BaseModel {
@@ -109,7 +118,7 @@ export default function(models: {
       public age!: number;
     }
 
-    await models.connection!.applySchemas();
+    await connection.applySchemas();
 
     // create new records
     const user1 = await User1.create({ n: 'Jone Doe', a: 34 });
@@ -146,6 +155,37 @@ export default function(models: {
     ]);
     expect(await User2.where({ age: 28 }).order('id')).to.eql([
       { id: user2.id, name: 'Bill Smith', age: 28 },
+    ]);
+  });
+
+  it('default value', async () => {
+    sandbox.useFakeTimers(new Date(2018, 8, 21, 17, 13));
+
+    @cormo.Model()
+    class User extends cormo.BaseModel {
+      @cormo.Column({ type: String, required: true, default_value: 'unknown' })
+      public name!: string;
+
+      @cormo.Column({ type: Number, default_value: -1 })
+      public age?: number;
+
+      @cormo.Column({ type: Date, required: true, default_value: Date.now })
+      public created_at!: Date;
+    }
+
+    // create with values
+    const user1 = new User();
+    user1.name = 'Jone Doe';
+    user1.age = 27;
+    user1.created_at = new Date(2018, 7, 3, 5, 24);
+    await user1.save();
+    // create without values
+    const user2 = new User();
+    await user2.save();
+
+    expect(await User.where().order('id')).to.eql([
+      { id: user1.id, name: 'Jone Doe', age: 27, created_at: new Date(2018, 7, 3, 5, 24) },
+      { id: user2.id, name: 'unknown', age: -1, created_at: new Date(2018, 8, 21, 17, 13) },
     ]);
   });
 }
