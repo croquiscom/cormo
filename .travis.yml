@@ -22,5 +22,6 @@ before_install:
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
 
 before_script:
+  - mysql -u travis -e "drop table if exists travis.test"
   - psql -U postgres -c 'create database travis_ci_test;'
   - psql -U postgres -c 'create extension postgis;' travis_ci_test

@@ -1,11 +1,12 @@
 import * as stream from 'stream';
+import { Connection } from '../connection';
 import * as types from '../types';
 import * as util from '../util';
 
 export interface ISchemas {
-  tables: { [tableName: string]: any };
-  indexes?: { [tableName: string]: any };
-  foreign_keys?: { [tableName: string]: any };
+  tables: { [table_name: string]: any };
+  indexes?: { [table_name: string]: any };
+  foreign_keys?: { [table_name: string]: any };
 }
 
 /**
@@ -24,7 +25,7 @@ abstract class AdapterBase {
     return error;
   }
 
-  public _connection: any;
+  public _connection!: Connection;
 
   public support_fractional_seconds = true;
 
@@ -115,19 +116,16 @@ abstract class AdapterBase {
       selected_columns = Object.keys(schema);
     }
     const support_nested = this.support_nested;
-    const results = [];
     for (const column of selected_columns) {
       const property = schema[column];
-      const parts = property._parts;
-      let value = support_nested ? util.getPropertyOfPath(data, parts) : data[property._dbname];
+      let value = support_nested ? util.getPropertyOfPath(data, property._parts_db) : data[property._dbname_us];
       if (value != null) {
         value = this.valueToModel(value, property);
       } else {
         value = null;
       }
-      results.push(util.setPropertyOfPath(instance, parts, value));
+      util.setPropertyOfPath(instance, property._parts, value);
     }
-    return results;
   }
 
   /**
@@ -212,7 +210,7 @@ abstract class AdapterBase {
       return instance;
     } else {
       const id = this._getModelID(data);
-      const modelClass = this._connection.models[model];
+      const modelClass: any = this._connection.models[model];
       return new modelClass(data, id, options.select, options.select_raw);
     }
   }

@@ -9,9 +9,22 @@ export declare type ModelValueObject<T> = Pick<T, ModelColumnNames<T>>;
 export declare type ModelValueObjectWithId<T> = Pick<T, ModelColumnNamesWithId<T>>;
 export interface IColumnProperty {
     type: types.ColumnType;
+    array?: boolean;
     required?: boolean;
     unique?: boolean;
-    connetion?: Connection;
+    connection?: Connection;
+    name?: string;
+}
+export interface IColumnPropertyInternal extends IColumnProperty {
+    record_id?: boolean;
+    type_class: any;
+    _parts: string[];
+    _parts_db: string[];
+    _dbname_dot: string;
+    _dbname_us: string;
+}
+export interface IModelSchema {
+    [path: string]: IColumnPropertyInternal;
 }
 /**
  * Base class for models
@@ -29,7 +42,7 @@ declare class BaseModel {
      * Applies the lean option for all queries for this Model
      */
     static lean_query: boolean;
-    static tableName: string;
+    static table_name: string;
     /**
      * Indicates the connection associated to this model
      */
@@ -39,7 +52,7 @@ declare class BaseModel {
      */
     static _adapter: AdapterBase;
     static _name: string;
-    static _schema: any;
+    static _schema: IModelSchema;
     static _indexes: any[];
     static _integrities: any[];
     static _associations: {
@@ -52,7 +65,7 @@ declare class BaseModel {
     /**
      * Returns a new model class extending BaseModel
      */
-    static newModel(connection: Connection, name: string, schema: any): typeof BaseModel;
+    static newModel(connection: Connection, name: string, schema: IModelSchema): typeof BaseModel;
     /**
      * Sets a connection of this model
      *
@@ -64,7 +77,7 @@ declare class BaseModel {
     /**
      * Adds a column to this model
      */
-    static column(path: string, property: types.ColumnType | IColumnProperty): void;
+    static column(path: string, type_or_property: types.ColumnType | IColumnProperty): void;
     /**
      * Adds an index to this model
      */

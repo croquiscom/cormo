@@ -44,9 +44,24 @@ function _pf_reset() { /**/ }
 
 export interface IColumnProperty {
   type: types.ColumnType;
+  array?: boolean;
   required?: boolean;
   unique?: boolean;
-  connetion?: Connection;
+  connection?: Connection;
+  name?: string;
+}
+
+export interface IColumnPropertyInternal extends IColumnProperty {
+  record_id?: boolean;
+  type_class: any;
+  _parts: string[];
+  _parts_db: string[];
+  _dbname_dot: string;
+  _dbname_us: string;
+}
+
+export interface IModelSchema {
+  [path: string]: IColumnPropertyInternal;
 }
 
 /**
@@ -68,7 +83,7 @@ class BaseModel {
    */
   public static lean_query = false;
 
-  public static tableName: string;
+  public static table_name: string;
 
   /**
    * Indicates the connection associated to this model
@@ -82,7 +97,7 @@ class BaseModel {
 
   public static _name: string;
 
-  public static _schema: any;
+  public static _schema: IModelSchema;
 
   public static _indexes: any[];
 
@@ -101,7 +116,7 @@ class BaseModel {
   /**
    * Returns a new model class extending BaseModel
    */
-  public static newModel(connection: Connection, name: string, schema: any): typeof BaseModel {
+  public static newModel(connection: Connection, name: string, schema: IModelSchema): typeof BaseModel {
     // tslint:disable-next-line:variable-name max-classes-per-file
     const NewModel = class extends BaseModel { };
     NewModel.connection(connection, name);
@@ -136,8 +151,8 @@ class BaseModel {
     Object.defineProperty(this, '_intermediate_paths', { value: {} });
     Object.defineProperty(this, '_indexes', { value: [] });
     Object.defineProperty(this, '_integrities', { value: [] });
-    if (!this.tableName) {
-      this.tableName = tableize(name);
+    if (!this.table_name) {
+      this.table_name = tableize(name);
     }
   }
 
@@ -159,14 +174,14 @@ class BaseModel {
   /**
    * Adds a column to this model
    */
-  public static column(path: string, property: types.ColumnType | IColumnProperty): void;
-  public static column(path: string, property: any) {
+  public static column(path: string, type_or_property: types.ColumnType | IColumnProperty): void;
+  public static column(path: string, type_or_property: any) {
     this._checkConnection();
     // nested path
-    if (_.isPlainObject(property) && (!property.type || property.type.type)) {
+    if (_.isPlainObject(type_or_property) && (!type_or_property.type || type_or_property.type.type)) {
       // tslint:disable-next-line:forin
-      for (const subcolumn in property) {
-        const subproperty = property[subcolumn];
+      for (const subcolumn in type_or_property) {
+        const subproperty = type_or_property[subcolumn];
         this.column(path + '.' + subcolumn, subproperty);
       }
       return;
@@ -174,19 +189,20 @@ class BaseModel {
     if (this._schema.hasOwnProperty(path)) {
       // if using association, a column may be defined more than twice (by hasMany and belongsTo, for example)
       // overwrite some properties if given later
-      if ((property != null ? property.required : void 0) != null) {
-        this._schema[path].required = property.required;
+      if (type_or_property && type_or_property.required) {
+        this._schema[path].required = type_or_property.required;
       }
       return;
     }
     // convert simple type to property object
-    if (!_.isPlainObject(property)) {
-      property = { type: property };
+    if (!_.isPlainObject(type_or_property)) {
+      type_or_property = { type: type_or_property };
     }
-    if (Array.isArray(property.type)) {
-      property.array = true;
-      property.type = property.type[0];
+    if (Array.isArray(type_or_property.type)) {
+      type_or_property.array = true;
+      type_or_property.type = type_or_property.type[0];
     }
+    const property = type_or_property as IColumnPropertyInternal;
     let type: any = types._toCORMOType(property.type);
     if (type.constructor === types.RecordID) {
       type = this._getKeyType(property.connection);
@@ -205,14 +221,16 @@ class BaseModel {
     }
     property.type = type;
     property.type_class = type.constructor;
-    property._parts = path.split('.');
-    property._dbname = path.replace(/\./g, '_');
+    property._parts = parts;
+    property._parts_db = (property.name || path).split('.');
+    property._dbname_dot = property.name || path;
+    property._dbname_us = (property.name || path).replace(/\./g, '_');
     this._schema[path] = property;
     if (property.unique) {
       this._indexes.push({
-        columns: _.zipObject([property._dbname], [1]),
+        columns: _.zipObject([property._dbname_us], [1]),
         options: {
-          name: property._dbname,
+          name: property._dbname_us,
           required: property.required,
           unique: true,
         },
@@ -660,16 +678,17 @@ class BaseModel {
     return callbacks.push({ type, method });
   }
 
-  private static _buildSaveDataColumn(data: any, model: any, column: any, property: any, allow_null: any) {
+  private static _buildSaveDataColumn(
+    data: any, model: any, column: string, property: IColumnPropertyInternal, allow_null: boolean = false,
+  ) {
     const adapter = this._adapter;
-    const parts = property._parts;
-    let value = util.getPropertyOfPath(model, parts);
+    let value = util.getPropertyOfPath(model, property._parts);
     value = adapter.valueToDB(value, column, property);
-    if (allow_null || value !== void 0) {
+    if (allow_null || value !== undefined) {
       if (adapter.support_nested) {
-        util.setPropertyOfPath(data, parts, value);
+        util.setPropertyOfPath(data, property._parts_db, value);
       } else {
-        data[property._dbname] = value;
+        data[property._dbname_us] = value;
       }
     }
   }
@@ -737,7 +756,9 @@ class BaseModel {
     return value;
   }
 
-  private static _validateColumn(data: any, column: any, property: any, for_update: any) {
+  private static _validateColumn(
+    data: any, column: string, property: IColumnPropertyInternal, for_update: boolean = false,
+  ) {
     let obj: any;
     let last: any;
     [obj, last] = util.getLeafOfPath(data, property._parts, false);
@@ -820,7 +841,7 @@ class BaseModel {
       const selected_columns = arguments[2];
       const selected_columns_raw = arguments[3];
       adapter.setValuesFromDB(this, data, schema, selected_columns);
-      ctor._collapseNestedNulls(this, selected_columns_raw, ctor.dirty_tracking ? this._intermediates : void 0);
+      ctor._collapseNestedNulls(this, selected_columns_raw, ctor.dirty_tracking ? this._intermediates : undefined);
       Object.defineProperty(this, 'id', {
         configurable: false,
         enumerable: true,
@@ -839,7 +860,7 @@ class BaseModel {
         }
         util.setPropertyOfPath(this, parts, value);
       }
-      ctor._collapseNestedNulls(this, null, ctor.dirty_tracking ? this._intermediates : void 0);
+      ctor._collapseNestedNulls(this, null, ctor.dirty_tracking ? this._intermediates : undefined);
       Object.defineProperty(this, 'id', {
         configurable: true,
         enumerable: true,
@@ -935,7 +956,8 @@ class BaseModel {
     this._runCallbacks('destroy', 'before');
     try {
       if (this.id) {
-        await (this.constructor as any).delete({ id: this.id });
+        const ctor = this.constructor as typeof BaseModel;
+        await ctor.delete({ id: this.id });
       }
     } finally {
       this._runCallbacks('destroy', 'after');
@@ -961,7 +983,8 @@ class BaseModel {
   public async save(
     options: { skip_log?: boolean, validate?: boolean } = {},
   ): Promise<this> {
-    await (this.constructor as typeof BaseModel)._checkReady();
+    const ctor = this.constructor as typeof BaseModel;
+    await ctor._checkReady();
     if (options.validate !== false) {
       await this.validate();
       return await this.save({ ...options, validate: false });
@@ -993,7 +1016,7 @@ class BaseModel {
   public validate() {
     this._runCallbacks('validate', 'before');
     const errors: any[] = [];
-    const ctor: any = this.constructor;
+    const ctor = this.constructor as typeof BaseModel;
     const schema = ctor._schema;
     // tslint:disable-next-line:forin
     for (const column in schema) {
@@ -1025,7 +1048,8 @@ class BaseModel {
   }
 
   private _runCallbacks(name: ModelCallbackName, type: ModelCallbackType) {
-    let callbacks = (this.constructor as any)._callbacks_map && (this.constructor as any)._callbacks_map[name];
+    const ctor = this.constructor as typeof BaseModel;
+    let callbacks = ctor._callbacks_map && ctor._callbacks_map[name];
     if (!callbacks) {
       return;
     }
@@ -1047,7 +1071,7 @@ class BaseModel {
 
   private _buildSaveData() {
     const data: any = {};
-    const ctor: any = this.constructor;
+    const ctor = this.constructor as typeof BaseModel;
     const schema = ctor._schema;
     // tslint:disable-next-line:forin
     for (const column in schema) {
@@ -1062,7 +1086,7 @@ class BaseModel {
 
   private async _create(options: any) {
     const data = this._buildSaveData();
-    const ctor: any = this.constructor;
+    const ctor = this.constructor as typeof BaseModel;
     if (!(options && options.skip_log)) {
       ctor._connection.log(ctor._name, 'create', data);
     }
@@ -1091,7 +1115,7 @@ class BaseModel {
   }
 
   private async _update(options: any) {
-    const ctor: any = this.constructor;
+    const ctor = this.constructor as typeof BaseModel;
     if (ctor.dirty_tracking) {
       // update changed values only
       if (!this.isDirty()) {
@@ -1104,15 +1128,15 @@ class BaseModel {
       for (const path in this._prev_attributes) {
         ctor._buildSaveDataColumn(data, this._attributes, path, schema[path], true);
       }
-      if (!(options != null ? options.skip_log : void 0)) {
+      if (!(options && options.skip_log)) {
         ctor._connection.log(ctor._name, 'update', data);
       }
-      await adapter.updatePartial(ctor._name, data, { id: this.id }, {});
+      await adapter.updatePartial(ctor._name, data, [{ id: this.id }], {});
       return this._prev_attributes = {};
     } else {
       // update all
       const data = this._buildSaveData();
-      if (!(options != null ? options.skip_log : void 0)) {
+      if (!(options && options.skip_log)) {
         ctor._connection.log(ctor._name, 'update', data);
       }
       await ctor._adapter.update(ctor._name, data);

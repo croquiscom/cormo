@@ -178,16 +178,16 @@ class Connection extends EventEmitter {
         // tslint:disable-next-line:forin
         for (const model in this.models) {
           const modelClass = this.models[model];
-          const currentTable = current.tables && current.tables[modelClass.tableName];
+          const currentTable = current.tables && current.tables[modelClass.table_name];
           if (!currentTable || currentTable === 'NO SCHEMA') {
             continue;
           }
           // tslint:disable-next-line:forin
           for (const column in modelClass._schema) {
             const property = modelClass._schema[column];
-            if (!currentTable[property._dbname]) {
+            if (!currentTable[property._dbname_us]) {
               if (options.verbose) {
-                console.log(`Adding column ${column} to ${modelClass.tableName}`);
+                console.log(`Adding column ${column} to ${modelClass.table_name}`);
               }
               add_columns_commands.push(this._adapter.addColumn(model, property));
             }
@@ -199,9 +199,9 @@ class Connection extends EventEmitter {
         // tslint:disable-next-line:forin
         for (const model in this.models) {
           const modelClass = this.models[model];
-          if (!current.tables[modelClass.tableName]) {
+          if (!current.tables[modelClass.table_name]) {
             if (options.verbose) {
-              console.log(`Creating table ${modelClass.tableName}`);
+              console.log(`Creating table ${modelClass.table_name}`);
             }
             tables_commands.push(this._adapter.createTable(model));
           }
@@ -213,10 +213,10 @@ class Connection extends EventEmitter {
         for (const model in this.models) {
           const modelClass = this.models[model];
           for (const index of modelClass._indexes) {
-            if (!(current.indexes && current.indexes[modelClass.tableName]
-              && current.indexes[modelClass.tableName][index.options.name])) {
+            if (!(current.indexes && current.indexes[modelClass.table_name]
+              && current.indexes[modelClass.table_name][index.options.name])) {
               if (options.verbose) {
-                console.log(`Creating index on ${modelClass.tableName} ${Object.keys(index.columns)}`);
+                console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
               }
               indexes_commands.push(this._adapter.createIndex(model, index));
             }
@@ -238,12 +238,13 @@ class Connection extends EventEmitter {
               type = 'delete';
             }
             if (type) {
-              const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.tableName]
-                && current.foreign_keys[modelClass.tableName][integrity.column];
-              if (!(current_foreign_key && current_foreign_key === integrity.parent.tableName)) {
+              const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.table_name]
+                && current.foreign_keys[modelClass.table_name][integrity.column];
+              if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name)) {
                 if (options.verbose) {
-                  const parentTableName = integrity.parent.tableName;
-                  console.log(`Adding foreign key ${modelClass.tableName}.${integrity.column} to ${parentTableName}`);
+                  const table_name = modelClass.table_name;
+                  const parent_table_name = integrity.parent.table_name;
+                  console.log(`Adding foreign key ${table_name}.${integrity.column} to ${parent_table_name}`);
                 }
                 foreign_keys_commands.push([model, integrity.column, type, integrity.parent]);
               }
@@ -301,7 +302,7 @@ class Connection extends EventEmitter {
           key = key[0];
           data = command[key];
         } else {
-          key = void 0;
+          key = undefined;
         }
       } else if (typeof command === 'string') {
         key = command;

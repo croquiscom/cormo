@@ -72,10 +72,10 @@ function _processSaveError(error: any) {
     return new Error('table does not exist');
   } else if (error.code === 'ER_DUP_ENTRY') {
     const key = error.message.match(/for key '([^']*)'/);
-    return new Error('duplicated ' + (key != null ? key[1] : void 0));
+    return new Error('duplicated ' + (key && key[1]));
   } else if (error.code === 'ER_BAD_NULL_ERROR') {
     const key = error.message.match(/Column '([^']*)'/);
-    return new Error(`'${(key != null ? key[1] : void 0)}' is required`);
+    return new Error(`'${key && key[1]}' is required`);
   } else {
     return MySQLAdapter.wrapError('unknown error', error);
   }
@@ -108,7 +108,7 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: { [tableName: string]: any } = {};
+    const table_schemas: { [table_name: string]: any } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
     }
@@ -123,7 +123,7 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async createTable(model: string) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     const column_sqls = [];
     column_sqls.push('id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY');
     // tslint:disable-next-line:forin
@@ -131,10 +131,10 @@ class MySQLAdapter extends SQLAdapterBase {
       const property = model_class._schema[column];
       const column_sql = _propertyToSQL(property, this.support_fractional_seconds);
       if (column_sql) {
-        column_sqls.push(`\`${property._dbname}\` ${column_sql}`);
+        column_sqls.push(`\`${property._dbname_us}\` ${column_sql}`);
       }
     }
-    let sql = `CREATE TABLE \`${tableName}\` ( ${column_sqls.join(',')} )`;
+    let sql = `CREATE TABLE \`${table_name}\` ( ${column_sqls.join(',')} )`;
     sql += ` DEFAULT CHARSET=${this._settings!.charset || 'utf8'}`;
     sql += ` COLLATE=${this._settings!.collation || 'utf8_unicode_ci'}`;
     try {
@@ -146,9 +146,9 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async addColumn(model: string, column_property: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     const column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
-    const sql = `ALTER TABLE \`${tableName}\` ADD COLUMN \`${column_property._dbname}\` ${column_sql}`;
+    const sql = `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname_us}\` ${column_sql}`;
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
@@ -158,7 +158,7 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async createIndex(model: string, index: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     const columns = [];
     // tslint:disable-next-line:forin
     for (const column in index.columns) {
@@ -166,7 +166,7 @@ class MySQLAdapter extends SQLAdapterBase {
       columns.push(`\`${column}\` ${(order === -1 ? 'DESC' : 'ASC')}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
-    const sql = `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${tableName}\` (${columns.join(',')})`;
+    const sql = `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${table_name}\` (${columns.join(',')})`;
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
@@ -176,7 +176,7 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async createForeignKey(model: string, column: string, type: string, references: any) {
     const model_class = this._connection.models[model];
-    const tableName = model_class.tableName;
+    const table_name = model_class.table_name;
     let action = '';
     switch (type) {
       case 'nullify':
@@ -189,8 +189,8 @@ class MySQLAdapter extends SQLAdapterBase {
         action = 'CASCADE';
         break;
     }
-    const sql = `ALTER TABLE \`${tableName}\` ADD FOREIGN KEY (\`${column}\`)
-      REFERENCES \`${references.tableName}\`(id) ON DELETE ${action}`;
+    const sql = `ALTER TABLE \`${table_name}\` ADD FOREIGN KEY (\`${column}\`)
+      REFERENCES \`${references.table_name}\`(id) ON DELETE ${action}`;
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
@@ -199,19 +199,19 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   public async drop(model: string) {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     try {
-      await this._client.queryAsync(`DROP TABLE IF EXISTS \`${tableName}\``);
+      await this._client.queryAsync(`DROP TABLE IF EXISTS \`${table_name}\``);
     } catch (error) {
       throw MySQLAdapter.wrapError('unknown error', error);
     }
   }
 
   public async create(model: string, data: object): Promise<any> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields, places] = this._buildUpdateSet(model, data, values, true);
-    const sql = `INSERT INTO \`${tableName}\` (${fields}) VALUES (${places})`;
+    const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
     let result;
     try {
       result = (await this._client.queryAsync(sql, values));
@@ -227,7 +227,7 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   public async createBulk(model: string, data: object[]): Promise<any[]> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     let fields: any;
     const places: any[] = [];
@@ -236,7 +236,7 @@ class MySQLAdapter extends SQLAdapterBase {
       [fields, places_sub] = this._buildUpdateSet(model, item, values, true);
       places.push('(' + places_sub + ')');
     });
-    const sql = `INSERT INTO \`${tableName}\` (${fields}) VALUES ${places.join(',')}`;
+    const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES ${places.join(',')}`;
     let result;
     try {
       result = (await this._client.queryAsync(sql, values));
@@ -252,11 +252,11 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   public async update(model: string, data: any) {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildUpdateSet(model, data, values);
     values.push(data.id);
-    const sql = `UPDATE \`${tableName}\` SET ${fields} WHERE id=?`;
+    const sql = `UPDATE \`${table_name}\` SET ${fields} WHERE id=?`;
     try {
       await this._client.queryAsync(sql, values);
     } catch (error) {
@@ -265,10 +265,10 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildPartialUpdateSet(model, data, values);
-    let sql = `UPDATE \`${tableName}\` SET ${fields}`;
+    let sql = `UPDATE \`${table_name}\` SET ${fields}`;
     if (conditions.length > 0) {
       try {
         sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
@@ -289,12 +289,12 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   public async upsert(model: string, data: any, conditions: any, options: any) {
-    const tableName = this._connection.models[model].tableName;
+    const table_name = this._connection.models[model].table_name;
     const insert_data: any = {};
     // tslint:disable-next-line:forin
     for (const key in data) {
       const value = data[key];
-      if ((value != null ? value.$inc : void 0) != null) {
+      if (value && value.$inc != null) {
         insert_data[key] = value.$inc;
       } else {
         insert_data[key] = value;
@@ -311,7 +311,7 @@ class MySQLAdapter extends SQLAdapterBase {
     let fields;
     let places;
     [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
-    let sql = `INSERT INTO \`${tableName}\` (${fields}) VALUES (${places})`;
+    let sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
     [fields] = this._buildPartialUpdateSet(model, data, values);
     sql += ` ON DUPLICATE KEY UPDATE ${fields}`;
     try {
@@ -324,8 +324,8 @@ class MySQLAdapter extends SQLAdapterBase {
   public async findById(model: any, id: any, options: any): Promise<any> {
     id = this._convertValueType(id, this.key_type);
     const select = this._buildSelect(this._connection.models[model], options.select);
-    const tableName = this._connection.models[model].tableName;
-    const sql = `SELECT ${select} FROM \`${tableName}\` WHERE id=? LIMIT 1`;
+    const table_name = this._connection.models[model].table_name;
+    const sql = `SELECT ${select} FROM \`${table_name}\` WHERE id=? LIMIT 1`;
     if (options.explain) {
       return await this._client.queryAsync(`EXPLAIN ${sql}`, id);
     }
@@ -389,8 +389,8 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async count(model: any, conditions: any, options: any): Promise<number> {
     const params: any = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `SELECT COUNT(*) AS count FROM \`${tableName}\``;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `SELECT COUNT(*) AS count FROM \`${table_name}\``;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
@@ -415,8 +415,8 @@ class MySQLAdapter extends SQLAdapterBase {
 
   public async delete(model: any, conditions: any): Promise<number> {
     const params: any = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `DELETE FROM \`${tableName}\``;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `DELETE FROM \`${table_name}\``;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
@@ -542,7 +542,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return schema;
   }
 
-  private async _getIndexes(): Promise<{ [tableName: string]: any }> {
+  private async _getIndexes(): Promise<{ [table_name: string]: any }> {
     const sql = 'SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX';
     const rows = await this._client.queryAsync(sql, [this._database]);
     const indexes: any = {};
@@ -565,33 +565,35 @@ class MySQLAdapter extends SQLAdapterBase {
     return foreign_keys;
   }
 
-  private _buildUpdateSetOfColumn(property: any, data: any, values: any, fields: any[], places: any[], insert?: any) {
-    const dbname = property._dbname;
+  private _buildUpdateSetOfColumn(
+    property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
+  ) {
+    const dbname = property._dbname_us;
     const value = data[dbname];
     if (property.type_class === types.GeoPoint) {
       values.push(value[0]);
       values.push(value[1]);
       if (insert) {
         fields.push(`\`${dbname}\``);
-        return places.push('POINT(?,?)');
+        places.push('POINT(?,?)');
       } else {
-        return fields.push(`\`${dbname}\`=POINT(?,?)`);
+        fields.push(`\`${dbname}\`=POINT(?,?)`);
       }
-    } else if ((value != null ? value.$inc : void 0) != null) {
+    } else if (value && value.$inc != null) {
       values.push(value.$inc);
-      return fields.push(`\`${dbname}\`=\`${dbname}\`+?`);
+      fields.push(`\`${dbname}\`=\`${dbname}\`+?`);
     } else {
       values.push(value);
       if (insert) {
         fields.push(`\`${dbname}\``);
-        return places.push('?');
+        places.push('?');
       } else {
-        return fields.push(`\`${dbname}\`=?`);
+        fields.push(`\`${dbname}\`=?`);
       }
     }
   }
 
-  private _buildUpdateSet(model: string, data: any, values: any, insert?: boolean) {
+  private _buildUpdateSet(model: string, data: any, values: any, insert: boolean = false) {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
     const places: any[] = [];
@@ -610,7 +612,7 @@ class MySQLAdapter extends SQLAdapterBase {
     // tslint:disable-next-line:forin
     for (const column in data) {
       const value = data[column];
-      const property = _.find(schema, (item) => item._dbname === column);
+      const property = _.find(schema, (item) => item._dbname_us === column);
       this._buildUpdateSetOfColumn(property, data, values, fields, places);
     }
     return [fields.join(','), places.join(',')];
@@ -631,8 +633,8 @@ class MySQLAdapter extends SQLAdapterBase {
       select += `,GLENGTH(LINESTRING(\`${field}\`,POINT(${location[0]},${location[1]}))) AS \`${field}_distance\``;
     }
     const params: any[] = [];
-    const tableName = this._connection.models[model].tableName;
-    let sql = `SELECT ${select} FROM \`${tableName}\``;
+    const table_name = this._connection.models[model].table_name;
+    let sql = `SELECT ${select} FROM \`${table_name}\``;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
@@ -654,7 +656,7 @@ class MySQLAdapter extends SQLAdapterBase {
           column = order;
           order = 'ASC';
         }
-        column = schema[column] && schema[column]._dbname || column;
+        column = schema[column] && schema[column]._dbname_us || column;
         return `\`${column}\` ${order}`;
       });
       if (order_by) {
@@ -662,12 +664,12 @@ class MySQLAdapter extends SQLAdapterBase {
       }
       sql += ' ORDER BY ' + orders.join(',');
     }
-    if ((options != null ? options.limit : void 0) != null) {
+    if (options && options.limit) {
       sql += ' LIMIT ' + options.limit;
-      if ((options != null ? options.skip : void 0) != null) {
+      if (options && options.skip) {
         sql += ' OFFSET ' + options.skip;
       }
-    } else if ((options != null ? options.skip : void 0) != null) {
+    } else if (options && options.skip) {
       sql += ' LIMIT 2147483647 OFFSET ' + options.skip;
     }
     return [sql, params];
