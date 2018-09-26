@@ -13,11 +13,13 @@ export interface IColumnProperty {
     required?: boolean;
     unique?: boolean;
     connection?: Connection;
+    name?: string;
 }
 export interface IColumnPropertyInternal extends IColumnProperty {
     record_id?: boolean;
     type_class: any;
     _parts: string[];
+    _parts_db: string[];
     _dbname_dot: string;
     _dbname_us: string;
 }

@@ -130,7 +130,7 @@ function _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: a
   if (property_type_class === types.Date) {
     value = new Date(value);
   }
-  return _.zipObject([key], [value]);
+  return _.zipObject([property ? property._dbname_dot : key], [value]);
 }
 
 function _buildWhere(schema: IModelSchema, conditions: any, conjunction = '$and'): any {
@@ -711,7 +711,7 @@ class MongoDBAdapter extends AdapterBase {
     // tslint:disable-next-line:forin
     for (const column in object) {
       const value = object[column];
-      const property = schema[path + column];
+      const property = _.find(schema, { _dbname_dot: path + column });
       if (property) {
         if (value != null) {
           if (value.$inc != null) {

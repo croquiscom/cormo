@@ -80,7 +80,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       // group field
       column = this._buildGroupExpr(property);
     } else {
-      column = this._escape_ch + key.replace(/\./g, '_') + this._escape_ch;
+      column = this._escape_ch + (property ? property._dbname_us : key.replace(/\./g, '_')) + this._escape_ch;
     }
     let op = '=';
     if (Array.isArray(value)) {

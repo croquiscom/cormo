@@ -48,12 +48,14 @@ export interface IColumnProperty {
   required?: boolean;
   unique?: boolean;
   connection?: Connection;
+  name?: string;
 }
 
 export interface IColumnPropertyInternal extends IColumnProperty {
   record_id?: boolean;
   type_class: any;
   _parts: string[];
+  _parts_db: string[];
   _dbname_dot: string;
   _dbname_us: string;
 }
@@ -220,8 +222,9 @@ class BaseModel {
     property.type = type;
     property.type_class = type.constructor;
     property._parts = parts;
-    property._dbname_dot = path;
-    property._dbname_us = path.replace(/\./g, '_');
+    property._parts_db = (property.name || path).split('.');
+    property._dbname_dot = property.name || path;
+    property._dbname_us = (property.name || path).replace(/\./g, '_');
     this._schema[path] = property;
     if (property.unique) {
       this._indexes.push({
@@ -679,12 +682,11 @@ class BaseModel {
     data: any, model: any, column: string, property: IColumnPropertyInternal, allow_null: boolean = false,
   ) {
     const adapter = this._adapter;
-    const parts = property._parts;
-    let value = util.getPropertyOfPath(model, parts);
+    let value = util.getPropertyOfPath(model, property._parts);
     value = adapter.valueToDB(value, column, property);
     if (allow_null || value !== undefined) {
       if (adapter.support_nested) {
-        util.setPropertyOfPath(data, parts, value);
+        util.setPropertyOfPath(data, property._parts_db, value);
       } else {
         data[property._dbname_us] = value;
       }
@@ -1129,7 +1131,7 @@ class BaseModel {
       if (!(options && options.skip_log)) {
         ctor._connection.log(ctor._name, 'update', data);
       }
-      await adapter.updatePartial(ctor._name, data, { id: this.id }, {});
+      await adapter.updatePartial(ctor._name, data, [{ id: this.id }], {});
       return this._prev_attributes = {};
     } else {
       // update all

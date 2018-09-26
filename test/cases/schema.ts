@@ -86,4 +86,66 @@ export default function(models: {
     const table_names = Object.keys(schema.tables);
     expect(table_names.sort()).to.eql(['Guest', 'User', 'people']);
   });
+
+  it('column name', async () => {
+    @cormo.Model({ name: 'users' })
+    class User1 extends cormo.BaseModel {
+      @cormo.Column(String)
+      public n!: string;
+
+      @cormo.Column(Number)
+      public a!: number;
+    }
+
+    // must create table before define an alias Model
+    await models.connection!.applySchemas();
+
+    @cormo.Model({ name: 'users' })
+    class User2 extends cormo.BaseModel {
+      @cormo.Column({ type: String, name: 'n' })
+      public name!: string;
+
+      @cormo.Column({ type: Number, name: 'a' })
+      public age!: number;
+    }
+
+    await models.connection!.applySchemas();
+
+    // create new records
+    const user1 = await User1.create({ n: 'Jone Doe', a: 34 });
+    const user2 = await User2.create({ name: 'Bill Smith', age: 25 });
+
+    // check database
+    expect(await User1.where().order('id')).to.eql([
+      { id: user1.id, n: 'Jone Doe', a: 34 },
+      { id: user2.id, n: 'Bill Smith', a: 25 },
+    ]);
+    expect(await User2.where().order('id')).to.eql([
+      { id: user1.id, name: 'Jone Doe', age: 34 },
+      { id: user2.id, name: 'Bill Smith', age: 25 },
+    ]);
+
+    // update records
+    await User2.find(user1.id).update({ age: 36 });
+    user2.age = 28;
+    await user2.save();
+
+    // check database
+    expect(await User1.where().order('id')).to.eql([
+      { id: user1.id, n: 'Jone Doe', a: 36 },
+      { id: user2.id, n: 'Bill Smith', a: 28 },
+    ]);
+    expect(await User2.where().order('id')).to.eql([
+      { id: user1.id, name: 'Jone Doe', age: 36 },
+      { id: user2.id, name: 'Bill Smith', age: 28 },
+    ]);
+
+    // query
+    expect(await User2.where({ name: { $contains: 'Doe' } }).order('id')).to.eql([
+      { id: user1.id, name: 'Jone Doe', age: 36 },
+    ]);
+    expect(await User2.where({ age: 28 }).order('id')).to.eql([
+      { id: user2.id, name: 'Bill Smith', age: 28 },
+    ]);
+  });
 }
