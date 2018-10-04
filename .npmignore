@@ -3,10 +3,9 @@ lib-cov
 cov.html
 .DS_Store
 test.sqlite3
-doc
+docs
 src
 test
-Cakefile
 perf
 guides
 examples
@@ -14,3 +13,6 @@ crojsdoc.yaml
 .travis.yml
 GLOSSARY.md
 .npmignore
+docker-compose.yml
+tsconfig.json
+tslint.json

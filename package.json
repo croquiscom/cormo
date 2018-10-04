@@ -29,6 +29,7 @@
     "type": "git",
     "url": "https://github.com/croquiscom/cormo.git"
   },
+  "main": "./lib",
   "types": "./lib/index.d.ts",
   "dependencies": {
     "commander": "^2.18.0",
