@@ -80,11 +80,11 @@ declare class Connection extends EventEmitter {
      * @see SQLite3Adapter::connect
      * @see RedisAdapter::connect
      */
-    constructor(adapter_name: 'mongodb', settings: IConnectionSettings & IAdapterSettingsMongoDB);
-    constructor(adapter_name: 'mysql', settings: IConnectionSettings & IAdapterSettingsMySQL);
-    constructor(adapter_name: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
-    constructor(adapter_name: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
-    constructor(adapter_name: 'sqlite3_memory', settings: IConnectionSettings);
+    constructor(adapter: 'mongodb', settings: IConnectionSettings & IAdapterSettingsMongoDB);
+    constructor(adapter: 'mysql', settings: IConnectionSettings & IAdapterSettingsMySQL);
+    constructor(adapter: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
+    constructor(adapter: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
+    constructor(adapter: 'sqlite3_memory' | ((connection: any) => AdapterBase), settings: IConnectionSettings);
     /**
      * Closes this connection.
      * A closed connection can be used no more.

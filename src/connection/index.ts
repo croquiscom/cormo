@@ -106,12 +106,12 @@ class Connection extends EventEmitter {
    * @see SQLite3Adapter::connect
    * @see RedisAdapter::connect
    */
-  constructor(adapter_name: 'mongodb', settings: IConnectionSettings & IAdapterSettingsMongoDB);
-  constructor(adapter_name: 'mysql', settings: IConnectionSettings & IAdapterSettingsMySQL);
-  constructor(adapter_name: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
-  constructor(adapter_name: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
-  constructor(adapter_name: 'sqlite3_memory', settings: IConnectionSettings);
-  constructor(adapter_name: string, settings: IConnectionSettings) {
+  constructor(adapter: 'mongodb', settings: IConnectionSettings & IAdapterSettingsMongoDB);
+  constructor(adapter: 'mysql', settings: IConnectionSettings & IAdapterSettingsMySQL);
+  constructor(adapter: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
+  constructor(adapter: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
+  constructor(adapter: 'sqlite3_memory' | ((connection: any) => AdapterBase), settings: IConnectionSettings);
+  constructor(adapter: string | ((connection: any) => AdapterBase), settings: IConnectionSettings) {
     super();
     if (settings.is_default !== false) {
       Connection.defaultConnection = this;
@@ -122,7 +122,11 @@ class Connection extends EventEmitter {
     this.models = {};
     this._pending_associations = [];
     this._schema_changed = false;
-    this._adapter = require(__dirname + '/../adapters/' + adapter_name).default(this);
+    if (typeof adapter === 'string') {
+      this._adapter = require(__dirname + '/../adapters/' + adapter).default(this);
+    } else {
+      this._adapter = adapter(this);
+    }
     this._promise_connection = this._adapter.connect(settings).then(() => {
       this.connected = true;
     }).catch((error: Error) => {
