@@ -32,8 +32,11 @@ export default function(db: any, db_config: any) {
 
     // add unique index
     User.index({ age: 1 }, { unique: true });
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+
     try {
       // can not add same age with unique index
       await User.create({ name: 'Jone Doe', age: 27 });
@@ -49,24 +52,32 @@ export default function(db: any, db_config: any) {
     User.index({ name: 1, age: 1 });
     User.column('name', String);
     User.column('age', Number);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     User.column('address', String);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(db === 'mongodb' ? false : true);
 
     await connection.applySchemas();
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
   });
 
   it('add column', async () => {
     class User extends cormo.BaseModel { }
     User.column('name', String);
     User.column('age', Number);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     User.column('address', String);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(db === 'mongodb' ? false : true);
 
     const user1 = await User.create({ name: 'John Doe', age: 27, address: 'Moon' });
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
     const user2 = await User.find(user1.id);
     expect(user2).to.have.keys('id', 'name', 'age', 'address');
     expect((user2 as any).address).to.eql('Moon');
@@ -88,8 +99,10 @@ export default function(db: any, db_config: any) {
       @cormo.Column(String)
       public name!: string;
     }
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     const schema = await connection._adapter.getSchemas();
     const table_names = Object.keys(schema.tables);
@@ -105,9 +118,11 @@ export default function(db: any, db_config: any) {
       @cormo.Column(Number)
       public a!: number;
     }
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     // must create table before define an alias Model
     await connection.applySchemas();
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     @cormo.Model({ name: 'users' })
     class User2 extends cormo.BaseModel {
@@ -117,8 +132,10 @@ export default function(db: any, db_config: any) {
       @cormo.Column({ type: Number, name: 'a' })
       public age!: number;
     }
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false); // no table to create
 
     await connection.applySchemas();
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     // create new records
     const user1 = await User1.create({ n: 'Jone Doe', a: 34 });

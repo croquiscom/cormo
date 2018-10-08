@@ -260,6 +260,78 @@ class Connection extends EventEmitter {
     return this._promise_schema_applied;
   }
 
+  public async isApplyingSchemasNecessary(): Promise<boolean> {
+    this._initializeModels();
+    if (!this._schema_changed) {
+      return false;
+    }
+    this._applyAssociations();
+    this._checkArchive();
+
+    await this._promise_connection;
+
+    const current = await this._adapter.getSchemas();
+
+    // tslint:disable-next-line:forin
+    for (const model in this.models) {
+      const modelClass = this.models[model];
+      const currentTable = current.tables && current.tables[modelClass.table_name];
+      if (!currentTable || currentTable === 'NO SCHEMA') {
+        continue;
+      }
+      // tslint:disable-next-line:forin
+      for (const column in modelClass._schema) {
+        const property = modelClass._schema[column];
+        if (!currentTable[property._dbname_us]) {
+          return true;
+        }
+      }
+    }
+
+    // tslint:disable-next-line:forin
+    for (const model in this.models) {
+      const modelClass = this.models[model];
+      if (!current.tables[modelClass.table_name]) {
+        return true;
+      }
+    }
+
+    // tslint:disable-next-line:forin
+    for (const model in this.models) {
+      const modelClass = this.models[model];
+      for (const index of modelClass._indexes) {
+        if (!(current.indexes && current.indexes[modelClass.table_name]
+          && current.indexes[modelClass.table_name][index.options.name])) {
+          return true;
+        }
+      }
+    }
+
+    // tslint:disable-next-line:forin
+    for (const model in this.models) {
+      const modelClass = this.models[model];
+      for (const integrity of modelClass._integrities) {
+        let type = '';
+        if (integrity.type === 'child_nullify') {
+          type = 'nullify';
+        } else if (integrity.type === 'child_restrict') {
+          type = 'restrict';
+        } else if (integrity.type === 'child_delete') {
+          type = 'delete';
+        }
+        if (type) {
+          const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.table_name]
+            && current.foreign_keys[modelClass.table_name][integrity.column];
+          if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name)) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
   /**
    * Drops all model tables
    */

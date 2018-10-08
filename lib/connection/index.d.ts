@@ -101,6 +101,7 @@ declare class Connection extends EventEmitter {
     applySchemas(options?: {
         verbose?: boolean;
     }): Promise<void>;
+    isApplyingSchemasNecessary(): Promise<boolean>;
     /**
      * Drops all model tables
      */
