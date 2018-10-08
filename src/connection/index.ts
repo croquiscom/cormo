@@ -178,7 +178,7 @@ class Connection extends EventEmitter {
     this._promise_schema_applied = this._promise_connection.then(async () => {
       try {
         const current = await this._adapter.getSchemas();
-        const add_columns_commands = [];
+
         // tslint:disable-next-line:forin
         for (const model in this.models) {
           const modelClass = this.models[model];
@@ -193,13 +193,11 @@ class Connection extends EventEmitter {
               if (options.verbose) {
                 console.log(`Adding column ${column} to ${modelClass.table_name}`);
               }
-              add_columns_commands.push(this._adapter.addColumn(model, property));
+              await this._adapter.addColumn(model, property);
             }
           }
         }
-        await Promise.all(add_columns_commands);
 
-        const tables_commands = [];
         // tslint:disable-next-line:forin
         for (const model in this.models) {
           const modelClass = this.models[model];
@@ -207,12 +205,10 @@ class Connection extends EventEmitter {
             if (options.verbose) {
               console.log(`Creating table ${modelClass.table_name}`);
             }
-            tables_commands.push(this._adapter.createTable(model));
+            await this._adapter.createTable(model);
           }
         }
-        await Promise.all(tables_commands);
 
-        const indexes_commands = [];
         // tslint:disable-next-line:forin
         for (const model in this.models) {
           const modelClass = this.models[model];
@@ -222,13 +218,11 @@ class Connection extends EventEmitter {
               if (options.verbose) {
                 console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
               }
-              indexes_commands.push(this._adapter.createIndex(model, index));
+              await this._adapter.createIndex(model, index);
             }
           }
         }
-        await Promise.all(indexes_commands);
 
-        const foreign_keys_commands = [];
         // tslint:disable-next-line:forin
         for (const model in this.models) {
           const modelClass = this.models[model];
@@ -250,13 +244,10 @@ class Connection extends EventEmitter {
                   const parent_table_name = integrity.parent.table_name;
                   console.log(`Adding foreign key ${table_name}.${integrity.column} to ${parent_table_name}`);
                 }
-                foreign_keys_commands.push([model, integrity.column, type, integrity.parent]);
+                await this._adapter.createForeignKey(model, integrity.column, type, integrity.parent);
               }
             }
           }
-        }
-        for (const args of foreign_keys_commands) {
-          await this._adapter.createForeignKey.apply(this._adapter, args);
         }
       } finally {
         if (options.verbose) {
