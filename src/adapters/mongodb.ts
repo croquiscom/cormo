@@ -24,7 +24,7 @@ class CormoTypesObjectId { }
 
 import * as _ from 'lodash';
 import * as stream from 'stream';
-import { IColumnPropertyInternal, IModelSchema } from '../model';
+import { IColumnPropertyInternal, IModelSchemaInternal } from '../model';
 import * as types from '../types';
 import { AdapterBase, ISchemas } from './base';
 
@@ -133,7 +133,7 @@ function _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: a
   return _.zipObject([property ? property._dbname_dot : key], [value]);
 }
 
-function _buildWhere(schema: IModelSchema, conditions: any, conjunction = '$and'): any {
+function _buildWhere(schema: IModelSchemaInternal, conditions: any, conjunction = '$and'): any {
   let subs: any;
   if (Array.isArray(conditions)) {
     subs = conditions.map((condition) => _buildWhere(schema, condition));
@@ -707,7 +707,7 @@ class MongoDBAdapter extends AdapterBase {
     return indexes;
   }
 
-  private _buildUpdateOps(schema: IModelSchema, update_ops: any, data: any, path: any, object: any): any {
+  private _buildUpdateOps(schema: IModelSchemaInternal, update_ops: any, data: any, path: any, object: any): any {
     // tslint:disable-next-line:forin
     for (const column in object) {
       const value = object[column];

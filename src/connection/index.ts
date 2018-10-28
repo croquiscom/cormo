@@ -12,7 +12,7 @@ import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
 import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
-import { BaseModel, IColumnProperty } from '../model';
+import { BaseModel, IColumnProperty, IModelSchema } from '../model';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
 
@@ -153,7 +153,7 @@ class Connection extends EventEmitter {
   /**
    * Creates a model class
    */
-  public model(name: string, schema: any) {
+  public model(name: string, schema: IModelSchema) {
     return BaseModel.newModel(this, name, schema);
   }
 

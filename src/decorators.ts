@@ -38,7 +38,8 @@ export function Model(options: { connection?: Connection, name?: string } = {}) 
   };
 }
 
-export function Column(column_property: types.ColumnType | IColumnProperty | IColumnNestedProperty) {
+export function Column(column_property: types.ColumnType | types.ColumnType[]
+  | IColumnProperty | IColumnNestedProperty) {
   return (target: BaseModel, propertyKey: string) => {
     const ctor = target.constructor as typeof BaseModel;
     if (!ctor._property_decorators) {

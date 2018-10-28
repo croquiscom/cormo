@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { IColumnPropertyInternal, IModelSchema } from '../model';
+import { IColumnPropertyInternal, IModelSchemaInternal } from '../model';
 import * as types from '../types';
 import { AdapterBase } from './base';
 
@@ -173,7 +173,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     return column + op + this._param_place_holder(params.length);
   }
 
-  protected _buildWhere(schema: IModelSchema, conditions: any, params: any, conjunction = 'AND'): any {
+  protected _buildWhere(schema: IModelSchemaInternal, conditions: any, params: any, conjunction = 'AND'): any {
     let subs: any[] = [];
     let keys: string[];
     if (Array.isArray(conditions)) {

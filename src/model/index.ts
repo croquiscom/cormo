@@ -43,7 +43,7 @@ function _pf_set(this: any, path: string, value: any) {
 function _pf_reset() { /**/ }
 
 export interface IColumnProperty {
-  type: types.ColumnType;
+  type: types.ColumnType | types.ColumnType[];
   array?: boolean;
   required?: boolean;
   unique?: boolean;
@@ -53,6 +53,7 @@ export interface IColumnProperty {
 }
 
 export interface IColumnPropertyInternal extends IColumnProperty {
+  type: types.ColumnType;
   record_id?: boolean;
   type_class: any;
   _parts: string[];
@@ -62,10 +63,14 @@ export interface IColumnPropertyInternal extends IColumnProperty {
 }
 
 export interface IColumnNestedProperty {
-  [subcolumn: string]: types.ColumnType | IColumnProperty | IColumnNestedProperty;
+  [subcolumn: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;
 }
 
 export interface IModelSchema {
+  [path: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;
+}
+
+export interface IModelSchemaInternal {
   [path: string]: IColumnPropertyInternal;
 }
 
@@ -102,7 +107,7 @@ class BaseModel {
 
   public static _name: string;
 
-  public static _schema: IModelSchema;
+  public static _schema: IModelSchemaInternal;
 
   public static _indexes: any[];
 
@@ -180,7 +185,7 @@ class BaseModel {
    * Adds a column to this model
    */
   public static column(
-    path: string, type_or_property: types.ColumnType | IColumnProperty | IColumnNestedProperty,
+    path: string, type_or_property: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty,
   ): void;
   public static column(path: string, type_or_property: any) {
     this._checkConnection();

@@ -5,7 +5,7 @@ import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
 import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
-import { BaseModel } from '../model';
+import { BaseModel, IModelSchema } from '../model';
 declare type ManipulateCommand = string | {
     [key: string]: any;
 };
@@ -93,7 +93,7 @@ declare class Connection extends EventEmitter {
     /**
      * Creates a model class
      */
-    model(name: string, schema: any): typeof BaseModel;
+    model(name: string, schema: IModelSchema): typeof BaseModel;
     /**
      * Applies schemas
      * @see AdapterBase::applySchema

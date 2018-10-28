@@ -8,7 +8,7 @@ export declare type ModelColumnNamesWithId<T> = Exclude<keyof T, Exclude<keyof B
 export declare type ModelValueObject<T> = Pick<T, ModelColumnNames<T>>;
 export declare type ModelValueObjectWithId<T> = Pick<T, ModelColumnNamesWithId<T>>;
 export interface IColumnProperty {
-    type: types.ColumnType;
+    type: types.ColumnType | types.ColumnType[];
     array?: boolean;
     required?: boolean;
     unique?: boolean;
@@ -17,6 +17,7 @@ export interface IColumnProperty {
     default_value?: string | number | (() => string | number);
 }
 export interface IColumnPropertyInternal extends IColumnProperty {
+    type: types.ColumnType;
     record_id?: boolean;
     type_class: any;
     _parts: string[];
@@ -25,9 +26,12 @@ export interface IColumnPropertyInternal extends IColumnProperty {
     _dbname_us: string;
 }
 export interface IColumnNestedProperty {
-    [subcolumn: string]: types.ColumnType | IColumnProperty | IColumnNestedProperty;
+    [subcolumn: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;
 }
 export interface IModelSchema {
+    [path: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;
+}
+export interface IModelSchemaInternal {
     [path: string]: IColumnPropertyInternal;
 }
 /**
@@ -56,7 +60,7 @@ declare class BaseModel {
      */
     static _adapter: AdapterBase;
     static _name: string;
-    static _schema: IModelSchema;
+    static _schema: IModelSchemaInternal;
     static _indexes: any[];
     static _integrities: any[];
     static _associations: {
@@ -81,7 +85,7 @@ declare class BaseModel {
     /**
      * Adds a column to this model
      */
-    static column(path: string, type_or_property: types.ColumnType | IColumnProperty | IColumnNestedProperty): void;
+    static column(path: string, type_or_property: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty): void;
     /**
      * Adds an index to this model
      */

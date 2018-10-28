@@ -7,18 +7,21 @@
  * @namespace cormo
  */
 
-export type ColumnType = 'string' | ICormoTypesString | ICormoTypesStringConstructor | StringConstructor
-  | 'number' | ICormoTypesNumber | ICormoTypesNumberConstructor | NumberConstructor
-  | 'boolean' | ICormoTypesBoolean | ICormoTypesBooleanConstructor | BooleanConstructor
-  | 'integer' | ICormoTypesInteger | ICormoTypesIntegerConstructor
-  | 'geopoint' | ICormoTypesGeoPoint | ICormoTypesGeoPointConstructor
-  | 'date' | ICormoTypesDate | ICormoTypesDateConstructor | DateConstructor
-  | 'object' | ICormoTypesObject | ICormoTypesObjectConstructor | ObjectConstructor
-  | 'recordid' | ICormoTypesRecordID | ICormoTypesRecordIDConstructor
-  | 'text' | ICormoTypesText | ICormoTypesTextConstructor;
+export type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber | ICormoTypesBoolean | ICormoTypesDate
+  | ICormoTypesObject | ICormoTypesInteger | ICormoTypesGeoPoint | ICormoTypesRecordID | ICormoTypesText;
 
-export type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber | ICormoTypesBoolean | ICormoTypesInteger
-  | ICormoTypesGeoPoint | ICormoTypesDate | ICormoTypesObject | ICormoTypesRecordID | ICormoTypesText;
+type ColumnTypeConstructor = ICormoTypesStringConstructor | StringConstructor
+  | ICormoTypesNumberConstructor | NumberConstructor
+  | ICormoTypesBooleanConstructor | BooleanConstructor
+  | ICormoTypesDateConstructor | DateConstructor
+  | ICormoTypesObjectConstructor | ObjectConstructor
+  | ICormoTypesIntegerConstructor | ICormoTypesGeoPointConstructor
+  | ICormoTypesRecordIDConstructor | ICormoTypesTextConstructor;
+
+type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date'
+  | 'object' | 'integer' | 'geopoint' | 'recordid' | 'text';
+
+export type ColumnType = ColumnTypeInternal | ColumnTypeConstructor | ColumnTypeString;
 
 /**
  * Represents a string, used in model schemas.
