@@ -229,7 +229,7 @@ declare class BaseModel {
      */
     static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, columns: string): IQueryArray<Pick<T, K>>;
+    } & typeof BaseModel, columns?: string): IQueryArray<Pick<T, K>>;
     /**
      * Specifies orders of result
      */

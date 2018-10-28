@@ -32,7 +32,7 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
   findPreserve(id: RecordID[]): IQueryArray<T>;
   near(target: object): IQuerySingle<T>;
   where(condition?: object): IQuerySingle<T>;
-  select<K extends ModelColumnNamesWithId<T>>(columns: string): IQuerySingle<Pick<T, K>>;
+  select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuerySingle<Pick<T, K>>;
   order(orders: string): IQuerySingle<T>;
   group<G extends keyof T, F>(group_by: G, fields?: F):
     IQuerySingle<{ [field in keyof F]: number } & Pick<T, G>>;
@@ -63,7 +63,7 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   findPreserve(id: RecordID[]): IQueryArray<T>;
   near(target: object): IQueryArray<T>;
   where(condition?: object): IQueryArray<T>;
-  select<K extends ModelColumnNamesWithId<T>>(columns: string): IQueryArray<Pick<T, K>>;
+  select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQueryArray<Pick<T, K>>;
   order(orders: string): IQueryArray<T>;
   group<G extends keyof T, F>(group_by: G, fields?: F):
     IQueryArray<{ [field in keyof F]: number } & Pick<T, G>>;
@@ -189,9 +189,9 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   /**
    * Selects columns for result
    */
-  public select<K extends ModelColumnNamesWithId<T>>(columns: string): IQuerySingle<Pick<T, K>>;
-  public select<K extends ModelColumnNamesWithId<T>>(columns: string): IQueryArray<Pick<T, K>>;
-  public select<K extends ModelColumnNamesWithId<T>>(columns: string): IQuery<Pick<T, K>> {
+  public select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuerySingle<Pick<T, K>>;
+  public select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQueryArray<Pick<T, K>>;
+  public select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuery<Pick<T, K>> {
     if (!this._current_if) {
       return this;
     }
