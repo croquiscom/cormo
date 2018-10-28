@@ -239,9 +239,19 @@ declare class BaseModel {
     /**
      * Groups result records
      */
-    static group<T extends BaseModel, U = T>(this: {
+    static group<T extends BaseModel, G extends keyof T, F>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, group_by: string | null, fields: object): IQuerySingle<U> | IQueryArray<U>;
+    } & typeof BaseModel, group_by: G, fields?: F): IQueryArray<{
+        [field in keyof F]: number;
+    } & Pick<T, G>>;
+    static group<T extends BaseModel, F>(this: {
+        new (data?: any): T;
+    } & typeof BaseModel, group_by: null, fields?: F): IQueryArray<{
+        [field in keyof F]: number;
+    }>;
+    static group<T extends BaseModel, U>(this: {
+        new (data?: any): T;
+    } & typeof BaseModel, group_by: string | null, fields?: object): IQueryArray<U>;
     /**
      * Counts records by conditions
      */

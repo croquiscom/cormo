@@ -614,11 +614,26 @@ class BaseModel {
   /**
    * Groups result records
    */
-  public static group<T extends BaseModel, U = T>(
+  public static group<T extends BaseModel, G extends keyof T, F>(
+    this: { new(data?: any): T } & typeof BaseModel,
+    group_by: G,
+    fields?: F,
+  ): IQueryArray<{ [field in keyof F]: number } & Pick<T, G>>;
+  public static group<T extends BaseModel, F>(
+    this: { new(data?: any): T } & typeof BaseModel,
+    group_by: null,
+    fields?: F,
+  ): IQueryArray<{ [field in keyof F]: number }>;
+  public static group<T extends BaseModel, U>(
     this: { new(data?: any): T } & typeof BaseModel,
     group_by: string | null,
-    fields: object,
-  ): IQuerySingle<U> | IQueryArray<U> {
+    fields?: object,
+  ): IQueryArray<U>;
+  public static group<T extends BaseModel, U>(
+    this: { new(data?: any): T } & typeof BaseModel,
+    group_by: string | null,
+    fields?: object,
+  ): IQueryArray<U> {
     return this.query().group<U>(group_by, fields);
   }
 

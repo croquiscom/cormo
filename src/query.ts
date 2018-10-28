@@ -34,7 +34,11 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
   where(condition?: object): IQuerySingle<T>;
   select<K extends ModelColumnNamesWithId<T>>(columns: string): IQuerySingle<Pick<T, K>>;
   order(orders: string): IQuerySingle<T>;
-  group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
+  group<G extends keyof T, F>(group_by: G, fields?: F):
+    IQuerySingle<{ [field in keyof F]: number } & Pick<T, G>>;
+  group<G extends keyof T, F>(group_by: null, fields?: F):
+    IQuerySingle<{ [field in keyof F]: number }>;
+  group<U>(group_by: string | null, fields?: object): IQuerySingle<U>;
   one(): IQuerySingle<T>;
   limit(limit?: number): IQuerySingle<T>;
   skip(skip?: number): IQuerySingle<T>;
@@ -61,7 +65,11 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   where(condition?: object): IQueryArray<T>;
   select<K extends ModelColumnNamesWithId<T>>(columns: string): IQueryArray<Pick<T, K>>;
   order(orders: string): IQueryArray<T>;
-  group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
+  group<G extends keyof T, F>(group_by: G, fields?: F):
+    IQueryArray<{ [field in keyof F]: number } & Pick<T, G>>;
+  group<F>(group_by: null, fields?: F):
+    IQueryArray<{ [field in keyof F]: number }>;
+  group<U>(group_by: string | null, fields?: object): IQueryArray<U>;
   one(): IQuerySingle<T>;
   limit(limit?: number): IQueryArray<T>;
   skip(skip?: number): IQueryArray<T>;
@@ -245,9 +253,9 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   /**
    * Groups result records
    */
-  public group<U = T>(group_by: string | null, fields: object): IQuerySingle<U>;
-  public group<U = T>(group_by: string | null, fields: object): IQueryArray<U>;
-  public group<U = T>(group_by: string | null, fields: object): IQuery<U> {
+  public group<U>(group_by: string | null, fields?: object): IQuerySingle<U>;
+  public group<U>(group_by: string | null, fields?: object): IQueryArray<U>;
+  public group<U>(group_by: string | null, fields?: object): IQuery<U> {
     if (!this._current_if) {
       return this as any;
     }
