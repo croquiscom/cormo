@@ -126,13 +126,16 @@ class MySQLAdapter extends SQLAdapterBase {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sqls = [];
-    column_sqls.push('id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY');
     // tslint:disable-next-line:forin
     for (const column in model_class._schema) {
       const property = model_class._schema[column];
-      const column_sql = _propertyToSQL(property, this.support_fractional_seconds);
-      if (column_sql) {
-        column_sqls.push(`\`${property._dbname_us}\` ${column_sql}`);
+      if (property.primary_key) {
+        column_sqls.push(`\`${property._dbname_us}\` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
+      } else {
+        const column_sql = _propertyToSQL(property, this.support_fractional_seconds);
+        if (column_sql) {
+          column_sqls.push(`\`${property._dbname_us}\` ${column_sql}`);
+        }
       }
     }
     let sql = `CREATE TABLE \`${table_name}\` ( ${column_sqls.join(',')} )`;
@@ -601,6 +604,9 @@ class MySQLAdapter extends SQLAdapterBase {
     // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
+      if (property.primary_key) {
+        continue;
+      }
       this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
     }
     return [fields.join(','), places.join(',')];
@@ -614,6 +620,9 @@ class MySQLAdapter extends SQLAdapterBase {
     for (const column in data) {
       const value = data[column];
       const property = _.find(schema, (item) => item._dbname_us === column);
+      if (!property || property.primary_key) {
+        continue;
+      }
       this._buildUpdateSetOfColumn(property, data, values, fields, places);
     }
     return [fields.join(','), places.join(',')];

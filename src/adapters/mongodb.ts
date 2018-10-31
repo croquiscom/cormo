@@ -44,11 +44,11 @@ function _objectIdToString(oid: any) {
 }
 
 function _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: any, not_op?: any): any {
-  if (key !== 'id' && (property == null)) {
+  if (property == null) {
     throw new Error(`unknown column '${key}'`);
   }
-  const property_type_class = property && property.type_class;
-  const is_objectid = key === 'id' || property_type_class === CormoTypesObjectId;
+  const property_type_class = property.type_class;
+  const is_objectid = property_type_class === CormoTypesObjectId;
   if (Array.isArray(value)) {
     if (is_objectid) {
       value = value.map((v) => _convertValueToObjectID(v, key));
@@ -130,7 +130,7 @@ function _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: a
   if (property_type_class === types.Date) {
     value = new Date(value);
   }
-  return _.zipObject([property ? property._dbname_dot : key], [value]);
+  return _.zipObject([!property.primary_key ? property._dbname_dot : key], [value]);
 }
 
 function _buildWhere(schema: IModelSchemaInternal, conditions: any, conjunction = '$and'): any {
@@ -490,7 +490,7 @@ class MongoDBAdapter extends AdapterBase {
     let orders: any;
     let client_options: any;
     [conditions, fields, orders, client_options] = this._buildConditionsForFind(model, conditions, options);
-    // console.log(JSON.stringify(conditions))
+    // console.log(JSON.stringify(conditions));
     if (options.group_by || options.group_fields) {
       const pipeline: any[] = [];
       if (conditions) {
@@ -713,6 +713,9 @@ class MongoDBAdapter extends AdapterBase {
       const value = object[column];
       const property = _.find(schema, { _dbname_dot: path + column });
       if (property) {
+        if (property.primary_key) {
+          continue;
+        }
         if (value != null) {
           if (value.$inc != null) {
             update_ops.$inc[path + column] = value.$inc;

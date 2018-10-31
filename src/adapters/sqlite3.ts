@@ -101,13 +101,16 @@ class SQLite3Adapter extends SQLAdapterBase {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sqls: any[] = [];
-    column_sqls.push('id INTEGER PRIMARY KEY AUTOINCREMENT');
     // tslint:disable-next-line:forin
     for (const column in model_class._schema) {
       const property = model_class._schema[column];
-      const column_sql = _propertyToSQL(property);
-      if (column_sql) {
-        column_sqls.push(`"${property._dbname_us}" ${column_sql}`);
+      if (property.primary_key) {
+        column_sqls.push(`"${property._dbname_us}" INTEGER PRIMARY KEY AUTOINCREMENT`);
+      } else {
+        const column_sql = _propertyToSQL(property);
+        if (column_sql) {
+          column_sqls.push(`"${property._dbname_us}" ${column_sql}`);
+        }
       }
     }
     for (const integrity of model_class._integrities) {
@@ -512,6 +515,9 @@ class SQLite3Adapter extends SQLAdapterBase {
     // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
+      if (property.primary_key) {
+        continue;
+      }
       this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
     }
     return [fields.join(','), places.join(',')];
@@ -525,6 +531,9 @@ class SQLite3Adapter extends SQLAdapterBase {
     for (const column in data) {
       const value = data[column];
       const property = _.find(schema, (item) => item._dbname_us === column);
+      if (!property || property.primary_key) {
+        continue;
+      }
       this._buildUpdateSetOfColumn(property, data, values, fields, places);
     }
     return [fields.join(','), places.join(',')];

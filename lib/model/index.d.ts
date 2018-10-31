@@ -24,6 +24,7 @@ export interface IColumnPropertyInternal extends IColumnProperty {
     _parts_db: string[];
     _dbname_dot: string;
     _dbname_us: string;
+    primary_key: boolean;
 }
 export interface IColumnNestedProperty {
     [subcolumn: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;

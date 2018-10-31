@@ -60,6 +60,7 @@ export interface IColumnPropertyInternal extends IColumnProperty {
   _parts_db: string[];
   _dbname_dot: string;
   _dbname_us: string;
+  primary_key: boolean;
 }
 
 export interface IColumnNestedProperty {
@@ -164,6 +165,7 @@ class BaseModel {
     if (!this.table_name) {
       this.table_name = tableize(name);
     }
+    this.column('id', 'recordid');
   }
 
   public static _checkConnection() {
@@ -238,6 +240,7 @@ class BaseModel {
     property._parts_db = (property.name || path).split('.');
     property._dbname_dot = property.name || path;
     property._dbname_us = (property.name || path).replace(/\./g, '_');
+    property.primary_key = path === 'id';
     this._schema[path] = property;
     if (property.unique) {
       this._indexes.push({
@@ -852,6 +855,9 @@ class BaseModel {
       // tslint:disable-next-line:forin
       for (const column in schema) {
         const property = schema[column];
+        if (property.primary_key) {
+          continue;
+        }
         const [obj, last] = util.getLeafOfPath(this, property._parts);
         this._defineProperty(obj, last, column, false);
       }
@@ -881,6 +887,9 @@ class BaseModel {
       // tslint:disable-next-line:forin
       for (const column in schema) {
         const property = schema[column];
+        if (property.primary_key) {
+          continue;
+        }
         const parts = property._parts;
         let value = util.getPropertyOfPath(data, parts);
         if (value === undefined) {
@@ -1019,6 +1028,9 @@ class BaseModel {
       // tslint:disable-next-line:forin
       for (const column in schema) {
         const property = schema[column];
+        if (property.primary_key) {
+          continue;
+        }
         const value = util.getPropertyOfPath(this, property._parts);
         if (value == null && property.default_value !== undefined) {
           if (_.isFunction(property.default_value)) {
@@ -1065,6 +1077,9 @@ class BaseModel {
     // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
+      if (property.primary_key) {
+        continue;
+      }
       try {
         ctor._validateColumn(this, column, property);
       } catch (error) {
@@ -1120,6 +1135,9 @@ class BaseModel {
     // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
+      if (property.primary_key) {
+        continue;
+      }
       ctor._buildSaveDataColumn(data, this, column, property);
     }
     if (this.id != null) {
