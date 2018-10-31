@@ -206,7 +206,10 @@ abstract class AdapterBase {
       const instance: any = {};
       this.setValuesFromDB(instance, data, model._schema, options.select);
       model._collapseNestedNulls(instance, options.select_raw, null);
-      instance.id = this._getModelID(data);
+      const id = this._getModelID(data);
+      if (id) {
+        instance.id = id;
+      }
       return instance;
     } else {
       const id = this._getModelID(data);

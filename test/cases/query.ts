@@ -403,11 +403,7 @@ export default function(models: {
   it('lean option for a single record', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const record = await models.User.find(user.id).lean();
-    expect(record).to.exist;
-    expect(record).to.not.be.an.instanceof(models.User);
-    expect(record).to.have.property('id', user.id);
-    expect(record).to.have.property('name', user.name);
-    expect(record).to.have.property('age', user.age);
+    expect(record).to.eql({ id: user.id, name: user.name, age: user.age });
   });
 
   it('lean option for multiple records', async () => {
@@ -435,6 +431,12 @@ export default function(models: {
     expect(users).to.have.length(1);
     expect(users[0]).to.have.keys('id', 'name', 'age');
     expect(users[0].age).to.be.null;
+  });
+
+  it('lean option without id', async () => {
+    const user = await models.User.create({ name: 'John Doe', age: 27 });
+    const record = await models.User.find(user.id).select(['name', 'age']).lean();
+    expect(record).to.eql({ name: user.name, age: user.age });
   });
 
   it('id field of lean result can be modified', async () => {
