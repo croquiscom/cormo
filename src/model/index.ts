@@ -600,9 +600,17 @@ class BaseModel {
    */
   public static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(
     this: { new(data?: any): T } & typeof BaseModel,
+    columns: K[],
+  ): IQueryArray<Pick<T, K>>;
+  public static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(
+    this: { new(data?: any): T } & typeof BaseModel,
     columns?: string,
+  ): IQueryArray<Pick<T, K>>;
+  public static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(
+    this: { new(data?: any): T } & typeof BaseModel,
+    columns?: string | K[],
   ): IQueryArray<Pick<T, K>> {
-    return this.query().select<K>(columns);
+    return this.query().select<K>(columns as string);
   }
 
   /**

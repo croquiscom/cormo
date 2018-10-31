@@ -11,8 +11,8 @@ interface IQueryOptions {
   lean: boolean;
   orders: any[];
   near?: any;
-  select?: any;
-  select_raw?: any;
+  select?: string[] | null;
+  select_raw?: string[] | null;
   group_fields?: any;
   group_by?: any;
   limit?: number;
@@ -32,6 +32,7 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
   findPreserve(id: RecordID[]): IQueryArray<T>;
   near(target: object): IQuerySingle<T>;
   where(condition?: object): IQuerySingle<T>;
+  select<K extends ModelColumnNamesWithId<T>>(columns: K[]): IQuerySingle<Pick<T, K>>;
   select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuerySingle<Pick<T, K>>;
   order(orders: string): IQuerySingle<T>;
   group<G extends keyof T, F>(group_by: G, fields?: F):
@@ -63,6 +64,7 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   findPreserve(id: RecordID[]): IQueryArray<T>;
   near(target: object): IQueryArray<T>;
   where(condition?: object): IQueryArray<T>;
+  select<K extends ModelColumnNamesWithId<T>>(columns: K[]): IQueryArray<Pick<T, K>>;
   select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQueryArray<Pick<T, K>>;
   order(orders: string): IQueryArray<T>;
   group<G extends keyof T, F>(group_by: G, fields?: F):
@@ -189,36 +191,44 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   /**
    * Selects columns for result
    */
-  public select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuerySingle<Pick<T, K>>;
-  public select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQueryArray<Pick<T, K>>;
-  public select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuery<Pick<T, K>> {
+  public select<K extends ModelColumnNamesWithId<T>>(columns?: string | string[]): IQuerySingle<Pick<T, K>>;
+  public select<K extends ModelColumnNamesWithId<T>>(columns?: string | string[]): IQueryArray<Pick<T, K>>;
+  public select<K extends ModelColumnNamesWithId<T>>(columns?: string | string[]): IQuery<Pick<T, K>> {
     if (!this._current_if) {
       return this;
     }
     this._options.select = null;
     this._options.select_raw = null;
-    if (typeof columns === 'string') {
-      const schema_columns = Object.keys(this._model._schema);
-      const intermediate_paths = this._model._intermediate_paths;
-      const select: any[] = [];
-      const select_raw: any[] = [];
-      columns.split(/\s+/).forEach((column) => {
-        if (schema_columns.indexOf(column) >= 0) {
-          select.push(column);
-          select_raw.push(column);
-        } else if (intermediate_paths[column]) {
-          // select all nested columns
-          select_raw.push(column);
-          column += '.';
-          schema_columns.forEach((sc) => {
-            if (sc.indexOf(column) === 0) {
-              select.push(sc);
-            }
-          });
+    if (columns != null) {
+      if (typeof columns === 'string') {
+        columns = columns.split(/\s+/);
+        columns.push('id');
+      }
+      if (columns.length > 0) {
+        const schema_columns = Object.keys(this._model._schema);
+        const intermediate_paths = this._model._intermediate_paths;
+        const select: string[] = [];
+        const select_raw: string[] = [];
+        columns.forEach((column) => {
+          if (schema_columns.indexOf(column) >= 0) {
+            select.push(column);
+            select_raw.push(column);
+          } else if (intermediate_paths[column]) {
+            // select all nested columns
+            select_raw.push(column);
+            column += '.';
+            schema_columns.forEach((sc) => {
+              if (sc.indexOf(column) === 0) {
+                select.push(sc);
+              }
+            });
+          }
+        });
+        if (select_raw.length > 0) {
+          this._options.select = select;
+          this._options.select_raw = select_raw;
         }
-      });
-      this._options.select = select;
-      this._options.select_raw = select_raw;
+      }
     }
     return this;
   }

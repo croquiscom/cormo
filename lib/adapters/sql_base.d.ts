@@ -12,6 +12,6 @@ declare abstract class SQLAdapterBase extends AdapterBase {
     protected _buildWhere(schema: IModelSchemaInternal, conditions: any, params: any, conjunction?: string): any;
     protected _buildGroupExpr(group_expr: any): string;
     protected _buildGroupFields(group_by: any, group_fields: any): string;
-    protected _buildSelect(model_class: any, select: any): string;
+    protected _buildSelect(model_class: any, select: any): any;
 }
 export { SQLAdapterBase };

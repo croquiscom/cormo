@@ -274,14 +274,28 @@ export default function(models: {
 
   it('select', async () => {
     await _createUsers(models.User);
-    let users = await models.User.select();
-    expect(users[0]).to.have.keys('id', 'name', 'age');
-    users = await models.User.select('name age address');
-    expect(users[0]).to.have.keys('id', 'name', 'age');
-    users = await models.User.select('name');
-    expect(users[0]).to.have.keys('id', 'name');
-    users = await models.User.select('');
-    expect(users[0]).to.have.keys('id');
+    const users1 = await models.User.select();
+    expect(users1[0]).to.have.keys('id', 'name', 'age');
+    const users2 = await models.User.select('name age address');
+    expect(users2[0]).to.have.keys('id', 'name', 'age');
+    const users3 = await models.User.select('name');
+    expect(users3[0]).to.have.keys('id', 'name');
+    const users4 = await models.User.select('');
+    expect(users4[0]).to.have.keys('id');
+  });
+
+  it('select with string array', async () => {
+    await _createUsers(models.User);
+    const users1 = await models.User.select();
+    expect(users1[0]).to.have.keys('id', 'name', 'age');
+    const users2 = await models.User.select(['id', 'name', 'age', 'address'] as any);
+    expect(users2[0]).to.have.keys('id', 'name', 'age');
+    const users3 = await models.User.select(['id', 'name']);
+    expect(users3[0]).to.have.keys('id', 'name');
+    const users4 = await models.User.select([]);
+    expect(users4[0]).to.have.keys('id', 'name', 'age');
+    const users5 = await models.User.select([''] as any);
+    expect(users5[0]).to.have.keys('id', 'name', 'age');
   });
 
   it('order (string)', async () => {

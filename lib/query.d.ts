@@ -7,8 +7,8 @@ interface IQueryOptions {
     lean: boolean;
     orders: any[];
     near?: any;
-    select?: any;
-    select_raw?: any;
+    select?: string[] | null;
+    select_raw?: string[] | null;
     group_fields?: any;
     group_by?: any;
     limit?: number;
@@ -27,6 +27,7 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
     findPreserve(id: RecordID[]): IQueryArray<T>;
     near(target: object): IQuerySingle<T>;
     where(condition?: object): IQuerySingle<T>;
+    select<K extends ModelColumnNamesWithId<T>>(columns: K[]): IQuerySingle<Pick<T, K>>;
     select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuerySingle<Pick<T, K>>;
     order(orders: string): IQuerySingle<T>;
     group<G extends keyof T, F>(group_by: G, fields?: F): IQuerySingle<{
@@ -58,6 +59,7 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
     findPreserve(id: RecordID[]): IQueryArray<T>;
     near(target: object): IQueryArray<T>;
     where(condition?: object): IQueryArray<T>;
+    select<K extends ModelColumnNamesWithId<T>>(columns: K[]): IQueryArray<Pick<T, K>>;
     select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQueryArray<Pick<T, K>>;
     order(orders: string): IQueryArray<T>;
     group<G extends keyof T, F>(group_by: G, fields?: F): IQueryArray<{
@@ -123,8 +125,8 @@ declare class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
     /**
      * Selects columns for result
      */
-    select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuerySingle<Pick<T, K>>;
-    select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQueryArray<Pick<T, K>>;
+    select<K extends ModelColumnNamesWithId<T>>(columns?: string | string[]): IQuerySingle<Pick<T, K>>;
+    select<K extends ModelColumnNamesWithId<T>>(columns?: string | string[]): IQueryArray<Pick<T, K>>;
     /**
      * Specifies orders of result
      */
