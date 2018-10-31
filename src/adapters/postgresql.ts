@@ -458,6 +458,9 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   protected _getModelID(data: any) {
+    if (!data.id) {
+      return null;
+    }
     return Number(data.id);
   }
 
@@ -465,22 +468,18 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     if (!select) {
       select = Object.keys(model_class._schema);
     }
-    if (select.length > 0) {
-      const schema = model_class._schema;
-      const escape_ch = this._escape_ch;
-      select = select.map((column: any) => {
-        const property = schema[column];
-        column = escape_ch + schema[column]._dbname_us + escape_ch;
-        if (property.type_class === types.GeoPoint) {
-          return `ARRAY[ST_X(${column}), ST_Y(${column})] AS ${column}`;
-        } else {
-          return column;
-        }
-      });
-      return 'id,' + select.join(',');
-    } else {
-      return 'id';
-    }
+    const schema = model_class._schema;
+    const escape_ch = this._escape_ch;
+    select = select.map((column: any) => {
+      const property = schema[column];
+      column = escape_ch + schema[column]._dbname_us + escape_ch;
+      if (property.type_class === types.GeoPoint) {
+        return `ARRAY[ST_X(${column}), ST_Y(${column})] AS ${column}`;
+      } else {
+        return column;
+      }
+    });
+    return select.join(',');
   }
 
   private async _getTables(): Promise<any> {

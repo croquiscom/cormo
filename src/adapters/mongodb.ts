@@ -454,11 +454,7 @@ class MongoDBAdapter extends AdapterBase {
   }
 
   public async findById(model: any, id: any, options: any): Promise<any> {
-    let fields: any;
-    if (options.select) {
-      fields = {};
-      options.select.forEach((column: any) => fields[column] = 1);
-    }
+    const fields = this._buildSelect(options.select);
     try {
       id = _convertValueToObjectID(id, 'id');
     } catch (error) {
@@ -466,7 +462,7 @@ class MongoDBAdapter extends AdapterBase {
     }
     const client_options: any = {};
     if (fields) {
-      client_options.fields = fields;
+      client_options.projection = fields;
     }
     if (options.explain) {
       client_options.explain = true;
@@ -664,6 +660,9 @@ class MongoDBAdapter extends AdapterBase {
   }
 
   protected _getModelID(data: any) {
+    if (!data._id) {
+      return null;
+    }
     return _objectIdToString(data._id);
   }
 
@@ -676,6 +675,21 @@ class MongoDBAdapter extends AdapterBase {
       }
     } else {
       return value;
+    }
+  }
+
+  private _buildSelect(select: any) {
+    if (select) {
+      const fields: any = {};
+      select.forEach((column: any) => {
+        if (column !== 'id') {
+          fields[column] = 1;
+        }
+      });
+      if (!select.includes('id')) {
+        fields._id = 0;
+      }
+      return fields;
     }
   }
 
@@ -732,12 +746,8 @@ class MongoDBAdapter extends AdapterBase {
   }
 
   private _buildConditionsForFind(model: any, conditions: any, options: any) {
-    let fields: any;
+    const fields = this._buildSelect(options.select);
     let orders: any;
-    if (options.select) {
-      fields = {};
-      options.select.forEach((column: any) => fields[column] = 1);
-    }
     conditions = _buildWhere(this._connection.models[model]._schema, conditions);
     if (options.near != null && Object.keys(options.near)[0]) {
       const field = Object.keys(options.near)[0];

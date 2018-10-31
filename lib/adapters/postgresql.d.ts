@@ -44,8 +44,8 @@ declare class PostgreSQLAdapter extends SQLAdapterBase {
     query(): any;
     protected _param_place_holder(pos: any): string;
     protected valueToModel(value: any, property: any): any;
-    protected _getModelID(data: any): number;
-    protected _buildSelect(model_class: any, select: any): string;
+    protected _getModelID(data: any): number | null;
+    protected _buildSelect(model_class: any, select: any): any;
     private _getTables;
     private _getSchema;
     private _getIndexes;

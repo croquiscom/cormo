@@ -515,6 +515,9 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   protected _getModelID(data: any) {
+    if (!data.id) {
+      return null;
+    }
     return Number(data.id);
   }
 

@@ -842,6 +842,7 @@ class BaseModel {
   private _intermediates?: any;
   private _prev_attributes?: any;
   private _attributes?: any;
+  private _is_persisted?: any;
 
   /**
    * Creates a record
@@ -877,9 +878,9 @@ class BaseModel {
       Object.defineProperty(this, 'set', { value: _pf_set });
       Object.defineProperty(this, 'reset', { value: _pf_reset });
     }
-    const id = arguments[1];
-    if (id) {
-      // if id exists, this is called from adapter with database record data
+    if (arguments.length === 4) {
+      // if this has 4 arguments, this is called from adapter with database record data
+      const id = arguments[1];
       const selected_columns = arguments[2];
       const selected_columns_raw = arguments[3];
       adapter.setValuesFromDB(this, data, schema, selected_columns);
@@ -888,6 +889,12 @@ class BaseModel {
         configurable: false,
         enumerable: true,
         value: id,
+        writable: false,
+      });
+      Object.defineProperty(this, '_is_persisted', {
+        configurable: false,
+        enumerable: false,
+        value: true,
         writable: false,
       });
       this._runCallbacks('find', 'after');
@@ -1030,7 +1037,7 @@ class BaseModel {
   ): Promise<this> {
     const ctor = this.constructor as typeof BaseModel;
     await ctor._checkReady();
-    if (!this.id) {
+    if (!this._is_persisted) {
       // apply default values
       const schema = ctor._schema;
       // tslint:disable-next-line:forin
@@ -1054,7 +1061,7 @@ class BaseModel {
       return await this.save({ ...options, validate: false });
     }
     this._runCallbacks('save', 'before');
-    if (this.id) {
+    if (this._is_persisted) {
       this._runCallbacks('update', 'before');
       try {
         await this._update(options);
@@ -1165,6 +1172,12 @@ class BaseModel {
       configurable: false,
       enumerable: true,
       value: id,
+      writable: false,
+    });
+    Object.defineProperty(this, '_is_persisted', {
+      configurable: false,
+      enumerable: false,
+      value: true,
       writable: false,
     });
     // save sub objects of each association

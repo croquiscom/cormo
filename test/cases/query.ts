@@ -298,6 +298,29 @@ export default function(models: {
     expect(users5[0]).to.have.keys('id', 'name', 'age');
   });
 
+  it('select without id', async () => {
+    const sources = await _createUsers(models.User);
+
+    const user = await models.User.find(sources[0].id).select(['name', 'age']);
+    expect(user).to.have.keys('id', 'name', 'age');
+    expect((user as any).id).to.be.null;
+    expect(user.name).to.eql(sources[0].name);
+    expect(user.age).to.eql(sources[0].age);
+
+    // save affects no records
+    user.age = 50;
+    await (user as any).save();
+
+    const users = await models.User.where();
+    expect(users).to.have.length(5);
+    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
+    _compareUser(users[1], { name: 'Bill Smith', age: 45 });
+    _compareUser(users[2], { name: 'Daniel Smith', age: 8 });
+    _compareUser(users[3], { name: 'Gina Baker', age: 32 });
+    _compareUser(users[4], { name: 'John Doe', age: 27 });
+  });
+
   it('order (string)', async () => {
     await _createUsers(models.User);
     let users = await models.User.order('name');
@@ -307,7 +330,7 @@ export default function(models: {
     _compareUser(users[2], { name: 'Daniel Smith', age: 8 });
     _compareUser(users[3], { name: 'Gina Baker', age: 32 });
     _compareUser(users[4], { name: 'John Doe', age: 27 });
-    users = (await models.User.order('-name'));
+    users = await models.User.order('-name');
     expect(users).to.have.length(5);
     _compareUser(users[0], { name: 'John Doe', age: 27 });
     _compareUser(users[1], { name: 'Gina Baker', age: 32 });

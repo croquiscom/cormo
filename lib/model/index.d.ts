@@ -291,6 +291,7 @@ declare class BaseModel {
     private _intermediates?;
     private _prev_attributes?;
     private _attributes?;
+    private _is_persisted?;
     /**
      * Creates a record
      */
