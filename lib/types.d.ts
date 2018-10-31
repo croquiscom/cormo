@@ -4,14 +4,15 @@
  * @namespace cormo
  */
 export declare type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber | ICormoTypesBoolean | ICormoTypesDate | ICormoTypesObject | ICormoTypesInteger | ICormoTypesGeoPoint | ICormoTypesRecordID | ICormoTypesText;
-declare type ColumnTypeConstructor = ICormoTypesStringConstructor | StringConstructor | ICormoTypesNumberConstructor | NumberConstructor | ICormoTypesBooleanConstructor | BooleanConstructor | ICormoTypesDateConstructor | DateConstructor | ICormoTypesObjectConstructor | ObjectConstructor | ICormoTypesIntegerConstructor | ICormoTypesGeoPointConstructor | ICormoTypesRecordIDConstructor | ICormoTypesTextConstructor;
+export declare type ColumnTypeInternalConstructor = ICormoTypesStringConstructor | ICormoTypesNumberConstructor | ICormoTypesBooleanConstructor | ICormoTypesDateConstructor | ICormoTypesObjectConstructor | ICormoTypesIntegerConstructor | ICormoTypesGeoPointConstructor | ICormoTypesRecordIDConstructor | ICormoTypesTextConstructor;
+declare type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor | BooleanConstructor | DateConstructor | ObjectConstructor;
 declare type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'geopoint' | 'recordid' | 'text';
-export declare type ColumnType = ColumnTypeInternal | ColumnTypeConstructor | ColumnTypeString;
+export declare type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor | ColumnTypeNativeConstructor | ColumnTypeString;
 /**
  * Represents a string, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesString {
+export interface ICormoTypesString {
     _type: 'string';
     length?: number;
 }
@@ -24,7 +25,7 @@ declare const CormoTypesString: ICormoTypesStringConstructor;
  * Represents a double-precision floating-point, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesNumber {
+export interface ICormoTypesNumber {
     _type: 'number';
 }
 interface ICormoTypesNumberConstructor {
@@ -36,7 +37,7 @@ declare const CormoTypesNumber: ICormoTypesNumberConstructor;
  * Represents a boolean, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesBoolean {
+export interface ICormoTypesBoolean {
     _type: 'boolean';
 }
 interface ICormoTypesBooleanConstructor {
@@ -48,7 +49,7 @@ declare const CormoTypesBoolean: ICormoTypesBooleanConstructor;
  * Represents a 32bit integer, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesInteger {
+export interface ICormoTypesInteger {
     _type: 'integer';
 }
 interface ICormoTypesIntegerConstructor {
@@ -62,7 +63,7 @@ declare const CormoTypesInteger: ICormoTypesIntegerConstructor;
  * This type is supported only in MongoDB and MySQL.
  * @memberOf types
  */
-interface ICormoTypesGeoPoint {
+export interface ICormoTypesGeoPoint {
     _type: 'geopoint';
 }
 interface ICormoTypesGeoPointConstructor {
@@ -74,7 +75,7 @@ declare const CormoTypesGeoPoint: ICormoTypesGeoPointConstructor;
  * Represents a date, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesDate {
+export interface ICormoTypesDate {
     _type: 'date';
 }
 interface ICormoTypesDateConstructor {
@@ -89,7 +90,7 @@ declare const CormoTypesDate: ICormoTypesDateConstructor;
  * if the adapter does not support a general object.
  * @memberOf types
  */
-interface ICormoTypesObject {
+export interface ICormoTypesObject {
     _type: 'object';
 }
 interface ICormoTypesObjectConstructor {
@@ -101,7 +102,7 @@ declare const CormoTypesObject: ICormoTypesObjectConstructor;
  * Represents a record id, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesRecordID {
+export interface ICormoTypesRecordID {
     _type: 'recordid';
 }
 interface ICormoTypesRecordIDConstructor {
@@ -113,7 +114,7 @@ declare const CormoTypesRecordID: ICormoTypesRecordIDConstructor;
  * Represents a text, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesText {
+export interface ICormoTypesText {
     _type: 'text';
 }
 interface ICormoTypesTextConstructor {

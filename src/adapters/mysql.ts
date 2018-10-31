@@ -22,17 +22,18 @@ export interface IAdapterSettingsMySQL {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
+import { IColumnPropertyInternal } from '../model';
 import * as types from '../types';
 import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
-function _typeToSQL(property: any, support_fractional_seconds: any) {
+function _typeToSQL(property: IColumnPropertyInternal, support_fractional_seconds: boolean) {
   if (property.array) {
     return 'TEXT';
   }
   switch (property.type_class) {
     case types.String:
-      return `VARCHAR(${property.type.length || 255})`;
+      return `VARCHAR(${(property.type as types.ICormoTypesString).length || 255})`;
     case types.Number:
       return 'DOUBLE';
     case types.Boolean:
@@ -55,7 +56,7 @@ function _typeToSQL(property: any, support_fractional_seconds: any) {
   }
 }
 
-function _propertyToSQL(property: any, support_fractional_seconds: any) {
+function _propertyToSQL(property: IColumnPropertyInternal, support_fractional_seconds: boolean) {
   let type = _typeToSQL(property, support_fractional_seconds);
   if (type) {
     if (property.required) {

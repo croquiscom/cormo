@@ -17,9 +17,9 @@ export interface IColumnProperty {
     default_value?: string | number | (() => string | number);
 }
 export interface IColumnPropertyInternal extends IColumnProperty {
-    type: types.ColumnType;
+    type: types.ColumnTypeInternal;
     record_id?: boolean;
-    type_class: any;
+    type_class: types.ColumnTypeInternalConstructor;
     _parts: string[];
     _parts_db: string[];
     _dbname_dot: string;

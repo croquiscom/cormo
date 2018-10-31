@@ -15,11 +15,12 @@ export interface IAdapterSettingsSQLite3 {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
+import { IColumnPropertyInternal } from '../model';
 import * as types from '../types';
 import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
-function _typeToSQL(property: any) {
+function _typeToSQL(property: IColumnPropertyInternal) {
   if (property.array) {
     return 'TEXT';
   }
@@ -41,7 +42,7 @@ function _typeToSQL(property: any) {
   }
 }
 
-function _propertyToSQL(property: any) {
+function _propertyToSQL(property: IColumnPropertyInternal) {
   let type = _typeToSQL(property);
   if (type) {
     if (property.required) {

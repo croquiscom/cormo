@@ -25,17 +25,18 @@ export interface IAdapterSettingsPostgreSQL {
 
 import * as _ from 'lodash';
 import * as stream from 'stream';
+import { IColumnPropertyInternal } from '../model';
 import * as types from '../types';
 import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
-function _typeToSQL(property: any) {
+function _typeToSQL(property: IColumnPropertyInternal) {
   if (property.array) {
     return 'JSON';
   }
   switch (property.type_class) {
     case types.String:
-      return `VARCHAR(${property.type.length || 255})`;
+      return `VARCHAR(${(property.type as types.ICormoTypesString).length || 255})`;
     case types.Number:
       return 'DOUBLE PRECISION';
     case types.Boolean:
@@ -53,7 +54,7 @@ function _typeToSQL(property: any) {
   }
 }
 
-function _propertyToSQL(property: any) {
+function _propertyToSQL(property: IColumnPropertyInternal) {
   let type = _typeToSQL(property);
   if (type) {
     if (property.required) {

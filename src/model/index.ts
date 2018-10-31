@@ -53,9 +53,9 @@ export interface IColumnProperty {
 }
 
 export interface IColumnPropertyInternal extends IColumnProperty {
-  type: types.ColumnType;
+  type: types.ColumnTypeInternal;
   record_id?: boolean;
-  type_class: any;
+  type_class: types.ColumnTypeInternalConstructor;
   _parts: string[];
   _parts_db: string[];
   _dbname_dot: string;
@@ -215,7 +215,7 @@ class BaseModel {
       type_or_property.type = type_or_property.type[0];
     }
     const property = type_or_property as IColumnPropertyInternal;
-    let type: any = types._toCORMOType(property.type);
+    let type = types._toCORMOType(property.type);
     if (type.constructor === types.RecordID) {
       type = this._getKeyType(property.connection);
       property.record_id = true;
@@ -224,7 +224,8 @@ class BaseModel {
     if (type.constructor === types.GeoPoint && !this._adapter.support_geopoint) {
       throw new Error('this adapter does not support GeoPoint type');
     }
-    if (type.constructor === types.String && type.length && !this._adapter.support_string_type_with_length) {
+    if (type.constructor === types.String && (type as types.ICormoTypesString).length
+      && !this._adapter.support_string_type_with_length) {
       throw new Error('this adapter does not support String type with length');
     }
     const parts = path.split('.');
@@ -232,7 +233,7 @@ class BaseModel {
       this._intermediate_paths[parts.slice(0, i + 1).join('.')] = 1;
     }
     property.type = type;
-    property.type_class = type.constructor;
+    property.type_class = type.constructor as types.ColumnTypeInternalConstructor;
     property._parts = parts;
     property._parts_db = (property.name || path).split('.');
     property._dbname_dot = property.name || path;
