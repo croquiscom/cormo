@@ -274,14 +274,71 @@ export default function(models: {
 
   it('select', async () => {
     await _createUsers(models.User);
-    let users = await models.User.select();
-    expect(users[0]).to.have.keys('id', 'name', 'age');
-    users = await models.User.select('name age address');
-    expect(users[0]).to.have.keys('id', 'name', 'age');
-    users = await models.User.select('name');
-    expect(users[0]).to.have.keys('id', 'name');
-    users = await models.User.select('');
-    expect(users[0]).to.have.keys('id');
+    const users1 = await models.User.select();
+    expect(users1[0]).to.have.keys('id', 'name', 'age');
+    const users2 = await models.User.select('name age address');
+    expect(users2[0]).to.have.keys('id', 'name', 'age');
+    const users3 = await models.User.select('name');
+    expect(users3[0]).to.have.keys('id', 'name');
+    const users4 = await models.User.select('');
+    expect(users4[0]).to.have.keys('id');
+  });
+
+  it('select with string array', async () => {
+    await _createUsers(models.User);
+    const users1 = await models.User.select();
+    expect(users1[0]).to.have.keys('id', 'name', 'age');
+    const users2 = await models.User.select(['id', 'name', 'age', 'address'] as any);
+    expect(users2[0]).to.have.keys('id', 'name', 'age');
+    const users3 = await models.User.select(['id', 'name']);
+    expect(users3[0]).to.have.keys('id', 'name');
+    const users4 = await models.User.select([]);
+    expect(users4[0]).to.have.keys('id', 'name', 'age');
+    const users5 = await models.User.select([''] as any);
+    expect(users5[0]).to.have.keys('id', 'name', 'age');
+  });
+
+  it('select without id', async () => {
+    const sources = await _createUsers(models.User);
+
+    const user = await models.User.find(sources[0].id).select(['name', 'age']);
+    expect(user).to.have.keys('id', 'name', 'age');
+    expect((user as any).id).to.be.null;
+    expect(user.name).to.eql(sources[0].name);
+    expect(user.age).to.eql(sources[0].age);
+
+    // save affects no records
+    user.age = 50;
+    await (user as any).save();
+
+    const users = await models.User.where();
+    expect(users).to.have.length(5);
+    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
+    _compareUser(users[1], { name: 'Bill Smith', age: 45 });
+    _compareUser(users[2], { name: 'Daniel Smith', age: 8 });
+    _compareUser(users[3], { name: 'Gina Baker', age: 32 });
+    _compareUser(users[4], { name: 'John Doe', age: 27 });
+  });
+
+  it('select override', async () => {
+    await _createUsers(models.User);
+    const users1 = await models.User.select('name').select('age');
+    expect(users1[0]).to.have.keys('id', 'age');
+    const users2 = await models.User.select(['name']).select(['age']);
+    expect(users2[0]).to.have.keys('id', 'age');
+  });
+
+  it('selectSingle', async () => {
+    const sources = await _createUsers(models.User);
+    const user_ids = await models.User.query().selectSingle('id');
+    expect(user_ids).to.eql([sources[0].id, sources[1].id, sources[2].id, sources[3].id, sources[4].id]);
+    const user_names = await models.User.query().selectSingle('name');
+    expect(user_names.sort()).to.eql(['Alice Jackson', 'Bill Smith', 'Daniel Smith', 'Gina Baker', 'John Doe']);
+    const user_ages = await models.User.query().selectSingle('age');
+    expect(user_ages.sort()).to.eql([27, 27, 32, 45, 8]);
+    const users = await models.User.query().selectSingle('name').select(['age']);
+    expect(users[0]).to.have.keys('id', 'age');
   });
 
   it('order (string)', async () => {
@@ -293,7 +350,7 @@ export default function(models: {
     _compareUser(users[2], { name: 'Daniel Smith', age: 8 });
     _compareUser(users[3], { name: 'Gina Baker', age: 32 });
     _compareUser(users[4], { name: 'John Doe', age: 27 });
-    users = (await models.User.order('-name'));
+    users = await models.User.order('-name');
     expect(users).to.have.length(5);
     _compareUser(users[0], { name: 'John Doe', age: 27 });
     _compareUser(users[1], { name: 'Gina Baker', age: 32 });
@@ -366,11 +423,7 @@ export default function(models: {
   it('lean option for a single record', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const record = await models.User.find(user.id).lean();
-    expect(record).to.exist;
-    expect(record).to.not.be.an.instanceof(models.User);
-    expect(record).to.have.property('id', user.id);
-    expect(record).to.have.property('name', user.name);
-    expect(record).to.have.property('age', user.age);
+    expect(record).to.eql({ id: user.id, name: user.name, age: user.age });
   });
 
   it('lean option for multiple records', async () => {
@@ -398,6 +451,12 @@ export default function(models: {
     expect(users).to.have.length(1);
     expect(users[0]).to.have.keys('id', 'name', 'age');
     expect(users[0].age).to.be.null;
+  });
+
+  it('lean option without id', async () => {
+    const user = await models.User.create({ name: 'John Doe', age: 27 });
+    const record = await models.User.find(user.id).select(['name', 'age']).lean();
+    expect(record).to.eql({ name: user.name, age: user.age });
   });
 
   it('id field of lean result can be modified', async () => {

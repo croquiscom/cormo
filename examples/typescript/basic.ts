@@ -49,7 +49,7 @@ async function getAll() {
 }
 
 async function query() {
-  const foobar = await User.where({ age: 5 }).select<'id' | 'name'>('name').one();
+  const foobar = await User.where({ age: 5 }).select(['id', 'name']).one();
   console.log(`name of age 5 is #${foobar.id} ${foobar.name}`);
 }
 

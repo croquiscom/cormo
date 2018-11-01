@@ -22,17 +22,18 @@ export interface IAdapterSettingsMySQL {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
+import { IColumnPropertyInternal } from '../model';
 import * as types from '../types';
 import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
-function _typeToSQL(property: any, support_fractional_seconds: any) {
+function _typeToSQL(property: IColumnPropertyInternal, support_fractional_seconds: boolean) {
   if (property.array) {
     return 'TEXT';
   }
   switch (property.type_class) {
     case types.String:
-      return `VARCHAR(${property.type.length || 255})`;
+      return `VARCHAR(${(property.type as types.ICormoTypesString).length || 255})`;
     case types.Number:
       return 'DOUBLE';
     case types.Boolean:
@@ -55,7 +56,7 @@ function _typeToSQL(property: any, support_fractional_seconds: any) {
   }
 }
 
-function _propertyToSQL(property: any, support_fractional_seconds: any) {
+function _propertyToSQL(property: IColumnPropertyInternal, support_fractional_seconds: boolean) {
   let type = _typeToSQL(property, support_fractional_seconds);
   if (type) {
     if (property.required) {
@@ -125,13 +126,16 @@ class MySQLAdapter extends SQLAdapterBase {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sqls = [];
-    column_sqls.push('id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY');
     // tslint:disable-next-line:forin
     for (const column in model_class._schema) {
       const property = model_class._schema[column];
-      const column_sql = _propertyToSQL(property, this.support_fractional_seconds);
-      if (column_sql) {
-        column_sqls.push(`\`${property._dbname_us}\` ${column_sql}`);
+      if (property.primary_key) {
+        column_sqls.push(`\`${property._dbname_us}\` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
+      } else {
+        const column_sql = _propertyToSQL(property, this.support_fractional_seconds);
+        if (column_sql) {
+          column_sqls.push(`\`${property._dbname_us}\` ${column_sql}`);
+        }
       }
     }
     let sql = `CREATE TABLE \`${table_name}\` ( ${column_sqls.join(',')} )`;
@@ -511,6 +515,9 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   protected _getModelID(data: any) {
+    if (!data.id) {
+      return null;
+    }
     return Number(data.id);
   }
 
@@ -600,6 +607,9 @@ class MySQLAdapter extends SQLAdapterBase {
     // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
+      if (property.primary_key) {
+        continue;
+      }
       this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
     }
     return [fields.join(','), places.join(',')];
@@ -613,6 +623,9 @@ class MySQLAdapter extends SQLAdapterBase {
     for (const column in data) {
       const value = data[column];
       const property = _.find(schema, (item) => item._dbname_us === column);
+      if (!property || property.primary_key) {
+        continue;
+      }
       this._buildUpdateSetOfColumn(property, data, values, fields, places);
     }
     return [fields.join(','), places.join(',')];

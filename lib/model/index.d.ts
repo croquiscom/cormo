@@ -17,13 +17,14 @@ export interface IColumnProperty {
     default_value?: string | number | (() => string | number);
 }
 export interface IColumnPropertyInternal extends IColumnProperty {
-    type: types.ColumnType;
+    type: types.ColumnTypeInternal;
     record_id?: boolean;
-    type_class: any;
+    type_class: types.ColumnTypeInternalConstructor;
     _parts: string[];
     _parts_db: string[];
     _dbname_dot: string;
     _dbname_us: string;
+    primary_key: boolean;
 }
 export interface IColumnNestedProperty {
     [subcolumn: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;
@@ -200,58 +201,61 @@ declare class BaseModel {
      */
     static query<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof BaseModel): IQueryArray<T>;
+    } & typeof BaseModel): IQueryArray<T, T>;
     /**
      * Finds a record by id
      * @throws {Error('not found')}
      */
     static find<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, id: types.RecordID): IQuerySingle<T>;
+    } & typeof BaseModel, id: types.RecordID): IQuerySingle<T, T>;
     static find<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, id: types.RecordID[]): IQueryArray<T>;
+    } & typeof BaseModel, id: types.RecordID[]): IQueryArray<T, T>;
     /**
      * Finds records by ids while preserving order.
      * @throws {Error('not found')}
      */
     static findPreserve<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, ids: types.RecordID[]): IQueryArray<T>;
+    } & typeof BaseModel, ids: types.RecordID[]): IQueryArray<T, T>;
     /**
      * Finds records by conditions
      */
     static where<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, condition?: object): IQueryArray<T>;
+    } & typeof BaseModel, condition?: object): IQueryArray<T, T>;
     /**
      * Selects columns for result
      */
     static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, columns?: string): IQueryArray<Pick<T, K>>;
+    } & typeof BaseModel, columns: K[]): IQueryArray<Pick<T, K>, T>;
+    static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(this: {
+        new (data?: any): T;
+    } & typeof BaseModel, columns?: string): IQueryArray<Pick<T, K>, T>;
     /**
      * Specifies orders of result
      */
     static order<T extends BaseModel>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, orders: string): IQueryArray<T>;
+    } & typeof BaseModel, orders: string): IQueryArray<T, T>;
     /**
      * Groups result records
      */
-    static group<T extends BaseModel, G extends keyof T, F>(this: {
+    static group<T extends BaseModel, G extends ModelColumnNamesWithId<T>, F>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, group_by: G, fields?: F): IQueryArray<{
+    } & typeof BaseModel, group_by: G | G[], fields?: F): IQueryArray<{
         [field in keyof F]: number;
-    } & Pick<T, G>>;
+    } & Pick<T, G>, T>;
     static group<T extends BaseModel, F>(this: {
         new (data?: any): T;
     } & typeof BaseModel, group_by: null, fields?: F): IQueryArray<{
         [field in keyof F]: number;
-    }>;
+    }, T>;
     static group<T extends BaseModel, U>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, group_by: string | null, fields?: object): IQueryArray<U>;
+    } & typeof BaseModel, group_by: string | null, fields?: object): IQueryArray<U, T>;
     /**
      * Counts records by conditions
      */
@@ -287,6 +291,7 @@ declare class BaseModel {
     private _intermediates?;
     private _prev_attributes?;
     private _attributes?;
+    private _is_persisted?;
     /**
      * Creates a record
      */

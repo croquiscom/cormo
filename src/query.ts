@@ -11,8 +11,9 @@ interface IQueryOptions {
   lean: boolean;
   orders: any[];
   near?: any;
-  select?: any;
-  select_raw?: any;
+  select?: string[];
+  select_raw?: string[];
+  select_single?: string;
   group_fields?: any;
   group_by?: any;
   limit?: number;
@@ -26,27 +27,29 @@ interface IQueryOptions {
   };
 }
 
-export interface IQuerySingle<T> extends PromiseLike<T> {
-  find(id: RecordID): IQuerySingle<T>;
-  find(id: RecordID[]): IQueryArray<T>;
-  findPreserve(id: RecordID[]): IQueryArray<T>;
-  near(target: object): IQuerySingle<T>;
-  where(condition?: object): IQuerySingle<T>;
-  select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuerySingle<Pick<T, K>>;
-  order(orders: string): IQuerySingle<T>;
-  group<G extends keyof T, F>(group_by: G, fields?: F):
-    IQuerySingle<{ [field in keyof F]: number } & Pick<T, G>>;
-  group<G extends keyof T, F>(group_by: null, fields?: F):
-    IQuerySingle<{ [field in keyof F]: number }>;
-  group<U>(group_by: string | null, fields?: object): IQuerySingle<U>;
-  one(): IQuerySingle<T>;
-  limit(limit?: number): IQuerySingle<T>;
-  skip(skip?: number): IQuerySingle<T>;
-  lean(lean?: boolean): IQuerySingle<T>;
-  if(condition: boolean): IQuerySingle<T>;
-  endif(): IQuerySingle<T>;
-  cache(options: IQueryOptions['cache']): IQuerySingle<T>;
-  include(column: string, select?: string): IQuerySingle<T>;
+export interface IQuerySingle<T, M extends BaseModel> extends PromiseLike<T> {
+  find(id: RecordID): IQuerySingle<T, M>;
+  find(id: RecordID[]): IQueryArray<T, M>;
+  findPreserve(id: RecordID[]): IQueryArray<T, M>;
+  near(target: object): IQuerySingle<T, M>;
+  where(condition?: object): IQuerySingle<T, M>;
+  select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQuerySingle<Pick<M, K>, M>;
+  select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingle<Pick<M, K>, M>;
+  selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M[K], M>;
+  order(orders: string): IQuerySingle<T, M>;
+  group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
+    IQuerySingle<{ [field in keyof F]: number } & Pick<M, G>, M>;
+  group<F>(group_by: null, fields?: F):
+    IQuerySingle<{ [field in keyof F]: number }, M>;
+  group<U>(group_by: string | null, fields?: object): IQuerySingle<U, M>;
+  one(): IQuerySingle<T, M>;
+  limit(limit?: number): IQuerySingle<T, M>;
+  skip(skip?: number): IQuerySingle<T, M>;
+  lean(lean?: boolean): IQuerySingle<T, M>;
+  if(condition: boolean): IQuerySingle<T, M>;
+  endif(): IQuerySingle<T, M>;
+  cache(options: IQueryOptions['cache']): IQuerySingle<T, M>;
+  include(column: string, select?: string): IQuerySingle<T, M>;
 
   exec(options?: any): PromiseLike<T>;
   stream(): stream.Readable;
@@ -57,27 +60,29 @@ export interface IQuerySingle<T> extends PromiseLike<T> {
   delete(options?: any): PromiseLike<number>;
 }
 
-export interface IQueryArray<T> extends PromiseLike<T[]> {
-  find(id: RecordID): IQuerySingle<T>;
-  find(id: RecordID[]): IQueryArray<T>;
-  findPreserve(id: RecordID[]): IQueryArray<T>;
-  near(target: object): IQueryArray<T>;
-  where(condition?: object): IQueryArray<T>;
-  select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQueryArray<Pick<T, K>>;
-  order(orders: string): IQueryArray<T>;
-  group<G extends keyof T, F>(group_by: G, fields?: F):
-    IQueryArray<{ [field in keyof F]: number } & Pick<T, G>>;
+export interface IQueryArray<T, M extends BaseModel> extends PromiseLike<T[]> {
+  find(id: RecordID): IQuerySingle<T, M>;
+  find(id: RecordID[]): IQueryArray<T, M>;
+  findPreserve(id: RecordID[]): IQueryArray<T, M>;
+  near(target: object): IQueryArray<T, M>;
+  where(condition?: object): IQueryArray<T, M>;
+  select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<Pick<M, K>, M>;
+  select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<Pick<M, K>, M>;
+  selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M[K], M>;
+  order(orders: string): IQueryArray<T, M>;
+  group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
+    IQueryArray<{ [field in keyof F]: number } & Pick<M, G>, M>;
   group<F>(group_by: null, fields?: F):
-    IQueryArray<{ [field in keyof F]: number }>;
-  group<U>(group_by: string | null, fields?: object): IQueryArray<U>;
-  one(): IQuerySingle<T>;
-  limit(limit?: number): IQueryArray<T>;
-  skip(skip?: number): IQueryArray<T>;
-  lean(lean?: boolean): IQueryArray<T>;
-  if(condition: boolean): IQueryArray<T>;
-  endif(): IQueryArray<T>;
-  cache(options: IQueryOptions['cache']): IQueryArray<T>;
-  include(column: string, select?: string): IQueryArray<T>;
+    IQueryArray<{ [field in keyof F]: number }, M>;
+  group<U>(group_by: string | null, fields?: object): IQueryArray<U, M>;
+  one(): IQuerySingle<T, M>;
+  limit(limit?: number): IQueryArray<T, M>;
+  skip(skip?: number): IQueryArray<T, M>;
+  lean(lean?: boolean): IQueryArray<T, M>;
+  if(condition: boolean): IQueryArray<T, M>;
+  endif(): IQueryArray<T, M>;
+  cache(options: IQueryOptions['cache']): IQueryArray<T, M>;
+  include(column: string, select?: string): IQueryArray<T, M>;
 
   exec(options?: any): PromiseLike<T[]>;
   stream(): stream.Readable;
@@ -88,12 +93,12 @@ export interface IQueryArray<T> extends PromiseLike<T[]> {
   delete(options?: any): PromiseLike<number>;
 }
 
-type IQuery<T> = IQuerySingle<T> | IQueryArray<T>;
+type IQuery<T, M extends BaseModel> = IQuerySingle<T, M> | IQueryArray<T, M>;
 
 /**
  * Collects conditions to query
  */
-class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
+class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T, M> {
   private _model: typeof BaseModel;
   private _name: string;
   private _connection: Connection;
@@ -129,9 +134,9 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   /**
    * Finds a record by id
    */
-  public find(id: RecordID): IQuerySingle<T>;
-  public find(id: RecordID[]): IQueryArray<T>;
-  public find(id: RecordID | RecordID[]): IQuery<T> {
+  public find(id: RecordID): IQuerySingle<T, M>;
+  public find(id: RecordID[]): IQueryArray<T, M>;
+  public find(id: RecordID | RecordID[]): IQuery<T, M> {
     if (!this._current_if) {
       return this;
     }
@@ -148,7 +153,7 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   /**
    * Finds records by ids while preserving order.
    */
-  public findPreserve(ids: RecordID[]): IQueryArray<T> {
+  public findPreserve(ids: RecordID[]): IQueryArray<T, M> {
     if (!this._current_if) {
       return this;
     }
@@ -189,38 +194,66 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   /**
    * Selects columns for result
    */
-  public select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuerySingle<Pick<T, K>>;
-  public select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQueryArray<Pick<T, K>>;
-  public select<K extends ModelColumnNamesWithId<T>>(columns?: string): IQuery<Pick<T, K>> {
+  public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQuerySingle<Pick<M, K>, M>;
+  public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQueryArray<Pick<M, K>, M>;
+  public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQuery<Pick<M, K>, M> {
     if (!this._current_if) {
-      return this;
+      return this as any;
     }
-    this._options.select = null;
-    this._options.select_raw = null;
-    if (typeof columns === 'string') {
-      const schema_columns = Object.keys(this._model._schema);
-      const intermediate_paths = this._model._intermediate_paths;
-      const select: any[] = [];
-      const select_raw: any[] = [];
-      columns.split(/\s+/).forEach((column) => {
-        if (schema_columns.indexOf(column) >= 0) {
-          select.push(column);
-          select_raw.push(column);
-        } else if (intermediate_paths[column]) {
-          // select all nested columns
-          select_raw.push(column);
-          column += '.';
-          schema_columns.forEach((sc) => {
-            if (sc.indexOf(column) === 0) {
-              select.push(sc);
-            }
-          });
+    this._options.select = undefined;
+    this._options.select_raw = undefined;
+    this._options.select_single = undefined;
+    if (columns != null) {
+      if (typeof columns === 'string') {
+        columns = columns.split(/\s+/);
+        columns.push('id');
+      }
+      if (columns.length > 0) {
+        const schema_columns = Object.keys(this._model._schema);
+        const intermediate_paths = this._model._intermediate_paths;
+        const select: string[] = [];
+        const select_raw: string[] = [];
+        columns.forEach((column) => {
+          if (schema_columns.indexOf(column) >= 0) {
+            select.push(column);
+            select_raw.push(column);
+          } else if (intermediate_paths[column]) {
+            // select all nested columns
+            select_raw.push(column);
+            column += '.';
+            schema_columns.forEach((sc) => {
+              if (sc.indexOf(column) === 0) {
+                select.push(sc);
+              }
+            });
+          }
+        });
+        if (select_raw.length > 0) {
+          this._options.select = select;
+          this._options.select_raw = select_raw;
         }
-      });
-      this._options.select = select;
-      this._options.select_raw = select_raw;
+      }
     }
-    return this;
+    return this as any;
+  }
+
+  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M[K], M>;
+  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M[K], M>;
+  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: string): IQuery<M[K], M> {
+    if (!this._current_if) {
+      return this as any;
+    }
+    const schema_columns = Object.keys(this._model._schema);
+    if (schema_columns.indexOf(column) >= 0) {
+      this._options.select = [column];
+      this._options.select_raw = [column];
+      this._options.select_single = column;
+    } else {
+      this._options.select = undefined;
+      this._options.select_raw = undefined;
+      this._options.select_single = undefined;
+    }
+    return this as any;
   }
 
   /**
@@ -253,19 +286,21 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
   /**
    * Groups result records
    */
-  public group<U>(group_by: string | null, fields?: object): IQuerySingle<U>;
-  public group<U>(group_by: string | null, fields?: object): IQueryArray<U>;
-  public group<U>(group_by: string | null, fields?: object): IQuery<U> {
+  public group<U>(group_by: string | string[] | null, fields?: object): IQuerySingle<U, M>;
+  public group<U>(group_by: string | string[] | null, fields?: object): IQueryArray<U, M>;
+  public group<U>(group_by: string | string[] | null, fields?: object): IQuery<U, M> {
     if (!this._current_if) {
       return this as any;
     }
     this._options.group_by = null;
     const schema_columns = Object.keys(this._model._schema);
-    if (typeof group_by === 'string') {
-      const columns = group_by.split(/\s+/).filter((column) => {
+    if (group_by) {
+      if (typeof group_by === 'string') {
+        group_by = group_by.split(/\s+/);
+      }
+      this._options.group_by = group_by.filter((column) => {
         return schema_columns.indexOf(column) >= 0;
       });
-      this._options.group_by = columns;
     }
     this._options.group_fields = fields;
     return this as any;
@@ -574,6 +609,9 @@ class Query<T> implements IQuerySingle<T>, IQueryArray<T> {
 
   private async _execAndInclude(options?: any) {
     const records = await this._exec(options);
+    if (this._options.select_single) {
+      return _.map(records, this._options.select_single);
+    }
     await Promise.all(this._includes.map(async (include) => {
       await this._connection.fetchAssociated(records, include.column, include.select, {
         lean: this._options.lean,

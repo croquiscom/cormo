@@ -46,6 +46,7 @@ declare class MongoDBAdapter extends AdapterBase {
     collection(model: any): any;
     protected _getModelID(data: any): any;
     protected valueToModel(value: any, property: any): any;
+    private _buildSelect;
     private _collection;
     private _getTables;
     private _getSchema;

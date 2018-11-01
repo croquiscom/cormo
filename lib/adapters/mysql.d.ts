@@ -48,7 +48,7 @@ declare class MySQLAdapter extends SQLAdapterBase {
      */
     query(): any;
     protected valueToModel(value: any, property: any): any;
-    protected _getModelID(data: any): number;
+    protected _getModelID(data: any): number | null;
     private _getTables;
     private _getSchema;
     private _getIndexes;

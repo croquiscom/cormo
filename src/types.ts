@@ -7,27 +7,30 @@
  * @namespace cormo
  */
 
-export type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber | ICormoTypesBoolean | ICormoTypesDate
-  | ICormoTypesObject | ICormoTypesInteger | ICormoTypesGeoPoint | ICormoTypesRecordID | ICormoTypesText;
+export type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber
+  | ICormoTypesBoolean | ICormoTypesDate
+  | ICormoTypesObject | ICormoTypesInteger
+  | ICormoTypesGeoPoint | ICormoTypesRecordID | ICormoTypesText;
 
-type ColumnTypeConstructor = ICormoTypesStringConstructor | StringConstructor
-  | ICormoTypesNumberConstructor | NumberConstructor
-  | ICormoTypesBooleanConstructor | BooleanConstructor
-  | ICormoTypesDateConstructor | DateConstructor
-  | ICormoTypesObjectConstructor | ObjectConstructor
-  | ICormoTypesIntegerConstructor | ICormoTypesGeoPointConstructor
-  | ICormoTypesRecordIDConstructor | ICormoTypesTextConstructor;
+export type ColumnTypeInternalConstructor = ICormoTypesStringConstructor | ICormoTypesNumberConstructor
+  | ICormoTypesBooleanConstructor | ICormoTypesDateConstructor
+  | ICormoTypesObjectConstructor | ICormoTypesIntegerConstructor
+  | ICormoTypesGeoPointConstructor | ICormoTypesRecordIDConstructor | ICormoTypesTextConstructor;
+
+type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor
+  | BooleanConstructor | DateConstructor | ObjectConstructor;
 
 type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date'
   | 'object' | 'integer' | 'geopoint' | 'recordid' | 'text';
 
-export type ColumnType = ColumnTypeInternal | ColumnTypeConstructor | ColumnTypeString;
+export type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor
+  | ColumnTypeNativeConstructor | ColumnTypeString;
 
 /**
  * Represents a string, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesString {
+export interface ICormoTypesString {
   _type: 'string';
   length?: number;
 }
@@ -48,7 +51,7 @@ const CormoTypesString: ICormoTypesStringConstructor = function(this: ICormoType
  * Represents a double-precision floating-point, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesNumber {
+export interface ICormoTypesNumber {
   _type: 'number';
 }
 
@@ -67,7 +70,7 @@ const CormoTypesNumber: ICormoTypesNumberConstructor = function(this: ICormoType
  * Represents a boolean, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesBoolean {
+export interface ICormoTypesBoolean {
   _type: 'boolean';
 }
 
@@ -87,7 +90,7 @@ const CormoTypesBoolean: ICormoTypesBooleanConstructor = function(this: ICormoTy
  * Represents a 32bit integer, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesInteger {
+export interface ICormoTypesInteger {
   _type: 'integer';
 }
 
@@ -109,7 +112,7 @@ const CormoTypesInteger: ICormoTypesIntegerConstructor = function(this: ICormoTy
  * This type is supported only in MongoDB and MySQL.
  * @memberOf types
  */
-interface ICormoTypesGeoPoint {
+export interface ICormoTypesGeoPoint {
   _type: 'geopoint';
 }
 
@@ -129,7 +132,7 @@ const CormoTypesGeoPoint: ICormoTypesGeoPointConstructor = function(this: ICormo
  * Represents a date, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesDate {
+export interface ICormoTypesDate {
   _type: 'date';
 }
 
@@ -152,7 +155,7 @@ const CormoTypesDate: ICormoTypesDateConstructor = function(this: ICormoTypesDat
  * if the adapter does not support a general object.
  * @memberOf types
  */
-interface ICormoTypesObject {
+export interface ICormoTypesObject {
   _type: 'object';
 }
 
@@ -172,7 +175,7 @@ const CormoTypesObject: ICormoTypesObjectConstructor = function(this: ICormoType
  * Represents a record id, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesRecordID {
+export interface ICormoTypesRecordID {
   _type: 'recordid';
 }
 
@@ -192,7 +195,7 @@ const CormoTypesRecordID: ICormoTypesRecordIDConstructor = function(this: ICormo
  * Represents a text, used in model schemas.
  * @memberOf types
  */
-interface ICormoTypesText {
+export interface ICormoTypesText {
   _type: 'text';
 }
 

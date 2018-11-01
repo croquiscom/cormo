@@ -53,13 +53,14 @@ export interface IColumnProperty {
 }
 
 export interface IColumnPropertyInternal extends IColumnProperty {
-  type: types.ColumnType;
+  type: types.ColumnTypeInternal;
   record_id?: boolean;
-  type_class: any;
+  type_class: types.ColumnTypeInternalConstructor;
   _parts: string[];
   _parts_db: string[];
   _dbname_dot: string;
   _dbname_us: string;
+  primary_key: boolean;
 }
 
 export interface IColumnNestedProperty {
@@ -164,6 +165,7 @@ class BaseModel {
     if (!this.table_name) {
       this.table_name = tableize(name);
     }
+    this.column('id', 'recordid');
   }
 
   public static _checkConnection() {
@@ -215,7 +217,7 @@ class BaseModel {
       type_or_property.type = type_or_property.type[0];
     }
     const property = type_or_property as IColumnPropertyInternal;
-    let type: any = types._toCORMOType(property.type);
+    let type = types._toCORMOType(property.type);
     if (type.constructor === types.RecordID) {
       type = this._getKeyType(property.connection);
       property.record_id = true;
@@ -224,7 +226,8 @@ class BaseModel {
     if (type.constructor === types.GeoPoint && !this._adapter.support_geopoint) {
       throw new Error('this adapter does not support GeoPoint type');
     }
-    if (type.constructor === types.String && type.length && !this._adapter.support_string_type_with_length) {
+    if (type.constructor === types.String && (type as types.ICormoTypesString).length
+      && !this._adapter.support_string_type_with_length) {
       throw new Error('this adapter does not support String type with length');
     }
     const parts = path.split('.');
@@ -232,11 +235,12 @@ class BaseModel {
       this._intermediate_paths[parts.slice(0, i + 1).join('.')] = 1;
     }
     property.type = type;
-    property.type_class = type.constructor;
+    property.type_class = type.constructor as types.ColumnTypeInternalConstructor;
     property._parts = parts;
     property._parts_db = (property.name || path).split('.');
     property._dbname_dot = property.name || path;
     property._dbname_us = (property.name || path).replace(/\./g, '_');
+    property.primary_key = path === 'id';
     this._schema[path] = property;
     if (property.unique) {
       this._indexes.push({
@@ -547,8 +551,8 @@ class BaseModel {
    */
   public static query<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
-  ): IQueryArray<T> {
-    return new Query<T>(this);
+  ): IQueryArray<T, T> {
+    return new Query<T, T>(this);
   }
 
   /**
@@ -558,15 +562,15 @@ class BaseModel {
   public static find<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     id: types.RecordID,
-  ): IQuerySingle<T>;
+  ): IQuerySingle<T, T>;
   public static find<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     id: types.RecordID[],
-  ): IQueryArray<T>;
+  ): IQueryArray<T, T>;
   public static find<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     id: types.RecordID | types.RecordID[],
-  ): IQuerySingle<T> | IQueryArray<T> {
+  ): IQuerySingle<T, T> | IQueryArray<T, T> {
     return this.query().find(id as types.RecordID);
   }
 
@@ -577,7 +581,7 @@ class BaseModel {
   public static findPreserve<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     ids: types.RecordID[],
-  ): IQueryArray<T> {
+  ): IQueryArray<T, T> {
     return this.query().findPreserve(ids);
   }
 
@@ -587,7 +591,7 @@ class BaseModel {
   public static where<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     condition?: object,
-  ): IQueryArray<T> {
+  ): IQueryArray<T, T> {
     return this.query().where(condition);
   }
 
@@ -596,9 +600,17 @@ class BaseModel {
    */
   public static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(
     this: { new(data?: any): T } & typeof BaseModel,
+    columns: K[],
+  ): IQueryArray<Pick<T, K>, T>;
+  public static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(
+    this: { new(data?: any): T } & typeof BaseModel,
     columns?: string,
-  ): IQueryArray<Pick<T, K>> {
-    return this.query().select<K>(columns);
+  ): IQueryArray<Pick<T, K>, T>;
+  public static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(
+    this: { new(data?: any): T } & typeof BaseModel,
+    columns?: string | K[],
+  ): IQueryArray<Pick<T, K>, T> {
+    return this.query().select<K>(columns as string);
   }
 
   /**
@@ -607,33 +619,33 @@ class BaseModel {
   public static order<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     orders: string,
-  ): IQueryArray<T> {
+  ): IQueryArray<T, T> {
     return this.query().order(orders);
   }
 
   /**
    * Groups result records
    */
-  public static group<T extends BaseModel, G extends keyof T, F>(
+  public static group<T extends BaseModel, G extends ModelColumnNamesWithId<T>, F>(
     this: { new(data?: any): T } & typeof BaseModel,
-    group_by: G,
+    group_by: G | G[],
     fields?: F,
-  ): IQueryArray<{ [field in keyof F]: number } & Pick<T, G>>;
+  ): IQueryArray<{ [field in keyof F]: number } & Pick<T, G>, T>;
   public static group<T extends BaseModel, F>(
     this: { new(data?: any): T } & typeof BaseModel,
     group_by: null,
     fields?: F,
-  ): IQueryArray<{ [field in keyof F]: number }>;
+  ): IQueryArray<{ [field in keyof F]: number }, T>;
   public static group<T extends BaseModel, U>(
     this: { new(data?: any): T } & typeof BaseModel,
     group_by: string | null,
     fields?: object,
-  ): IQueryArray<U>;
+  ): IQueryArray<U, T>;
   public static group<T extends BaseModel, U>(
     this: { new(data?: any): T } & typeof BaseModel,
     group_by: string | null,
     fields?: object,
-  ): IQueryArray<U> {
+  ): IQueryArray<U, T> {
     return this.query().group<U>(group_by, fields);
   }
 
@@ -830,6 +842,7 @@ class BaseModel {
   private _intermediates?: any;
   private _prev_attributes?: any;
   private _attributes?: any;
+  private _is_persisted?: any;
 
   /**
    * Creates a record
@@ -851,6 +864,9 @@ class BaseModel {
       // tslint:disable-next-line:forin
       for (const column in schema) {
         const property = schema[column];
+        if (property.primary_key) {
+          continue;
+        }
         const [obj, last] = util.getLeafOfPath(this, property._parts);
         this._defineProperty(obj, last, column, false);
       }
@@ -862,9 +878,9 @@ class BaseModel {
       Object.defineProperty(this, 'set', { value: _pf_set });
       Object.defineProperty(this, 'reset', { value: _pf_reset });
     }
-    const id = arguments[1];
-    if (id) {
-      // if id exists, this is called from adapter with database record data
+    if (arguments.length === 4) {
+      // if this has 4 arguments, this is called from adapter with database record data
+      const id = arguments[1];
       const selected_columns = arguments[2];
       const selected_columns_raw = arguments[3];
       adapter.setValuesFromDB(this, data, schema, selected_columns);
@@ -875,11 +891,20 @@ class BaseModel {
         value: id,
         writable: false,
       });
+      Object.defineProperty(this, '_is_persisted', {
+        configurable: false,
+        enumerable: false,
+        value: true,
+        writable: false,
+      });
       this._runCallbacks('find', 'after');
     } else {
       // tslint:disable-next-line:forin
       for (const column in schema) {
         const property = schema[column];
+        if (property.primary_key) {
+          continue;
+        }
         const parts = property._parts;
         let value = util.getPropertyOfPath(data, parts);
         if (value === undefined) {
@@ -1012,12 +1037,15 @@ class BaseModel {
   ): Promise<this> {
     const ctor = this.constructor as typeof BaseModel;
     await ctor._checkReady();
-    if (!this.id) {
+    if (!this._is_persisted) {
       // apply default values
       const schema = ctor._schema;
       // tslint:disable-next-line:forin
       for (const column in schema) {
         const property = schema[column];
+        if (property.primary_key) {
+          continue;
+        }
         const value = util.getPropertyOfPath(this, property._parts);
         if (value == null && property.default_value !== undefined) {
           if (_.isFunction(property.default_value)) {
@@ -1033,7 +1061,7 @@ class BaseModel {
       return await this.save({ ...options, validate: false });
     }
     this._runCallbacks('save', 'before');
-    if (this.id) {
+    if (this._is_persisted) {
       this._runCallbacks('update', 'before');
       try {
         await this._update(options);
@@ -1064,6 +1092,9 @@ class BaseModel {
     // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
+      if (property.primary_key) {
+        continue;
+      }
       try {
         ctor._validateColumn(this, column, property);
       } catch (error) {
@@ -1119,6 +1150,9 @@ class BaseModel {
     // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
+      if (property.primary_key) {
+        continue;
+      }
       ctor._buildSaveDataColumn(data, this, column, property);
     }
     if (this.id != null) {
@@ -1138,6 +1172,12 @@ class BaseModel {
       configurable: false,
       enumerable: true,
       value: id,
+      writable: false,
+    });
+    Object.defineProperty(this, '_is_persisted', {
+      configurable: false,
+      enumerable: false,
+      value: true,
       writable: false,
     });
     // save sub objects of each association

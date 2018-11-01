@@ -97,4 +97,12 @@ export default function(models: {
     _compareUser(users[2], { name: 'Bill Smith', age: 45 });
     _compareUser(users[3], { name: 'John Doe', age: 27 });
   });
+
+  it('selectSingle', async () => {
+    await _createUsers(models.User);
+    const user_names = await models.User.query().selectSingle('name');
+    expect(user_names.sort()).to.eql(['Alice Jackson', 'Bill Smith', 'John Doe', null, null]);
+    const user_ages = await models.User.query().selectSingle('age');
+    expect(user_ages.sort()).to.eql([27, 45, 8, null, null]);
+  });
 }

@@ -25,17 +25,18 @@ export interface IAdapterSettingsPostgreSQL {
 
 import * as _ from 'lodash';
 import * as stream from 'stream';
+import { IColumnPropertyInternal } from '../model';
 import * as types from '../types';
 import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
-function _typeToSQL(property: any) {
+function _typeToSQL(property: IColumnPropertyInternal) {
   if (property.array) {
     return 'JSON';
   }
   switch (property.type_class) {
     case types.String:
-      return `VARCHAR(${property.type.length || 255})`;
+      return `VARCHAR(${(property.type as types.ICormoTypesString).length || 255})`;
     case types.Number:
       return 'DOUBLE PRECISION';
     case types.Boolean:
@@ -53,7 +54,7 @@ function _typeToSQL(property: any) {
   }
 }
 
-function _propertyToSQL(property: any) {
+function _propertyToSQL(property: IColumnPropertyInternal) {
   let type = _typeToSQL(property);
   if (type) {
     if (property.required) {
@@ -127,13 +128,16 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sqls = [];
-    column_sqls.push('id SERIAL PRIMARY KEY');
     // tslint:disable-next-line:forin
     for (const column in model_class._schema) {
       const property = model_class._schema[column];
-      const column_sql = _propertyToSQL(property);
-      if (column_sql) {
-        column_sqls.push(`"${property._dbname_us}" ${column_sql}`);
+      if (property.primary_key) {
+        column_sqls.push(`"${property._dbname_us}" SERIAL PRIMARY KEY`);
+      } else {
+        const column_sql = _propertyToSQL(property);
+        if (column_sql) {
+          column_sqls.push(`"${property._dbname_us}" ${column_sql}`);
+        }
       }
     }
     const sql = `CREATE TABLE "${table_name}" ( ${column_sqls.join(',')} )`;
@@ -454,6 +458,9 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   protected _getModelID(data: any) {
+    if (!data.id) {
+      return null;
+    }
     return Number(data.id);
   }
 
@@ -461,22 +468,18 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     if (!select) {
       select = Object.keys(model_class._schema);
     }
-    if (select.length > 0) {
-      const schema = model_class._schema;
-      const escape_ch = this._escape_ch;
-      select = select.map((column: any) => {
-        const property = schema[column];
-        column = escape_ch + schema[column]._dbname_us + escape_ch;
-        if (property.type_class === types.GeoPoint) {
-          return `ARRAY[ST_X(${column}), ST_Y(${column})] AS ${column}`;
-        } else {
-          return column;
-        }
-      });
-      return 'id,' + select.join(',');
-    } else {
-      return 'id';
-    }
+    const schema = model_class._schema;
+    const escape_ch = this._escape_ch;
+    select = select.map((column: any) => {
+      const property = schema[column];
+      column = escape_ch + schema[column]._dbname_us + escape_ch;
+      if (property.type_class === types.GeoPoint) {
+        return `ARRAY[ST_X(${column}), ST_Y(${column})] AS ${column}`;
+      } else {
+        return column;
+      }
+    });
+    return select.join(',');
   }
 
   private async _getTables(): Promise<any> {
@@ -575,6 +578,9 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
+      if (property.primary_key) {
+        continue;
+      }
       this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
     }
     return [fields.join(','), places.join(',')];
@@ -588,6 +594,9 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     for (const column in data) {
       const value = data[column];
       const property = _.find(schema, (item) => item._dbname_us === column);
+      if (!property || property.primary_key) {
+        continue;
+      }
       this._buildUpdateSetOfColumn(property, data, values, fields, places);
     }
     return [fields.join(','), places.join(',')];
