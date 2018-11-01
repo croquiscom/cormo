@@ -340,5 +340,6 @@ declare class BaseModel {
     private _buildSaveData;
     private _create;
     private _update;
+    private _applyDefaultValues;
 }
 export { BaseModel };

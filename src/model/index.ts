@@ -527,6 +527,7 @@ class BaseModel {
     const records = data.map((item) => {
       return this.build(item);
     });
+    records.forEach((record) => record._applyDefaultValues());
     await Promise.all(records.map((record) => record.validate()));
     for (const record of records) {
       record._runCallbacks('save', 'before');
@@ -1038,23 +1039,7 @@ class BaseModel {
     const ctor = this.constructor as typeof BaseModel;
     await ctor._checkReady();
     if (!this._is_persisted) {
-      // apply default values
-      const schema = ctor._schema;
-      // tslint:disable-next-line:forin
-      for (const column in schema) {
-        const property = schema[column];
-        if (property.primary_key) {
-          continue;
-        }
-        const value = util.getPropertyOfPath(this, property._parts);
-        if (value == null && property.default_value !== undefined) {
-          if (_.isFunction(property.default_value)) {
-            util.setPropertyOfPath(this, property._parts, property.default_value());
-          } else {
-            util.setPropertyOfPath(this, property._parts, property.default_value);
-          }
-        }
-      }
+      this._applyDefaultValues();
     }
     if (options.validate !== false) {
       await this.validate();
@@ -1224,6 +1209,27 @@ class BaseModel {
       }
       await ctor._adapter.update(ctor._name, data);
       return this._prev_attributes = {};
+    }
+  }
+
+  private _applyDefaultValues() {
+    const ctor = this.constructor as typeof BaseModel;
+    // apply default values
+    const schema = ctor._schema;
+    // tslint:disable-next-line:forin
+    for (const column in schema) {
+      const property = schema[column];
+      if (property.primary_key) {
+        continue;
+      }
+      const value = util.getPropertyOfPath(this, property._parts);
+      if (value == null && property.default_value !== undefined) {
+        if (_.isFunction(property.default_value)) {
+          util.setPropertyOfPath(this, property._parts, property.default_value());
+        } else {
+          util.setPropertyOfPath(this, property._parts, property.default_value);
+        }
+      }
     }
   }
 }

@@ -205,4 +205,62 @@ export default function(db: any, db_config: any) {
       { id: user2.id, name: 'unknown', age: -1, created_at: new Date(2018, 8, 21, 17, 13) },
     ]);
   });
+
+  it('default value', async () => {
+    sandbox.useFakeTimers(new Date(2018, 8, 21, 17, 13));
+
+    @cormo.Model()
+    class User extends cormo.BaseModel {
+      @cormo.Column({ type: String, required: true, default_value: 'unknown' })
+      public name!: string;
+
+      @cormo.Column({ type: Number, default_value: -1 })
+      public age?: number;
+
+      @cormo.Column({ type: Date, required: true, default_value: Date.now })
+      public created_at!: Date;
+    }
+
+    // create with values
+    const user1 = new User();
+    user1.name = 'Jone Doe';
+    user1.age = 27;
+    user1.created_at = new Date(2018, 7, 3, 5, 24);
+    await user1.save();
+    // create without values
+    const user2 = new User();
+    await user2.save();
+
+    expect(await User.where().order('id')).to.eql([
+      { id: user1.id, name: 'Jone Doe', age: 27, created_at: new Date(2018, 7, 3, 5, 24) },
+      { id: user2.id, name: 'unknown', age: -1, created_at: new Date(2018, 8, 21, 17, 13) },
+    ]);
+  });
+
+  it('default value with createBulk', async () => {
+    sandbox.useFakeTimers(new Date(2018, 8, 21, 17, 13));
+
+    @cormo.Model()
+    class User extends cormo.BaseModel {
+      @cormo.Column({ type: String, required: true, default_value: 'unknown' })
+      public name!: string;
+
+      @cormo.Column({ type: Number, default_value: -1 })
+      public age?: number;
+
+      @cormo.Column({ type: Date, required: true, default_value: Date.now })
+      public created_at!: Date;
+    }
+
+    // create with values
+    const users = await User.createBulk([
+      { name: 'Jone Doe', age: 27, created_at: new Date(2018, 7, 3, 5, 24) },
+      {} as User, // create without values
+    ]);
+
+    expect(await User.where().order('id')).to.eql([
+      { id: users[0].id, name: 'Jone Doe', age: 27, created_at: new Date(2018, 7, 3, 5, 24) },
+      { id: users[1].id, name: 'unknown', age: -1, created_at: new Date(2018, 8, 21, 17, 13) },
+    ]);
+  });
 }
