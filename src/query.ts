@@ -553,7 +553,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       }
       let record;
       try {
-        record = (await this._adapter.findById(this._name, this._id, this._options));
+        record = await this._adapter.findById(this._name, this._id, this._options);
       } catch (error) {
         throw new Error('not found');
       }
@@ -610,7 +610,15 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
   private async _execAndInclude(options?: any) {
     const records = await this._exec(options);
     if (this._options.select_single) {
-      return _.map(records, this._options.select_single);
+      if (Array.isArray(records)) {
+        return _.map(records, this._options.select_single);
+      } else {
+        if (records) {
+          return records[this._options.select_single];
+        } else {
+          return null;
+        }
+      }
     }
     await Promise.all(this._includes.map(async (include) => {
       await this._connection.fetchAssociated(records, include.column, include.select, {

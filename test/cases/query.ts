@@ -11,6 +11,18 @@ export class UserRef extends cormo.BaseModel {
 
 export type UserRefVO = cormo.ModelValueObject<UserRef>;
 
+function _getInvalidID(id: number | string) {
+  if (typeof id === 'number') {
+    // MySQL
+    return -1;
+  } else if (typeof id === 'string') {
+    // MongoDB
+    return id.replace(/./, '9');
+  } else {
+    throw new Error('no support');
+  }
+}
+
 function _compareUser(user: UserRef, expected: UserRefVO) {
   expect(user).to.have.keys('id', 'name', 'age');
   expect(user.name).to.equal(expected.name);
@@ -339,6 +351,22 @@ export default function(models: {
     expect(user_ages.sort()).to.eql([27, 27, 32, 45, 8]);
     const users = await models.User.query().selectSingle('name').select(['age']);
     expect(users[0]).to.have.keys('id', 'age');
+  });
+
+  it('selectSingle for single record', async () => {
+    const user = await models.User.create({ name: 'John Doe', age: 27 });
+
+    expect(await models.User.find(user.id).selectSingle('id')).to.eql(user.id);
+    expect(await models.User.find(user.id).selectSingle('name')).to.eql(user.name);
+    expect(await models.User.find(user.id).selectSingle('age')).to.eql(user.age);
+
+    expect(await models.User.where({ id: user.id }).one().selectSingle('id')).to.eql(user.id);
+    expect(await models.User.where({ id: user.id }).one().selectSingle('name')).to.eql(user.name);
+    expect(await models.User.where({ id: user.id }).one().selectSingle('age')).to.eql(user.age);
+
+    expect(await models.User.where({ id: _getInvalidID(user.id) }).one().selectSingle('id')).to.eql(null);
+    expect(await models.User.where({ id: _getInvalidID(user.id) }).one().selectSingle('name')).to.eql(null);
+    expect(await models.User.where({ id: _getInvalidID(user.id) }).one().selectSingle('age')).to.eql(null);
   });
 
   it('order (string)', async () => {
