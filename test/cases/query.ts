@@ -1,7 +1,7 @@
 // tslint:disable:no-unused-expression variable-name
 
 import { expect } from 'chai';
-import * as cormo from '../../src';
+import * as cormo from '../..';
 
 export class UserRef extends cormo.BaseModel {
   public name?: string | null;
