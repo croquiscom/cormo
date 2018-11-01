@@ -321,6 +321,14 @@ export default function(models: {
     _compareUser(users[4], { name: 'John Doe', age: 27 });
   });
 
+  it('select override', async () => {
+    await _createUsers(models.User);
+    const users1 = await models.User.select('name').select('age');
+    expect(users1[0]).to.have.keys('id', 'age');
+    const users2 = await models.User.select(['name']).select(['age']);
+    expect(users2[0]).to.have.keys('id', 'age');
+  });
+
   it('order (string)', async () => {
     await _createUsers(models.User);
     let users = await models.User.order('name');

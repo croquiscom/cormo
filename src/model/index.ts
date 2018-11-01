@@ -551,8 +551,8 @@ class BaseModel {
    */
   public static query<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
-  ): IQueryArray<T> {
-    return new Query<T>(this);
+  ): IQueryArray<T, T> {
+    return new Query<T, T>(this);
   }
 
   /**
@@ -562,15 +562,15 @@ class BaseModel {
   public static find<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     id: types.RecordID,
-  ): IQuerySingle<T>;
+  ): IQuerySingle<T, T>;
   public static find<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     id: types.RecordID[],
-  ): IQueryArray<T>;
+  ): IQueryArray<T, T>;
   public static find<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     id: types.RecordID | types.RecordID[],
-  ): IQuerySingle<T> | IQueryArray<T> {
+  ): IQuerySingle<T, T> | IQueryArray<T, T> {
     return this.query().find(id as types.RecordID);
   }
 
@@ -581,7 +581,7 @@ class BaseModel {
   public static findPreserve<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     ids: types.RecordID[],
-  ): IQueryArray<T> {
+  ): IQueryArray<T, T> {
     return this.query().findPreserve(ids);
   }
 
@@ -591,7 +591,7 @@ class BaseModel {
   public static where<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     condition?: object,
-  ): IQueryArray<T> {
+  ): IQueryArray<T, T> {
     return this.query().where(condition);
   }
 
@@ -601,15 +601,15 @@ class BaseModel {
   public static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(
     this: { new(data?: any): T } & typeof BaseModel,
     columns: K[],
-  ): IQueryArray<Pick<T, K>>;
+  ): IQueryArray<Pick<T, K>, T>;
   public static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(
     this: { new(data?: any): T } & typeof BaseModel,
     columns?: string,
-  ): IQueryArray<Pick<T, K>>;
+  ): IQueryArray<Pick<T, K>, T>;
   public static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(
     this: { new(data?: any): T } & typeof BaseModel,
     columns?: string | K[],
-  ): IQueryArray<Pick<T, K>> {
+  ): IQueryArray<Pick<T, K>, T> {
     return this.query().select<K>(columns as string);
   }
 
@@ -619,7 +619,7 @@ class BaseModel {
   public static order<T extends BaseModel>(
     this: { new(data?: any): T } & typeof BaseModel,
     orders: string,
-  ): IQueryArray<T> {
+  ): IQueryArray<T, T> {
     return this.query().order(orders);
   }
 
@@ -630,22 +630,22 @@ class BaseModel {
     this: { new(data?: any): T } & typeof BaseModel,
     group_by: G,
     fields?: F,
-  ): IQueryArray<{ [field in keyof F]: number } & Pick<T, G>>;
+  ): IQueryArray<{ [field in keyof F]: number } & Pick<T, G>, T>;
   public static group<T extends BaseModel, F>(
     this: { new(data?: any): T } & typeof BaseModel,
     group_by: null,
     fields?: F,
-  ): IQueryArray<{ [field in keyof F]: number }>;
+  ): IQueryArray<{ [field in keyof F]: number }, T>;
   public static group<T extends BaseModel, U>(
     this: { new(data?: any): T } & typeof BaseModel,
     group_by: string | null,
     fields?: object,
-  ): IQueryArray<U>;
+  ): IQueryArray<U, T>;
   public static group<T extends BaseModel, U>(
     this: { new(data?: any): T } & typeof BaseModel,
     group_by: string | null,
     fields?: object,
-  ): IQueryArray<U> {
+  ): IQueryArray<U, T> {
     return this.query().group<U>(group_by, fields);
   }
 
