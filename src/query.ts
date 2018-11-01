@@ -11,8 +11,9 @@ interface IQueryOptions {
   lean: boolean;
   orders: any[];
   near?: any;
-  select?: string[] | null;
-  select_raw?: string[] | null;
+  select?: string[];
+  select_raw?: string[];
+  select_single?: string;
   group_fields?: any;
   group_by?: any;
   limit?: number;
@@ -34,6 +35,7 @@ export interface IQuerySingle<T, M extends BaseModel> extends PromiseLike<T> {
   where(condition?: object): IQuerySingle<T, M>;
   select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQuerySingle<Pick<M, K>, M>;
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingle<Pick<M, K>, M>;
+  selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M[K], M>;
   order(orders: string): IQuerySingle<T, M>;
   group<G extends keyof T, F>(group_by: G, fields?: F):
     IQuerySingle<{ [field in keyof F]: number } & Pick<T, G>, M>;
@@ -66,6 +68,7 @@ export interface IQueryArray<T, M extends BaseModel> extends PromiseLike<T[]> {
   where(condition?: object): IQueryArray<T, M>;
   select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<Pick<M, K>, M>;
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<Pick<M, K>, M>;
+  selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M[K], M>;
   order(orders: string): IQueryArray<T, M>;
   group<G extends keyof T, F>(group_by: G, fields?: F):
     IQueryArray<{ [field in keyof F]: number } & Pick<T, G>, M>;
@@ -197,8 +200,9 @@ class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T
     if (!this._current_if) {
       return this as any;
     }
-    this._options.select = null;
-    this._options.select_raw = null;
+    this._options.select = undefined;
+    this._options.select_raw = undefined;
+    this._options.select_single = undefined;
     if (columns != null) {
       if (typeof columns === 'string') {
         columns = columns.split(/\s+/);
@@ -229,6 +233,25 @@ class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T
           this._options.select_raw = select_raw;
         }
       }
+    }
+    return this as any;
+  }
+
+  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M[K], M>;
+  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M[K], M>;
+  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: string): IQuery<M[K], M> {
+    if (!this._current_if) {
+      return this as any;
+    }
+    const schema_columns = Object.keys(this._model._schema);
+    if (schema_columns.indexOf(column) >= 0) {
+      this._options.select = [column];
+      this._options.select_raw = [column];
+      this._options.select_single = column;
+    } else {
+      this._options.select = undefined;
+      this._options.select_raw = undefined;
+      this._options.select_single = undefined;
     }
     return this as any;
   }
@@ -584,6 +607,9 @@ class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T
 
   private async _execAndInclude(options?: any) {
     const records = await this._exec(options);
+    if (this._options.select_single) {
+      return _.map(records, this._options.select_single);
+    }
     await Promise.all(this._includes.map(async (include) => {
       await this._connection.fetchAssociated(records, include.column, include.select, {
         lean: this._options.lean,

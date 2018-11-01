@@ -1,7 +1,7 @@
 // tslint:disable:no-unused-expression variable-name
 
 import { expect } from 'chai';
-import * as cormo from '../..';
+import * as cormo from '../../src';
 
 export class UserRef extends cormo.BaseModel {
   public name?: string | null;
@@ -327,6 +327,18 @@ export default function(models: {
     expect(users1[0]).to.have.keys('id', 'age');
     const users2 = await models.User.select(['name']).select(['age']);
     expect(users2[0]).to.have.keys('id', 'age');
+  });
+
+  it('selectSingle', async () => {
+    const sources = await _createUsers(models.User);
+    const user_ids = await models.User.query().selectSingle('id');
+    expect(user_ids).to.eql([sources[0].id, sources[1].id, sources[2].id, sources[3].id, sources[4].id]);
+    const user_names = await models.User.query().selectSingle('name');
+    expect(user_names.sort()).to.eql(['Alice Jackson', 'Bill Smith', 'Daniel Smith', 'Gina Baker', 'John Doe']);
+    const user_ages = await models.User.query().selectSingle('age');
+    expect(user_ages.sort()).to.eql([27, 27, 32, 45, 8]);
+    const users = await models.User.query().selectSingle('name').select(['age']);
+    expect(users[0]).to.have.keys('id', 'age');
   });
 
   it('order (string)', async () => {

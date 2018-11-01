@@ -7,8 +7,9 @@ interface IQueryOptions {
     lean: boolean;
     orders: any[];
     near?: any;
-    select?: string[] | null;
-    select_raw?: string[] | null;
+    select?: string[];
+    select_raw?: string[];
+    select_single?: string;
     group_fields?: any;
     group_by?: any;
     limit?: number;
@@ -29,6 +30,7 @@ export interface IQuerySingle<T, M extends BaseModel> extends PromiseLike<T> {
     where(condition?: object): IQuerySingle<T, M>;
     select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQuerySingle<Pick<M, K>, M>;
     select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingle<Pick<M, K>, M>;
+    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M[K], M>;
     order(orders: string): IQuerySingle<T, M>;
     group<G extends keyof T, F>(group_by: G, fields?: F): IQuerySingle<{
         [field in keyof F]: number;
@@ -61,6 +63,7 @@ export interface IQueryArray<T, M extends BaseModel> extends PromiseLike<T[]> {
     where(condition?: object): IQueryArray<T, M>;
     select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<Pick<M, K>, M>;
     select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<Pick<M, K>, M>;
+    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M[K], M>;
     order(orders: string): IQueryArray<T, M>;
     group<G extends keyof T, F>(group_by: G, fields?: F): IQueryArray<{
         [field in keyof F]: number;
@@ -127,6 +130,8 @@ declare class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQuer
      */
     select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQuerySingle<Pick<M, K>, M>;
     select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQueryArray<Pick<M, K>, M>;
+    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M[K], M>;
+    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M[K], M>;
     /**
      * Specifies orders of result
      */
