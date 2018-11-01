@@ -243,9 +243,9 @@ declare class BaseModel {
     /**
      * Groups result records
      */
-    static group<T extends BaseModel, G extends keyof T, F>(this: {
+    static group<T extends BaseModel, G extends ModelColumnNamesWithId<T>, F>(this: {
         new (data?: any): T;
-    } & typeof BaseModel, group_by: G, fields?: F): IQueryArray<{
+    } & typeof BaseModel, group_by: G | G[], fields?: F): IQueryArray<{
         [field in keyof F]: number;
     } & Pick<T, G>, T>;
     static group<T extends BaseModel, F>(this: {

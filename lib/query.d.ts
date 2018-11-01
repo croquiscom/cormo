@@ -32,10 +32,10 @@ export interface IQuerySingle<T, M extends BaseModel> extends PromiseLike<T> {
     select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingle<Pick<M, K>, M>;
     selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M[K], M>;
     order(orders: string): IQuerySingle<T, M>;
-    group<G extends keyof T, F>(group_by: G, fields?: F): IQuerySingle<{
+    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): IQuerySingle<{
         [field in keyof F]: number;
-    } & Pick<T, G>, M>;
-    group<G extends keyof T, F>(group_by: null, fields?: F): IQuerySingle<{
+    } & Pick<M, G>, M>;
+    group<F>(group_by: null, fields?: F): IQuerySingle<{
         [field in keyof F]: number;
     }, M>;
     group<U>(group_by: string | null, fields?: object): IQuerySingle<U, M>;
@@ -65,9 +65,9 @@ export interface IQueryArray<T, M extends BaseModel> extends PromiseLike<T[]> {
     select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<Pick<M, K>, M>;
     selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M[K], M>;
     order(orders: string): IQueryArray<T, M>;
-    group<G extends keyof T, F>(group_by: G, fields?: F): IQueryArray<{
+    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): IQueryArray<{
         [field in keyof F]: number;
-    } & Pick<T, G>, M>;
+    } & Pick<M, G>, M>;
     group<F>(group_by: null, fields?: F): IQueryArray<{
         [field in keyof F]: number;
     }, M>;
@@ -139,8 +139,8 @@ declare class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQuer
     /**
      * Groups result records
      */
-    group<U>(group_by: string | null, fields?: object): IQuerySingle<U, M>;
-    group<U>(group_by: string | null, fields?: object): IQueryArray<U, M>;
+    group<U>(group_by: string | string[] | null, fields?: object): IQuerySingle<U, M>;
+    group<U>(group_by: string | string[] | null, fields?: object): IQueryArray<U, M>;
     /**
      * Returns only one record (or null if does not exists).
      *

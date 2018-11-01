@@ -111,6 +111,20 @@ export default function(models: {
     expect(records[1]).to.eql({ customer: 'Daniel Smith', date: new Date('2012/01/19'), count: 1, total: 6 });
   });
 
+  it('group by string array', async () => {
+    const records = await models.Order.group(['customer', 'date'], {
+      count: { $sum: 1 },
+      total: { $sum: '$price' },
+    }).order('customer date');
+    expect(records).to.have.length(6);
+    expect(records[0]).to.eql({ customer: 'Bill Smith', date: new Date('2012/02/03'), count: 2, total: 76 });
+    expect(records[1]).to.eql({ customer: 'Daniel Smith', date: new Date('2012/01/19'), count: 1, total: 6 });
+    expect(records[2]).to.eql({ customer: 'Daniel Smith', date: new Date('2012/04/23'), count: 2, total: 24 });
+    expect(records[3]).to.eql({ customer: 'John Doe', date: new Date('2012/01/01'), count: 2, total: 31 });
+    expect(records[4]).to.eql({ customer: 'John Doe', date: new Date('2012/09/23'), count: 1, total: 3 });
+    expect(records[5]).to.eql({ customer: 'John Doe', date: new Date('2012/12/07'), count: 1, total: 15 });
+  });
+
   it('min/max of all', async () => {
     const records = await models.Order.group(null, {
       max_price: { $max: '$price' },

@@ -37,9 +37,9 @@ export interface IQuerySingle<T, M extends BaseModel> extends PromiseLike<T> {
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingle<Pick<M, K>, M>;
   selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M[K], M>;
   order(orders: string): IQuerySingle<T, M>;
-  group<G extends keyof T, F>(group_by: G, fields?: F):
-    IQuerySingle<{ [field in keyof F]: number } & Pick<T, G>, M>;
-  group<G extends keyof T, F>(group_by: null, fields?: F):
+  group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
+    IQuerySingle<{ [field in keyof F]: number } & Pick<M, G>, M>;
+  group<F>(group_by: null, fields?: F):
     IQuerySingle<{ [field in keyof F]: number }, M>;
   group<U>(group_by: string | null, fields?: object): IQuerySingle<U, M>;
   one(): IQuerySingle<T, M>;
@@ -70,8 +70,8 @@ export interface IQueryArray<T, M extends BaseModel> extends PromiseLike<T[]> {
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<Pick<M, K>, M>;
   selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M[K], M>;
   order(orders: string): IQueryArray<T, M>;
-  group<G extends keyof T, F>(group_by: G, fields?: F):
-    IQueryArray<{ [field in keyof F]: number } & Pick<T, G>, M>;
+  group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
+    IQueryArray<{ [field in keyof F]: number } & Pick<M, G>, M>;
   group<F>(group_by: null, fields?: F):
     IQueryArray<{ [field in keyof F]: number }, M>;
   group<U>(group_by: string | null, fields?: object): IQueryArray<U, M>;
@@ -286,19 +286,21 @@ class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T
   /**
    * Groups result records
    */
-  public group<U>(group_by: string | null, fields?: object): IQuerySingle<U, M>;
-  public group<U>(group_by: string | null, fields?: object): IQueryArray<U, M>;
-  public group<U>(group_by: string | null, fields?: object): IQuery<U, M> {
+  public group<U>(group_by: string | string[] | null, fields?: object): IQuerySingle<U, M>;
+  public group<U>(group_by: string | string[] | null, fields?: object): IQueryArray<U, M>;
+  public group<U>(group_by: string | string[] | null, fields?: object): IQuery<U, M> {
     if (!this._current_if) {
       return this as any;
     }
     this._options.group_by = null;
     const schema_columns = Object.keys(this._model._schema);
-    if (typeof group_by === 'string') {
-      const columns = group_by.split(/\s+/).filter((column) => {
+    if (group_by) {
+      if (typeof group_by === 'string') {
+        group_by = group_by.split(/\s+/);
+      }
+      this._options.group_by = group_by.filter((column) => {
         return schema_columns.indexOf(column) >= 0;
       });
-      this._options.group_by = columns;
     }
     this._options.group_fields = fields;
     return this as any;
