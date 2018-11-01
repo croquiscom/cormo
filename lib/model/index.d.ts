@@ -3,10 +3,10 @@ import { Connection, IAssociationBelongsToOptions, IAssociationHasManyOptions, I
 import { IQueryArray, IQuerySingle } from '../query';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
-export declare type ModelColumnNames<T> = Exclude<keyof T, keyof BaseModel>;
-export declare type ModelColumnNamesWithId<T> = Exclude<keyof T, Exclude<keyof BaseModel, 'id'>>;
-export declare type ModelValueObject<T> = Pick<T, ModelColumnNames<T>>;
-export declare type ModelValueObjectWithId<T> = Pick<T, ModelColumnNamesWithId<T>>;
+export declare type ModelColumnNames<M> = Exclude<keyof M, keyof BaseModel>;
+export declare type ModelColumnNamesWithId<M> = Exclude<keyof M, Exclude<keyof BaseModel, 'id'>>;
+export declare type ModelValueObject<M> = Pick<M, ModelColumnNames<M>>;
+export declare type ModelValueObjectWithId<M> = Pick<M, ModelColumnNamesWithId<M>>;
 export interface IColumnProperty {
     type: types.ColumnType | types.ColumnType[];
     array?: boolean;
@@ -105,9 +105,9 @@ declare class BaseModel {
      * Creates a record.
      * 'Model.build(data)' is the same as 'new Model(data)'
      */
-    static build<T extends BaseModel>(this: {
-        new (data?: any): T;
-    }, data?: ModelValueObject<T>): T;
+    static build<M extends BaseModel>(this: {
+        new (data?: any): M;
+    }, data?: ModelValueObject<M>): M;
     /**
      * Deletes all records from the database
      */
@@ -185,77 +185,77 @@ declare class BaseModel {
      * Creates a record and saves it to the database
      * 'Model.create(data)' is the same as 'Model.build(data).save()'
      */
-    static create<T extends BaseModel>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, data?: ModelValueObject<T>, options?: {
+    static create<M extends BaseModel>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, data?: ModelValueObject<M>, options?: {
         skip_log: boolean;
-    }): Promise<T>;
+    }): Promise<M>;
     /**
      * Creates multiple records and saves them to the database.
      */
-    static createBulk<T extends BaseModel>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, data?: Array<ModelValueObject<T>>): Promise<T[]>;
+    static createBulk<M extends BaseModel>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, data?: Array<ModelValueObject<M>>): Promise<M[]>;
     /**
      * Creates q query object
      */
-    static query<T extends BaseModel>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel): IQueryArray<T, T>;
+    static query<M extends BaseModel>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel): IQueryArray<M>;
     /**
      * Finds a record by id
      * @throws {Error('not found')}
      */
-    static find<T extends BaseModel>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, id: types.RecordID): IQuerySingle<T, T>;
-    static find<T extends BaseModel>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, id: types.RecordID[]): IQueryArray<T, T>;
+    static find<M extends BaseModel>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, id: types.RecordID): IQuerySingle<M>;
+    static find<M extends BaseModel>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, id: types.RecordID[]): IQueryArray<M>;
     /**
      * Finds records by ids while preserving order.
      * @throws {Error('not found')}
      */
-    static findPreserve<T extends BaseModel>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, ids: types.RecordID[]): IQueryArray<T, T>;
+    static findPreserve<M extends BaseModel>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, ids: types.RecordID[]): IQueryArray<M>;
     /**
      * Finds records by conditions
      */
-    static where<T extends BaseModel>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, condition?: object): IQueryArray<T, T>;
+    static where<M extends BaseModel>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, condition?: object): IQueryArray<M>;
     /**
      * Selects columns for result
      */
-    static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, columns: K[]): IQueryArray<Pick<T, K>, T>;
-    static select<T extends BaseModel, K extends ModelColumnNamesWithId<T>>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, columns?: string): IQueryArray<Pick<T, K>, T>;
+    static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, columns: K[]): IQueryArray<M, Pick<M, K>>;
+    static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, columns?: string): IQueryArray<M, Pick<M, K>>;
     /**
      * Specifies orders of result
      */
-    static order<T extends BaseModel>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, orders: string): IQueryArray<T, T>;
+    static order<M extends BaseModel>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, orders: string): IQueryArray<M>;
     /**
      * Groups result records
      */
-    static group<T extends BaseModel, G extends ModelColumnNamesWithId<T>, F>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, group_by: G | G[], fields?: F): IQueryArray<{
+    static group<M extends BaseModel, G extends ModelColumnNamesWithId<M>, F>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, group_by: G | G[], fields?: F): IQueryArray<M, {
         [field in keyof F]: number;
-    } & Pick<T, G>, T>;
-    static group<T extends BaseModel, F>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, group_by: null, fields?: F): IQueryArray<{
+    } & Pick<M, G>>;
+    static group<M extends BaseModel, F>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, group_by: null, fields?: F): IQueryArray<M, {
         [field in keyof F]: number;
-    }, T>;
-    static group<T extends BaseModel, U>(this: {
-        new (data?: any): T;
-    } & typeof BaseModel, group_by: string | null, fields?: object): IQueryArray<U, T>;
+    }>;
+    static group<M extends BaseModel, U>(this: {
+        new (data?: any): M;
+    } & typeof BaseModel, group_by: string | null, fields?: object): IQueryArray<M, U>;
     /**
      * Counts records by conditions
      */

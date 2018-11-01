@@ -27,29 +27,29 @@ interface IQueryOptions {
   };
 }
 
-export interface IQuerySingle<T, M extends BaseModel> extends PromiseLike<T> {
-  find(id: RecordID): IQuerySingle<T, M>;
-  find(id: RecordID[]): IQueryArray<T, M>;
-  findPreserve(id: RecordID[]): IQueryArray<T, M>;
-  near(target: object): IQuerySingle<T, M>;
-  where(condition?: object): IQuerySingle<T, M>;
-  select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQuerySingle<Pick<M, K>, M>;
-  select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingle<Pick<M, K>, M>;
-  selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M[K], M>;
-  order(orders: string): IQuerySingle<T, M>;
+export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
+  find(id: RecordID): IQuerySingle<M, T>;
+  find(id: RecordID[]): IQueryArray<M, T>;
+  findPreserve(id: RecordID[]): IQueryArray<M, T>;
+  near(target: object): IQuerySingle<M, T>;
+  where(condition?: object): IQuerySingle<M, T>;
+  select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQuerySingle<M, Pick<M, K>>;
+  select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingle<M, Pick<M, K>>;
+  selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M, M[K]>;
+  order(orders: string): IQuerySingle<M, T>;
   group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
-    IQuerySingle<{ [field in keyof F]: number } & Pick<M, G>, M>;
+    IQuerySingle<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F):
-    IQuerySingle<{ [field in keyof F]: number }, M>;
-  group<U>(group_by: string | null, fields?: object): IQuerySingle<U, M>;
-  one(): IQuerySingle<T, M>;
-  limit(limit?: number): IQuerySingle<T, M>;
-  skip(skip?: number): IQuerySingle<T, M>;
-  lean(lean?: boolean): IQuerySingle<T, M>;
-  if(condition: boolean): IQuerySingle<T, M>;
-  endif(): IQuerySingle<T, M>;
-  cache(options: IQueryOptions['cache']): IQuerySingle<T, M>;
-  include(column: string, select?: string): IQuerySingle<T, M>;
+    IQuerySingle<M, { [field in keyof F]: number }>;
+  group<U>(group_by: string | null, fields?: object): IQuerySingle<M, U>;
+  one(): IQuerySingle<M, T>;
+  limit(limit?: number): IQuerySingle<M, T>;
+  skip(skip?: number): IQuerySingle<M, T>;
+  lean(lean?: boolean): IQuerySingle<M, T>;
+  if(condition: boolean): IQuerySingle<M, T>;
+  endif(): IQuerySingle<M, T>;
+  cache(options: IQueryOptions['cache']): IQuerySingle<M, T>;
+  include(column: string, select?: string): IQuerySingle<M, T>;
 
   exec(options?: any): PromiseLike<T>;
   stream(): stream.Readable;
@@ -60,29 +60,29 @@ export interface IQuerySingle<T, M extends BaseModel> extends PromiseLike<T> {
   delete(options?: any): PromiseLike<number>;
 }
 
-export interface IQueryArray<T, M extends BaseModel> extends PromiseLike<T[]> {
-  find(id: RecordID): IQuerySingle<T, M>;
-  find(id: RecordID[]): IQueryArray<T, M>;
-  findPreserve(id: RecordID[]): IQueryArray<T, M>;
-  near(target: object): IQueryArray<T, M>;
-  where(condition?: object): IQueryArray<T, M>;
-  select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<Pick<M, K>, M>;
-  select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<Pick<M, K>, M>;
-  selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M[K], M>;
-  order(orders: string): IQueryArray<T, M>;
+export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]> {
+  find(id: RecordID): IQuerySingle<M, T>;
+  find(id: RecordID[]): IQueryArray<M, T>;
+  findPreserve(id: RecordID[]): IQueryArray<M, T>;
+  near(target: object): IQueryArray<M, T>;
+  where(condition?: object): IQueryArray<M, T>;
+  select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<M, Pick<M, K>>;
+  select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<M, Pick<M, K>>;
+  selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M, M[K]>;
+  order(orders: string): IQueryArray<M, T>;
   group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
-    IQueryArray<{ [field in keyof F]: number } & Pick<M, G>, M>;
+    IQueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F):
-    IQueryArray<{ [field in keyof F]: number }, M>;
-  group<U>(group_by: string | null, fields?: object): IQueryArray<U, M>;
-  one(): IQuerySingle<T, M>;
-  limit(limit?: number): IQueryArray<T, M>;
-  skip(skip?: number): IQueryArray<T, M>;
-  lean(lean?: boolean): IQueryArray<T, M>;
-  if(condition: boolean): IQueryArray<T, M>;
-  endif(): IQueryArray<T, M>;
-  cache(options: IQueryOptions['cache']): IQueryArray<T, M>;
-  include(column: string, select?: string): IQueryArray<T, M>;
+    IQueryArray<M, { [field in keyof F]: number }>;
+  group<U>(group_by: string | null, fields?: object): IQueryArray<M, U>;
+  one(): IQuerySingle<M, T>;
+  limit(limit?: number): IQueryArray<M, T>;
+  skip(skip?: number): IQueryArray<M, T>;
+  lean(lean?: boolean): IQueryArray<M, T>;
+  if(condition: boolean): IQueryArray<M, T>;
+  endif(): IQueryArray<M, T>;
+  cache(options: IQueryOptions['cache']): IQueryArray<M, T>;
+  include(column: string, select?: string): IQueryArray<M, T>;
 
   exec(options?: any): PromiseLike<T[]>;
   stream(): stream.Readable;
@@ -93,12 +93,12 @@ export interface IQueryArray<T, M extends BaseModel> extends PromiseLike<T[]> {
   delete(options?: any): PromiseLike<number>;
 }
 
-type IQuery<T, M extends BaseModel> = IQuerySingle<T, M> | IQueryArray<T, M>;
+type IQuery<M extends BaseModel, T = M> = IQuerySingle<M, T> | IQueryArray<M, T>;
 
 /**
  * Collects conditions to query
  */
-class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T, M> {
+class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArray<M, T> {
   private _model: typeof BaseModel;
   private _name: string;
   private _connection: Connection;
@@ -134,9 +134,9 @@ class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T
   /**
    * Finds a record by id
    */
-  public find(id: RecordID): IQuerySingle<T, M>;
-  public find(id: RecordID[]): IQueryArray<T, M>;
-  public find(id: RecordID | RecordID[]): IQuery<T, M> {
+  public find(id: RecordID): IQuerySingle<M, T>;
+  public find(id: RecordID[]): IQueryArray<M, T>;
+  public find(id: RecordID | RecordID[]): IQuery<M, T> {
     if (!this._current_if) {
       return this;
     }
@@ -153,7 +153,7 @@ class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T
   /**
    * Finds records by ids while preserving order.
    */
-  public findPreserve(ids: RecordID[]): IQueryArray<T, M> {
+  public findPreserve(ids: RecordID[]): IQueryArray<M, T> {
     if (!this._current_if) {
       return this;
     }
@@ -194,9 +194,9 @@ class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T
   /**
    * Selects columns for result
    */
-  public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQuerySingle<Pick<M, K>, M>;
-  public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQueryArray<Pick<M, K>, M>;
-  public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQuery<Pick<M, K>, M> {
+  public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQuerySingle<M, Pick<M, K>>;
+  public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQueryArray<M, Pick<M, K>>;
+  public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQuery<M, Pick<M, K>> {
     if (!this._current_if) {
       return this as any;
     }
@@ -237,9 +237,9 @@ class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T
     return this as any;
   }
 
-  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M[K], M>;
-  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M[K], M>;
-  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: string): IQuery<M[K], M> {
+  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M, M[K]>;
+  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M, M[K]>;
+  public selectSingle<K extends ModelColumnNamesWithId<M>>(column: string): IQuery<M, M[K]> {
     if (!this._current_if) {
       return this as any;
     }
@@ -286,9 +286,9 @@ class Query<T, M extends BaseModel> implements IQuerySingle<T, M>, IQueryArray<T
   /**
    * Groups result records
    */
-  public group<U>(group_by: string | string[] | null, fields?: object): IQuerySingle<U, M>;
-  public group<U>(group_by: string | string[] | null, fields?: object): IQueryArray<U, M>;
-  public group<U>(group_by: string | string[] | null, fields?: object): IQuery<U, M> {
+  public group<U>(group_by: string | string[] | null, fields?: object): IQuerySingle<M, U>;
+  public group<U>(group_by: string | string[] | null, fields?: object): IQueryArray<M, U>;
+  public group<U>(group_by: string | string[] | null, fields?: object): IQuery<M, U> {
     if (!this._current_if) {
       return this as any;
     }
