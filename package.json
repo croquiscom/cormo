@@ -23,7 +23,7 @@
     "build": "rimraf lib && tsc -p src/tsconfig.build.json",
     "lint": "tslint -p tsconfig.json",
     "doc": "node node_modules/.bin/crojsdoc",
-    "test": "NODE_ENV=test mocha --require coffeescript/register --require ts-node/register --exit 'test/*.{js,ts,coffee}'"
+    "test": "NODE_ENV=test mocha --require coffeescript/register --require ts-node/register --timeout 5000 --exit 'test/*.{js,ts,coffee}'"
   },
   "repository": {
     "type": "git",
