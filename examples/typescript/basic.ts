@@ -1,5 +1,6 @@
 // tslint:disable:max-classes-per-file
 
+import * as util from 'util';
 import * as cormo from '../../src';
 
 const connection = new cormo.Connection('mysql', {
@@ -19,6 +20,10 @@ class Name {
   public toString() {
     return `${this.first} ${this.last}`;
   }
+
+  public [util.inspect.custom]() {
+    return this.toString();
+  }
 }
 
 @cormo.Model({ connection })
@@ -35,36 +40,36 @@ class User extends cormo.BaseModel {
 
 async function create1() {
   const user = await User.create({ name: { first: 'John', last: 'Doe' } });
-  console.log(Name.prototype.toString.apply(user.name));
+  console.log(user.name);
 }
 
 async function create2() {
   const user = await User.create({ name: { first: 'Bill', last: 'Smith' }, age: 5 });
-  console.log(Name.prototype.toString.apply(user.name));
+  console.log(user.name);
 }
 
 async function save() {
   const user = await new User({ name: { first: 'Alice', last: 'Jackson' } });
   user.save();
-  console.log(Name.prototype.toString.apply(user.name));
+  console.log(user.name);
 }
 
 async function build() {
   const user = await User.build({ name: { first: 'Gina', last: 'Baker' } });
   await user.save();
-  console.log(Name.prototype.toString.apply(user.name));
+  console.log(user.name);
 }
 
 async function getAll() {
   const users = await User.where();
   for (const user of users) {
-    console.log(`name - ${Name.prototype.toString.apply(user.name)}, age - ${user.age}`);
+    console.log(`name - ${user.name}, age - ${user.age}`);
   }
 }
 
 async function query() {
   const user = await User.where({ age: 5 }).select(['id', 'name']).one();
-  console.log(`name of age 5 is #${user.id} ${Name.prototype.toString.apply(user.name)}`);
+  console.log(`name of age 5 is #${user.id} ${user.name}`);
 }
 
 async function count() {

@@ -62,6 +62,10 @@ declare class BaseModel {
     static _adapter: AdapterBase;
     static _name: string;
     static _schema: IModelSchemaInternal;
+    static _object_column_classes: Array<{
+        column: string;
+        klass: any;
+    }>;
     static _indexes: any[];
     static _integrities: any[];
     static _associations: {

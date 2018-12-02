@@ -110,6 +110,8 @@ class BaseModel {
 
   public static _schema: IModelSchemaInternal;
 
+  public static _object_column_classes: Array<{ column: string, klass: any }>;
+
   public static _indexes: any[];
 
   public static _integrities: any[];
@@ -853,6 +855,7 @@ class BaseModel {
     const ctor = this.constructor as typeof BaseModel;
     const schema = ctor._schema;
     const adapter = ctor._adapter;
+
     Object.defineProperty(this, '_prev_attributes', { writable: true, value: {} });
     if (ctor.dirty_tracking) {
       Object.defineProperty(this, '_attributes', { value: {} });
@@ -879,6 +882,13 @@ class BaseModel {
       Object.defineProperty(this, 'set', { value: _pf_set });
       Object.defineProperty(this, 'reset', { value: _pf_reset });
     }
+
+    if (ctor._object_column_classes) {
+      for (const { column, klass } of ctor._object_column_classes) {
+        (this as any)[column] = new klass();
+      }
+    }
+
     if (arguments.length === 4) {
       // if this has 4 arguments, this is called from adapter with database record data
       const id = arguments[1];

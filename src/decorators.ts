@@ -61,6 +61,10 @@ export function ObjectColumn(partial_model_class: any): PropertyDecorator {
         column_property[decorator.propertyKey] = decorator.column_property;
       }
     }
+    if (!ctor._object_column_classes) {
+      ctor._object_column_classes = [];
+    }
+    ctor._object_column_classes.push({ column: propertyKey.toString(), klass: partial_model_class });
     ctor._property_decorators.push({ type: 'column', propertyKey: propertyKey.toString(), column_property });
   };
 }
