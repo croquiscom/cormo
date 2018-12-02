@@ -10,7 +10,10 @@ const connection = new cormo.Connection('mysql', {
 });
 
 class Name {
+  @cormo.Column({ type: String, required: true })
   public first!: string;
+
+  @cormo.Column({ type: String, required: true })
   public last!: string;
 
   public toString() {
@@ -23,10 +26,7 @@ class Name {
 class User extends cormo.BaseModel {
   public id!: number;
 
-  @cormo.Column({
-    first: { type: String, required: true },
-    last: { type: String, required: true },
-  })
+  @cormo.ObjectColumn(Name)
   public name!: Name;
 
   @cormo.Column(Number)
