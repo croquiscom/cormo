@@ -19,7 +19,7 @@ class Name {
 }
 
 @cormo.Model({ connection })
-@cormo.Index({ name_first: 1, age: 1 })
+@cormo.Index({ 'name.first': 1, 'age': 1 })
 class User extends cormo.BaseModel {
   public id!: number;
 

@@ -150,7 +150,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     // tslint:disable-next-line:forin
     for (const column in index.columns) {
       const order = index.columns[column];
-      columns.push(`"${column}" ${(order === -1 ? 'DESC' : 'ASC')}`);
+      columns.push(`"${column.replace(/\./g, '_')}" ${(order === -1 ? 'DESC' : 'ASC')}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
     const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;

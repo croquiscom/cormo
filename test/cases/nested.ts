@@ -404,4 +404,24 @@ export default function(db: any, db_config: any) {
     expect(users[1].name!.first).to.eql('Bill');
     expect(users[1].name!.last).to.eql('Smith');
   });
+
+  it('define index using nested column', async () => {
+    @cormo.Model()
+    @cormo.Index({ 'name.last': 1 })
+    @cormo.Index({ 'name.first': 1, 'age': 1 })
+    class User extends cormo.BaseModel {
+      @cormo.Column({
+        first: String,
+        last: String,
+      })
+      public name?: {
+        first?: string;
+        last?: string;
+      };
+
+      @cormo.Column(Number)
+      public age?: number;
+    }
+    await User.create({ name: { first: 'John', last: 'Doe' }, age: 20 });
+  });
 }
