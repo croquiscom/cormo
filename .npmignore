@@ -13,6 +13,8 @@ crojsdoc.yaml
 .travis.yml
 GLOSSARY.md
 .npmignore
+.editorconfig
+.vscode
 docker-compose.yml
 tsconfig.json
 tslint.json
