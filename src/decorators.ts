@@ -39,13 +39,33 @@ export function Model(options: { connection?: Connection, name?: string } = {}) 
 }
 
 export function Column(column_property: types.ColumnType | types.ColumnType[]
-  | IColumnProperty | IColumnNestedProperty) {
-  return (target: BaseModel, propertyKey: string) => {
+  | IColumnProperty | IColumnNestedProperty): PropertyDecorator {
+  return (target: object, propertyKey: string | symbol) => {
     const ctor = target.constructor as typeof BaseModel;
     if (!ctor._property_decorators) {
       ctor._property_decorators = [];
     }
-    ctor._property_decorators.push({ type: 'column', propertyKey, column_property });
+    ctor._property_decorators.push({ type: 'column', propertyKey: propertyKey.toString(), column_property });
+  };
+}
+
+export function ObjectColumn(partial_model_class: any): PropertyDecorator {
+  return (target: object, propertyKey: string | symbol) => {
+    const ctor = target.constructor as typeof BaseModel;
+    if (!ctor._property_decorators) {
+      ctor._property_decorators = [];
+    }
+    const column_property: IColumnNestedProperty = {};
+    for (const decorator of partial_model_class._property_decorators) {
+      if (decorator.type === 'column') {
+        column_property[decorator.propertyKey] = decorator.column_property;
+      }
+    }
+    if (!ctor._object_column_classes) {
+      ctor._object_column_classes = [];
+    }
+    ctor._object_column_classes.push({ column: propertyKey.toString(), klass: partial_model_class });
+    ctor._property_decorators.push({ type: 'column', propertyKey: propertyKey.toString(), column_property });
   };
 }
 

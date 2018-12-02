@@ -16,6 +16,27 @@ export default function(db: any, db_config: any) {
   });
 
   it('define a model, create an instance and fetch it', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
+    @cormo.Model()
+    class User extends cormo.BaseModel {
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
+    }
+    const user = await User.create({ name: { first: 'John', last: 'Doe' } });
+    expect(user).to.have.keys('id', 'name');
+    expect(user.name).to.eql({ first: 'John', last: 'Doe' });
+    const record = await User.find(user.id);
+    expect(record).to.have.keys('id', 'name');
+    expect(record.name).to.eql({ first: 'John', last: 'Doe' });
+  });
+
+  it('define a model using NestedProperty', async () => {
     @cormo.Model()
     class User extends cormo.BaseModel {
       @cormo.Column({
@@ -29,27 +50,24 @@ export default function(db: any, db_config: any) {
     }
     const user = await User.create({ name: { first: 'John', last: 'Doe' } });
     expect(user).to.have.keys('id', 'name');
-    expect(user.name).to.have.keys('first', 'last');
-    expect(user.name!.first).to.eql('John');
-    expect(user.name!.last).to.eql('Doe');
+    expect(user.name).to.eql({ first: 'John', last: 'Doe' });
     const record = await User.find(user.id);
     expect(record).to.have.keys('id', 'name');
-    expect(record.name).to.have.keys('first', 'last');
-    expect(record.name!.first).to.eql('John');
-    expect(record.name!.last).to.eql('Doe');
+    expect(record.name).to.eql({ first: 'John', last: 'Doe' });
   });
 
   it('get a record whose super column is null', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     const user = await User.create({});
     const record = await User.find(user.id);
@@ -68,45 +86,37 @@ export default function(db: any, db_config: any) {
     }
     const user = await (User as any).create({ name: { first: 'John', last: 'Doe' } });
     expect(user).to.have.keys('id', 'name');
-    expect(user.name).to.have.keys('first', 'last');
-    expect(user.name.first).to.eql('John');
-    expect(user.name.last).to.eql('Doe');
+    expect(user.name).to.eql({ first: 'John', last: 'Doe' });
     const record = await (User as any).find(user.id);
     expect(record).to.have.keys('id', 'name');
-    expect(record.name).to.have.keys('first', 'last');
-    expect(record.name.first).to.eql('John');
-    expect(record.name.last).to.eql('Doe');
+    expect(record.name).to.eql({ first: 'John', last: 'Doe' });
   });
 
   it('constraint', async () => {
+    class Name {
+      @cormo.Column({ type: String, required: true })
+      public first!: string;
+
+      @cormo.Column({ type: String, required: true })
+      public last!: string;
+
+      @cormo.Column(String)
+      public middle?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: { type: String, required: true },
-        last: { type: String, required: true },
-        middle: String,
-      })
-      public name!: {
-        first: string;
-        last: string;
-        middle?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name!: Name;
     }
     const user1 = await User.create({ name: { first: 'John', middle: 'F.', last: 'Doe' } });
     const record1 = await User.find(user1.id);
     expect(record1).to.have.keys('id', 'name');
-    expect(record1.name).to.have.keys('first', 'middle', 'last');
-    expect(record1.name.first).to.eql('John');
-    expect(record1.name.middle).to.eql('F.');
-    expect(record1.name.last).to.eql('Doe');
+    expect(record1.name).to.eql({ first: 'John', middle: 'F.', last: 'Doe' });
     // missing non-required field
     const user2 = await User.create({ name: { first: 'John', last: 'Doe' } });
     const record2 = await User.find(user2.id);
     expect(record2).to.have.keys('id', 'name');
-    expect(record2.name).to.have.keys('first', 'middle', 'last');
-    expect(record2.name.first).to.eql('John');
-    expect(record2.name.middle).to.null;
-    expect(record2.name.last).to.eql('Doe');
+    expect(record2.name).to.eql({ first: 'John', middle: null, last: 'Doe' });
     try {
       // missing required field
       await (User as any).create({ name: { first: 'John', middle: 'F.' } });
@@ -118,16 +128,17 @@ export default function(db: any, db_config: any) {
   });
 
   it('query', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     await User.create({ name: { first: 'John', last: 'Doe' } });
     await User.create({ name: { first: 'Bill', last: 'Smith' } });
@@ -136,50 +147,47 @@ export default function(db: any, db_config: any) {
     expect(users).to.have.length(2);
     users.sort((a, b) => a.name!.first! < b.name!.first! ? -1 : 1);
     expect(users[0]).to.have.keys('id', 'name');
-    expect(users[0].name).to.have.keys('first', 'last');
-    expect(users[0].name!.first).to.eql('Bill');
-    expect(users[0].name!.last).to.eql('Smith');
+    expect(users[0].name).to.eql({ first: 'Bill', last: 'Smith' });
     expect(users[1]).to.have.keys('id', 'name');
-    expect(users[1].name).to.have.keys('first', 'last');
-    expect(users[1].name!.first).to.eql('Daniel');
-    expect(users[1].name!.last).to.eql('Smith');
+    expect(users[1].name).to.eql({ first: 'Daniel', last: 'Smith' });
   });
 
   it('update', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     const user = await User.create({ name: { first: 'John', last: 'Doe' } });
     const count = await User.find(user.id).update({ name: { first: 'Bill' } });
     expect(count).to.equal(1);
     const record = (await User.find(user.id));
     expect(record).to.have.keys('id', 'name');
-    expect(record.name).to.have.keys('first', 'last');
-    expect(record.name!.first).to.eql('Bill');
-    expect(record.name!.last).to.eql('Doe');
+    expect(record.name).to.eql({ first: 'Bill', last: 'Doe' });
   });
 
   it('constraint on update', async () => {
+    class Name {
+      @cormo.Column({ type: String, required: true })
+      public first!: string;
+
+      @cormo.Column({ type: String, required: true })
+      public last!: string;
+
+      @cormo.Column(String)
+      public middle?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: { type: String, required: true },
-        last: { type: String, required: true },
-        middle: String,
-      })
-      public name!: {
-        first: string;
-        last: string;
-        middle?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name!: Name;
     }
     const user = await User.create({ name: { first: 'John', middle: 'F.', last: 'Doe' } });
     try {
@@ -192,16 +200,17 @@ export default function(db: any, db_config: any) {
   });
 
   it('keys on empty', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
 
       @cormo.Column(Number)
       public age?: number;
@@ -214,16 +223,17 @@ export default function(db: any, db_config: any) {
   });
 
   it('replace object', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     const user = await User.create({ name: { first: 'John', last: 'Doe' } });
     user.name = { first: 'Bill' };
@@ -231,22 +241,21 @@ export default function(db: any, db_config: any) {
     await user.save();
     const record = await User.find(user.id);
     expect(record).to.have.keys('id', 'name');
-    expect(record.name).to.have.keys('first', 'last');
-    expect(record.name!.first).to.eql('Bill');
-    expect(record.name!.last).to.be.null;
+    expect(record.name).to.eql({ first: 'Bill', last: null });
   });
 
   it('get & set', () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     const user = new User({ name: { first: 'John', last: 'Doe' } });
     expect(user.get('name.first')).to.equal('John');
@@ -260,57 +269,57 @@ export default function(db: any, db_config: any) {
   });
 
   it('select sub', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     await User.create({ name: { first: 'John', last: 'Doe' } });
     const users = await User.select('name.first');
     expect(users).to.have.length(1);
     expect(users[0]).to.have.keys('id', 'name');
-    expect(users[0].name).to.have.keys('first');
-    expect(users[0].name!.first).to.eql('John');
+    expect(users[0].name).to.eql({ first: 'John' });
   });
 
   it('select super', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     await User.create({ name: { first: 'John', last: 'Doe' } });
     const users = await User.select('name');
     expect(users).to.have.length(1);
     expect(users[0]).to.have.keys('id', 'name');
-    expect(users[0].name).to.have.keys('first', 'last');
-    expect(users[0].name!.first).to.eql('John');
-    expect(users[0].name!.last).to.eql('Doe');
+    expect(users[0].name).to.eql({ first: 'John', last: 'Doe' });
   });
 
   it('update super null', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     const user = await User.create({ name: { first: 'John', last: 'Doe' } });
     const count = await User.find(user.id).update({ name: null });
@@ -321,37 +330,37 @@ export default function(db: any, db_config: any) {
   });
 
   it('lean option', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     await User.create({ name: { first: 'John', last: 'Doe' } });
     const users = await User.select('name').lean();
     expect(users).to.have.length(1);
     expect(users[0]).to.have.keys('id', 'name');
-    expect(users[0].name).to.have.keys('first', 'last');
-    expect(users[0].name!.first).to.eql('John');
-    expect(users[0].name!.last).to.eql('Doe');
+    expect(users[0].name).to.eql({ first: 'John', last: 'Doe' });
   });
 
   it('select for null fields', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     await User.create({});
     // select sub
@@ -377,16 +386,17 @@ export default function(db: any, db_config: any) {
   });
 
   it('order', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
     @cormo.Model()
     class User extends cormo.BaseModel {
-      @cormo.Column({
-        first: String,
-        last: String,
-      })
-      public name?: {
-        first?: string;
-        last?: string;
-      };
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
     }
     await User.create({ name: { first: 'John', last: 'Doe' } });
     await User.create({ name: { first: 'Bill', last: 'Smith' } });
@@ -396,12 +406,29 @@ export default function(db: any, db_config: any) {
     const users = await User.where().order('name.first');
     expect(users).to.have.length(5);
     expect(users[0]).to.have.keys('id', 'name');
-    expect(users[0].name).to.have.keys('first', 'last');
-    expect(users[0].name!.first).to.eql('Alice');
-    expect(users[0].name!.last).to.eql('Jackson');
+    expect(users[0].name).to.eql({ first: 'Alice', last: 'Jackson' });
     expect(users[1]).to.have.keys('id', 'name');
-    expect(users[1].name).to.have.keys('first', 'last');
-    expect(users[1].name!.first).to.eql('Bill');
-    expect(users[1].name!.last).to.eql('Smith');
+    expect(users[1].name).to.eql({ first: 'Bill', last: 'Smith' });
+  });
+
+  it('define index using nested column', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
+    @cormo.Model()
+    @cormo.Index({ 'name.last': 1 })
+    @cormo.Index({ 'name.first': 1, 'age': 1 })
+    class User extends cormo.BaseModel {
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
+
+      @cormo.Column(Number)
+      public age?: number;
+    }
+    await User.create({ name: { first: 'John', last: 'Doe' }, age: 20 });
   });
 }
