@@ -443,7 +443,7 @@ class Connection extends EventEmitter {
           records = await query.exec();
           if (records.length > 0) {
             const array = result[integrity.child._name] || (result[integrity.child._name] = []);
-            [].push.apply(array, records.map((record: any) => record.id));
+            array.push(...records.map((record: any) => record.id));
             _.uniq(array);
           }
         });

@@ -265,9 +265,9 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
     }
     if (typeof orders === 'string') {
       const avaliable_columns = ['id'];
-      [].push.apply(avaliable_columns, Object.keys(this._model._schema));
+      avaliable_columns.push(...Object.keys(this._model._schema));
       if (this._options.group_fields) {
-        [].push.apply(avaliable_columns, Object.keys(this._options.group_fields));
+        avaliable_columns.push(...Object.keys(this._options.group_fields));
       }
       orders.split(/\s+/).forEach((order) => {
         let asc = true;
