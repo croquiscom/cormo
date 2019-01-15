@@ -1,0 +1,45 @@
+// tslint:disable:max-classes-per-file
+
+import { expect } from 'chai';
+import * as cormo from '../..';
+
+export default function(models: {
+  connection: cormo.Connection | null,
+}) {
+  describe('issues', () => {
+    it('reserved words', async () => {
+      class Reference extends cormo.BaseModel {
+        public group!: number;
+      }
+      Reference.index({ group: 1 });
+      Reference.column('group', 'integer');
+      const data = [
+        { group: 1 },
+        { group: 1 },
+        { group: 2 },
+        { group: 3 },
+      ];
+      const records = await Reference.createBulk(data);
+      const record = await Reference.find(records[0].id).select('group');
+      expect(record.id).to.eql(records[0].id);
+      expect(record.group).to.eql(records[0].group);
+      const count = await Reference.count({ group: 1 });
+      expect(count).to.eql(2);
+    });
+
+    it('#5 invalid json value', async () => {
+      class Test extends cormo.BaseModel {
+        public name!: string;
+      }
+      Test.column('name', String);
+      Test.column('object', { type: Object, required: true });
+      Test.column('array', { type: [String], required: true });
+      await models.connection!.applySchemas();
+      await models.connection!.adapter.run("INSERT INTO tests (name, object, array) VALUES ('croquis', '', '')");
+      const records = await Test.where().lean(true);
+      expect(records).to.eql([
+        { id: records[0].id, name: 'croquis', object: null, array: null }
+      ]);
+    });
+  });
+}
