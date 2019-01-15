@@ -103,18 +103,17 @@ abstract class SQLAdapterBase extends AdapterBase {
             return `(NOT (${this._buildWhereSingle(property, key, value[sub_key], params)}) OR ${column} IS NULL)`;
           }
           break;
-        case '$in':
-          {
-            let values = value[sub_key];
-            if (values.length === 0) {
-              return this._false_value;
-            }
-            values = values.map((v: any) => {
-              params.push(v);
-              return this._param_place_holder(params.length);
-            });
-            return `${column} IN (${values.join(',')})`;
+        case '$in': {
+          let values = value[sub_key];
+          if (values.length === 0) {
+            return this._false_value;
           }
+          values = values.map((v: any) => {
+            params.push(v);
+            return this._param_place_holder(params.length);
+          });
+          return `${column} IN (${values.join(',')})`;
+        }
         case '$gt':
           op = '>';
           value = value[sub_key];
@@ -131,22 +130,21 @@ abstract class SQLAdapterBase extends AdapterBase {
           op = '<=';
           value = value[sub_key];
           break;
-        case '$contains':
-          {
-            op = ' ' + this._contains_op + ' ';
-            let values = value[sub_key];
-            if (!Array.isArray(values)) {
-              values = [values];
-            }
-            if (values.length === 0) {
-              return this._false_value;
-            }
-            values = values.map((v: any) => {
-              params.push('%' + v + '%');
-              return column + op + this._param_place_holder(params.length);
-            });
-            return `(${values.join(' OR ')})`;
+        case '$contains': {
+          op = ' ' + this._contains_op + ' ';
+          let values = value[sub_key];
+          if (!Array.isArray(values)) {
+            values = [values];
           }
+          if (values.length === 0) {
+            return this._false_value;
+          }
+          values = values.map((v: any) => {
+            params.push('%' + v + '%');
+            return column + op + this._param_place_holder(params.length);
+          });
+          return `(${values.join(' OR ')})`;
+        }
         case '$startswith':
           op = ' ' + this._contains_op + ' ';
           value = value[sub_key];

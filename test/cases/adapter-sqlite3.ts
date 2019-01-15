@@ -38,7 +38,7 @@ export default function(models: {
       await models.connection!.adapter.run("INSERT INTO tests (name, object, array) VALUES ('croquis', '', '')");
       const records = await Test.where().lean(true);
       expect(records).to.eql([
-        { id: records[0].id, name: 'croquis', object: null, array: null }
+        { id: records[0].id, name: 'croquis', object: null, array: null },
       ]);
     });
   });

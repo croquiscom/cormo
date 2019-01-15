@@ -288,7 +288,7 @@ class BaseModel {
    * 'Model.build(data)' is the same as 'new Model(data)'
    */
   public static build<M extends BaseModel>(
-    this: { new(data?: any): M },
+    this: new (data?: any) => M,
     data?: ModelValueObject<M>,
   ): M {
     return new this(data);
@@ -504,7 +504,7 @@ class BaseModel {
    * 'Model.create(data)' is the same as 'Model.build(data).save()'
    */
   public static async create<M extends BaseModel>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     data?: ModelValueObject<M>,
     options?: { skip_log: boolean },
   ): Promise<M> {
@@ -516,7 +516,7 @@ class BaseModel {
    * Creates multiple records and saves them to the database.
    */
   public static async createBulk<M extends BaseModel>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     data?: Array<ModelValueObject<M>>,
   ): Promise<M[]> {
     await this._checkReady();
@@ -553,7 +553,7 @@ class BaseModel {
    * Creates q query object
    */
   public static query<M extends BaseModel>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
   ): IQueryArray<M> {
     return new Query<M>(this);
   }
@@ -563,15 +563,15 @@ class BaseModel {
    * @throws {Error('not found')}
    */
   public static find<M extends BaseModel>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID,
   ): IQuerySingle<M>;
   public static find<M extends BaseModel>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID[],
   ): IQueryArray<M>;
   public static find<M extends BaseModel>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID | types.RecordID[],
   ): IQuerySingle<M> | IQueryArray<M> {
     return this.query().find(id as types.RecordID);
@@ -582,7 +582,7 @@ class BaseModel {
    * @throws {Error('not found')}
    */
   public static findPreserve<M extends BaseModel>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     ids: types.RecordID[],
   ): IQueryArray<M> {
     return this.query().findPreserve(ids);
@@ -592,7 +592,7 @@ class BaseModel {
    * Finds records by conditions
    */
   public static where<M extends BaseModel>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     condition?: object,
   ): IQueryArray<M> {
     return this.query().where(condition);
@@ -602,15 +602,15 @@ class BaseModel {
    * Selects columns for result
    */
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     columns: K[],
   ): IQueryArray<M, Pick<M, K>>;
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     columns?: string,
   ): IQueryArray<M, Pick<M, K>>;
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     columns?: string | K[],
   ): IQueryArray<M, Pick<M, K>> {
     return this.query().select<K>(columns as string);
@@ -620,7 +620,7 @@ class BaseModel {
    * Specifies orders of result
    */
   public static order<M extends BaseModel>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     orders: string,
   ): IQueryArray<M> {
     return this.query().order(orders);
@@ -630,22 +630,22 @@ class BaseModel {
    * Groups result records
    */
   public static group<M extends BaseModel, G extends ModelColumnNamesWithId<M>, F>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     group_by: G | G[],
     fields?: F,
   ): IQueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
   public static group<M extends BaseModel, F>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     group_by: null,
     fields?: F,
   ): IQueryArray<M, { [field in keyof F]: number }>;
   public static group<M extends BaseModel, U>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     group_by: string | null,
     fields?: object,
   ): IQueryArray<M, U>;
   public static group<M extends BaseModel, U>(
-    this: { new(data?: any): M } & typeof BaseModel,
+    this: (new (data?: any) => M) & typeof BaseModel,
     group_by: string | null,
     fields?: object,
   ): IQueryArray<M, U> {
