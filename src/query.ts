@@ -11,9 +11,10 @@ interface IQueryOptions {
   lean: boolean;
   orders: any[];
   near?: any;
+  select_columns?: string[];
+  select_single: boolean;
   select?: string[];
   select_raw?: string[];
-  select_single?: string;
   group_fields?: any;
   group_by?: any;
   limit?: number;
@@ -128,6 +129,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       conditions_of_group: [],
       lean: model.lean_query,
       orders: [],
+      select_single: false,
     };
   }
 
@@ -200,38 +202,15 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
     if (!this._current_if) {
       return this as any;
     }
-    this._options.select = undefined;
-    this._options.select_raw = undefined;
-    this._options.select_single = undefined;
+    this._options.select_columns = undefined;
+    this._options.select_single = false;
     if (columns != null) {
       if (typeof columns === 'string') {
         columns = columns.split(/\s+/);
         columns.push('id');
       }
       if (columns.length > 0) {
-        const schema_columns = Object.keys(this._model._schema);
-        const intermediate_paths = this._model._intermediate_paths;
-        const select: string[] = [];
-        const select_raw: string[] = [];
-        columns.forEach((column) => {
-          if (schema_columns.indexOf(column) >= 0) {
-            select.push(column);
-            select_raw.push(column);
-          } else if (intermediate_paths[column]) {
-            // select all nested columns
-            select_raw.push(column);
-            column += '.';
-            schema_columns.forEach((sc) => {
-              if (sc.indexOf(column) === 0) {
-                select.push(sc);
-              }
-            });
-          }
-        });
-        if (select_raw.length > 0) {
-          this._options.select = select;
-          this._options.select_raw = select_raw;
-        }
+        this._options.select_columns = columns;
       }
     }
     return this as any;
@@ -243,16 +222,8 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
     if (!this._current_if) {
       return this as any;
     }
-    const schema_columns = Object.keys(this._model._schema);
-    if (schema_columns.indexOf(column) >= 0) {
-      this._options.select = [column];
-      this._options.select_raw = [column];
-      this._options.select_single = column;
-    } else {
-      this._options.select = undefined;
-      this._options.select_raw = undefined;
-      this._options.select_single = undefined;
-    }
+    this._options.select_columns = [column];
+    this._options.select_single = true;
     return this as any;
   }
 
@@ -608,13 +579,40 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
   }
 
   private async _execAndInclude(options?: any) {
+    this._options.select = undefined;
+    this._options.select_raw = undefined;
+    if (this._options.select_columns) {
+      const schema_columns = Object.keys(this._model._schema);
+      const intermediate_paths = this._model._intermediate_paths;
+      const select: string[] = [];
+      const select_raw: string[] = [];
+      this._options.select_columns.forEach((column) => {
+        if (schema_columns.indexOf(column) >= 0) {
+          select.push(column);
+          select_raw.push(column);
+        } else if (intermediate_paths[column]) {
+          // select all nested columns
+          select_raw.push(column);
+          column += '.';
+          schema_columns.forEach((sc) => {
+            if (sc.indexOf(column) === 0) {
+              select.push(sc);
+            }
+          });
+        }
+      });
+      if (select_raw.length > 0) {
+        this._options.select = select;
+        this._options.select_raw = select_raw;
+      }
+    }
     const records = await this._exec(options);
     if (this._options.select_single) {
       if (Array.isArray(records)) {
-        return _.map(records, this._options.select_single);
+        return _.map(records, this._options.select_columns![0]);
       } else {
         if (records) {
-          return records[this._options.select_single];
+          return records[this._options.select_columns![0]];
         } else {
           return null;
         }

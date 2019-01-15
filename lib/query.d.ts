@@ -7,9 +7,10 @@ interface IQueryOptions {
     lean: boolean;
     orders: any[];
     near?: any;
+    select_columns?: string[];
+    select_single: boolean;
     select?: string[];
     select_raw?: string[];
-    select_single?: string;
     group_fields?: any;
     group_by?: any;
     limit?: number;
