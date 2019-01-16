@@ -19,7 +19,7 @@ user2 = new User({ name: 'John Doe', age: 27 });
 user3 = User.build({ name: 'John Doe', age: 27 });
 ```
 
-Then call [[#ModelPersistence::save]] to make it persistent.
+Then call [[#BaseModel::save]] to make it persistent.
 
 ```coffeescript
 user1.save (error) ->
@@ -31,7 +31,7 @@ user1.save(function (error) {
 });
 ```
 
-[[#ModelPersistence.create]] builds and saves at once.
+[[#BaseModel.create]] builds and saves at once.
 
 ```coffeescript
 User.create name: 'John Doe', age: 27, (error, user4) ->
@@ -43,7 +43,7 @@ User.create({ name: 'John Doe', age: 27 }, function (error, user4) {
 });
 ```
 
-[[#ModelPersistence.createBulk]] creates multiple records at once.
+[[#BaseModel.createBulk]] creates multiple records at once.
 
 ```coffeescript
 User.createBulk [

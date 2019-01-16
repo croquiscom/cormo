@@ -24,6 +24,51 @@ You can see detail guides on http://croquiscom.github.io/cormo/.
 
 ## Define models
 
+```typescript
+import * as cormo from 'cormo';
+
+const connection = new cormo.Connection('mysql', { database: 'test' });
+
+// this will create two tables - users, posts - in the database.
+
+@cormo.Model()
+class User extends cormo.BaseModel {
+  @cormo.Column({ type: String })
+  name?: string;
+
+  @cormo.Column({ type: cormo.types.Integer })
+  age?: number;
+}
+
+@cormo.Model({ connection }) // set connection explictly
+class Post extends cormo.BaseModel {
+  @cormo.Column(String) // `String` is the same as `type: String`
+  title?: string;
+
+  @cormo.Column('string') // you can also use `string` to specify a string type
+  body?: string;
+
+  @cormo.Column(Date)
+  date?: Date;
+}
+```
+```javascript
+const cormo = require('cormo');
+const connection = new cormo.Connection('mysql', { database: 'test' });
+
+// this will create two tables - users, posts - in the database.
+
+const User = connection.model('User', {
+  name: { type: String },
+  age: { type: cormo.types.Integer }
+});
+
+const Post = connection.model('Post', {
+  title: String, // `String` is the same as `type: String`
+  body: 'string', // you can also use `string` to specify a string type
+  date: Date
+});
+```
 ```coffeescript
 cormo = require 'cormo'
 connection = new cormo.Connection 'mysql', database: 'test'
@@ -39,169 +84,191 @@ class Post extends cormo.BaseModel
   @column 'body', 'string' # you can also use `string` to specify a string type
   @column 'date', Date
 ```
-```javascript
-var cormo = require('cormo');
-var connection = new cormo.Connection('mysql', { database: 'test' });
-
-// this will create two tables - users, posts - in the database.
-
-var User = connection.model('User', {
-  name: { type: String },
-  age: { type: cormo.types.Integer }
-});
-
-var Post = connection.model('Post', {
-  title: String, // `String` is the same as `type: String`
-  body: 'string', // you can also use `string` to specify a string type
-  date: Date
-});
-```
 
 ## Create records
 
-```coffeescript
-user1 = new User name: 'John Doe', age: 27
-user1.save (error) ->
-  console.log error
+```typescript
+const user1 = new User({ name: 'John Doe', age: 27 });
+await user1.save();
 
-User.create name: 'John Doe', age: 27, (error, user2) ->
-  console.log error
+const user2 = await User.create({ name: 'John Doe', age: 27 });
 ```
 ```javascript
-var user1 = new User({name: 'John Doe', age: 27});
-user1.save(function (error) {
-  console.log(error);
-});
+const user1 = new User({ name: 'John Doe', age: 27 });
+await user1.save();
 
-User.create({name: 'John Doe', age: 27}, function (error, user2) {
-  console.log(error);
-});
+const user2 = await User.create({ name: 'John Doe', age: 27 });
+```
+```coffeescript
+user1 = new User name: 'John Doe', age: 27
+await user1.save()
+
+user2 = await User.create name: 'John Doe', age: 27
 ```
 
 ## Retreive records
 
-```coffeescript
-User.find 1, (error, user) ->
+```typescript
+const user = await User.find(1);
 
-User.where name: 'John Doe', (error, users) ->
+const users = await User.where({name: 'John Doe'});
 
-User.where(age: 27)
-.select('name')
-.order('name')
-.limit(5)
-.skip(100)
-.exec (error, users) ->
+const users = await User.where({age: 27})
+  .select(['name'])
+  .order('name')
+  .limit(5)
+  .skip(100);
 
-User.where($or: [ { age: $lt: 20 }, { age: $gt: 60 } ])
-.where(name: $contains: 'smi')
-.exec (error, users) ->
+const users = await User.where({$or: [ { age: { $lt: 20 } }, { age: { $gt: 60 } } ]})
+  .where({name: { $contains: 'smi' }});
 ```
 ```javascript
-User.find(1, function (error, user) {
-});
+const user = await User.find(1);
 
-User.where({name: 'John Doe'}, function (error, users) {
-});
+const users = await User.where({name: 'John Doe'});
 
-User.where({age: 27})
-.select('name')
-.order('name')
-.limit(5)
-.skip(100)
-.exec(function (error, users) {
-});
+const users = await User.where({age: 27})
+  .select(['name'])
+  .order('name')
+  .limit(5)
+  .skip(100);
 
-User.where({$or: [ { age: { $lt: 20 } }, { age: { $gt: 60 } } ]})
-.where({name: { $contains: 'smi' }})
-.exec(function (error, users) {
-});
+const users = await User.where({$or: [ { age: { $lt: 20 } }, { age: { $gt: 60 } } ]})
+  .where({name: { $contains: 'smi' }});
+```
+```coffeescript
+user = await User.find 1
+
+users = await User.where name: 'John Doe'
+
+users = await await User.where(age: 27)
+  .select(['name'])
+  .order('name')
+  .limit(5)
+  .skip(100)
+
+users = await User.where($or: [ { age: $lt: 20 }, { age: $gt: 60 } ])
+  .where(name: $contains: 'smi')
 ```
 
 ## Count records
 
-```coffeescript
-User.count (error, count) ->
+```typescript
+const count = await User.count();
 
-User.count age: 27, (error, count) ->
+const count = await User.count({age: 27});
 ```
 ```javascript
-User.count(function (error, count) {
-});
+const count = await User.count();
 
-User.count({age: 27}, function (error, count) {
-});
+const count = await User.count({age: 27});
+```
+```coffeescript
+count = await User.count()
+
+count = await User.count age: 27
 ```
 
 ## Update records
 
-```coffeescript
-User.find 1, (error, user) ->
-  user.age = 30
-  user.save (error) ->
+```typescript
+const user = await User.find(1);
+user.age = 30;
+await user.save();
 
-User.find(1).update age: 10, (error, count) ->
+const count = await User.find(1).update({age: 10});
 
-User.where(age: 27).update age: 10, (error, count) ->
+const count = await User.where({age: 27}).update({age: 10});
 
-User.where(age: 35).update age: $inc: 3, (error, count) ->
+const count = await User.where({age: 35}).update({age: {$inc: 3}});
 ```
 ```javascript
-User.find(1, function (error, user) {
-  user.age = 30;
-  user.save(function (error) {
-  });
-});
+const user = await User.find(1);
+user.age = 30;
+await user.save();
 
-User.find(1).update({age: 10}, function (error, count) {
-});
+const count = await User.find(1).update({age: 10});
 
-User.where({age: 27}).update({age: 10}, function (error, count) {
-});
+const count = await User.where({age: 27}).update({age: 10});
 
-User.where({age: 35}).update({age: {$inc: 3}}, function (error, count) {
-});
+const count = await User.where({age: 35}).update({age: {$inc: 3}});
+```
+```coffeescript
+user = await User.find 1
+user.age = 30
+await user.save()
+
+count = await User.find(1).update age: 10
+
+count = await User.where(age: 27).update age: 10
+
+count = await User.where(age: 35).update age: $inc: 3
 ```
 
 ## Delete records
 
-```coffeescript
-User.delete age: 27, (error, count) ->
+```typescript
+const count = await User.delete({age: 27});
 ```
 ```javascript
-User.delete({age: 27}, function (error, count) {
-});
+const count = await User.delete({age: 27});
+```
+```coffeescript
+count = await User.delete age: 27
 ```
 
 ## Constraint
 
+```typescript
+@cormo.Model()
+class User extends cormo.BaseModel {
+  @cormo.Column({ type: String, required: true })
+  name!: string;
+
+  @cormo.Column({ type: Number, required: true })
+  age!: number;
+
+  @cormo.Column({ type: String, unique: true, required: true })
+  email!: string;
+}
+```
+```javascript
+const User = connection.model('User', {
+  name: { type: String, required: true },
+  age: { type: Number, required: true },
+  email: { type: String, unique: true, required: true }
+});
+```
 ```coffeescript
 class User extends cormo.BaseModel
   @column 'name', type: String, required: true
   @column 'age', type: Number, required: true
   @column 'email', type: String, unique: true, required: true
 ```
-```javascript
-var User = connection.model('User', {
-  name: { type: String, required: true },
-  age: { type: Number, required: true },
-  email: { type: String, unique: true, required: true }
-});
-```
 
 ## Validation
 
-```coffeescript
-class User extends cormo.BaseModel
-  @column 'name', String
-  @column 'age', Number
-  @column 'email', String
+```typescript
+@cormo.Model()
+class User extends cormo.BaseModel {
+  @cormo.Column(String)
+  name?: string;
 
-  @addValidator (record) ->
-    if record.age < 18
-      return 'too young'
+  @cormo.Column(Number)
+  age?: number;
+
+  @cormo.Column(String)
+  email?: string;
+}
+
+User.addValidator((record) => {
+  if (record.age<18) {
+    return 'too young';
+  }
+});
 ```
 ```javascript
-var User = connection.model('User', {
+const User = connection.model('User', {
   name: String,
   age: Number,
   email: String
@@ -213,19 +280,35 @@ User.addValidator(function (record) {
   }
 });
 ```
-
-## Callbacks
-
 ```coffeescript
 class User extends cormo.BaseModel
   @column 'name', String
   @column 'age', Number
+  @column 'email', String
 
-  @beforeSave ->
-    @name = @name.trim()
+  @addValidator (record) ->
+    if record.age < 18
+      return 'too young'
+```
+
+## Callbacks
+
+```typescript
+@cormo.Model()
+class User extends cormo.BaseModel {
+  @cormo.Column(String)
+  name?: string;
+
+  @cormo.Column(Number)
+  age?: number;
+}
+
+User.beforeSave(() => {
+  this.name = this.name.trim();
+});
 ```
 ```javascript
-var User = connection.model('User', {
+const User = connection.model('User', {
   name: String,
   age: Number
 });
@@ -234,19 +317,41 @@ User.beforeSave(function () {
   this.name = this.name.trim();
 });
 ```
-
-## Associations
-
 ```coffeescript
 class User extends cormo.BaseModel
   @column 'name', String
   @column 'age', Number
-  @hasMany 'posts'
 
-class Post extends cormo.BaseModel
-  @column 'title', String
-  @column 'body', String
-  @belongsTo 'user'
+  @beforeSave ->
+    @name = @name.trim()
+```
+
+## Associations
+
+```typescript
+@cormo.Model()
+class User extends cormo.BaseModel {
+  @cormo.Column(String)
+  name?: string;
+
+  @cormo.Column(Number)
+  age?: number;
+
+  @cormo.HasMany()
+  posts?: Post[];
+}
+
+@cormo.Model()
+class Post extends cormo.BaseModel {
+  @cormo.Column(String)
+  title?: string;
+
+  @cormo.Column(String)
+  body?: string;
+
+  @cormo.BelongsTo()
+  user?: User;
+}
 ```
 ```javascript
 var User = connection.model('User', {
@@ -262,57 +367,85 @@ var Post = connection.model('Post', {
 User.hasMany(Post);
 Post.belongsTo(User);
 ```
+```coffeescript
+class User extends cormo.BaseModel
+  @column 'name', String
+  @column 'age', Number
+  @hasMany 'posts'
+
+class Post extends cormo.BaseModel
+  @column 'title', String
+  @column 'body', String
+  @belongsTo 'user'
+```
 
 ## Aggregation
 
-```coffeescript
-Order.where price: $lt: 10
-.group null, count: {$sum: 1}, total: {$sum: '$price'}
-.order 'total'
-.exec (error, records) ->
+```typescript
+const records = await Order.where({price: {$lt: 10}})
+  .group(null, {count: {$sum: 1}, total: {$sum: '$price'}})
+  .order('total');
 
-Order.group 'customer', min_price: { $min: '$price' }, max_price: { $max: '$price' }
-.exec (error, records) ->
+const records = await Order.group('customer', {min_price: {$min: '$price'}, max_price: {$max: '$price'}});
 ```
 ```javascript
-Order.where({price: {$lt: 10}})
-.group(null, {count: {$sum: 1}, total: {$sum: '$price'}})
-.order('total')
-.exec(function (error, records) {
-});
+const records = await Order.where({price: {$lt: 10}})
+  .group(null, {count: {$sum: 1}, total: {$sum: '$price'}})
+  .order('total');
 
-Order.group('customer', {min_price: {$min: '$price'}, max_price: {$max: '$price'}})
-.exec(function (error, records) {
-});
+const records = await Order.group('customer', {min_price: {$min: '$price'}, max_price: {$max: '$price'}});
+```
+```coffeescript
+records = await Order.where price: $lt: 10
+  .group null, count: {$sum: 1}, total: {$sum: '$price'}
+  .order 'total'
+
+records = await Order.group 'customer', min_price: { $min: '$price' }, max_price: { $max: '$price' }
 ```
 
 ## Geospatial query
 
+```typescript
+@cormo.Model()
+class Place extends cormo.BaseModel {
+  @cormo.Column(String)
+  name?: string;
+
+  @cormo.Column(cormo.types.GeoPoint)
+  location?: [number, number];
+}
+
+// create
+await Place.create({name: 'Carrier Dome', location: [-76.136131, 43.036240]});
+
+// query
+const places = await Place.query().near({location: [-5, 45]}).limit(4);
+console.log(places);
+```
+```javascript
+const Place = connection.model('Place', {
+  name: String,
+  location: cormo.types.GeoPoint
+});
+
+// create
+await Place.create({name: 'Carrier Dome', location: [-76.136131, 43.036240]});
+
+// query
+const places = await Place.query().near({location: [-5, 45]}).limit(4);
+console.log(places);
+```
 ```coffeescript
 class Place extends cormo.BaseModel
   @column 'name', String
   @column 'location', cormo.types.GeoPoint
 
 # create
-Place.create name: 'Carrier Dome', location: [-76.136131, 43.036240]
+await Place.create name: 'Carrier Dome', location: [-76.136131, 43.036240]
 
 # query
-Place.query().near(location: [-5, 45]).limit(4).exec (error, places) ->
-  console.log places
-```
-```javascript
-var Place = connection.model('Place', {
-  name: String,
-  location: cormo.types.GeoPoint
-});
-
-// create
-Place.create({name: 'Carrier Dome', location: [-76.136131, 43.036240]});
-
-// query
-Place.query().near({location: [-5, 45]}).limit(4).exec(function (error, places) {
-  console.log(places);
-});
+places = await Place.query().near(location: [-5, 45]).limit(4)
+console.log places
 ```
 
 # License

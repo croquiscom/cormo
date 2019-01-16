@@ -1,6 +1,6 @@
 $(function() {
   // make result of marked for pretty print
-  $('pre code[class^="lang-"]').addClass('.prettyprint');
+  $('pre code[class^="language-"]').addClass('.prettyprint');
   window.prettyPrint && prettyPrint()
 });
 

@@ -3,7 +3,7 @@
 
   function buildTab(index) {
     var lang = $(this).find('code').attr('class')
-    var displayName = lang.replace('lang-', '');
+    var displayName = lang.replace('language-', '');
     if (displayName==='javascript') {
       displayName = 'JavaScript';
     } else if (displayName==='coffeescript') {

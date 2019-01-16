@@ -1,115 +1,438 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>CORMO - Connection</title><script>if (location.protocol.match(/^http/) && location.pathname.match('\.html') === null && location.pathname.slice(-1) !== '/') {
   location.href = location.href + '/';
-}</script><link href="../bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"><!--[if lt IE 9]><script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script><script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]--><link href="../google-code-prettify/prettify.css" rel="stylesheet" type="text/css"><link href="../style.css" rel="stylesheet" type="text/css"></head><body data-spy="scroll" data-target=".sidebar"><nav class="navbar navbar-default navbar-fixed-top" role="navigation"><div class="navbar-header"><button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#top-navigation-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><div class="collapse navbar-collapse" id="top-navigation-collapse"><ul class="nav navbar-nav"><li><a href="../index.html">Home</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Guides <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../guides/Aggregation.html">Aggregation</a></li><li><a href="../guides/Association.html">Association</a></li><li><a href="../guides/Callback.html">Callback</a></li><li><a href="../guides/Constraint.html">Constraint</a></li><li><a href="../guides/CreateRecords.html">Create records</a></li><li><a href="../guides/DefineModels.html">Define models</a></li><li><a href="../guides/Geospatial.html">Geospatial</a></li><li><a href="../guides/Miscellaneous.html">Miscellaneous</a></li><li><a href="../guides/Query.html">Query</a></li><li><a href="../guides/Validation.html">Validation</a></li></ul></li><li><a href="../modules/index.html">Modules</a></li><li class="active"><a href="../classes/index.html">Classes - Connection</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Files <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../files/index.coffee.html">index.coffee</a></li><li><a href="../files/query.coffee.html">query.coffee</a></li><li><a href="../files/types.coffee.html">types.coffee</a></li><li><a href="../files/adapters.base.coffee.html">adapters/base.coffee</a></li><li><a href="../files/adapters.mongodb.coffee.html">adapters/mongodb.coffee</a></li><li><a href="../files/adapters.mysql.coffee.html">adapters/mysql.coffee</a></li><li><a href="../files/adapters.postgresql.coffee.html">adapters/postgresql.coffee</a></li><li><a href="../files/adapters.redis.coffee.html">adapters/redis.coffee</a></li><li><a href="../files/adapters.sql_base.coffee.html">adapters/sql_base.coffee</a></li><li><a href="../files/adapters.sqlite3.coffee.html">adapters/sqlite3.coffee</a></li><li><a href="../files/adapters.sqlite3_memory.coffee.html">adapters/sqlite3_memory.coffee</a></li><li><a href="../files/command.index.coffee.html">command/index.coffee</a></li><li><a href="../files/command.remote-console.coffee.html">command/remote-console.coffee</a></li><li><a href="../files/connection.association.coffee.html">connection/association.coffee</a></li><li><a href="../files/connection.index.coffee.html">connection/index.coffee</a></li><li><a href="../files/connection.manipulate.coffee.html">connection/manipulate.coffee</a></li><li><a href="../files/model.cache.coffee.html">model/cache.coffee</a></li><li><a href="../files/model.callback.coffee.html">model/callback.coffee</a></li><li><a href="../files/model.index.coffee.html">model/index.coffee</a></li><li><a href="../files/model.persistence.coffee.html">model/persistence.coffee</a></li><li><a href="../files/model.query.coffee.html">model/query.coffee</a></li><li><a href="../files/model.timestamp.coffee.html">model/timestamp.coffee</a></li><li><a href="../files/model.validate.coffee.html">model/validate.coffee</a></li><li><a href="../files/util.index.coffee.html">util/index.coffee</a></li><li><a href="../files/util.inflector.coffee.html">util/inflector.coffee</a></li></ul></li></ul><div class="options"><label class="checkbox"><input id="options-private" type="checkbox"> Private </label></div></div></div></nav><div class="container-fluid content"><div class="row"><div class="hidden-xs sidebar col-sm-3" data-spy="affix"><div class="cormo-sidenav"><div class="panel panel-default"><div class="panel-collapse collapse in" id="undefined_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/ColumnProperty.html">ColumnProperty</a></li><li><a href="../classes/Command.html">Command</a></li><li><a href="../classes/CommandRemoteConsole.html">CommandRemoteConsole</a></li><li class="active"><a href="#Connection">Connection</a></li><li class="cormo-class-property private"><a href="#Connection___adapter">_adapter<span class="pull-right label label-private">private</span><span class="pull-right label label-property">property</span></a></li><li class="cormo-class-property"><a href="#Connection__applySchemas">applySchemas</a></li><li class="cormo-class-property"><a href="#Connection__applySchemasSync">applySchemasSync</a></li><li class="cormo-class-property"><a href="#Connection__close">close</a></li><li class="cormo-class-property"><a href="#Connection_defaultConnection">defaultConnection<span class="pull-right label label-static">static</span><span class="pull-right label label-property">property</span></a></li><li class="cormo-class-property"><a href="#Connection__dropAllModels">dropAllModels</a></li><li class="cormo-class-property"><a href="#Connection__log">log</a></li><li class="cormo-class-property"><a href="#Connection__model">model</a></li><li class="cormo-class-property"><a href="#Connection__models">models<span class="pull-right label label-property">property</span></a></li><li><a href="../classes/Model.html">Model</a></li><li><a href="../classes/Query.html">Query</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#adapter_body">adapter<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="adapter_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/adapter.AdapterBase.html">AdapterBase</a></li><li><a href="../classes/adapter.MongoDBAdapter.html">MongoDBAdapter</a></li><li><a href="../classes/adapter.MySQLAdapter.html">MySQLAdapter</a></li><li><a href="../classes/adapter.PostgreSQLAdapter.html">PostgreSQLAdapter</a></li><li><a href="../classes/adapter.RedisAdapter.html">RedisAdapter</a></li><li><a href="../classes/adapter.SQLAdapterBase.html">SQLAdapterBase</a></li><li><a href="../classes/adapter.SQLite3Adapter.html">SQLite3Adapter</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#connection_body">connection<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="connection_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/connection.ConnectionAssociation.html">ConnectionAssociation</a></li><li><a href="../classes/connection.ConnectionManipulate.html">ConnectionManipulate</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#model_body">model<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="model_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/model.ModelCache.html">ModelCache</a></li><li><a href="../classes/model.ModelCallback.html">ModelCallback</a></li><li><a href="../classes/model.ModelPersistence.html">ModelPersistence</a></li><li><a href="../classes/model.ModelQuery.html">ModelQuery</a></li><li><a href="../classes/model.ModelTimestamp.html">ModelTimestamp</a></li><li><a href="../classes/model.ModelValidate.html">ModelValidate</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#ptypes_body">ptypes<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="ptypes_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/ptypes.GeoPoint.html">GeoPoint</a></li><li><a href="../classes/ptypes.Integer.html">Integer</a></li><li><a href="../classes/ptypes.RecordID.html">RecordID</a></li></ul></div></div></div></div><div class="col-sm-9 col-sm-offset-3"><span class="fix-anchor" id="Connection"></span><section><h1 class="class_title">Connection<span class="extends"> extends <a href='http://nodejs.org/api/events.html#events_class_events_eventemitter'>EventEmitter</a></span><span class="uses"> uses <a href='../classes/connection.ConnectionAssociation.html#connection_ConnectionAssociation'>ConnectionAssociation</a>, <a href='../classes/connection.ConnectionManipulate.html#connection_ConnectionManipulate'>ConnectionManipulate</a></span></h1><div><p>Manages connection to a database</p>
-</div><div></div><div class="showcode"><button class="btn btn-info">Show class code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.coffee#L17">/src/connection/index.coffee:17</a>)</span></div><pre class="sourcecode prettyprint .linenums:17">class Connection extends EventEmitter</pre><div class="panel panel-info"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection_ctor_body"><h3 class="panel-title">Constructor<span class="pull-right glyphicon"></span></h3></div><div class="panel-collapse collapse" id="Connection_ctor_body"><div class="panel-body"><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>adapater_name</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>settings</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> connection settings & adapter specific settings</span></td></tr><tr><td><span class="method-depth1"></span><code>is_default=true</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean'>Boolean</a></span></td><td><span> Connection.defaultConnection will be set to this if true</span></td></tr><tr><td><span class="method-depth1"></span><code>redis_cache</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> Redis server settings to cache</span></td></tr><tr><td><span class="method-depth2"></span><code>client</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://github.com/mranney/node_redis'>RedisClient</a></span></td><td><span> Use this client instead of creating one</span></td></tr><tr><td><span class="method-depth2"></span><code>host='127.0.0.1'</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth2"></span><code>port=6379</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth2"></span><code>database=0</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span> </span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.coffee#L54">/src/connection/index.coffee:54</a>)</span></div><pre class="sourcecode prettyprint .linenums:54">constructor: (adapter_name, settings) -&gt;
-  if settings.is_default isnt false
-    Connection.defaultConnection = @
+}</script><link href="../bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"><!--[if lt IE 9]><script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script><script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]--><link href="../google-code-prettify/prettify.css" rel="stylesheet" type="text/css"><link href="../style.css" rel="stylesheet" type="text/css"></head><body data-spy="scroll" data-target=".sidebar"><nav class="navbar navbar-default navbar-fixed-top" role="navigation"><div class="navbar-header"><button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#top-navigation-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><div class="collapse navbar-collapse" id="top-navigation-collapse"><ul class="nav navbar-nav"><li><a href="../index.html">Home</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Guides <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../guides/Aggregation.html">Aggregation</a></li><li><a href="../guides/Association.html">Association</a></li><li><a href="../guides/Callback.html">Callback</a></li><li><a href="../guides/Constraint.html">Constraint</a></li><li><a href="../guides/CreateRecords.html">Create records</a></li><li><a href="../guides/DefineModels.html">Define models</a></li><li><a href="../guides/Geospatial.html">Geospatial</a></li><li><a href="../guides/Miscellaneous.html">Miscellaneous</a></li><li><a href="../guides/Query.html">Query</a></li><li><a href="../guides/Validation.html">Validation</a></li></ul></li><li><a href="../modules/index.html">Modules</a></li><li class="active"><a href="../classes/index.html">Classes - Connection</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Files <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../files/decorators.ts.html">decorators.ts</a></li><li><a href="../files/index.ts.html">index.ts</a></li><li><a href="../files/query.ts.html">query.ts</a></li><li><a href="../files/types.ts.html">types.ts</a></li><li><a href="../files/adapters.base.ts.html">adapters/base.ts</a></li><li><a href="../files/adapters.mongodb.ts.html">adapters/mongodb.ts</a></li><li><a href="../files/adapters.mysql.ts.html">adapters/mysql.ts</a></li><li><a href="../files/adapters.postgresql.ts.html">adapters/postgresql.ts</a></li><li><a href="../files/adapters.redis.ts.html">adapters/redis.ts</a></li><li><a href="../files/adapters.sql_base.ts.html">adapters/sql_base.ts</a></li><li><a href="../files/adapters.sqlite3.ts.html">adapters/sqlite3.ts</a></li><li><a href="../files/adapters.sqlite3_memory.ts.html">adapters/sqlite3_memory.ts</a></li><li><a href="../files/command.index.ts.html">command/index.ts</a></li><li><a href="../files/connection.index.ts.html">connection/index.ts</a></li><li><a href="../files/model.index.ts.html">model/index.ts</a></li><li><a href="../files/util.index.ts.html">util/index.ts</a></li><li><a href="../files/util.inflector.ts.html">util/inflector.ts</a></li></ul></li></ul><div class="options"><label class="checkbox"><input id="options-private" type="checkbox"> Private </label></div></div></div></nav><div class="container-fluid content"><div class="row"><div class="hidden-xs sidebar col-sm-3" data-spy="affix"><div class="cormo-sidenav"><div class="panel panel-default"><div class="panel-collapse collapse in" id="undefined_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/BaseModel.html">BaseModel</a></li><li><a href="../classes/Command.html">Command</a></li><li class="active"><a href="#Connection">Connection</a></li><li class="cormo-class-property private"><a href="#Connection___adapter">_adapter<span class="pull-right label label-private">private</span><span class="pull-right label label-property">property</span></a></li><li class="cormo-class-property private"><a href="#Connection___applyAssociations">_applyAssociations<span class="pull-right label label-private">private</span></a></li><li class="cormo-class-property private"><a href="#Connection___belongsTo">_belongsTo<span class="pull-right label label-private">private</span></a></li><li class="cormo-class-property private"><a href="#Connection___hasMany">_hasMany<span class="pull-right label label-private">private</span></a></li><li class="cormo-class-property private"><a href="#Connection___hasOne">_hasOne<span class="pull-right label label-private">private</span></a></li><li class="cormo-class-property"><a href="#Connection__addAssociation">addAssociation</a></li><li class="cormo-class-property"><a href="#Connection__applySchemas">applySchemas</a></li><li class="cormo-class-property"><a href="#Connection__close">close</a></li><li class="cormo-class-property"><a href="#Connection_defaultConnection">defaultConnection<span class="pull-right label label-static">static</span><span class="pull-right label label-property">property</span></a></li><li class="cormo-class-property"><a href="#Connection__dropAllModels">dropAllModels</a></li><li class="cormo-class-property"><a href="#Connection__fetchAssociated">fetchAssociated</a></li><li class="cormo-class-property"><a href="#Connection__getInconsistencies">getInconsistencies</a></li><li class="cormo-class-property"><a href="#Connection__log">log</a></li><li class="cormo-class-property"><a href="#Connection__manipulate">manipulate</a></li><li class="cormo-class-property"><a href="#Connection__model">model</a></li><li class="cormo-class-property"><a href="#Connection__models">models<span class="pull-right label label-property">property</span></a></li><li><a href="../classes/Query.html">Query</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#adapter_body">adapter<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="adapter_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/adapter.AdapterBase.html">AdapterBase</a></li></ul></div></div></div></div><div class="col-sm-9 col-sm-offset-3"><span class="fix-anchor" id="Connection"></span><section><h1 class="class_title">Connection</h1><div><p>Manages connection to a database</p>
+</div><div></div><div class="panel panel-info"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection_ctor_body"><h3 class="panel-title">Constructor<span class="pull-right glyphicon"></span></h3></div><div class="panel-collapse collapse" id="Connection_ctor_body"><div class="panel-body"><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L109">/src/connection/index.ts:109</a>)</span></div><pre class="sourcecode prettyprint .linenums:109">constructor(adapter: 'mongodb', settings: IConnectionSettings &amp; IAdapterSettingsMongoDB);</pre></div></div></div></section><span class="fix-anchor" id="Connection___adapter"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection___adapter_body"><h3 class="panel-title">Connection::_adapter<span class="label label-private">private</span><span class="label label-property">property</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Indicates the adapter associated to this connection</p>
+</div></div><div class="panel-collapse collapse" id="Connection___adapter_body"><div class="panel-body"><div></div><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L86">/src/connection/index.ts:86</a>)</span></div><pre class="sourcecode prettyprint .linenums:86">public _adapter: AdapterBase;</pre></div></div></div></section><span class="fix-anchor" id="Connection___applyAssociations"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection___applyAssociations_body"><h3 class="panel-title">Connection::_applyAssociations()<span class="label label-private">private</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Applies pending associations</p>
+</div></div><div class="panel-collapse collapse" id="Connection___applyAssociations_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L656">/src/connection/index.ts:656</a>)</span></div><pre class="sourcecode prettyprint .linenums:656">private _applyAssociations() {
+    for (const item of this._pending_associations) {
+      const this_model = item.this_model;
+      const options = item.options;
+      let target_model: typeof BaseModel;
+      if (typeof item.target_model_or_column === 'string') {
+        let models;
+        if (options &amp;&amp; options.connection) {
+          models = options.connection.models;
+        } else {
+          models = this.models;
+        }
+        let target_model_name: string;
+        if (options &amp;&amp; options.type) {
+          target_model_name = options.type;
+          options.as = item.target_model_or_column;
+        } else if (item.type === 'belongsTo' || item.type === 'hasOne') {
+          target_model_name = inflector.camelize(item.target_model_or_column);
+        } else {
+          target_model_name = inflector.classify(item.target_model_or_column);
+        }
+        if (!models[target_model_name]) {
+          throw new Error(`model ${target_model_name} does not exist`);
+        }
+        target_model = models[target_model_name];
+      } else {
+        target_model = item.target_model_or_column;
+      }
+      this['_' + item.type](this_model, target_model, options);
+    }
+    this._pending_associations = [];
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection___belongsTo"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection___belongsTo_body"><h3 class="panel-title">Connection::_belongsTo()<span class="label label-private">private</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Adds a belongs-to association</p>
+</div></div><div class="panel-collapse collapse" id="Connection___belongsTo_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L811">/src/connection/index.ts:811</a>)</span></div><pre class="sourcecode prettyprint .linenums:811">private _belongsTo(
+    this_model: typeof BaseModel, target_model: typeof BaseModel,
+    options?: IAssociationBelongsToOptions,
+  ) {
+    let foreign_key: any;
+    if (options &amp;&amp; options.foreign_key) {
+      foreign_key = options.foreign_key;
+    } else if (options &amp;&amp; options.as) {
+      foreign_key = options.as + '_id';
+    } else {
+      foreign_key = inflector.foreign_key(target_model._name);
+    }
+    this_model.column(foreign_key, {
+      connection: target_model._connection,
+      required: options &amp;&amp; options.required,
+      type: types.RecordID,
+    } as IColumnProperty);
+    const column = options &amp;&amp; options.as || inflector.underscore(target_model._name);
+    const columnCache = '__cache_' + column;
+    const columnGetter = '__getter_' + column;
+    this_model._associations[column] = { type: 'belongsTo', target_model };
+    Object.defineProperty(this_model.prototype, column, {
+      get() {
+        let getter: any;
+        // getter must be created per instance due to __scope
+        if (!this.hasOwnProperty(columnGetter)) {
+          getter = async (reload: any) =&gt; {
+            // this is getter.__scope in normal case (this_model_instance.target_model_name()),
+            // but use getter.__scope for safety
+            const self = getter.__scope;
+            if ((!self[columnCache] || reload) &amp;&amp; self[foreign_key]) {
+              const record = await target_model.find(self[foreign_key]);
+              self[columnCache] = record;
+              return record;
+            } else {
+              return self[columnCache];
+            }
+          };
+          getter.__scope = this;
+          Object.defineProperty(this, columnCache, { value: null, writable: true });
+          Object.defineProperty(this, columnGetter, { value: getter });
+        }
+        return this[columnGetter];
+      },
+    });
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection___hasMany"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection___hasMany_body"><h3 class="panel-title">Connection::_hasMany()<span class="label label-private">private</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Adds a has-many association</p>
+</div></div><div class="panel-collapse collapse" id="Connection___hasMany_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L692">/src/connection/index.ts:692</a>)</span></div><pre class="sourcecode prettyprint .linenums:692">private _hasMany(
+    this_model: typeof BaseModel, target_model: typeof BaseModel,
+    options?: IAssociationHasManyOptions,
+  ) {
+    let foreign_key: string;
+    if (options &amp;&amp; options.foreign_key) {
+      foreign_key = options.foreign_key;
+    } else if (options &amp;&amp; options.as) {
+      foreign_key = options.as + '_id';
+    } else {
+      foreign_key = inflector.foreign_key(this_model._name);
+    }
+    target_model.column(foreign_key, {
+      connection: this_model._connection,
+      type: types.RecordID,
+    } as IColumnProperty);
+    const integrity = options &amp;&amp; options.integrity || 'ignore';
+    target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
+    this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
+    const column = options &amp;&amp; options.as || inflector.tableize(target_model._name);
+    const columnCache = '__cache_' + column;
+    const columnGetter = '__getter_' + column;
+    this_model._associations[column] = { type: 'hasMany', target_model, foreign_key };
+    Object.defineProperty(this_model.prototype, column, {
+      get() {
+        let getter: any;
+        // getter must be created per instance due to __scope
+        if (!this.hasOwnProperty(columnGetter)) {
+          getter = async (reload?: boolean) =&gt; {
+            // this is getter.__scope in normal case (this_model_instance.target_model_name()),
+            // but use getter.__scope for safety
+            const self = getter.__scope;
+            if ((!self[columnCache] || reload) &amp;&amp; self.id) {
+              const records = await target_model.where(_.zipObject([foreign_key], [self.id]));
+              self[columnCache] = records;
+              return records;
+            } else {
+              return self[columnCache] || [];
+            }
+          };
+          getter.build = (data: any) =&gt; {
+            // this is getter, so use getter.__scope instead
+            const self = getter.__scope;
+            const new_object: any = new target_model(data);
+            new_object[foreign_key] = self.id;
+            if (!self[columnCache]) {
+              self[columnCache] = [];
+            }
+            self[columnCache].push(new_object);
+            return new_object;
+          };
+          getter.__scope = this;
+          Object.defineProperty(this, columnCache, { value: null, writable: true });
+          Object.defineProperty(this, columnGetter, { value: getter });
+        }
+        return this[columnGetter];
+      },
+    });
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection___hasOne"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection___hasOne_body"><h3 class="panel-title">Connection::_hasOne()<span class="label label-private">private</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Adds a has-one association</p>
+</div></div><div class="panel-collapse collapse" id="Connection___hasOne_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L755">/src/connection/index.ts:755</a>)</span></div><pre class="sourcecode prettyprint .linenums:755">private _hasOne(
+    this_model: typeof BaseModel, target_model: typeof BaseModel,
+    options?: IAssociationHasOneOptions,
+  ) {
+    let foreign_key: any;
+    if (options &amp;&amp; options.foreign_key) {
+      foreign_key = options.foreign_key;
+    } else if (options &amp;&amp; options.as) {
+      foreign_key = options.as + '_id';
+    } else {
+      foreign_key = inflector.foreign_key(this_model._name);
+    }
+    target_model.column(foreign_key, {
+      connection: this_model._connection,
+      type: types.RecordID,
+    } as IColumnProperty);
+    const integrity = options &amp;&amp; options.integrity || 'ignore';
+    target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
+    this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
+    const column = options &amp;&amp; options.as || inflector.underscore(target_model._name);
+    const columnCache = '__cache_' + column;
+    const columnGetter = '__getter_' + column;
+    this_model._associations[column] = { type: 'hasOne', target_model };
+    Object.defineProperty(this_model.prototype, column, {
+      get() {
+        let getter: any;
+        // getter must be created per instance due to __scope
+        if (!this.hasOwnProperty(columnGetter)) {
+          getter = async (reload: any) =&gt; {
+            // this is getter.__scope in normal case (this_model_instance.target_model_name()),
+            // but use getter.__scope for safety
+            const self = getter.__scope;
+            if ((!self[columnCache] || reload) &amp;&amp; self.id) {
+              const records = await target_model.where(_.zipObject([foreign_key], [self.id]));
+              if (records.length &gt; 1) {
+                throw new Error('integrity error');
+              }
+              const record = records.length === 0 ? null : records[0];
+              self[columnCache] = record;
+              return record;
+            } else {
+              return self[columnCache];
+            }
+          };
+          getter.__scope = this;
+          Object.defineProperty(this, columnCache, { value: null, writable: true });
+          Object.defineProperty(this, columnGetter, { value: getter });
+        }
+        return this[columnGetter];
+      },
+    });
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection__addAssociation"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__addAssociation_body"><h3 class="panel-title">Connection::addAssociation()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Adds an association</p>
+</div></div><div class="panel-collapse collapse" id="Connection__addAssociation_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li></li><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L419">/src/connection/index.ts:419</a>)</span></div><pre class="sourcecode prettyprint .linenums:419">public addAssociation(association: IAssociation) {
+    this._pending_associations.push(association);
+    this._schema_changed = true;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection__applySchemas"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__applySchemas_body"><h3 class="panel-title">Connection::applySchemas()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Applies schemas</p>
+</div></div><div class="panel-collapse collapse" id="Connection__applySchemas_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L164">/src/connection/index.ts:164</a>)</span></div><pre class="sourcecode prettyprint .linenums:164">public async applySchemas(options: { verbose?: boolean } = {}) {
+    this._initializeModels();
+    if (!this._schema_changed) {
+      return;
+    }
+    this._applyAssociations();
+    if (this._applying_schemas) {
+      return this._promise_schema_applied;
+    }
+    this._applying_schemas = true;
+    this._checkArchive();
+    if (options.verbose) {
+      console.log('Applying schemas');
+    }
+    this._promise_schema_applied = this._promise_connection.then(async () =&gt; {
+      try {
+        const current = await this._adapter.getSchemas();
 
-  redis_cache = settings.redis_cache or {}
-  @_redis_cache_settings = redis_cache
+        // tslint:disable-next-line:forin
+        for (const model in this.models) {
+          const modelClass = this.models[model];
+          const currentTable = current.tables &amp;&amp; current.tables[modelClass.table_name];
+          if (!currentTable || currentTable === 'NO SCHEMA') {
+            continue;
+          }
+          // tslint:disable-next-line:forin
+          for (const column in modelClass._schema) {
+            const property = modelClass._schema[column];
+            if (!currentTable[property._dbname_us]) {
+              if (options.verbose) {
+                console.log(`Adding column ${column} to ${modelClass.table_name}`);
+              }
+              await this._adapter.addColumn(model, property);
+            }
+          }
+        }
 
-  @connected = false
-  @models = {}
-  @_pending_associations = []
-  @_schema_changed = false
+        // tslint:disable-next-line:forin
+        for (const model in this.models) {
+          const modelClass = this.models[model];
+          if (!current.tables[modelClass.table_name]) {
+            if (options.verbose) {
+              console.log(`Creating table ${modelClass.table_name}`);
+            }
+            await this._adapter.createTable(model);
+          }
+        }
 
-  @_adapter = Promise.promisifyAll require(__dirname + '/../adapters/' + adapter_name) @
-  @_promise_connection = @_adapter.connectAsync settings
-  .then =&gt;
-    @connected = true
-  .catch (error) =&gt;
-    @_adapter = null
-    Promise.reject error
+        // tslint:disable-next-line:forin
+        for (const model in this.models) {
+          const modelClass = this.models[model];
+          for (const index of modelClass._indexes) {
+            if (!(current.indexes &amp;&amp; current.indexes[modelClass.table_name]
+              &amp;&amp; current.indexes[modelClass.table_name][index.options.name])) {
+              if (options.verbose) {
+                console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
+              }
+              await this._adapter.createIndex(model, index);
+            }
+          }
+        }
 
-  Object.defineProperty @, 'adapter', get: -&gt; @_adapter</pre></div></div></div></section><span class="fix-anchor" id="Connection___adapter"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection___adapter_body"><h3 class="panel-title">Connection::_adapter : <a href='../classes/adapter.AdapterBase.html#adapter_AdapterBase'>AdapterBase</a><span class="label label-private">private</span><span class="label label-property">property</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Indicates the adapter associated to this connection</p>
-</div></div><div class="panel-collapse collapse" id="Connection___adapter_body"><div class="panel-body"><div></div><h4>See Also:</h4><ul><li><a href='../classes/Connection.html#Connection__constructor'>Connection::constructor</a></li></ul></div></div></div></section><span class="fix-anchor" id="Connection__applySchemas"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__applySchemas_body"><h3 class="panel-title">Connection::applySchemas([options], [callback])<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Applies schemas</p>
-</div></div><div class="panel-collapse collapse" id="Connection__applySchemas_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>options</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth1"></span><code>verbose=false</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean'>Boolean</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>callback</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function'>Function</a>(error)</span></td><td><span> NodeJS style's callback</span></td></tr><tr><td><span class="method-depth1"></span><code>error</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error'>Error</a></span></td><td><span> See throws</span></td></tr></table><h4>Returns<small><span> as</span><span class="label label-info">Promise</span><span class="label label-info">NodeJS callback</span></small></h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li>AdapterBase::applySchema</li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.coffee#L139">/src/connection/index.coffee:139</a>)</span></div><pre class="sourcecode prettyprint .linenums:139">applySchemas: (options, callback) -&gt;
-  if typeof options is 'function'
-    callback = options
-    options = {}
-  else if not options
-    options = {}
-
-  Promise.resolve().then =&gt;
-    @_initializeModels()
-    return if not @_schema_changed
-
-    @_applyAssociations()
-
-    if not @_applying_schemas
-      @_applying_schemas = true
-
-      @_checkArchive()
-
-      console.log 'Applying schemas' if options.verbose
-
-      @_promise_schema_applied = @_promise_connection.then =&gt;
-        return @_adapter.getSchemasAsync()
-        .tap (current) =&gt;
-          add_columns_commands = []
-          for model, modelClass of @models
-            if not current.tables?[modelClass.tableName] or current.tables?[modelClass.tableName] is 'NO SCHEMA'
-              continue
-            for column, property of modelClass._schema
-              if not current.tables?[modelClass.tableName]?[property._dbname]
-                console.log &quot;Adding column #{column} to #{modelClass.tableName}&quot; if options.verbose
-                add_columns_commands.push @_adapter.addColumnAsync model, property
-          Promise.all add_columns_commands
-        .tap (current) =&gt;
-          tables_commands = []
-          for model, modelClass of @models
-            if not current.tables[modelClass.tableName]
-              console.log &quot;Creating table #{modelClass.tableName}&quot; if options.verbose
-              tables_commands.push @_adapter.createTableAsync model
-          Promise.all tables_commands
-        .tap (current) =&gt;
-          indexes_commands = []
-          for model, modelClass of @models
-            for index in modelClass._indexes
-              if not current.indexes?[modelClass.tableName]?[index.options.name]
-                console.log &quot;Creating index on #{modelClass.tableName} #{Object.keys(index.columns)}&quot; if options.verbose
-                indexes_commands.push @_adapter.createIndexAsync model, index
-          Promise.all indexes_commands
-        .tap (current) =&gt;
-          foreign_keys_commands = []
-          for model, modelClass of @models
-            for integrity in modelClass._integrities
-              type = ''
-              if integrity.type is 'child_nullify'
-                type = 'nullify'
-              else if integrity.type is 'child_restrict'
-                type = 'restrict'
-              else if integrity.type is 'child_delete'
-                type = 'delete'
-              if type
-                current_foreign_key = current.foreign_keys?[modelClass.tableName]?[integrity.column]
-                if not (current_foreign_key and current_foreign_key is integrity.parent.tableName)
-                  console.log &quot;Adding foreign key #{modelClass.tableName}.#{integrity.column} to #{integrity.parent.tableName}&quot; if options.verbose
-                  foreign_keys_commands.push [model, integrity.column, type, integrity.parent]
-          Promise.each foreign_keys_commands, (args) =&gt;
-            @_adapter.createForeignKeyAsync.apply @_adapter, args
-        .finally =&gt;
-          console.log 'Applying schemas done' if options.verbose
-          @_applying_schemas = false
-          @_schema_changed = false
-    return @_promise_schema_applied
-  .nodeify bindDomain callback</pre></div></div></div></section><span class="fix-anchor" id="Connection__applySchemasSync"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__applySchemasSync_body"><h3 class="panel-title">Connection::applySchemasSync()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Applies schemas synchronously</p>
-</div></div><div class="panel-collapse collapse" id="Connection__applySchemasSync_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li><a href='../classes/Connection.html#Connection__applySchemas'>Connection::applySchemas</a></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.coffee#L215">/src/connection/index.coffee:215</a>)</span></div><pre class="sourcecode prettyprint .linenums:215">applySchemasSync: deasync? @::applySchemas</pre></div></div></div></section><span class="fix-anchor" id="Connection__close"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__close_body"><h3 class="panel-title">Connection::close()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Closes this connection.
+        // tslint:disable-next-line:forin
+        for (const model in this.models) {
+          const modelClass = this.models[model];
+          for (const integrity of modelClass._integrities) {
+            let type = '';
+            if (integrity.type === 'child_nullify') {
+              type = 'nullify';
+            } else if (integrity.type === 'child_restrict') {
+              type = 'restrict';
+            } else if (integrity.type === 'child_delete') {
+              type = 'delete';
+            }
+            if (type) {
+              const current_foreign_key = current.foreign_keys &amp;&amp; current.foreign_keys[modelClass.table_name]
+                &amp;&amp; current.foreign_keys[modelClass.table_name][integrity.column];
+              if (!(current_foreign_key &amp;&amp; current_foreign_key === integrity.parent.table_name)) {
+                if (options.verbose) {
+                  const table_name = modelClass.table_name;
+                  const parent_table_name = integrity.parent.table_name;
+                  console.log(`Adding foreign key ${table_name}.${integrity.column} to ${parent_table_name}`);
+                }
+                await this._adapter.createForeignKey(model, integrity.column, type, integrity.parent);
+              }
+            }
+          }
+        }
+      } finally {
+        if (options.verbose) {
+          console.log('Applying schemas done');
+        }
+        this._applying_schemas = false;
+        this._schema_changed = false;
+      }
+    });
+    return this._promise_schema_applied;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection__close"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__close_body"><h3 class="panel-title">Connection::close()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Closes this connection.
 A closed connection can be used no more.</p>
-</div></div><div class="panel-collapse collapse" id="Connection__close_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.coffee#L79">/src/connection/index.coffee:79</a>)</span></div><pre class="sourcecode prettyprint .linenums:79">close: -&gt;
-  Connection.defaultConnection = null if Connection.defaultConnection is @
-  @_adapter.close()
-  @_adapter = null</pre></div></div></div></section><span class="fix-anchor" id="Connection_defaultConnection"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection_defaultConnection_body"><h3 class="panel-title">Connection.defaultConnection : <a href='../classes/Connection.html#Connection'>Connection</a><span class="label label-static">static</span><span class="label label-property">property</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Default connection</p>
-</div></div><div class="panel-collapse collapse" id="Connection_defaultConnection_body"><div class="panel-body"><div></div><h4>See Also:</h4><ul><li><a href='../classes/Connection.html#Connection__constructor'>Connection::constructor</a></li></ul></div></div></div></section><span class="fix-anchor" id="Connection__dropAllModels"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__dropAllModels_body"><h3 class="panel-title">Connection::dropAllModels([callback])<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Drops all model tables</p>
-</div></div><div class="panel-collapse collapse" id="Connection__dropAllModels_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>callback</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function'>Function</a>(error)</span></td><td><span> NodeJS style's callback</span></td></tr><tr><td><span class="method-depth1"></span><code>error</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error'>Error</a></span></td><td><span> See throws</span></td></tr></table><h4>Returns<small><span> as</span><span class="label label-info">Promise</span><span class="label label-info">NodeJS callback</span></small></h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.coffee#L221">/src/connection/index.coffee:221</a>)</span></div><pre class="sourcecode prettyprint .linenums:221">dropAllModels: (callback) -&gt;
-  current = Promise.resolve()
-  Promise.all @_getModelNamesByAssociationOrder().map (model) =&gt;
-    current = current
-    .then =&gt;
-      @models[model].drop()
-  .nodeify bindDomain callback</pre></div></div></div></section><span class="fix-anchor" id="Connection__log"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__log_body"><h3 class="panel-title">Connection::log(model, type, data)<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Logs</p>
-</div></div><div class="panel-collapse collapse" id="Connection__log_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>model</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>type</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>data</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.coffee#L234">/src/connection/index.coffee:234</a>)</span></div><pre class="sourcecode prettyprint .linenums:234">log: (model, type, data) -&gt;</pre></div></div></div></section><span class="fix-anchor" id="Connection__model"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__model_body"><h3 class="panel-title">Connection::model(name, schema)<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Creates a model class</p>
-</div></div><div class="panel-collapse collapse" id="Connection__model_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>name</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>schema</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='http://coffeescript.org/#classes'>Class</a>&lt;<a href='../classes/Model.html#Model'>Model</a>&gt;</span></td><td><span></span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.coffee#L89">/src/connection/index.coffee:89</a>)</span></div><pre class="sourcecode prettyprint .linenums:89">model: (name, schema) -&gt;
-  return Model.newModel @, name, schema</pre></div></div></div></section><span class="fix-anchor" id="Connection__models"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__models_body"><h3 class="panel-title">Connection::models : <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>StringMap</a>&lt;<a href='http://coffeescript.org/#classes'>Class</a>&lt;<a href='../classes/Model.html#Model'>Model</a>&gt;&gt;<span class="label label-property">property</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Model lists using this connection.
+</div></div><div class="panel-collapse collapse" id="Connection__close_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L145">/src/connection/index.ts:145</a>)</span></div><pre class="sourcecode prettyprint .linenums:145">public close() {
+    if (Connection.defaultConnection === this) {
+      Connection.defaultConnection = undefined;
+    }
+    this._adapter.close();
+    (this._adapter as any) = undefined;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection_defaultConnection"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection_defaultConnection_body"><h3 class="panel-title">Connection.defaultConnection<span class="label label-static">static</span><span class="label label-property">property</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Default connection</p>
+</div></div><div class="panel-collapse collapse" id="Connection_defaultConnection_body"><div class="panel-body"><div></div><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L79">/src/connection/index.ts:79</a>)</span></div><pre class="sourcecode prettyprint .linenums:79">public static defaultConnection?: Connection;</pre></div></div></div></section><span class="fix-anchor" id="Connection__dropAllModels"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__dropAllModels_body"><h3 class="panel-title">Connection::dropAllModels()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Drops all model tables</p>
+</div></div><div class="panel-collapse collapse" id="Connection__dropAllModels_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L338">/src/connection/index.ts:338</a>)</span></div><pre class="sourcecode prettyprint .linenums:338">public async dropAllModels() {
+    for (const model of this._getModelNamesByAssociationOrder()) {
+      await this.models[model].drop();
+    }
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection__fetchAssociated"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__fetchAssociated_body"><h3 class="panel-title">Connection::fetchAssociated()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Fetches associated records</p>
+</div></div><div class="panel-collapse collapse" id="Connection__fetchAssociated_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L460">/src/connection/index.ts:460</a>)</span></div><pre class="sourcecode prettyprint .linenums:460">public async fetchAssociated(records: any, column: any, select?: any, options?: any) {
+    if ((select != null) &amp;&amp; typeof select === 'object') {
+      options = select;
+      select = null;
+    } else if (options == null) {
+      options = {};
+    }
+    await this._checkSchemaApplied();
+    const record = Array.isArray(records) ? records[0] : records;
+    if (!record) {
+      return;
+    }
+    let association;
+    if (options.target_model) {
+      association = {
+        foreign_key: options.foreign_key,
+        target_model: options.target_model,
+        type: options.type || 'belongsTo',
+      };
+    } else if (options.model) {
+      association = options.model._associations &amp;&amp; options.model._associations[column];
+    } else {
+      association = record.constructor._associations &amp;&amp; record.constructor._associations[column];
+    }
+    if (!association) {
+      throw new Error(`unknown column '${column}'`);
+    }
+    if (association.type === 'belongsTo') {
+      return await this._fetchAssociatedBelongsTo(records, association.target_model, column, select, options);
+    } else if (association.type === 'hasMany') {
+      return await this._fetchAssociatedHasMany(records, association.target_model, association.foreign_key,
+        column, select, options);
+    } else {
+      throw new Error(`unknown column '${column}'`);
+    }
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection__getInconsistencies"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__getInconsistencies_body"><h3 class="panel-title">Connection::getInconsistencies()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Returns inconsistent records against associations</p>
+</div></div><div class="panel-collapse collapse" id="Connection__getInconsistencies_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L427">/src/connection/index.ts:427</a>)</span></div><pre class="sourcecode prettyprint .linenums:427">public async getInconsistencies() {
+    await this._checkSchemaApplied();
+    const result: any = {};
+    const promises = Object.keys(this.models).map(async (model) =&gt; {
+      const modelClass = this.models[model];
+      const integrities = modelClass._integrities.filter((integrity) =&gt; integrity.type.substr(0, 7) === 'parent_');
+      if (integrities.length &gt; 0) {
+        let records = await modelClass.select('').exec();
+        const ids = records.map((record: any) =&gt; record.id);
+        const sub_promises = integrities.map(async (integrity) =&gt; {
+          const query = integrity.child.select('');
+          query.where(_.zipObject([integrity.column], [{ $not: { $in: ids } }]));
+          const property = integrity.child._schema[integrity.column];
+          if (!property.required) {
+            query.where(_.zipObject([integrity.column], [{ $not: null }]));
+          }
+          records = await query.exec();
+          if (records.length &gt; 0) {
+            const array = result[integrity.child._name] || (result[integrity.child._name] = []);
+            array.push(...records.map((record: any) =&gt; record.id));
+            _.uniq(array);
+          }
+        });
+        await Promise.all(sub_promises);
+      }
+    });
+    await Promise.all(promises);
+    return result;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection__log"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__log_body"><h3 class="panel-title">Connection::log()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Logs</p>
+</div></div><div class="panel-collapse collapse" id="Connection__log_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L347">/src/connection/index.ts:347</a>)</span></div><pre class="sourcecode prettyprint .linenums:347">public log(model: string, type: string, data: object) { /**/ }</pre></div></div></div></section><span class="fix-anchor" id="Connection__manipulate"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__manipulate_body"><h3 class="panel-title">Connection::manipulate()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Manipulate data</p>
+</div></div><div class="panel-collapse collapse" id="Connection__manipulate_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L356">/src/connection/index.ts:356</a>)</span></div><pre class="sourcecode prettyprint .linenums:356">public async manipulate(commands: ManipulateCommand[]): Promise&lt;{ [id: string]: any }&gt; {
+    this.log('&lt;conn&gt;', 'manipulate', commands);
+    await this._checkSchemaApplied();
+    const id_to_record_map: { [id: string]: any } = {};
+    if (!Array.isArray(commands)) {
+      commands = [commands];
+    }
+    for (const command of commands) {
+      let key;
+      let data;
+      if (typeof command === 'object') {
+        key = Object.keys(command);
+        if (key.length === 1) {
+          key = key[0];
+          data = command[key];
+        } else {
+          key = undefined;
+        }
+      } else if (typeof command === 'string') {
+        key = command;
+      }
+      if (!key) {
+        throw new Error('invalid command: ' + JSON.stringify(command));
+      } else if (key.substr(0, 7) === 'create_') {
+        const model = key.substr(7);
+        const id = data.id;
+        delete data.id;
+        this._manipulateConvertIds(id_to_record_map, model, data);
+        const record = await this._manipulateCreate(model, data);
+        if (id) {
+          id_to_record_map[id] = record;
+        }
+      } else if (key.substr(0, 7) === 'delete_') {
+        const model = key.substr(7);
+        await this._manipulateDelete(model, data);
+      } else if (key === 'deleteAll') {
+        await this._manipulateDeleteAllModels();
+      } else if (key.substr(0, 5) === 'drop_') {
+        const model = key.substr(5);
+        await this._manipulateDropModel(model);
+      } else if (key === 'dropAll') {
+        await this._manipulateDropAllModels();
+      } else if (key.substr(0, 5) === 'find_') {
+        const model = key.substr(5);
+        const id = data.id;
+        delete data.id;
+        if (!id) {
+          continue;
+        }
+        const records = await this._manipulateFind(model, data);
+        id_to_record_map[id] = records;
+      } else {
+        throw new Error('unknown command: ' + key);
+      }
+    }
+    return id_to_record_map;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection__model"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__model_body"><h3 class="panel-title">Connection::model()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Creates a model class</p>
+</div></div><div class="panel-collapse collapse" id="Connection__model_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L156">/src/connection/index.ts:156</a>)</span></div><pre class="sourcecode prettyprint .linenums:156">public model(name: string, schema: IModelSchema) {
+    return BaseModel.newModel(this, name, schema);
+  }</pre></div></div></div></section><span class="fix-anchor" id="Connection__models"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Connection__models_body"><h3 class="panel-title">Connection::models<span class="label label-property">property</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Model lists using this connection.
 Maps from model name to model class</p>
-</div></div><div class="panel-collapse collapse" id="Connection__models_body"><div class="panel-body"><div></div><h4>See Also:</h4><ul><li><a href='../classes/Connection.html#Connection__constructor'>Connection::constructor</a></li></ul></div></div></div></section></div></div></div><script src="http://code.jquery.com/jquery-1.11.0.min.js"></script><script src="../bootstrap-3.2.0-dist/js/bootstrap.min.js"></script><script src="../google-code-prettify/prettify.js"></script><script src="../script.js"></script><script src="../group-examples.js"></script><a href="https://github.com/croquiscom/cormo"><img class="github-ribbon" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a></body></html>
+</div></div><div class="panel-collapse collapse" id="Connection__models_body"><div class="panel-body"><div></div><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/connection/index.ts#L93">/src/connection/index.ts:93</a>)</span></div><pre class="sourcecode prettyprint .linenums:93">public models: { [name: string]: typeof BaseModel };</pre></div></div></div></section></div></div></div><script src="http://code.jquery.com/jquery-1.11.0.min.js"></script><script src="../bootstrap-3.2.0-dist/js/bootstrap.min.js"></script><script src="../google-code-prettify/prettify.js"></script><script src="../script.js"></script><script src="../group-examples.js"></script><a href="https://github.com/croquiscom/cormo"><img class="github-ribbon" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a></body></html>

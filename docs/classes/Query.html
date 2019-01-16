@@ -1,312 +1,226 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>CORMO - Query</title><script>if (location.protocol.match(/^http/) && location.pathname.match('\.html') === null && location.pathname.slice(-1) !== '/') {
   location.href = location.href + '/';
-}</script><link href="../bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"><!--[if lt IE 9]><script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script><script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]--><link href="../google-code-prettify/prettify.css" rel="stylesheet" type="text/css"><link href="../style.css" rel="stylesheet" type="text/css"></head><body data-spy="scroll" data-target=".sidebar"><nav class="navbar navbar-default navbar-fixed-top" role="navigation"><div class="navbar-header"><button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#top-navigation-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><div class="collapse navbar-collapse" id="top-navigation-collapse"><ul class="nav navbar-nav"><li><a href="../index.html">Home</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Guides <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../guides/Aggregation.html">Aggregation</a></li><li><a href="../guides/Association.html">Association</a></li><li><a href="../guides/Callback.html">Callback</a></li><li><a href="../guides/Constraint.html">Constraint</a></li><li><a href="../guides/CreateRecords.html">Create records</a></li><li><a href="../guides/DefineModels.html">Define models</a></li><li><a href="../guides/Geospatial.html">Geospatial</a></li><li><a href="../guides/Miscellaneous.html">Miscellaneous</a></li><li><a href="../guides/Query.html">Query</a></li><li><a href="../guides/Validation.html">Validation</a></li></ul></li><li><a href="../modules/index.html">Modules</a></li><li class="active"><a href="../classes/index.html">Classes - Query</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Files <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../files/index.coffee.html">index.coffee</a></li><li><a href="../files/query.coffee.html">query.coffee</a></li><li><a href="../files/types.coffee.html">types.coffee</a></li><li><a href="../files/adapters.base.coffee.html">adapters/base.coffee</a></li><li><a href="../files/adapters.mongodb.coffee.html">adapters/mongodb.coffee</a></li><li><a href="../files/adapters.mysql.coffee.html">adapters/mysql.coffee</a></li><li><a href="../files/adapters.postgresql.coffee.html">adapters/postgresql.coffee</a></li><li><a href="../files/adapters.redis.coffee.html">adapters/redis.coffee</a></li><li><a href="../files/adapters.sql_base.coffee.html">adapters/sql_base.coffee</a></li><li><a href="../files/adapters.sqlite3.coffee.html">adapters/sqlite3.coffee</a></li><li><a href="../files/adapters.sqlite3_memory.coffee.html">adapters/sqlite3_memory.coffee</a></li><li><a href="../files/command.index.coffee.html">command/index.coffee</a></li><li><a href="../files/command.remote-console.coffee.html">command/remote-console.coffee</a></li><li><a href="../files/connection.association.coffee.html">connection/association.coffee</a></li><li><a href="../files/connection.index.coffee.html">connection/index.coffee</a></li><li><a href="../files/connection.manipulate.coffee.html">connection/manipulate.coffee</a></li><li><a href="../files/model.cache.coffee.html">model/cache.coffee</a></li><li><a href="../files/model.callback.coffee.html">model/callback.coffee</a></li><li><a href="../files/model.index.coffee.html">model/index.coffee</a></li><li><a href="../files/model.persistence.coffee.html">model/persistence.coffee</a></li><li><a href="../files/model.query.coffee.html">model/query.coffee</a></li><li><a href="../files/model.timestamp.coffee.html">model/timestamp.coffee</a></li><li><a href="../files/model.validate.coffee.html">model/validate.coffee</a></li><li><a href="../files/util.index.coffee.html">util/index.coffee</a></li><li><a href="../files/util.inflector.coffee.html">util/inflector.coffee</a></li></ul></li></ul><div class="options"><label class="checkbox"><input id="options-private" type="checkbox"> Private </label></div></div></div></nav><div class="container-fluid content"><div class="row"><div class="hidden-xs sidebar col-sm-3" data-spy="affix"><div class="cormo-sidenav"><div class="panel panel-default"><div class="panel-collapse collapse in" id="undefined_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/ColumnProperty.html">ColumnProperty</a></li><li><a href="../classes/Command.html">Command</a></li><li><a href="../classes/CommandRemoteConsole.html">CommandRemoteConsole</a></li><li><a href="../classes/Connection.html">Connection</a></li><li><a href="../classes/Model.html">Model</a></li><li class="active"><a href="#Query">Query</a></li><li class="cormo-class-property private"><a href="#Query___addCondition">_addCondition<span class="pull-right label label-private">private</span></a></li><li class="cormo-class-property private"><a href="#Query___doArchiveAndIntegrity">_doArchiveAndIntegrity<span class="pull-right label label-private">private</span></a></li><li class="cormo-class-property private"><a href="#Query___exec">_exec<span class="pull-right label label-private">private</span></a></li><li class="cormo-class-property private"><a href="#Query___execAndInclude">_execAndInclude<span class="pull-right label label-private">private</span></a></li><li class="cormo-class-property private"><a href="#Query___validateAndBuildSaveData">_validateAndBuildSaveData<span class="pull-right label label-private">private</span></a></li><li class="cormo-class-property"><a href="#Query__cache">cache</a></li><li class="cormo-class-property"><a href="#Query__count">count</a></li><li class="cormo-class-property"><a href="#Query__delete">delete</a></li><li class="cormo-class-property"><a href="#Query__endif">endif</a></li><li class="cormo-class-property"><a href="#Query__exec">exec</a></li><li class="cormo-class-property"><a href="#Query__explain">explain</a></li><li class="cormo-class-property"><a href="#Query__find">find</a></li><li class="cormo-class-property"><a href="#Query__findPreserve">findPreserve</a></li><li class="cormo-class-property"><a href="#Query__group">group</a></li><li class="cormo-class-property"><a href="#Query__if">if</a></li><li class="cormo-class-property"><a href="#Query__include">include</a></li><li class="cormo-class-property"><a href="#Query__lean">lean</a></li><li class="cormo-class-property"><a href="#Query__limit">limit</a></li><li class="cormo-class-property"><a href="#Query__near">near</a></li><li class="cormo-class-property"><a href="#Query__one">one</a></li><li class="cormo-class-property"><a href="#Query__order">order</a></li><li class="cormo-class-property"><a href="#Query__select">select</a></li><li class="cormo-class-property"><a href="#Query__skip">skip</a></li><li class="cormo-class-property"><a href="#Query__stream">stream</a></li><li class="cormo-class-property"><a href="#Query__then">then</a></li><li class="cormo-class-property"><a href="#Query__update">update</a></li><li class="cormo-class-property"><a href="#Query__upsert">upsert</a></li><li class="cormo-class-property"><a href="#Query__where">where</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#adapter_body">adapter<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="adapter_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/adapter.AdapterBase.html">AdapterBase</a></li><li><a href="../classes/adapter.MongoDBAdapter.html">MongoDBAdapter</a></li><li><a href="../classes/adapter.MySQLAdapter.html">MySQLAdapter</a></li><li><a href="../classes/adapter.PostgreSQLAdapter.html">PostgreSQLAdapter</a></li><li><a href="../classes/adapter.RedisAdapter.html">RedisAdapter</a></li><li><a href="../classes/adapter.SQLAdapterBase.html">SQLAdapterBase</a></li><li><a href="../classes/adapter.SQLite3Adapter.html">SQLite3Adapter</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#connection_body">connection<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="connection_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/connection.ConnectionAssociation.html">ConnectionAssociation</a></li><li><a href="../classes/connection.ConnectionManipulate.html">ConnectionManipulate</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#model_body">model<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="model_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/model.ModelCache.html">ModelCache</a></li><li><a href="../classes/model.ModelCallback.html">ModelCallback</a></li><li><a href="../classes/model.ModelPersistence.html">ModelPersistence</a></li><li><a href="../classes/model.ModelQuery.html">ModelQuery</a></li><li><a href="../classes/model.ModelTimestamp.html">ModelTimestamp</a></li><li><a href="../classes/model.ModelValidate.html">ModelValidate</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#ptypes_body">ptypes<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="ptypes_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/ptypes.GeoPoint.html">GeoPoint</a></li><li><a href="../classes/ptypes.Integer.html">Integer</a></li><li><a href="../classes/ptypes.RecordID.html">RecordID</a></li></ul></div></div></div></div><div class="col-sm-9 col-sm-offset-3"><span class="fix-anchor" id="Query"></span><section><h1 class="class_title">Query</h1><div><p>Collects conditions to query</p>
-</div><div></div><div class="showcode"><button class="btn btn-info">Show class code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L8">/src/query.coffee:8</a>)</span></div><pre class="sourcecode prettyprint .linenums:8">class Query</pre><div class="panel panel-info"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query_ctor_body"><h3 class="panel-title">Constructor<span class="pull-right glyphicon"></span></h3></div><div class="panel-collapse collapse" id="Query_ctor_body"><div class="panel-body"><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>model</code></td><td><span><a href='http://coffeescript.org/#classes'>Class</a>&lt;<a href='../classes/Model.html#Model'>Model</a>&gt;</span></td><td><span> </span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L12">/src/query.coffee:12</a>)</span></div><pre class="sourcecode prettyprint .linenums:12">constructor: (model) -&gt;
-  @_model = model
-  @_name = model._name
-  @_connection = model._connection
-  @_adapter = model._connection._adapter
-  @_ifs = []
-  @_current_if = true
-  @_conditions = []
-  @_includes = []
-  @_options =
-    orders: []
-    conditions_of_group: []
-    lean: model.lean_query</pre></div></div></div></section><span class="fix-anchor" id="Query___addCondition"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query___addCondition_body"><h3 class="panel-title">Query::_addCondition()<span class="label label-private">private</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"></div></div><div class="panel-collapse collapse" id="Query___addCondition_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L65">/src/query.coffee:65</a>)</span></div><pre class="sourcecode prettyprint .linenums:65">_addCondition: (condition) -&gt;
-  if @_options.group_fields
-    keys = Object.keys condition
-    if keys.length is 1 and @_options.group_fields.hasOwnProperty keys[0]
-      @_options.conditions_of_group.push condition
-      return
-  @_conditions.push condition</pre></div></div></div></section><span class="fix-anchor" id="Query___doArchiveAndIntegrity"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query___doArchiveAndIntegrity_body"><h3 class="panel-title">Query::_doArchiveAndIntegrity()<span class="label label-private">private</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"></div></div><div class="panel-collapse collapse" id="Query___doArchiveAndIntegrity_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L454">/src/query.coffee:454</a>)</span></div><pre class="sourcecode prettyprint .linenums:454">_doArchiveAndIntegrity: (options) -&gt;
-  need_archive = @_model.archive
-  integrities = @_model._integrities.filter (integrity) -&gt; integrity.type.substr(0, 7) is 'parent_'
-  need_child_archive = integrities.some (integrity) =&gt; integrity.child.archive
-  need_integrity = need_child_archive or (integrities.length &gt; 0 and not @_adapter.native_integrity)
-  return Promise.resolve() if not need_archive and not need_integrity
-
-  # find all records to be deleted
-  query = @_model.where @_conditions
-  query.select '' if not need_archive # we need only id field for integrity
-  query.exec skip_log: options?.skip_log
-  .then (records) =&gt;
-    return Promise.resolve records if not need_archive
-    archive_records = records.map (record) =&gt; model: @_name, data: record
-    @_connection.models['_Archive'].createBulk archive_records
-    .then -&gt;
-      Promise.resolve records
-  .then (records) =&gt;
-    return Promise.resolve() if not need_integrity
-    return Promise.resolve() if records.length is 0
-    ids = records.map (record) -&gt; record.id
-    @_doIntegrityActions integrities, ids</pre></div></div></div></section><span class="fix-anchor" id="Query___exec"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query___exec_body"><h3 class="panel-title">Query::_exec()<span class="label label-private">private</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"></div></div><div class="panel-collapse collapse" id="Query___exec_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L246">/src/query.coffee:246</a>)</span></div><pre class="sourcecode prettyprint .linenums:246">_exec: (options) -&gt;
-  if @_find_single_id and @_conditions.length is 0
-    @_connection.log @_name, 'find by id', id: @_id, options: @_options if not options?.skip_log
-    return Promise.reject new Error('not found') if not @_id
-    return @_adapter.findByIdAsync @_name, @_id, @_options
-    .catch (error) -&gt;
-      Promise.reject new Error('not found')
-    .then (record) -&gt;
-      return Promise.reject new Error('not found') if not record
-      return record
-  expected_count = undefined
-  if @_id or @_find_single_id
-    if Array.isArray @_id
-      return Promise.resolve [] if @_id.length is 0
-      @_conditions.push id: { $in: @_id }
-      expected_count = @_id.length
-    else
-      @_conditions.push id: @_id
-      expected_count = 1
-  @_connection.log @_name, 'find', conditions: @_conditions, options: @_options if not options?.skip_log
-  @_adapter.findAsync @_name, @_conditions, @_options
-  .then (records) =&gt;
-    if expected_count?
-      return Promise.reject new Error('not found') if records.length isnt expected_count
-    if @_preserve_order_ids
-      records =  @_preserve_order_ids.map (id) -&gt;
-        for record in records
-          return record if record.id is id
-    if @_options.one
-      return Promise.reject new Error('unknown error') if records.length &gt; 1
-      Promise.resolve if records.length is 1 then records[0] else null
-    else
-      Promise.resolve records</pre></div></div></div></section><span class="fix-anchor" id="Query___execAndInclude"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query___execAndInclude_body"><h3 class="panel-title">Query::_execAndInclude()<span class="label label-private">private</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"></div></div><div class="panel-collapse collapse" id="Query___execAndInclude_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L282">/src/query.coffee:282</a>)</span></div><pre class="sourcecode prettyprint .linenums:282">_execAndInclude: (options) -&gt;
-  @_exec options
-  .then (records) =&gt;
-    promises = @_includes.map (include) =&gt;
-      @_connection.fetchAssociated records, include.column, include.select, model: @_model, lean: @_options.lean
-    Promise.all(promises)
-    .then -&gt;
-      records</pre></div></div></div></section><span class="fix-anchor" id="Query___validateAndBuildSaveData"></span><section class="private"><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query___validateAndBuildSaveData_body"><h3 class="panel-title">Query::_validateAndBuildSaveData()<span class="label label-private">private</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"></div></div><div class="panel-collapse collapse" id="Query___validateAndBuildSaveData_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L375">/src/query.coffee:375</a>)</span></div><pre class="sourcecode prettyprint .linenums:375">_validateAndBuildSaveData: (errors, data, updates, path, object) -&gt;
-  model = @_model
-  schema = model._schema
-  for column of object
-    property = schema[path+column]
-    if property
-      try
-        model._validateColumn updates, path+column, property, true
-      catch error
-        errors.push error
-      model._buildSaveDataColumn data, updates, path+column, property, true
-    else if not object[column] and model._intermediate_paths[column]
-      # set all nested columns null
-      column += '.'
-      temp = {}
-      Object.keys(schema).forEach (sc) -&gt;
-        temp[sc.substr(column.length)] = null if sc.indexOf(column) is 0
-      @_validateAndBuildSaveData errors, data, updates, path + column, temp
-    else if typeof object[column] is 'object'
-      @_validateAndBuildSaveData errors, data, updates, path + column + '.', object[column]</pre></div></div></div></section><span class="fix-anchor" id="Query__cache"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__cache_body"><h3 class="panel-title">Query::cache(options)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Cache result.</p>
+}</script><link href="../bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"><!--[if lt IE 9]><script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script><script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]--><link href="../google-code-prettify/prettify.css" rel="stylesheet" type="text/css"><link href="../style.css" rel="stylesheet" type="text/css"></head><body data-spy="scroll" data-target=".sidebar"><nav class="navbar navbar-default navbar-fixed-top" role="navigation"><div class="navbar-header"><button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#top-navigation-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><div class="collapse navbar-collapse" id="top-navigation-collapse"><ul class="nav navbar-nav"><li><a href="../index.html">Home</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Guides <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../guides/Aggregation.html">Aggregation</a></li><li><a href="../guides/Association.html">Association</a></li><li><a href="../guides/Callback.html">Callback</a></li><li><a href="../guides/Constraint.html">Constraint</a></li><li><a href="../guides/CreateRecords.html">Create records</a></li><li><a href="../guides/DefineModels.html">Define models</a></li><li><a href="../guides/Geospatial.html">Geospatial</a></li><li><a href="../guides/Miscellaneous.html">Miscellaneous</a></li><li><a href="../guides/Query.html">Query</a></li><li><a href="../guides/Validation.html">Validation</a></li></ul></li><li><a href="../modules/index.html">Modules</a></li><li class="active"><a href="../classes/index.html">Classes - Query</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Files <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../files/decorators.ts.html">decorators.ts</a></li><li><a href="../files/index.ts.html">index.ts</a></li><li><a href="../files/query.ts.html">query.ts</a></li><li><a href="../files/types.ts.html">types.ts</a></li><li><a href="../files/adapters.base.ts.html">adapters/base.ts</a></li><li><a href="../files/adapters.mongodb.ts.html">adapters/mongodb.ts</a></li><li><a href="../files/adapters.mysql.ts.html">adapters/mysql.ts</a></li><li><a href="../files/adapters.postgresql.ts.html">adapters/postgresql.ts</a></li><li><a href="../files/adapters.redis.ts.html">adapters/redis.ts</a></li><li><a href="../files/adapters.sql_base.ts.html">adapters/sql_base.ts</a></li><li><a href="../files/adapters.sqlite3.ts.html">adapters/sqlite3.ts</a></li><li><a href="../files/adapters.sqlite3_memory.ts.html">adapters/sqlite3_memory.ts</a></li><li><a href="../files/command.index.ts.html">command/index.ts</a></li><li><a href="../files/connection.index.ts.html">connection/index.ts</a></li><li><a href="../files/model.index.ts.html">model/index.ts</a></li><li><a href="../files/util.index.ts.html">util/index.ts</a></li><li><a href="../files/util.inflector.ts.html">util/inflector.ts</a></li></ul></li></ul><div class="options"><label class="checkbox"><input id="options-private" type="checkbox"> Private </label></div></div></div></nav><div class="container-fluid content"><div class="row"><div class="hidden-xs sidebar col-sm-3" data-spy="affix"><div class="cormo-sidenav"><div class="panel panel-default"><div class="panel-collapse collapse in" id="undefined_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/BaseModel.html">BaseModel</a></li><li><a href="../classes/Command.html">Command</a></li><li><a href="../classes/Connection.html">Connection</a></li><li class="active"><a href="#Query">Query</a></li><li class="cormo-class-property"><a href="#Query__cache">cache</a></li><li class="cormo-class-property"><a href="#Query__count">count</a></li><li class="cormo-class-property"><a href="#Query__delete">delete</a></li><li class="cormo-class-property"><a href="#Query__endif">endif</a></li><li class="cormo-class-property"><a href="#Query__exec">exec</a></li><li class="cormo-class-property"><a href="#Query__explain">explain</a></li><li class="cormo-class-property"><a href="#Query__find">find</a></li><li class="cormo-class-property"><a href="#Query__findPreserve">findPreserve</a></li><li class="cormo-class-property"><a href="#Query__group">group</a></li><li class="cormo-class-property"><a href="#Query__if">if</a></li><li class="cormo-class-property"><a href="#Query__include">include</a></li><li class="cormo-class-property"><a href="#Query__lean">lean</a></li><li class="cormo-class-property"><a href="#Query__limit">limit</a></li><li class="cormo-class-property"><a href="#Query__near">near</a></li><li class="cormo-class-property"><a href="#Query__one">one</a></li><li class="cormo-class-property"><a href="#Query__order">order</a></li><li class="cormo-class-property"><a href="#Query__select">select</a></li><li class="cormo-class-property"><a href="#Query__skip">skip</a></li><li class="cormo-class-property"><a href="#Query__stream">stream</a></li><li class="cormo-class-property"><a href="#Query__then">then</a></li><li class="cormo-class-property"><a href="#Query__update">update</a></li><li class="cormo-class-property"><a href="#Query__upsert">upsert</a></li><li class="cormo-class-property"><a href="#Query__where">where</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#adapter_body">adapter<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="adapter_body"><ul class="nav nav-pills nav-stacked"><li><a href="../classes/adapter.AdapterBase.html">AdapterBase</a></li></ul></div></div></div></div><div class="col-sm-9 col-sm-offset-3"><span class="fix-anchor" id="Query"></span><section><h1 class="class_title">Query</h1><div><p>Collects conditions to query</p>
+</div><div></div><div class="panel panel-info"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query_ctor_body"><h3 class="panel-title">Constructor<span class="pull-right glyphicon"></span></h3></div><div class="panel-collapse collapse" id="Query_ctor_body"><div class="panel-body"><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L119">/src/query.ts:119</a>)</span></div><pre class="sourcecode prettyprint .linenums:119">constructor(model: typeof BaseModel) {
+    this._model = model;
+    this._name = model._name;
+    this._connection = model._connection;
+    this._adapter = model._connection._adapter;
+    this._ifs = [];
+    this._current_if = true;
+    this._conditions = [];
+    this._includes = [];
+    this._options = {
+      conditions_of_group: [],
+      lean: model.lean_query,
+      orders: [],
+      select_single: false,
+    };
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__cache"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__cache_body"><h3 class="panel-title">Query::cache()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Cache result.</p>
 </div></div><div class="panel-collapse collapse" id="Query__cache_body"><div class="panel-body"><div><p>If cache of key exists, actual query does not performed.
 If cache does not exist, query result will be saved in cache.</p>
 <p>Redis is used to cache.</p>
-</div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>options</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth1"></span><code>key</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth1"></span><code>ttl</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span> TTL in seconds</span></td></tr><tr><td><span class="method-depth1"></span><code>refresh</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean'>Boolean</a></span></td><td><span> don't load from cache if true</span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L227">/src/query.coffee:227</a>)</span></div><pre class="sourcecode prettyprint .linenums:227">cache: (options) -&gt;
-  if not @_current_if
-    return @
-  @_options.cache = options
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__count"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__count_body"><h3 class="panel-title">Query::count([callback])<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query as a count operation</p>
-</div></div><div class="panel-collapse collapse" id="Query__count_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>callback</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function'>Function</a>(error, result)</span></td><td><span> NodeJS style's callback</span></td></tr><tr><td><span class="method-depth1"></span><code>error</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error'>Error</a></span></td><td><span> See throws</span></td></tr><tr><td><span class="method-depth1"></span><code>result</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span> See returns</span></td></tr></table><h4>Returns<small><span> as</span><span class="label label-info">Promise</span><span class="label label-info">NodeJS callback</span></small></h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span></span></td></tr></table><h4>See Also:</h4><ul><li><a href='../classes/adapter.AdapterBase.html#adapter_AdapterBase__count'>AdapterBase::count</a></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L365">/src/query.coffee:365</a>)</span></div><pre class="sourcecode prettyprint .linenums:365">count: (callback) -&gt;
-  @_model._checkReady().then =&gt;
-    if @_id or @_find_single_id
-      @_conditions.push id: @_id
-      delete @_id
-    @_adapter.countAsync @_name, @_conditions, @_options
-  .nodeify bindDomain callback</pre></div></div></div></section><span class="fix-anchor" id="Query__delete"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__delete_body"><h3 class="panel-title">Query::delete([options], [callback])<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query as a delete operation</p>
-</div></div><div class="panel-collapse collapse" id="Query__delete_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>options</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth1"></span><code>skip_log=false</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean'>Boolean</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>callback</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function'>Function</a>(error, result)</span></td><td><span> NodeJS style's callback</span></td></tr><tr><td><span class="method-depth1"></span><code>error</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error'>Error</a></span></td><td><span> See throws</span></td></tr><tr><td><span class="method-depth1"></span><code>result</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span> See returns</span></td></tr></table><h4>Returns<small><span> as</span><span class="label label-info">Promise</span><span class="label label-info">NodeJS callback</span></small></h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span></span></td></tr></table><h4>See Also:</h4><ul><li><a href='../classes/adapter.AdapterBase.html#adapter_AdapterBase__delete'>AdapterBase::delete</a></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L485">/src/query.coffee:485</a>)</span></div><pre class="sourcecode prettyprint .linenums:485">delete: (options, callback) -&gt;
-  if typeof options is 'function'
-    callback = options
-    options = {}
-  @_model._checkReady().then =&gt;
-    if @_id or @_find_single_id
-      @_conditions.push id: @_id
-      delete @_id
-    @_connection.log @_name, 'delete', conditions: @_conditions if not options?.skip_log
-
-    @_doArchiveAndIntegrity options
-    .then =&gt;
-      @_adapter.deleteAsync @_name, @_conditions
-  .nodeify bindDomain callback</pre></div></div></div></section><span class="fix-anchor" id="Query__endif"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__endif_body"><h3 class="panel-title">Query::endif()<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Ends last if</p>
-</div></div><div class="panel-collapse collapse" id="Query__endif_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><h4>See Also:</h4><ul><li><a href='../classes/Query.html#Query__if'>Query::if</a></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L208">/src/query.coffee:208</a>)</span></div><pre class="sourcecode prettyprint .linenums:208">endif: -&gt;
-  @_ifs.pop()
-  @_current_if = true
-  for condition in @_ifs
-    @_current_if and= condition
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__exec"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__exec_body"><h3 class="panel-title">Query::exec([options], [callback])<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query</p>
-</div></div><div class="panel-collapse collapse" id="Query__exec_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>options</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth1"></span><code>skip_log=false</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean'>Boolean</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>callback</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function'>Function</a>(error, result)</span></td><td><span> NodeJS style's callback</span></td></tr><tr><td><span class="method-depth1"></span><code>error</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error'>Error</a></span></td><td><span> See throws</span></td></tr><tr><td><span class="method-depth1"></span><code>result</code></td><td><span><a href='../classes/Model.html#Model'>Model</a>, <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array'>Array</a>&lt;<a href='../classes/Model.html#Model'>Model</a>&gt;</span></td><td><span> See returns</span></td></tr></table><h4>Returns<small><span> as</span><span class="label label-info">Promise</span><span class="label label-info">NodeJS callback</span></small></h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Model.html#Model'>Model</a>, <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array'>Array</a>&lt;<a href='../classes/Model.html#Model'>Model</a>&gt;</span></td><td><span></span></td></tr></table><h4>See Also:</h4><ul><li><a href='../classes/adapter.AdapterBase.html#adapter_AdapterBase__findById'>AdapterBase::findById</a></li><li><a href='../classes/adapter.AdapterBase.html#adapter_AdapterBase__find'>AdapterBase::find</a></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L300">/src/query.coffee:300</a>)</span></div><pre class="sourcecode prettyprint .linenums:300">exec: (options, callback) -&gt;
-  if typeof options is 'function'
-    callback = options
-    options = {}
-
-  @_model._checkReady().then =&gt;
-    if (cache_options = @_options.cache) and (cache_key = cache_options.key)
-      # try cache
-      @_model._loadFromCache cache_key, cache_options.refresh
-      .catch (error) =&gt;
-        # no cache, execute query
-        @_execAndInclude options
-        .then (records) =&gt;
-          # save result to cache
-          @_model._saveToCache cache_key, cache_options.ttl, records
-          .then -&gt;
-            records
-    else
-      @_execAndInclude options
-  .nodeify bindDomain callback</pre></div></div></div></section><span class="fix-anchor" id="Query__explain"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__explain_body"><h3 class="panel-title">Query::explain([callback])<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Explains the query</p>
-</div></div><div class="panel-collapse collapse" id="Query__explain_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>callback</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function'>Function</a>(error, result)</span></td><td><span> NodeJS style's callback</span></td></tr><tr><td><span class="method-depth1"></span><code>error</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error'>Error</a></span></td><td><span> See throws</span></td></tr><tr><td><span class="method-depth1"></span><code>result</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> See returns</span></td></tr></table><h4>Returns<small><span> as</span><span class="label label-info">Promise</span><span class="label label-info">NodeJS callback</span></small></h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span></span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L345">/src/query.coffee:345</a>)</span></div><pre class="sourcecode prettyprint .linenums:345">explain: (callback) -&gt;
-  @_options.cache = null
-  @_options.explain = true
-  @_includes = []
-  @exec skip_log: true, callback</pre></div></div></div></section><span class="fix-anchor" id="Query__find"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__find_body"><h3 class="panel-title">Query::find(id)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Finds a record by id</p>
-</div></div><div class="panel-collapse collapse" id="Query__find_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>id</code></td><td><span><a href='../classes/ptypes.RecordID.html#ptypes_RecordID'>RecordID</a>, <a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array'>Array</a>&lt;<a href='../classes/ptypes.RecordID.html#ptypes_RecordID'>RecordID</a>&gt;</span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L30">/src/query.coffee:30</a>)</span></div><pre class="sourcecode prettyprint .linenums:30">find: (id) -&gt;
-  if not @_current_if
-    return @
-  if Array.isArray id
-    @_id = _.uniq id
-    @_find_single_id = false
-  else
-    @_id = id
-    @_find_single_id = true
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__findPreserve"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__findPreserve_body"><h3 class="panel-title">Query::findPreserve(ids)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Finds records by ids while preserving order.</p>
-</div></div><div class="panel-collapse collapse" id="Query__findPreserve_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>ids</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array'>Array</a>&lt;<a href='../classes/ptypes.RecordID.html#ptypes_RecordID'>RecordID</a>&gt;</span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L45">/src/query.coffee:45</a>)</span></div><pre class="sourcecode prettyprint .linenums:45">findPreserve: (ids) -&gt;
-  if not @_current_if
-    return @
-  @_id = _.uniq ids
-  @_find_single_id = false
-  @_preserve_order_ids = ids
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__group"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__group_body"><h3 class="panel-title">Query::group(group_by, fields)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Groups result records</p>
-</div></div><div class="panel-collapse collapse" id="Query__group_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>group_by</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>fields</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L140">/src/query.coffee:140</a>)</span></div><pre class="sourcecode prettyprint .linenums:140">group: (group_by, fields) -&gt;
-  if not @_current_if
-    return @
-  @_options.group_by = null
-  schema_columns = Object.keys @_model._schema
-  if typeof group_by is 'string'
-    columns = group_by.split(/\s+/).filter (column) -&gt; schema_columns.indexOf(column) &gt;= 0
-    @_options.group_by = columns
-  @_options.group_fields = fields
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__if"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__if_body"><h3 class="panel-title">Query::if(condition)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Makes a part of the query chain conditional</p>
-</div></div><div class="panel-collapse collapse" id="Query__if_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>condition</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean'>Boolean</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><h4>See Also:</h4><ul><li><a href='../classes/Query.html#Query__endif'>Query::endif</a></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L199">/src/query.coffee:199</a>)</span></div><pre class="sourcecode prettyprint .linenums:199">if: (condition) -&gt;
-  @_ifs.push condition
-  @_current_if and= condition
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__include"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__include_body"><h3 class="panel-title">Query::include(column, [select])<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Returns associated objects also</p>
-</div></div><div class="panel-collapse collapse" id="Query__include_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>column</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>select</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L238">/src/query.coffee:238</a>)</span></div><pre class="sourcecode prettyprint .linenums:238">include: (column, select) -&gt;
-  if not @_current_if
-    return @
-  @_includes.push column: column, select: select
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__lean"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__lean_body"><h3 class="panel-title">Query::lean(lean=true)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Returns raw instances instead of model instances</p>
-</div></div><div class="panel-collapse collapse" id="Query__lean_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>lean=true</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean'>Boolean</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><h4>See Also:</h4><ul><li><a href='../classes/Query.html#Query__exec'>Query::exec</a></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L188">/src/query.coffee:188</a>)</span></div><pre class="sourcecode prettyprint .linenums:188">lean: (lean=true) -&gt;
-  if not @_current_if
-    return @
-  @_options.lean = lean
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__limit"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__limit_body"><h3 class="panel-title">Query::limit(limit)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Sets limit of query</p>
-</div></div><div class="panel-collapse collapse" id="Query__limit_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>limit</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L167">/src/query.coffee:167</a>)</span></div><pre class="sourcecode prettyprint .linenums:167">limit: (limit) -&gt;
-  if not @_current_if
-    return @
-  @_options.limit = limit
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__near"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__near_body"><h3 class="panel-title">Query::near(target)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Finds records near target</p>
-</div></div><div class="panel-collapse collapse" id="Query__near_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>target</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L57">/src/query.coffee:57</a>)</span></div><pre class="sourcecode prettyprint .linenums:57">near: (target) -&gt;
-  if not @_current_if
-    return @
-  @_options.near = target
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__one"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__one_body"><h3 class="panel-title">Query::one()<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Returns only one record (or null if does not exists).</p>
+</div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L360">/src/query.ts:360</a>)</span></div><pre class="sourcecode prettyprint .linenums:360">public cache(options: IQueryOptions['cache']): this {
+    if (!this._current_if) {
+      return this;
+    }
+    this._options.cache = options;
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__count"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__count_body"><h3 class="panel-title">Query::count()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query as a count operation</p>
+</div></div><div class="panel-collapse collapse" id="Query__count_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L451">/src/query.ts:451</a>)</span></div><pre class="sourcecode prettyprint .linenums:451">public async count(): Promise&lt;number&gt; {
+    await this._model._checkReady();
+    if (this._id || this._find_single_id) {
+      this._conditions.push({ id: this._id });
+      delete this._id;
+    }
+    return await this._adapter.count(this._name, this._conditions, this._options);
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__delete"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__delete_body"><h3 class="panel-title">Query::delete()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query as a delete operation</p>
+</div></div><div class="panel-collapse collapse" id="Query__delete_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L504">/src/query.ts:504</a>)</span></div><pre class="sourcecode prettyprint .linenums:504">public async delete(options?: any): Promise&lt;number&gt; {
+    await this._model._checkReady();
+    if (this._id || this._find_single_id) {
+      this._conditions.push({ id: this._id });
+      delete this._id;
+    }
+    if (!(options &amp;&amp; options.skip_log)) {
+      this._connection.log(this._name, 'delete', { conditions: this._conditions });
+    }
+    await this._doArchiveAndIntegrity(options);
+    return await this._adapter.delete(this._name, this._conditions);
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__endif"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__endif_body"><h3 class="panel-title">Query::endif()<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Ends last if</p>
+</div></div><div class="panel-collapse collapse" id="Query__endif_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L343">/src/query.ts:343</a>)</span></div><pre class="sourcecode prettyprint .linenums:343">public endif() {
+    this._ifs.pop();
+    this._current_if = true;
+    for (const condition of this._ifs) {
+      this._current_if = this._current_if &amp;&amp; condition;
+    }
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__exec"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__exec_body"><h3 class="panel-title">Query::exec()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query</p>
+</div></div><div class="panel-collapse collapse" id="Query__exec_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li></li><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L384">/src/query.ts:384</a>)</span></div><pre class="sourcecode prettyprint .linenums:384">public async exec(options?: any) {
+    await this._model._checkReady();
+    if (this._options.cache &amp;&amp; this._options.cache.key) {
+      try {
+        // try cache
+        return await this._model._loadFromCache(this._options.cache.key, this._options.cache.refresh);
+      } catch (error) {
+        // no cache, execute query
+        const records = await this._execAndInclude(options);
+        // save result to cache
+        await this._model._saveToCache(this._options.cache.key, this._options.cache.ttl, records);
+        return records;
+      }
+    } else {
+      return await this._execAndInclude(options);
+    }
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__explain"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__explain_body"><h3 class="panel-title">Query::explain()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Explains the query</p>
+</div></div><div class="panel-collapse collapse" id="Query__explain_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L425">/src/query.ts:425</a>)</span></div><pre class="sourcecode prettyprint .linenums:425">public async explain() {
+    this._options.cache = undefined;
+    this._options.explain = true;
+    this._includes = [];
+    return await this.exec({ skip_log: true });
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__find"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__find_body"><h3 class="panel-title">Query::find()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Finds a record by id</p>
+</div></div><div class="panel-collapse collapse" id="Query__find_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L139">/src/query.ts:139</a>)</span></div><pre class="sourcecode prettyprint .linenums:139">public find(id: RecordID): IQuerySingle&lt;M, T&gt;;</pre></div></div></div></section><span class="fix-anchor" id="Query__findPreserve"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__findPreserve_body"><h3 class="panel-title">Query::findPreserve()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Finds records by ids while preserving order.</p>
+</div></div><div class="panel-collapse collapse" id="Query__findPreserve_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L158">/src/query.ts:158</a>)</span></div><pre class="sourcecode prettyprint .linenums:158">public findPreserve(ids: RecordID[]): IQueryArray&lt;M, T&gt; {
+    if (!this._current_if) {
+      return this;
+    }
+    this._id = _.uniq(ids);
+    this._find_single_id = false;
+    this._preserve_order_ids = ids;
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__group"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__group_body"><h3 class="panel-title">Query::group()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Groups result records</p>
+</div></div><div class="panel-collapse collapse" id="Query__group_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L260">/src/query.ts:260</a>)</span></div><pre class="sourcecode prettyprint .linenums:260">public group&lt;U&gt;(group_by: string | string[] | null, fields?: object): IQuerySingle&lt;M, U&gt;;</pre></div></div></div></section><span class="fix-anchor" id="Query__if"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__if_body"><h3 class="panel-title">Query::if()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Makes a part of the query chain conditional</p>
+</div></div><div class="panel-collapse collapse" id="Query__if_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L332">/src/query.ts:332</a>)</span></div><pre class="sourcecode prettyprint .linenums:332">public if(condition: boolean): this {
+    this._ifs.push(condition);
+    this._current_if = this._current_if &amp;&amp; condition;
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__include"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__include_body"><h3 class="panel-title">Query::include()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Returns associated objects also</p>
+</div></div><div class="panel-collapse collapse" id="Query__include_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L371">/src/query.ts:371</a>)</span></div><pre class="sourcecode prettyprint .linenums:371">public include(column: any, select: any): this {
+    if (!this._current_if) {
+      return this;
+    }
+    this._includes.push({ column, select });
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__lean"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__lean_body"><h3 class="panel-title">Query::lean()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Returns raw instances instead of model instances</p>
+</div></div><div class="panel-collapse collapse" id="Query__lean_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L320">/src/query.ts:320</a>)</span></div><pre class="sourcecode prettyprint .linenums:320">public lean(lean = true): this {
+    if (!this._current_if) {
+      return this;
+    }
+    this._options.lean = lean;
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__limit"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__limit_body"><h3 class="panel-title">Query::limit()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Sets limit of query</p>
+</div></div><div class="panel-collapse collapse" id="Query__limit_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L297">/src/query.ts:297</a>)</span></div><pre class="sourcecode prettyprint .linenums:297">public limit(limit: number): this {
+    if (!this._current_if) {
+      return this;
+    }
+    this._options.limit = limit;
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__near"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__near_body"><h3 class="panel-title">Query::near()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Finds records near target</p>
+</div></div><div class="panel-collapse collapse" id="Query__near_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L171">/src/query.ts:171</a>)</span></div><pre class="sourcecode prettyprint .linenums:171">public near(target: object): this {
+    if (!this._current_if) {
+      return this;
+    }
+    this._options.near = target;
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__one"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__one_body"><h3 class="panel-title">Query::one()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Returns only one record (or null if does not exists).</p>
 </div></div><div class="panel-collapse collapse" id="Query__one_body"><div class="panel-body"><div><p>This is different from limit(1). limit(1) returns array of length 1 while this returns an instance.</p>
-</div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L156">/src/query.coffee:156</a>)</span></div><pre class="sourcecode prettyprint .linenums:156">one: -&gt;
-  if not @_current_if
-    return @
-  @_options.limit = 1
-  @_options.one = true
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__order"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__order_body"><h3 class="panel-title">Query::order(orders)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Specifies orders of result</p>
-</div></div><div class="panel-collapse collapse" id="Query__order_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>orders</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L119">/src/query.coffee:119</a>)</span></div><pre class="sourcecode prettyprint .linenums:119">order: (orders) -&gt;
-  if not @_current_if
-    return @
-  if typeof orders is 'string'
-    avaliable_columns = ['id']
-    [].push.apply avaliable_columns, Object.keys @_model._schema
-    [].push.apply avaliable_columns, Object.keys @_options.group_fields if @_options.group_fields
-    orders.split(/\s+/).forEach (order) =&gt;
-      asc = true
-      if order[0] is '-'
-        asc = false
-        order = order[1..]
-      if avaliable_columns.indexOf(order) &gt;= 0
-        @_options.orders.push if asc then order else '-'+order
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__select"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__select_body"><h3 class="panel-title">Query::select(columns)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Selects columns for result</p>
-</div></div><div class="panel-collapse collapse" id="Query__select_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>columns</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String'>String</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L91">/src/query.coffee:91</a>)</span></div><pre class="sourcecode prettyprint .linenums:91">select: (columns) -&gt;
-  if not @_current_if
-    return @
-  @_options.select = null
-  @_options.select_raw = null
-  if typeof columns is 'string'
-    schema_columns = Object.keys @_model._schema
-    intermediate_paths = @_model._intermediate_paths
-    select = []
-    select_raw = []
-    columns.split(/\s+/).forEach (column) -&gt;
-      if schema_columns.indexOf(column) &gt;= 0
-        select.push column
-        select_raw.push column
-      else if intermediate_paths[column]
-        # select all nested columns
-        select_raw.push column
-        column += '.'
-        schema_columns.forEach (sc) -&gt;
-          select.push sc if sc.indexOf(column) is 0
-    @_options.select = select
-    @_options.select_raw = select_raw
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__skip"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__skip_body"><h3 class="panel-title">Query::skip(skip)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Sets skip of query</p>
-</div></div><div class="panel-collapse collapse" id="Query__skip_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>skip</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L177">/src/query.coffee:177</a>)</span></div><pre class="sourcecode prettyprint .linenums:177">skip: (skip) -&gt;
-  if not @_current_if
-    return @
-  @_options.skip = skip
-  return @</pre></div></div></div></section><span class="fix-anchor" id="Query__stream"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__stream_body"><h3 class="panel-title">Query::stream([options])<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query and returns a readable stream</p>
-</div></div><div class="panel-collapse collapse" id="Query__stream_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>options</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth1"></span><code>skip_log=false</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Boolean'>Boolean</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='https://nodejs.org/api/stream.html#stream_class_stream_readable'>Readable</a></span></td><td><span></span></td></tr></table><h4>See Also:</h4><ul><li><a href='../classes/adapter.AdapterBase.html#adapter_AdapterBase__findById'>AdapterBase::findById</a></li><li><a href='../classes/adapter.AdapterBase.html#adapter_AdapterBase__find'>AdapterBase::find</a></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L328">/src/query.coffee:328</a>)</span></div><pre class="sourcecode prettyprint .linenums:328">stream: -&gt;
-  transformer = new stream.Transform objectMode: true
-  transformer._transform = (chunk, encoding, callback) -&gt;
-    @push chunk
-    callback()
-  @_model._checkReady().then =&gt;
-    @_adapter.stream(@_name, @_conditions, @_options)
-    .on 'error', (error) -&gt;
-      transformer.emit 'error', error
-    .pipe transformer
-  transformer</pre></div></div></div></section><span class="fix-anchor" id="Query__then"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__then_body"><h3 class="panel-title">Query::then(fulfilled, rejected)<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query as a promise (.then == .exec().then)</p>
-</div></div><div class="panel-collapse collapse" id="Query__then_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>fulfilled</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function'>Function</a>()</span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>rejected</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function'>Function</a>()</span></td><td><span> </span></td></tr></table><h4>Returns<small><span> as</span><span class="label label-info">Promise</span></small></h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L356">/src/query.coffee:356</a>)</span></div><pre class="sourcecode prettyprint .linenums:356">then: (fulfilled, rejected) -&gt;
-  @exec().then fulfilled, rejected</pre></div></div></div></section><span class="fix-anchor" id="Query__update"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__update_body"><h3 class="panel-title">Query::update(updates, [callback])<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query as a update operation</p>
-</div></div><div class="panel-collapse collapse" id="Query__update_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>updates</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>callback</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function'>Function</a>(error, result)</span></td><td><span> NodeJS style's callback</span></td></tr><tr><td><span class="method-depth1"></span><code>error</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error'>Error</a></span></td><td><span> See throws</span></td></tr><tr><td><span class="method-depth1"></span><code>result</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span> See returns</span></td></tr></table><h4>Returns<small><span> as</span><span class="label label-info">Promise</span><span class="label label-info">NodeJS callback</span></small></h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span></span></td></tr></table><h4>See Also:</h4><ul><li><a href='../classes/adapter.AdapterBase.html#adapter_AdapterBase__count'>AdapterBase::count</a></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L403">/src/query.coffee:403</a>)</span></div><pre class="sourcecode prettyprint .linenums:403">update: (updates, callback) -&gt;
-  @_model._checkReady().then =&gt;
-    errors = []
-    data = {}
-    @_validateAndBuildSaveData errors, data, updates, '', updates
-    if errors.length &gt; 0
-      return Promise.reject new Error errors.join ','
-
-    if @_id or @_find_single_id
-      @_conditions.push id: @_id
-      delete @_id
-    @_connection.log @_name, 'update', data: data, conditions: @_conditions, options: @_options
-    @_adapter.updatePartialAsync @_name, data, @_conditions, @_options
-  .nodeify bindDomain callback</pre></div></div></div></section><span class="fix-anchor" id="Query__upsert"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__upsert_body"><h3 class="panel-title">Query::upsert(updates, [callback])<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query as an insert or update operation</p>
-</div></div><div class="panel-collapse collapse" id="Query__upsert_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>updates</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr><tr><td><span class="method-depth0"></span><code>callback</code><span class="pull-right label label-optional">optional</span></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function'>Function</a>(error, result)</span></td><td><span> NodeJS style's callback</span></td></tr><tr><td><span class="method-depth1"></span><code>error</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error'>Error</a></span></td><td><span> See throws</span></td></tr><tr><td><span class="method-depth1"></span><code>result</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span> See returns</span></td></tr></table><h4>Returns<small><span> as</span><span class="label label-info">Promise</span><span class="label label-info">NodeJS callback</span></small></h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number'>Number</a></span></td><td><span></span></td></tr></table><h4>See Also:</h4><ul><li><a href='../classes/adapter.AdapterBase.html#adapter_AdapterBase__count'>AdapterBase::count</a></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L425">/src/query.coffee:425</a>)</span></div><pre class="sourcecode prettyprint .linenums:425">upsert: (updates, callback) -&gt;
-  @_model._checkReady().then =&gt;
-    errors = []
-    data = {}
-    @_validateAndBuildSaveData errors, data, updates, '', updates
-    if errors.length &gt; 0
-      return Promise.reject new Error errors.join ','
-
-    if @_id or @_find_single_id
-      @_conditions.push id: @_id
-      delete @_id
-    @_connection.log @_name, 'upsert', data: data, conditions: @_conditions, options: @_options
-    @_adapter.upsertAsync @_name, data, @_conditions, @_options
-  .nodeify bindDomain callback</pre></div></div></div></section><span class="fix-anchor" id="Query__where"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__where_body"><h3 class="panel-title">Query::where(condition)<span class="label label-chainable">chainable</span><span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Finds records by condition</p>
-</div></div><div class="panel-collapse collapse" id="Query__where_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td><span class="method-depth0"></span><code>condition</code></td><td><span><a href='https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object'>Object</a></span></td><td><span> </span></td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><th>Name</th><th>Type</th><th>Description</th></tr><tr><td>(Returns)</td><td><span><a href='../classes/Query.html#Query'>Query</a></span></td><td><span>this</span></td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.coffee#L77">/src/query.coffee:77</a>)</span></div><pre class="sourcecode prettyprint .linenums:77">where: (condition) -&gt;
-  if not @_current_if
-    return @
-  if Array.isArray condition
-    condition.forEach (cond) =&gt;
-      @_addCondition cond
-  else if condition?
-    @_addCondition condition
-  return @</pre></div></div></div></section></div></div></div><script src="http://code.jquery.com/jquery-1.11.0.min.js"></script><script src="../bootstrap-3.2.0-dist/js/bootstrap.min.js"></script><script src="../google-code-prettify/prettify.js"></script><script src="../script.js"></script><script src="../group-examples.js"></script><a href="https://github.com/croquiscom/cormo"><img class="github-ribbon" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a></body></html>
+</div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L285">/src/query.ts:285</a>)</span></div><pre class="sourcecode prettyprint .linenums:285">public one(): this {
+    if (!this._current_if) {
+      return this;
+    }
+    this._options.limit = 1;
+    this._options.one = true;
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__order"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__order_body"><h3 class="panel-title">Query::order()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Specifies orders of result</p>
+</div></div><div class="panel-collapse collapse" id="Query__order_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L233">/src/query.ts:233</a>)</span></div><pre class="sourcecode prettyprint .linenums:233">public order(orders: string): this {
+    if (!this._current_if) {
+      return this;
+    }
+    if (typeof orders === 'string') {
+      const avaliable_columns = ['id'];
+      avaliable_columns.push(...Object.keys(this._model._schema));
+      if (this._options.group_fields) {
+        avaliable_columns.push(...Object.keys(this._options.group_fields));
+      }
+      orders.split(/\s+/).forEach((order) =&gt; {
+        let asc = true;
+        if (order[0] === '-') {
+          asc = false;
+          order = order.slice(1);
+        }
+        if (avaliable_columns.indexOf(order) &gt;= 0) {
+          this._options.orders.push(asc ? order : '-' + order);
+        }
+      });
+    }
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__select"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__select_body"><h3 class="panel-title">Query::select()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Selects columns for result</p>
+</div></div><div class="panel-collapse collapse" id="Query__select_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L199">/src/query.ts:199</a>)</span></div><pre class="sourcecode prettyprint .linenums:199">public select&lt;K extends ModelColumnNamesWithId&lt;M&gt;&gt;(columns?: string | string[]): IQuerySingle&lt;M, Pick&lt;M, K&gt;&gt;;</pre></div></div></div></section><span class="fix-anchor" id="Query__skip"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__skip_body"><h3 class="panel-title">Query::skip()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Sets skip of query</p>
+</div></div><div class="panel-collapse collapse" id="Query__skip_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L308">/src/query.ts:308</a>)</span></div><pre class="sourcecode prettyprint .linenums:308">public skip(skip: number): this {
+    if (!this._current_if) {
+      return this;
+    }
+    this._options.skip = skip;
+    return this;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__stream"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__stream_body"><h3 class="panel-title">Query::stream()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query and returns a readable stream</p>
+</div></div><div class="panel-collapse collapse" id="Query__stream_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li></li><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L407">/src/query.ts:407</a>)</span></div><pre class="sourcecode prettyprint .linenums:407">public stream(): stream.Readable {
+    const transformer = new stream.Transform({ objectMode: true });
+    transformer._transform = function(chunk, encoding, callback) {
+      this.push(chunk);
+      callback();
+    };
+    this._model._checkReady().then(() =&gt; {
+      this._adapter.stream(this._name, this._conditions, this._options)
+        .on('error', (error) =&gt; {
+          transformer.emit('error', error);
+        }).pipe(transformer);
+    });
+    return transformer;
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__then"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__then_body"><h3 class="panel-title">Query::then()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query as a promise (.then == .exec().then)</p>
+</div></div><div class="panel-collapse collapse" id="Query__then_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L435">/src/query.ts:435</a>)</span></div><pre class="sourcecode prettyprint .linenums:435">public then&lt;TResult1 = T, TResult2 = never&gt;(
+    onfulfilled?: ((value: T) =&gt; TResult1 | PromiseLike&lt;TResult1&gt;) |
+      ((value: T[]) =&gt; TResult1 | PromiseLike&lt;TResult1&gt;) | undefined | null,
+    onrejected?: ((reason: any) =&gt; TResult2 | PromiseLike&lt;TResult2&gt;) | undefined | null,
+  ): PromiseLike&lt;TResult1 | TResult2&gt;;</pre></div></div></div></section><span class="fix-anchor" id="Query__update"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__update_body"><h3 class="panel-title">Query::update()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query as a update operation</p>
+</div></div><div class="panel-collapse collapse" id="Query__update_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L464">/src/query.ts:464</a>)</span></div><pre class="sourcecode prettyprint .linenums:464">public async update(updates: any): Promise&lt;number&gt; {
+    await this._model._checkReady();
+    const errors: any[] = [];
+    const data = {};
+    this._validateAndBuildSaveData(errors, data, updates, '', updates);
+    if (errors.length &gt; 0) {
+      throw new Error(errors.join(','));
+    }
+    if (this._id || this._find_single_id) {
+      this._conditions.push({ id: this._id });
+      delete this._id;
+    }
+    this._connection.log(this._name, 'update', { data, conditions: this._conditions, options: this._options });
+    return await this._adapter.updatePartial(this._name, data, this._conditions, this._options);
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__upsert"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__upsert_body"><h3 class="panel-title">Query::upsert()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Executes the query as an insert or update operation</p>
+</div></div><div class="panel-collapse collapse" id="Query__upsert_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><h4>See Also:</h4><ul><li></li></ul><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L484">/src/query.ts:484</a>)</span></div><pre class="sourcecode prettyprint .linenums:484">public async upsert(updates: any): Promise&lt;void&gt; {
+    await this._model._checkReady();
+    const errors: any[] = [];
+    const data = {};
+    this._validateAndBuildSaveData(errors, data, updates, '', updates);
+    if (errors.length &gt; 0) {
+      throw new Error(errors.join(','));
+    }
+    if (this._id || this._find_single_id) {
+      this._conditions.push({ id: this._id });
+      delete this._id;
+    }
+    this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options: this._options });
+    return await this._adapter.upsert(this._name, data, this._conditions, this._options);
+  }</pre></div></div></div></section><span class="fix-anchor" id="Query__where"></span><section><div class="panel panel-success"><div class="panel-heading collapsed" data-toggle="collapse" data-target="#Query__where_body"><h3 class="panel-title">Query::where()<span class="pull-right glyphicon"></span></h3><div class="method-summary"><p>Finds records by condition</p>
+</div></div><div class="panel-collapse collapse" id="Query__where_body"><div class="panel-body"><div></div><h4>Parameters</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(None)</td></tr></table><h4>Returns</h4><table class="table table-bordered table-condensed table-hover"><tr><td>(Nothing)</td></tr></table><div class="showcode"><button class="btn btn-info">Show code</button><span> (defined in <a href="https://github.com/croquiscom/cormo/blob/master//src/query.ts#L182">/src/query.ts:182</a>)</span></div><pre class="sourcecode prettyprint .linenums:182">public where(condition?: object): this {
+    if (!this._current_if) {
+      return this;
+    }
+    if (Array.isArray(condition)) {
+      condition.forEach((cond) =&gt; {
+        this._addCondition(cond);
+      });
+    } else if (condition != null) {
+      this._addCondition(condition);
+    }
+    return this;
+  }</pre></div></div></div></section></div></div></div><script src="http://code.jquery.com/jquery-1.11.0.min.js"></script><script src="../bootstrap-3.2.0-dist/js/bootstrap.min.js"></script><script src="../google-code-prettify/prettify.js"></script><script src="../script.js"></script><script src="../group-examples.js"></script><a href="https://github.com/croquiscom/cormo"><img class="github-ribbon" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a></body></html>

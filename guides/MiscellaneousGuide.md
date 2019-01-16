@@ -1,4 +1,4 @@
-Use [[#ModelTimestamp.timestamps]] to add created\_at and updated\_at to the table.
+Use [[#BaseModel.timestamps]] to add created\_at and updated\_at to the table.
 
 ```coffeescript
 User.timestamps()

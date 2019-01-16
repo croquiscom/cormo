@@ -1,8 +1,8 @@
-To query, create a query object using [[#ModelQuery.query]] first.
+To query, create a query object using [[#BaseModel.query]] first.
 Then build up a query by chaining methods,
 and run a query by [[#Query::exec]], [[#Query::count]], [[#Query::update]], or [[#Query::delete]].
 
-Also, [[#ModelQuery]] class has some methods that borrowed from [[#Query]] to run simple queries easily.
+Also, [[#BaseModel]] class has some methods that borrowed from [[#Query]] to run simple queries easily.
 
 ```coffeescript
 User.query().where(age: 27).exec (error, users) ->
@@ -322,9 +322,9 @@ User.where({age: 27}).stream()
 
 # Update records
 
-To update records, [[#ModelPersistence::save]] and [[#Query::update]] are provided.
+To update records, [[#BaseModel::save]] and [[#Query::update]] are provided.
 
-[[#ModelPersistence::save]] is used to update a single retrieved record.
+[[#BaseModel::save]] is used to update a single retrieved record.
 
 ```coffeescript
 User.find 1, (error, user) ->
@@ -339,7 +339,7 @@ User.find(1, function (error, user) {
 });
 ```
 
-But [[#ModelPersistence::save]] has some weaknesses.
+But [[#BaseModel::save]] has some weaknesses.
 
 * You must retrieve a record before modification.
     * In normal application, retrieved data may not be used usually.
@@ -378,7 +378,7 @@ But [[#ModelPersistence::save]] has some weaknesses.
 
 But you cannot use other column's value as data like SQL does on [[#Query::update]].
 If you want this, you must retrieve the record first.
-But [[#Query::update]] may be more efficient than [[#ModelPersistence::save]] even if in that case.
+But [[#Query::update]] may be more efficient than [[#BaseModel::save]] even if in that case.
 
 ```coffeescript
 User.find 1, (error, user) ->
