@@ -12,6 +12,7 @@ import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
 import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
+import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logger';
 import { BaseModel, IColumnProperty, IModelSchema } from '../model';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
@@ -33,6 +34,7 @@ interface IConnectionSettings {
     port?: number,
     database?: number,
   };
+  logger?: 'console' | 'color-console' | ILogger;
 }
 
 type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
@@ -92,6 +94,9 @@ class Connection extends EventEmitter {
    */
   public models: { [name: string]: typeof BaseModel };
 
+  /** @internal */
+  public _logger!: ILogger;
+
   private _promise_schema_applied?: Promise<void>;
 
   private _pending_associations: IAssociation[];
@@ -136,6 +141,24 @@ class Connection extends EventEmitter {
     Object.defineProperty(this, 'adapter', {
       get() { return this._adapter; },
     });
+    this.setLogger(settings.logger);
+  }
+
+  /**
+   * Set logger
+   */
+  public setLogger(logger?: 'console' | 'color-console' | ILogger) {
+    if (logger) {
+      if (logger === 'console') {
+        this._logger = new ConsoleLogger();
+      } else if (logger === 'color-console') {
+        this._logger = new ColorConsoleLogger();
+      } else {
+        this._logger = logger;
+      }
+    } else {
+      this._logger = new EmptyLogger();
+    }
   }
 
   /**

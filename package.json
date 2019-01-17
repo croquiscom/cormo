@@ -32,6 +32,7 @@
   "main": "./lib",
   "types": "./lib/index.d.ts",
   "dependencies": {
+    "chalk": "^2.4.2",
     "commander": "^2.19.0",
     "inflected": "^2.0.4",
     "lodash": "^4.17.11",

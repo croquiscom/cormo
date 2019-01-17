@@ -46,7 +46,7 @@ declare class MySQLAdapter extends SQLAdapterBase {
     /**
      * Exposes mysql module's query method
      */
-    query(): any;
+    query(text: string, values?: any[]): Promise<any>;
     protected valueToModel(value: any, property: any): any;
     protected _getModelID(data: any): number | null;
     private _getTables;

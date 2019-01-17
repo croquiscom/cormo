@@ -10,6 +10,8 @@ const connection = new cormo.Connection('mysql', {
   user: 'cormo_test',
 });
 
+connection.setLogger('color-console');
+
 class Name {
   @cormo.Column({ type: String, required: true })
   public first!: string;

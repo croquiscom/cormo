@@ -218,7 +218,7 @@ class MySQLAdapter extends SQLAdapterBase {
     const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
     let result;
     try {
-      result = (await this._client.queryAsync(sql, values));
+      result = await this.query(sql, values);
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -243,7 +243,7 @@ class MySQLAdapter extends SQLAdapterBase {
     const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES ${places.join(',')}`;
     let result;
     try {
-      result = (await this._client.queryAsync(sql, values));
+      result = await this.query(sql, values);
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -262,7 +262,7 @@ class MySQLAdapter extends SQLAdapterBase {
     values.push(data.id);
     const sql = `UPDATE \`${table_name}\` SET ${fields} WHERE id=?`;
     try {
-      await this._client.queryAsync(sql, values);
+      await this.query(sql, values);
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -282,7 +282,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = (await this._client.queryAsync(sql, values));
+      result = await this.query(sql, values);
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -319,7 +319,7 @@ class MySQLAdapter extends SQLAdapterBase {
     [fields] = this._buildPartialUpdateSet(model, data, values);
     sql += ` ON DUPLICATE KEY UPDATE ${fields}`;
     try {
-      await this._client.queryAsync(sql, values);
+      await this.query(sql, values);
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -331,11 +331,11 @@ class MySQLAdapter extends SQLAdapterBase {
     const table_name = this._connection.models[model].table_name;
     const sql = `SELECT ${select} FROM \`${table_name}\` WHERE id=? LIMIT 1`;
     if (options.explain) {
-      return await this._client.queryAsync(`EXPLAIN ${sql}`, id);
+      return await this.query(`EXPLAIN ${sql}`, id);
     }
     let result;
     try {
-      result = await this._client.queryAsync(sql, id);
+      result = await this.query(sql, id);
     } catch (error) {
       throw MySQLAdapter.wrapError('unknown error', error);
     }
@@ -351,11 +351,11 @@ class MySQLAdapter extends SQLAdapterBase {
   public async find(model: any, conditions: any, options: any): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
-      return await this._client.queryAsync(`EXPLAIN ${sql}`, params);
+      return await this.query(`EXPLAIN ${sql}`, params);
     }
     let result;
     try {
-      result = await this._client.queryAsync(sql, params);
+      result = await this.query(sql, params);
     } catch (error) {
       throw MySQLAdapter.wrapError('unknown error', error);
     }
@@ -385,6 +385,7 @@ class MySQLAdapter extends SQLAdapterBase {
       transformer.push(this._convertToModelInstance(model, record, options));
       callback();
     };
+    this._connection._logger.logQuery(sql, params);
     this._client.query(sql, params).stream().on('error', (error: any) => {
       return transformer.emit('error', error);
     }).pipe(transformer);
@@ -407,7 +408,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = await this._client.queryAsync(sql, params);
+      result = await this.query(sql, params);
     } catch (error) {
       throw MySQLAdapter.wrapError('unknown error', error);
     }
@@ -426,7 +427,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = await this._client.queryAsync(sql, params);
+      result = await this.query(sql, params);
     } catch (error) {
       if (error && (error.code === 'ER_ROW_IS_REFERENCED_' || error.code === 'ER_ROW_IS_REFERENCED_2')) {
         throw new Error('rejected');
@@ -494,8 +495,9 @@ class MySQLAdapter extends SQLAdapterBase {
   /**
    * Exposes mysql module's query method
    */
-  public query() {
-    return this._client.queryAsync.apply(this._client, arguments);
+  public async query(text: string, values?: any[]) {
+    this._connection._logger.logQuery(text, values);
+    return await this._client.queryAsync(text, values);
   }
 
   protected valueToModel(value: any, property: any) {
@@ -631,7 +633,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return [fields.join(','), places.join(',')];
   }
 
-  private _buildSqlForFind(model: any, conditions: any, options: any) {
+  private _buildSqlForFind(model: any, conditions: any, options: any): [string, any[]] {
     let select;
     if (options.group_by || options.group_fields) {
       select = this._buildGroupFields(options.group_by, options.group_fields);

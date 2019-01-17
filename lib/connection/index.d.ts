@@ -5,6 +5,7 @@ import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
 import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
+import { ILogger } from '../logger';
 import { BaseModel, IModelSchema } from '../model';
 declare type ManipulateCommand = string | {
     [key: string]: any;
@@ -17,6 +18,7 @@ interface IConnectionSettings {
         port?: number;
         database?: number;
     };
+    logger?: 'console' | 'color-console' | ILogger;
 }
 declare type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
 export interface IAssociationHasManyOptions {
@@ -85,6 +87,10 @@ declare class Connection extends EventEmitter {
     constructor(adapter: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
     constructor(adapter: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
     constructor(adapter: 'sqlite3_memory' | ((connection: any) => AdapterBase), settings: IConnectionSettings);
+    /**
+     * Set logger
+     */
+    setLogger(logger?: 'console' | 'color-console' | ILogger): void;
     /**
      * Closes this connection.
      * A closed connection can be used no more.
