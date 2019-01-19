@@ -14,9 +14,9 @@ import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logger';
 import { BaseModel, IColumnProperty, IModelSchema } from '../model';
+import { Transaction } from '../transaction';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
-import { Transaction } from '../transaction';
 
 try {
   // tslint:disable-next-line:no-var-requires
@@ -518,8 +518,10 @@ class Connection extends EventEmitter {
     }
   }
 
-  public async transaction(): Promise<Transaction> {
-    return new Transaction(this);
+  public async getTransaction(): Promise<Transaction> {
+    const transaction = new Transaction(this);
+    await transaction.setup();
+    return transaction;
   }
 
   public async _checkSchemaApplied() {

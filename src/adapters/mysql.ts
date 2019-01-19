@@ -219,7 +219,7 @@ class MySQLAdapter extends SQLAdapterBase {
     const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
     let result;
     try {
-      result = await this.query(sql, values);
+      result = await this.query(sql, values, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -484,6 +484,7 @@ class MySQLAdapter extends SQLAdapterBase {
       user: settings.user,
     });
     this._client.queryAsync = util.promisify(this._client.query);
+    this._client.getConnectionAsync = util.promisify(this._client.getConnection);
   }
 
   public close() {
@@ -493,12 +494,41 @@ class MySQLAdapter extends SQLAdapterBase {
     this._client = null;
   }
 
+  public async getConnection(): Promise<any> {
+    const adapter_connection = await this._client.getConnectionAsync();
+    adapter_connection.queryAsync = util.promisify(adapter_connection.query);
+    adapter_connection.beginTransactionAsync = util.promisify(adapter_connection.beginTransaction);
+    adapter_connection.commitAsync = util.promisify(adapter_connection.commit);
+    adapter_connection.rollbackAsync = util.promisify(adapter_connection.rollback);
+    return adapter_connection;
+  }
+
+  public async releaseConnection(adapter_connection: any): Promise<void> {
+    adapter_connection.release();
+  }
+
+  public async startTransaction(adapter_connection: any): Promise<void> {
+    await adapter_connection.beginTransactionAsync();
+  }
+
+  public async commitTransaction(adapter_connection: any): Promise<void> {
+    await adapter_connection.commitAsync();
+  }
+
+  public async rollbackTransaction(adapter_connection: any): Promise<void> {
+    await adapter_connection.rollbackAsync();
+  }
+
   /**
    * Exposes mysql module's query method
    */
-  public async query(text: string, values?: any[]) {
+  public async query(text: string, values?: any[], adapter_connection?: any) {
     this._connection._logger.logQuery(text, values);
-    return await this._client.queryAsync(text, values);
+    if (adapter_connection) {
+      return await adapter_connection.queryAsync(text, values);
+    } else {
+      return await this._client.queryAsync(text, values);
+    }
   }
 
   protected valueToModel(value: any, property: any) {

@@ -123,6 +123,11 @@ declare abstract class AdapterBase {
      * Closes connection
      */
     abstract close(): void;
+    getConnection(): Promise<any>;
+    releaseConnection(adapter_connection: any): Promise<void>;
+    startTransaction(adapter_connection: any): Promise<void>;
+    commitTransaction(adapter_connection: any): Promise<void>;
+    rollbackTransaction(adapter_connection: any): Promise<void>;
     protected _getModelID(data: any): any;
     protected valueToModel(value: any, property: any): any;
     protected _convertToModelInstance(model: any, data: any, options: any): any;

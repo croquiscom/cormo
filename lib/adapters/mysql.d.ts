@@ -48,10 +48,15 @@ declare class MySQLAdapter extends SQLAdapterBase {
      */
     connect(settings: IAdapterSettingsMySQL): Promise<void>;
     close(): void;
+    getConnection(): Promise<any>;
+    releaseConnection(adapter_connection: any): Promise<void>;
+    startTransaction(adapter_connection: any): Promise<void>;
+    commitTransaction(adapter_connection: any): Promise<void>;
+    rollbackTransaction(adapter_connection: any): Promise<void>;
     /**
      * Exposes mysql module's query method
      */
-    query(text: string, values?: any[]): Promise<any>;
+    query(text: string, values?: any[], adapter_connection?: any): Promise<any>;
     protected valueToModel(value: any, property: any): any;
     protected _getModelID(data: any): number | null;
     private _getTables;

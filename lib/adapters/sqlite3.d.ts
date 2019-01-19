@@ -12,6 +12,7 @@ declare class SQLite3Adapter extends SQLAdapterBase {
     protected _regexp_op: null;
     protected _false_value: string;
     private _client;
+    private _settings;
     constructor(connection: any);
     getSchemas(): Promise<ISchemas>;
     createTable(model: string): Promise<void>;
@@ -36,6 +37,11 @@ declare class SQLite3Adapter extends SQLAdapterBase {
      */
     connect(settings: IAdapterSettingsSQLite3): Promise<void>;
     close(): void;
+    getConnection(): Promise<any>;
+    releaseConnection(adapter_connection: any): Promise<void>;
+    startTransaction(adapter_connection: any): Promise<void>;
+    commitTransaction(adapter_connection: any): Promise<void>;
+    rollbackTransaction(adapter_connection: any): Promise<void>;
     /**
      * Exposes sqlite3 module's run method
      */
@@ -46,6 +52,7 @@ declare class SQLite3Adapter extends SQLAdapterBase {
     all(): any;
     protected valueToModel(value: any, property: any): any;
     protected _getModelID(data: any): number | null;
+    private _getClient;
     private _getTables;
     private _getSchema;
     private _getIndexes;

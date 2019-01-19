@@ -219,7 +219,11 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     const sql = `INSERT INTO "${table_name}" (${fields}) VALUES (${places}) RETURNING id`;
     let result;
     try {
-      result = await this._pool.query(sql, values);
+      if (options.transaction) {
+        result = await options.transaction._adapter_connection.query(sql, values);
+      } else {
+        result = await this._pool.query(sql, values);
+      }
     } catch (error) {
       throw _processSaveError(table_name, error);
     }
@@ -441,6 +445,27 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   public close() {
     this._pool.end();
     this._pool = null;
+  }
+
+  public async getConnection(): Promise<any> {
+    const adapter_connection = await this._pool.connect();
+    return adapter_connection;
+  }
+
+  public async releaseConnection(adapter_connection: any): Promise<void> {
+    adapter_connection.release();
+  }
+
+  public async startTransaction(adapter_connection: any): Promise<void> {
+    await adapter_connection.query('START TRANSACTION');
+  }
+
+  public async commitTransaction(adapter_connection: any): Promise<void> {
+    await adapter_connection.query('COMMIT');
+  }
+
+  public async rollbackTransaction(adapter_connection: any): Promise<void> {
+    await adapter_connection.query('ROLLBACK');
   }
 
   /**
