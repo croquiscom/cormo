@@ -34,7 +34,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       }
     }
     try {
-      return await this.create(model, insert_data);
+      return await this.create(model, insert_data, {});
     } catch (error) {
       if (!/duplicated/.test(error.message)) {
         throw error;

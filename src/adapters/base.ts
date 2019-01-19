@@ -1,5 +1,6 @@
 import * as stream from 'stream';
 import { Connection } from '../connection';
+import { Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
 
@@ -131,12 +132,15 @@ abstract class AdapterBase {
   /**
    * Creates a record
    */
-  public abstract async create(model: string, data: object): Promise<any>;
+  public abstract async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any>;
 
   /**
    * Creates records
    */
-  public abstract async createBulk(model: string, data: object[]): Promise<any[]>;
+  public abstract async createBulk(
+    model: string, data: any[],
+    options: { transaction?: Transaction },
+  ): Promise<any[]>;
 
   /**
    * Updates a record
@@ -240,9 +244,9 @@ abstract class AdapterBase {
     return instance;
   }
 
-  protected async _createBulkDefault(model: any, data: any) {
+  protected async _createBulkDefault(model: string, data: any[], options: { transaction?: Transaction }) {
     return await Promise.all(data.map((item: any) => {
-      return this.create(model, item);
+      return this.create(model, item, options);
     }));
   }
 }

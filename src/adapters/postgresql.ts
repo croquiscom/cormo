@@ -26,6 +26,7 @@ export interface IAdapterSettingsPostgreSQL {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import { IColumnPropertyInternal } from '../model';
+import { Transaction } from '../transaction';
 import * as types from '../types';
 import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
@@ -211,7 +212,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
-  public async create(model: string, data: object): Promise<any> {
+  public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields, places] = this._buildUpdateSet(model, data, values, true);
@@ -230,7 +231,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
-  public async createBulk(model: string, data: object[]): Promise<any[]> {
+  public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     let fields: any;

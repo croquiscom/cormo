@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import * as stream from 'stream';
 import { Connection } from '../connection';
+import { Transaction } from '../transaction';
 export interface ISchemas {
     tables: {
         [table_name: string]: any;
@@ -72,11 +73,15 @@ declare abstract class AdapterBase {
     /**
      * Creates a record
      */
-    abstract create(model: string, data: object): Promise<any>;
+    abstract create(model: string, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<any>;
     /**
      * Creates records
      */
-    abstract createBulk(model: string, data: object[]): Promise<any[]>;
+    abstract createBulk(model: string, data: any[], options: {
+        transaction?: Transaction;
+    }): Promise<any[]>;
     /**
      * Updates a record
      */
@@ -122,6 +127,8 @@ declare abstract class AdapterBase {
     protected valueToModel(value: any, property: any): any;
     protected _convertToModelInstance(model: any, data: any, options: any): any;
     protected _convertToGroupInstance(model: any, data: any, group_by: any, group_fields: any): any;
-    protected _createBulkDefault(model: any, data: any): Promise<[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}]>;
+    protected _createBulkDefault(model: string, data: any[], options: {
+        transaction?: Transaction;
+    }): Promise<any[]>;
 }
 export { AdapterBase };

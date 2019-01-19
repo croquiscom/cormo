@@ -9,6 +9,7 @@ export interface IAdapterSettingsMongoDB {
 declare class CormoTypesObjectId {
 }
 import * as stream from 'stream';
+import { Transaction } from '../transaction';
 import { AdapterBase, ISchemas } from './base';
 declare class MongoDBAdapter extends AdapterBase {
     key_type: any;
@@ -25,8 +26,12 @@ declare class MongoDBAdapter extends AdapterBase {
     drop(model: any): Promise<void>;
     idToDB(value: any): any;
     valueToDB(value: any, column: any, property: any): any;
-    create(model: any, data: any): Promise<any>;
-    createBulk(model: any, data: any): Promise<any>;
+    create(model: string, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<any>;
+    createBulk(model: string, data: any[], options: {
+        transaction?: Transaction;
+    }): Promise<any>;
     update(model: any, data: any): Promise<void>;
     updatePartial(model: any, data: any, conditions: any, options: any): Promise<any>;
     upsert(model: any, data: any, conditions: any, options: any): Promise<void>;

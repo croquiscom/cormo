@@ -16,6 +16,7 @@ import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logg
 import { BaseModel, IColumnProperty, IModelSchema } from '../model';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
+import { Transaction } from '../transaction';
 
 try {
   // tslint:disable-next-line:no-var-requires
@@ -515,6 +516,10 @@ class Connection extends EventEmitter {
     } else {
       throw new Error(`unknown column '${column}'`);
     }
+  }
+
+  public async transaction(): Promise<Transaction> {
+    return new Transaction(this);
   }
 
   public async _checkSchemaApplied() {

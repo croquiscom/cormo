@@ -17,6 +17,7 @@ export interface IAdapterSettingsRedis {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
+import { Transaction } from '../transaction';
 import * as types from '../types';
 import { tableize } from '../util/inflector';
 import { AdapterBase } from './base';
@@ -64,7 +65,7 @@ class RedisAdapter extends AdapterBase {
     }
   }
 
-  public async create(model: string, data: any): Promise<any> {
+  public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
     data.$_$ = ''; // ensure that there is one argument(one field) at least
     let id;
     try {
@@ -80,8 +81,8 @@ class RedisAdapter extends AdapterBase {
     return id;
   }
 
-  public async createBulk(model: string, data: any[]): Promise<any[]> {
-    return await this._createBulkDefault(model, data);
+  public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
+    return await this._createBulkDefault(model, data, options);
   }
 
   public async update(model: string, data: any) {

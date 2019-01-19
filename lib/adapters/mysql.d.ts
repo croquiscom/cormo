@@ -10,6 +10,7 @@ export interface IAdapterSettingsMySQL {
     pool_size?: number;
 }
 import * as stream from 'stream';
+import { Transaction } from '../transaction';
 import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 declare class MySQLAdapter extends SQLAdapterBase {
@@ -28,8 +29,12 @@ declare class MySQLAdapter extends SQLAdapterBase {
     createIndex(model: string, index: any): Promise<void>;
     createForeignKey(model: string, column: string, type: string, references: any): Promise<void>;
     drop(model: string): Promise<void>;
-    create(model: string, data: object): Promise<any>;
-    createBulk(model: string, data: object[]): Promise<any[]>;
+    create(model: string, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<any>;
+    createBulk(model: string, data: any[], options: {
+        transaction?: Transaction;
+    }): Promise<any[]>;
     update(model: string, data: any): Promise<void>;
     updatePartial(model: string, data: any, conditions: any, options: any): Promise<number>;
     upsert(model: string, data: any, conditions: any, options: any): Promise<void>;

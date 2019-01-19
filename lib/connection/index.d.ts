@@ -7,6 +7,7 @@ import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ILogger } from '../logger';
 import { BaseModel, IModelSchema } from '../model';
+import { Transaction } from '../transaction';
 declare type ManipulateCommand = string | {
     [key: string]: any;
 };
@@ -137,6 +138,7 @@ declare class Connection extends EventEmitter {
      * Fetches associated records
      */
     fetchAssociated(records: any, column: any, select?: any, options?: any): Promise<void>;
+    transaction(): Promise<Transaction>;
     _checkSchemaApplied(): Promise<void>;
     _connectRedisCache(): any;
     private _initializeModels;

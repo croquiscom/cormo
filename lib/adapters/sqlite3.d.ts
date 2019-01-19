@@ -3,6 +3,7 @@ export interface IAdapterSettingsSQLite3 {
     database: string;
 }
 import * as stream from 'stream';
+import { Transaction } from '../transaction';
 import { ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 declare class SQLite3Adapter extends SQLAdapterBase {
@@ -17,8 +18,12 @@ declare class SQLite3Adapter extends SQLAdapterBase {
     addColumn(model: string, column_property: any): Promise<void>;
     createIndex(model: string, index: any): Promise<void>;
     drop(model: string): Promise<void>;
-    create(model: string, data: object): Promise<any>;
-    createBulk(model: string, data: object[]): Promise<any[]>;
+    create(model: string, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<any>;
+    createBulk(model: string, data: any[], options: {
+        transaction?: Transaction;
+    }): Promise<any[]>;
     update(model: string, data: any): Promise<void>;
     updatePartial(model: string, data: any, conditions: any, options: any): Promise<number>;
     findById(model: any, id: any, options: any): Promise<any>;

@@ -25,6 +25,7 @@ class CormoTypesObjectId { }
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import { IColumnPropertyInternal, IModelSchemaInternal } from '../model';
+import { Transaction } from '../transaction';
 import * as types from '../types';
 import { AdapterBase, ISchemas } from './base';
 
@@ -328,7 +329,7 @@ class MongoDBAdapter extends AdapterBase {
     return value;
   }
 
-  public async create(model: any, data: any) {
+  public async create(model: string, data: any, options: { transaction?: Transaction }) {
     let result: any;
     try {
       result = await this._collection(model).insertOne(data, { safe: true });
@@ -344,7 +345,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
-  public async createBulk(model: any, data: any) {
+  public async createBulk(model: string, data: any[], options: { transaction?: Transaction }) {
     if (data.length > 1000) {
       const chunks = [];
       let i = 0;
@@ -354,7 +355,7 @@ class MongoDBAdapter extends AdapterBase {
       }
       const ids_all: any = [];
       for (const chunk of chunks) {
-        [].push.apply(ids_all, await this.createBulk(model, chunk));
+        [].push.apply(ids_all, await this.createBulk(model, chunk, options));
       }
       return ids_all;
     }
@@ -368,7 +369,7 @@ class MongoDBAdapter extends AdapterBase {
     const ids = result.ops.map((doc: any) => {
       const id = _objectIdToString(doc._id);
       if (id) {
-        delete data._id;
+        delete doc._id;
       } else {
         error = new Error('unexpected result');
       }

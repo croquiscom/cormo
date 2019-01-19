@@ -8,6 +8,7 @@ import {
   IAssociationHasOneOptions,
 } from '../connection';
 import { IQueryArray, IQuerySingle, Query } from '../query';
+import { Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
 import { tableize } from '../util/inflector';
@@ -506,7 +507,7 @@ class BaseModel {
   public static async create<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     data?: ModelValueObject<M>,
-    options?: { skip_log: boolean },
+    options?: { transaction?: Transaction, skip_log?: boolean },
   ): Promise<M> {
     await this._checkReady();
     return await this.build<M>(data).save(options);
@@ -518,6 +519,7 @@ class BaseModel {
   public static async createBulk<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     data?: Array<ModelValueObject<M>>,
+    options?: { transaction?: Transaction },
   ): Promise<M[]> {
     await this._checkReady();
     if (!Array.isArray(data)) {
@@ -538,7 +540,7 @@ class BaseModel {
       record._runCallbacks('create', 'before');
     }
     try {
-      return await this._createBulk(records);
+      return await this._createBulk(records, options);
     } finally {
       for (const record of records) {
         record._runCallbacks('create', 'after');
@@ -777,7 +779,7 @@ class BaseModel {
     return callbacks.push({ type, method });
   }
 
-  private static async _createBulk(records: any[]) {
+  private static async _createBulk(records: any[], options: { transaction?: Transaction } = {}) {
     let error;
     const data_array = records.map((record) => {
       try {
@@ -790,7 +792,7 @@ class BaseModel {
       throw error;
     }
     this._connection.log(this._name, 'createBulk', data_array);
-    const ids = await this._adapter.createBulk(this._name, data_array);
+    const ids = await this._adapter.createBulk(this._name, data_array, { transaction: options.transaction });
     records.forEach((record, i) => {
       Object.defineProperty(record, 'id', {
         configurable: false,
@@ -1044,7 +1046,7 @@ class BaseModel {
    * Saves data to the database
    */
   public async save(
-    options: { skip_log?: boolean, validate?: boolean } = {},
+    options: { transaction?: Transaction, skip_log?: boolean, validate?: boolean } = {},
   ): Promise<this> {
     const ctor = this.constructor as typeof BaseModel;
     await ctor._checkReady();
@@ -1156,13 +1158,13 @@ class BaseModel {
     return data;
   }
 
-  private async _create(options: any) {
+  private async _create(options: { transaction?: Transaction, skip_log?: boolean }) {
     const data = this._buildSaveData();
     const ctor = this.constructor as typeof BaseModel;
     if (!(options && options.skip_log)) {
       ctor._connection.log(ctor._name, 'create', data);
     }
-    const id = await ctor._adapter.create(ctor._name, data);
+    const id = await ctor._adapter.create(ctor._name, data, { transaction: options.transaction });
     Object.defineProperty(this, 'id', {
       configurable: false,
       enumerable: true,
@@ -1182,7 +1184,7 @@ class BaseModel {
         sub[foreign_key] = id;
         return sub.save();
       });
-      return (await Promise.all(sub_promises));
+      return await Promise.all(sub_promises);
     });
     try {
       await Promise.all(promises);
@@ -1192,7 +1194,7 @@ class BaseModel {
     return this._prev_attributes = {};
   }
 
-  private async _update(options: any) {
+  private async _update(options: { transaction?: Transaction, skip_log?: boolean }) {
     const ctor = this.constructor as typeof BaseModel;
     if (ctor.dirty_tracking) {
       // update changed values only

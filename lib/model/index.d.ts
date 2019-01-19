@@ -1,6 +1,7 @@
 import { AdapterBase } from '../adapters/base';
 import { Connection, IAssociationBelongsToOptions, IAssociationHasManyOptions, IAssociationHasOneOptions } from '../connection';
 import { IQueryArray, IQuerySingle } from '../query';
+import { Transaction } from '../transaction';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
 export declare type ModelColumnNames<M> = Exclude<keyof M, keyof BaseModel>;
@@ -188,12 +189,15 @@ declare class BaseModel {
      * 'Model.create(data)' is the same as 'Model.build(data).save()'
      */
     static create<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, data?: ModelValueObject<M>, options?: {
-        skip_log: boolean;
+        transaction?: Transaction;
+        skip_log?: boolean;
     }): Promise<M>;
     /**
      * Creates multiple records and saves them to the database.
      */
-    static createBulk<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, data?: Array<ModelValueObject<M>>): Promise<M[]>;
+    static createBulk<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, data?: Array<ModelValueObject<M>>, options?: {
+        transaction?: Transaction;
+    }): Promise<M[]>;
     /**
      * Creates q query object
      */
@@ -305,6 +309,7 @@ declare class BaseModel {
      * Saves data to the database
      */
     save(options?: {
+        transaction?: Transaction;
         skip_log?: boolean;
         validate?: boolean;
     }): Promise<this>;
