@@ -192,6 +192,26 @@ abstract class AdapterBase {
    */
   public abstract close(): void;
 
+  public async getConnection(): Promise<any> {
+    //
+  }
+
+  public async releaseConnection(adapter_connection: any): Promise<void> {
+    //
+  }
+
+  public async startTransaction(adapter_connection: any): Promise<void> {
+    //
+  }
+
+  public async commitTransaction(adapter_connection: any): Promise<void> {
+    //
+  }
+
+  public async rollbackTransaction(adapter_connection: any): Promise<void> {
+    //
+  }
+
   protected _getModelID(data: any) {
     return data.id;
   }
