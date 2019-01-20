@@ -3,6 +3,7 @@
 import * as cormo from '..';
 import { UserRef } from './cases/transaction';
 import cases_full_control from './cases/transaction_full_control';
+import cases_block from './cases/transaction_block';
 import _g = require('./support/common');
 
 const _dbs = ['mysql', 'postgresql'];
@@ -47,6 +48,9 @@ _dbs.forEach((db) => {
 
     describe('#full control', () => {
       cases_full_control(models);
+    });
+    describe('#block', () => {
+      cases_block(models);
     });
   });
 });
