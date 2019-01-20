@@ -139,6 +139,7 @@ declare class Connection extends EventEmitter {
      */
     fetchAssociated(records: any, column: any, select?: any, options?: any): Promise<void>;
     getTransaction(): Promise<Transaction>;
+    transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T>;
     _checkSchemaApplied(): Promise<void>;
     _connectRedisCache(): any;
     private _initializeModels;

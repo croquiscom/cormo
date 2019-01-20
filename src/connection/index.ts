@@ -524,6 +524,19 @@ class Connection extends EventEmitter {
     return transaction;
   }
 
+  public async transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T> {
+    const transaction = new Transaction(this);
+    await transaction.setup();
+    try {
+      const result = await block(transaction);
+      await transaction.commit();
+      return result;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
   public async _checkSchemaApplied() {
     this._initializeModels();
     if (!this._applying_schemas && !this._schema_changed) {
