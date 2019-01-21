@@ -3,7 +3,7 @@ export interface IAdapterSettingsSQLite3 {
     database: string;
 }
 import * as stream from 'stream';
-import { Transaction } from '../transaction';
+import { IsolationLevel, Transaction } from '../transaction';
 import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 declare class SQLite3Adapter extends SQLAdapterBase {
@@ -49,7 +49,7 @@ declare class SQLite3Adapter extends SQLAdapterBase {
     close(): void;
     getConnection(): Promise<any>;
     releaseConnection(adapter_connection: any): Promise<void>;
-    startTransaction(adapter_connection: any): Promise<void>;
+    startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void>;
     commitTransaction(adapter_connection: any): Promise<void>;
     rollbackTransaction(adapter_connection: any): Promise<void>;
     /**

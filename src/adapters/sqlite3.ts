@@ -16,7 +16,7 @@ import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
 import { IColumnPropertyInternal } from '../model';
-import { Transaction } from '../transaction';
+import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
@@ -430,7 +430,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     adapter_connection.close();
   }
 
-  public async startTransaction(adapter_connection: any): Promise<void> {
+  public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
     await adapter_connection.allAsync('BEGIN TRANSACTION');
   }
 

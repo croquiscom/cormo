@@ -26,7 +26,7 @@ export interface IAdapterSettingsPostgreSQL {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import { IColumnPropertyInternal } from '../model';
-import { Transaction } from '../transaction';
+import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
@@ -97,6 +97,8 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   public support_string_type_with_length = true;
 
   public native_integrity = true;
+
+  public support_isolation_level_read_uncommitted = false;
 
   protected _contains_op = 'ILIKE';
 
@@ -219,11 +221,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     const sql = `INSERT INTO "${table_name}" (${fields}) VALUES (${places}) RETURNING id`;
     let result;
     try {
-      if (options.transaction) {
-        result = await options.transaction._adapter_connection.query(sql, values);
-      } else {
-        result = await this._pool.query(sql, values);
-      }
+      result = await this.query(sql, values, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw _processSaveError(table_name, error);
     }
@@ -248,7 +246,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     const sql = `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')} RETURNING id`;
     let result;
     try {
-      result = await this._pool.query(sql, values);
+      result = await this.query(sql, values, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw _processSaveError(table_name, error);
     }
@@ -267,7 +265,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     values.push(data.id);
     const sql = `UPDATE "${table_name}" SET ${fields} WHERE id=$${values.length}`;
     try {
-      await this._pool.query(sql, values);
+      await this.query(sql, values, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw _processSaveError(table_name, error);
     }
@@ -290,7 +288,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = (await this._pool.query(sql, values));
+      result = await this.query(sql, values, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw _processSaveError(table_name, error);
     }
@@ -305,11 +303,11 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     const table_name = this._connection.models[model].table_name;
     const sql = `SELECT ${select} FROM "${table_name}" WHERE id=$1 LIMIT 1`;
     if (options.explain) {
-      return (await this._pool.query(`EXPLAIN ${sql}`, [id]));
+      return await this.query(`EXPLAIN ${sql}`, [id], options.transaction && options.transaction._adapter_connection);
     }
     let result;
     try {
-      result = (await this._pool.query(sql, [id]));
+      result = await this.query(sql, [id], options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
@@ -326,11 +324,11 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
-      return await this._pool.query(`EXPLAIN ${sql}`, params);
+      return await this.query(`EXPLAIN ${sql}`, params, options.transaction && options.transaction._adapter_connection);
     }
     let result;
     try {
-      result = await this._pool.query(sql, params);
+      result = await this.query(sql, params, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
@@ -391,7 +389,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = await this._pool.query(sql, params);
+      result = await this.query(sql, params, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
@@ -411,7 +409,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = await this._pool.query(sql, params);
+      result = await this.query(sql, params, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       if (error.code === '23503') {
         throw new Error('rejected');
@@ -462,8 +460,12 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     adapter_connection.release();
   }
 
-  public async startTransaction(adapter_connection: any): Promise<void> {
-    await adapter_connection.query('START TRANSACTION');
+  public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
+    if (isolation_level) {
+      await adapter_connection.query(`START TRANSACTION ISOLATION LEVEL ${isolation_level}`);
+    } else {
+      await adapter_connection.query('START TRANSACTION');
+    }
   }
 
   public async commitTransaction(adapter_connection: any): Promise<void> {
@@ -477,8 +479,12 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   /**
    * Exposes pg module's query method
    */
-  public query() {
-    return this._pool.query.apply(this._pool, arguments);
+  public async query(text: string, values?: any[], adapter_connection?: any) {
+    if (adapter_connection) {
+      return await adapter_connection.query(text, values);
+    } else {
+      return await this._pool.query(text, values);
+    }
   }
 
   protected _param_place_holder(pos: any) {
@@ -634,7 +640,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return [fields.join(','), places.join(',')];
   }
 
-  private _buildSqlForFind(model: any, conditions: any, options: any) {
+  private _buildSqlForFind(model: any, conditions: any, options: any): [string, any[]] {
     let select;
     if (options.group_by || options.group_fields) {
       select = this._buildGroupFields(options.group_by, options.group_fields);

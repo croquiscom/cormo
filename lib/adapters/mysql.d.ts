@@ -10,7 +10,7 @@ export interface IAdapterSettingsMySQL {
     pool_size?: number;
 }
 import * as stream from 'stream';
-import { Transaction } from '../transaction';
+import { IsolationLevel, Transaction } from '../transaction';
 import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 declare class MySQLAdapter extends SQLAdapterBase {
@@ -18,6 +18,7 @@ declare class MySQLAdapter extends SQLAdapterBase {
     support_geopoint: boolean;
     support_string_type_with_length: boolean;
     native_integrity: boolean;
+    support_isolation_level_read_uncommitted: boolean;
     protected _escape_ch: string;
     private _client;
     private _database?;
@@ -60,7 +61,7 @@ declare class MySQLAdapter extends SQLAdapterBase {
     close(): void;
     getConnection(): Promise<any>;
     releaseConnection(adapter_connection: any): Promise<void>;
-    startTransaction(adapter_connection: any): Promise<void>;
+    startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void>;
     commitTransaction(adapter_connection: any): Promise<void>;
     rollbackTransaction(adapter_connection: any): Promise<void>;
     /**

@@ -520,7 +520,7 @@ class Connection extends EventEmitter {
 
   public async getTransaction(options?: { isolation_level?: IsolationLevel }): Promise<Transaction> {
     const transaction = new Transaction(this);
-    await transaction.setup();
+    await transaction.setup(options && options.isolation_level);
     return transaction;
   }
 
@@ -540,7 +540,7 @@ class Connection extends EventEmitter {
       block = block!;
     }
     const transaction = new Transaction(this);
-    await transaction.setup();
+    await transaction.setup(options && options.isolation_level);
     try {
       const result = await block(transaction);
       await transaction.commit();

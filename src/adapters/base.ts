@@ -1,6 +1,6 @@
 import * as stream from 'stream';
 import { Connection } from '../connection';
-import { Transaction } from '../transaction';
+import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
 
@@ -226,7 +226,7 @@ abstract class AdapterBase {
     //
   }
 
-  public async startTransaction(adapter_connection: any): Promise<void> {
+  public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
     //
   }
 

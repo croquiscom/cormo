@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import * as stream from 'stream';
 import { Connection } from '../connection';
-import { Transaction } from '../transaction';
+import { IsolationLevel, Transaction } from '../transaction';
 export interface ISchemas {
     tables: {
         [table_name: string]: any;
@@ -153,7 +153,7 @@ declare abstract class AdapterBase {
     abstract close(): void;
     getConnection(): Promise<any>;
     releaseConnection(adapter_connection: any): Promise<void>;
-    startTransaction(adapter_connection: any): Promise<void>;
+    startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void>;
     commitTransaction(adapter_connection: any): Promise<void>;
     rollbackTransaction(adapter_connection: any): Promise<void>;
     protected _getModelID(data: any): any;
