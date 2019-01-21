@@ -25,7 +25,7 @@ import * as util from 'util';
 import { IColumnPropertyInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
-import { ISchemas } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: IColumnPropertyInternal, support_fractional_seconds: boolean) {
@@ -329,7 +329,10 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
-  public async findById(model: any, id: any, options: any): Promise<any> {
+  public async findById(
+    model: string, id: any,
+    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+  ): Promise<any> {
     id = this._convertValueType(id, this.key_type);
     const select = this._buildSelect(this._connection.models[model], options.select);
     const table_name = this._connection.models[model].table_name;
@@ -352,7 +355,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
-  public async find(model: any, conditions: any, options: any): Promise<any> {
+  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
       return await this.query(`EXPLAIN ${sql}`, params);
@@ -396,7 +399,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return transformer;
   }
 
-  public async count(model: any, conditions: any, options: any): Promise<number> {
+  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `SELECT COUNT(*) AS count FROM \`${table_name}\``;
@@ -422,7 +425,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return Number(result[0].count);
   }
 
-  public async delete(model: any, conditions: any): Promise<number> {
+  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `DELETE FROM \`${table_name}\``;

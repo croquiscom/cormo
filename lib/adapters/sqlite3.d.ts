@@ -4,7 +4,7 @@ export interface IAdapterSettingsSQLite3 {
 }
 import * as stream from 'stream';
 import { Transaction } from '../transaction';
-import { ISchemas } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 declare class SQLite3Adapter extends SQLAdapterBase {
     key_type: any;
@@ -31,11 +31,17 @@ declare class SQLite3Adapter extends SQLAdapterBase {
     updatePartial(model: string, data: any, conditions: any, options: {
         transaction?: Transaction;
     }): Promise<number>;
-    findById(model: any, id: any, options: any): Promise<any>;
-    find(model: any, conditions: any, options: any): Promise<any>;
+    findById(model: string, id: any, options: {
+        select?: string[];
+        explain?: boolean;
+        transaction?: Transaction;
+    }): Promise<any>;
+    find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any>;
     stream(model: any, conditions: any, options: any): stream.Readable;
-    count(model: any, conditions: any, options: any): Promise<number>;
-    delete(model: any, conditions: any): Promise<number>;
+    count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number>;
+    delete(model: string, conditions: any, options: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Connects to the database
      */

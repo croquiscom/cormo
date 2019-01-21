@@ -8,7 +8,6 @@ import { Transaction } from './transaction';
 import { RecordID } from './types';
 
 interface IQueryOptions {
-  conditions_of_group: any[];
   lean: boolean;
   orders: any[];
   near?: any;
@@ -16,6 +15,7 @@ interface IQueryOptions {
   select_single: boolean;
   select?: string[];
   select_raw?: string[];
+  conditions_of_group: any[];
   group_fields?: any;
   group_by?: any;
   limit?: number;
@@ -520,7 +520,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       this._connection.log(this._name, 'delete', { conditions: this._conditions });
     }
     await this._doArchiveAndIntegrity(options);
-    return await this._adapter.delete(this._name, this._conditions);
+    return await this._adapter.delete(this._name, this._conditions, { transaction: this._options.transaction });
   }
 
   private async _exec(options: any) {

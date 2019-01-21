@@ -10,6 +10,26 @@ export interface ISchemas {
   foreign_keys?: { [table_name: string]: any };
 }
 
+export interface IAdapterFindOptions {
+  orders: any[];
+  near?: any;
+  select?: string[];
+  conditions_of_group: any[];
+  group_fields?: any;
+  group_by?: any;
+  limit?: number;
+  skip?: number;
+  explain?: boolean;
+  transaction?: Transaction;
+}
+
+export interface IAdapterCountOptions {
+  conditions_of_group: any[];
+  group_fields?: any;
+  group_by?: any;
+  transaction?: Transaction;
+}
+
 /**
  * Base class for adapters
  * @namespace adapter
@@ -164,13 +184,16 @@ abstract class AdapterBase {
    * Finds a record by id
    * @see Query::exec
    */
-  public abstract async findById(model: any, id: any, options: any): Promise<any>;
+  public abstract async findById(
+    model: string, id: any,
+    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+  ): Promise<any>;
 
   /**
    * Finds records
    * @see Query::exec
    */
-  public abstract async find(model: any, conditions: any, options: any): Promise<any>;
+  public abstract async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any>;
 
   /**
    * Streams matching records
@@ -182,13 +205,13 @@ abstract class AdapterBase {
    * Counts records
    * @see Query::count
    */
-  public abstract async count(model: any, conditions: any, options: any): Promise<number>;
+  public abstract async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number>;
 
   /**
    * Deletes records from the database
    * @see Query::delete
    */
-  public abstract async delete(model: any, conditions: any): Promise<number>;
+  public abstract async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number>;
 
   /**
    * Closes connection
