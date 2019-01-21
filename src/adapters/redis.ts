@@ -20,7 +20,7 @@ import * as util from 'util';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 import { tableize } from '../util/inflector';
-import { AdapterBase } from './base';
+import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions } from './base';
 
 // Adapter for Redis
 // @namespace adapter
@@ -38,7 +38,7 @@ class RedisAdapter extends AdapterBase {
   }
 
   public async drop(model: string) {
-    await this.delete(model, []);
+    await this.delete(model, [], {});
   }
 
   public valueToDB(value: any, column: any, property: any) {
@@ -143,7 +143,10 @@ class RedisAdapter extends AdapterBase {
     throw new Error('not implemented');
   }
 
-  public async findById(model: any, id: any, options: any): Promise<any> {
+  public async findById(
+    model: string, id: any,
+    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+  ): Promise<any> {
     let result;
     try {
       result = (await this._client.hgetallAsync(`${tableize(model)}:${id}`));
@@ -158,7 +161,7 @@ class RedisAdapter extends AdapterBase {
     }
   }
 
-  public async find(model: any, conditions: any, options: any): Promise<any> {
+  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const table = tableize(model);
     const keys = await this._getKeys(table, conditions);
     let records: any[] = await Promise.all(keys.map(async (key: any) => {
@@ -178,11 +181,11 @@ class RedisAdapter extends AdapterBase {
     throw new Error('not implemented');
   }
 
-  public async count(model: any, conditions: any, options: any): Promise<number> {
+  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     throw new Error('not implemented');
   }
 
-  public async delete(model: any, conditions: any): Promise<number> {
+  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const keys = await this._getKeys(tableize(model), conditions);
     if (keys.length === 0) {
       return 0;

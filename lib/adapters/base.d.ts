@@ -13,6 +13,24 @@ export interface ISchemas {
         [table_name: string]: any;
     };
 }
+export interface IAdapterFindOptions {
+    orders: any[];
+    near?: any;
+    select?: string[];
+    conditions_of_group: any[];
+    group_fields?: any;
+    group_by?: any;
+    limit?: number;
+    skip?: number;
+    explain?: boolean;
+    transaction?: Transaction;
+}
+export interface IAdapterCountOptions {
+    conditions_of_group: any[];
+    group_fields?: any;
+    group_by?: any;
+    transaction?: Transaction;
+}
 /**
  * Base class for adapters
  * @namespace adapter
@@ -102,12 +120,16 @@ declare abstract class AdapterBase {
      * Finds a record by id
      * @see Query::exec
      */
-    abstract findById(model: any, id: any, options: any): Promise<any>;
+    abstract findById(model: string, id: any, options: {
+        select?: string[];
+        explain?: boolean;
+        transaction?: Transaction;
+    }): Promise<any>;
     /**
      * Finds records
      * @see Query::exec
      */
-    abstract find(model: any, conditions: any, options: any): Promise<any>;
+    abstract find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any>;
     /**
      * Streams matching records
      * @see Query::stream
@@ -117,12 +139,14 @@ declare abstract class AdapterBase {
      * Counts records
      * @see Query::count
      */
-    abstract count(model: any, conditions: any, options: any): Promise<number>;
+    abstract count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number>;
     /**
      * Deletes records from the database
      * @see Query::delete
      */
-    abstract delete(model: any, conditions: any): Promise<number>;
+    abstract delete(model: string, conditions: any, options: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Closes connection
      */

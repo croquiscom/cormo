@@ -4,7 +4,6 @@ import { BaseModel, ModelColumnNamesWithId } from './model';
 import { Transaction } from './transaction';
 import { RecordID } from './types';
 interface IQueryOptions {
-    conditions_of_group: any[];
     lean: boolean;
     orders: any[];
     near?: any;
@@ -12,6 +11,7 @@ interface IQueryOptions {
     select_single: boolean;
     select?: string[];
     select_raw?: string[];
+    conditions_of_group: any[];
     group_fields?: any;
     group_by?: any;
     limit?: number;

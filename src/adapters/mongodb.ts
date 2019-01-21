@@ -27,7 +27,7 @@ import * as stream from 'stream';
 import { IColumnPropertyInternal, IModelSchemaInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
-import { AdapterBase, ISchemas } from './base';
+import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 
 function _convertValueToObjectID(value: any, key: any) {
   if (value == null) {
@@ -457,7 +457,10 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
-  public async findById(model: any, id: any, options: any): Promise<any> {
+  public async findById(
+    model: string, id: any,
+    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+  ): Promise<any> {
     const fields = this._buildSelect(options.select);
     try {
       id = _convertValueToObjectID(id, 'id');
@@ -485,7 +488,7 @@ class MongoDBAdapter extends AdapterBase {
     return this._convertToModelInstance(model, result, options);
   }
 
-  public async find(model: any, conditions: any, options: any) {
+  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     let fields: any;
     let orders: any;
     let client_options: any;
@@ -581,7 +584,7 @@ class MongoDBAdapter extends AdapterBase {
     return transformer;
   }
 
-  public async count(model: any, conditions: any, options: any) {
+  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     conditions = _buildWhere(this._connection.models[model]._schema, conditions);
     // console.log(JSON.stringify(conditions))
     if (options.group_by || options.group_fields) {
@@ -615,7 +618,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
-  public async delete(model: any, conditions: any) {
+  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const model_class = this._connection.models[model];
     conditions = _buildWhere(model_class._schema, conditions);
     try {
@@ -682,7 +685,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
-  private _buildSelect(select: any) {
+  private _buildSelect(select?: string[]) {
     if (select) {
       const fields: any = {};
       select.forEach((column: any) => {
@@ -749,7 +752,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
-  private _buildConditionsForFind(model: any, conditions: any, options: any) {
+  private _buildConditionsForFind(model: any, conditions: any, options: IAdapterFindOptions) {
     const fields = this._buildSelect(options.select);
     let orders: any;
     conditions = _buildWhere(this._connection.models[model]._schema, conditions);
