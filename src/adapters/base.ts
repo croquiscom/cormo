@@ -145,12 +145,15 @@ abstract class AdapterBase {
   /**
    * Updates a record
    */
-  public abstract async update(model: string, data: any): Promise<void>;
+  public abstract async update(model: string, data: any, options: { transaction?: Transaction }): Promise<void>;
 
   /**
    * Updates some fields of records that match conditions
    */
-  public abstract async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number>;
+  public abstract async updatePartial(
+    model: string, data: any, conditions: any,
+    options: { transaction?: Transaction },
+  ): Promise<number>;
 
   /**
    * Updates some fields of records that match conditions or inserts a new record

@@ -1219,7 +1219,7 @@ class BaseModel {
       if (!(options && options.skip_log)) {
         ctor._connection.log(ctor._name, 'update', data);
       }
-      await ctor._adapter.update(ctor._name, data);
+      await ctor._adapter.update(ctor._name, data, { transaction: options.transaction });
       return this._prev_attributes = {};
     }
   }
