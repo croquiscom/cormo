@@ -1,5 +1,12 @@
 import { Connection } from './connection';
 
+export enum IsolationLevel {
+  READ_UNCOMMITTED = 'READ UNCOMMITTED',
+  READ_COMMITTED = 'READ COMMITTED',
+  REPEATABLE_READ = 'REPEATABLE READ',
+  SERIALIZABLE = 'SERIALIZABLE',
+}
+
 class Transaction {
   public _adapter_connection: any;
   private _connection: Connection;
