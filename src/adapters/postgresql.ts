@@ -99,6 +99,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   public native_integrity = true;
 
   public support_isolation_level_read_uncommitted = false;
+  public support_isolation_level_repeatable_read = false;
 
   protected _contains_op = 'ILIKE';
 

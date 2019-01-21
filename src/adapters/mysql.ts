@@ -95,6 +95,7 @@ class MySQLAdapter extends SQLAdapterBase {
   public native_integrity = true;
 
   public support_isolation_level_read_uncommitted = true;
+  public support_isolation_level_repeatable_read = true;
 
   protected _escape_ch = '`';
 

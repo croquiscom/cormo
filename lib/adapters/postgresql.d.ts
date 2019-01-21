@@ -16,6 +16,7 @@ declare class PostgreSQLAdapter extends SQLAdapterBase {
     support_string_type_with_length: boolean;
     native_integrity: boolean;
     support_isolation_level_read_uncommitted: boolean;
+    support_isolation_level_repeatable_read: boolean;
     protected _contains_op: string;
     protected _regexp_op: string;
     private _pool;

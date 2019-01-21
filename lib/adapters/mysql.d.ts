@@ -19,6 +19,7 @@ declare class MySQLAdapter extends SQLAdapterBase {
     support_string_type_with_length: boolean;
     native_integrity: boolean;
     support_isolation_level_read_uncommitted: boolean;
+    support_isolation_level_repeatable_read: boolean;
     protected _escape_ch: string;
     private _client;
     private _database?;

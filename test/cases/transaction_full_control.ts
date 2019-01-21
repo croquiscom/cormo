@@ -129,5 +129,55 @@ export default function(models: {
         }
       }
     });
+
+    it('repeatable read', async () => {
+      if (!models.connection!.adapter.support_isolation_level_repeatable_read) {
+        return;
+      }
+      const user1 = await models.User.create({ name: 'John Doe', age: 27 });
+
+      const tx1 = await models.connection!.getTransaction({ isolation_level: cormo.IsolationLevel.REPEATABLE_READ });
+
+      const tx2 = await models.connection!.getTransaction();
+
+      try {
+        const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx2 });
+        await models.User.find(user1.id).transaction(tx2).update({ age: 30 });
+
+        expect(await models.User.where().transaction(tx1)).to.eql([
+          { id: user1.id, name: 'John Doe', age: 27 },
+        ]);
+
+        await tx2.commit();
+
+        expect(await models.User.where().order('id').transaction(tx1)).to.eql([
+          { id: user1.id, name: 'John Doe', age: 27 },
+        ]);
+
+        models.User.find(user2.id).transaction(tx1).update({ age: 55 });
+        expect(await models.User.where().order('id').transaction(tx1)).to.eql([
+          { id: user1.id, name: 'John Doe', age: 27 },
+          { id: user2.id, name: 'Bill Smith', age: 55 },
+        ]);
+
+        await tx1.commit();
+
+        expect(await models.User.where().order('id')).to.eql([
+          { id: user1.id, name: 'John Doe', age: 30 },
+          { id: user2.id, name: 'Bill Smith', age: 55 },
+        ]);
+      } finally {
+        try {
+          await tx1.rollback();
+        } catch (error) {
+          //
+        }
+        try {
+          await tx2.rollback();
+        } catch (error) {
+          //
+        }
+      }
+    });
   });
 }
