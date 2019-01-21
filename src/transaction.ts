@@ -15,9 +15,9 @@ class Transaction {
     this._connection = connection;
   }
 
-  public async setup() {
+  public async setup(isolation_level?: IsolationLevel) {
     this._adapter_connection = await this._connection._adapter.getConnection();
-    await this._connection._adapter.startTransaction(this._adapter_connection);
+    await this._connection._adapter.startTransaction(this._adapter_connection, isolation_level);
   }
 
   public async commit() {

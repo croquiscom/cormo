@@ -7,7 +7,7 @@ export interface IAdapterSettingsPostgreSQL {
     database: string;
 }
 import * as stream from 'stream';
-import { Transaction } from '../transaction';
+import { IsolationLevel, Transaction } from '../transaction';
 import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 declare class PostgreSQLAdapter extends SQLAdapterBase {
@@ -15,6 +15,7 @@ declare class PostgreSQLAdapter extends SQLAdapterBase {
     support_geopoint: boolean;
     support_string_type_with_length: boolean;
     native_integrity: boolean;
+    support_isolation_level_read_uncommitted: boolean;
     protected _contains_op: string;
     protected _regexp_op: string;
     private _pool;
@@ -55,13 +56,13 @@ declare class PostgreSQLAdapter extends SQLAdapterBase {
     close(): void;
     getConnection(): Promise<any>;
     releaseConnection(adapter_connection: any): Promise<void>;
-    startTransaction(adapter_connection: any): Promise<void>;
+    startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void>;
     commitTransaction(adapter_connection: any): Promise<void>;
     rollbackTransaction(adapter_connection: any): Promise<void>;
     /**
      * Exposes pg module's query method
      */
-    query(): any;
+    query(text: string, values?: any[], adapter_connection?: any): Promise<any>;
     protected _param_place_holder(pos: any): string;
     protected valueToModel(value: any, property: any): any;
     protected _getModelID(data: any): number | null;
