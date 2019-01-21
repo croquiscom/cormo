@@ -25,8 +25,12 @@ declare class SQLite3Adapter extends SQLAdapterBase {
     createBulk(model: string, data: any[], options: {
         transaction?: Transaction;
     }): Promise<any[]>;
-    update(model: string, data: any): Promise<void>;
-    updatePartial(model: string, data: any, conditions: any, options: any): Promise<number>;
+    update(model: string, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<void>;
+    updatePartial(model: string, data: any, conditions: any, options: {
+        transaction?: Transaction;
+    }): Promise<number>;
     findById(model: any, id: any, options: any): Promise<any>;
     find(model: any, conditions: any, options: any): Promise<any>;
     stream(model: any, conditions: any, options: any): stream.Readable;

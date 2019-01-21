@@ -20,8 +20,12 @@ declare class RedisAdapter extends AdapterBase {
     createBulk(model: string, data: any[], options: {
         transaction?: Transaction;
     }): Promise<any[]>;
-    update(model: string, data: any): Promise<void>;
-    updatePartial(model: string, data: any, conditions: any, options: any): Promise<number>;
+    update(model: string, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<void>;
+    updatePartial(model: string, data: any, conditions: any, options: {
+        transaction?: Transaction;
+    }): Promise<number>;
     upsert(model: string, data: any, conditions: any, options: any): Promise<void>;
     findById(model: any, id: any, options: any): Promise<any>;
     find(model: any, conditions: any, options: any): Promise<any>;

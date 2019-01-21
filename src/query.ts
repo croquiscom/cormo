@@ -4,6 +4,7 @@ import * as stream from 'stream';
 import { AdapterBase } from './adapters/base';
 import { Connection } from './connection';
 import { BaseModel, ModelColumnNamesWithId } from './model';
+import { Transaction } from './transaction';
 import { RecordID } from './types';
 
 interface IQueryOptions {
@@ -26,6 +27,7 @@ interface IQueryOptions {
     ttl: number,
     refresh?: boolean,
   };
+  transaction?: Transaction;
 }
 
 export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
@@ -51,6 +53,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
   endif(): IQuerySingle<M, T>;
   cache(options: IQueryOptions['cache']): IQuerySingle<M, T>;
   include(column: string, select?: string): IQuerySingle<M, T>;
+  transaction(transaction?: Transaction): IQuerySingle<M, T>;
 
   exec(options?: any): PromiseLike<T>;
   stream(): stream.Readable;
@@ -84,6 +87,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
   endif(): IQueryArray<M, T>;
   cache(options: IQueryOptions['cache']): IQueryArray<M, T>;
   include(column: string, select?: string): IQueryArray<M, T>;
+  transaction(transaction?: Transaction): IQueryArray<M, T>;
 
   exec(options?: any): PromiseLike<T[]>;
   stream(): stream.Readable;
@@ -373,6 +377,11 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       return this;
     }
     this._includes.push({ column, select });
+    return this;
+  }
+
+  public transaction(transaction?: Transaction): this {
+    this._options.transaction = transaction;
     return this;
   }
 

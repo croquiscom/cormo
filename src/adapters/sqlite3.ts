@@ -240,7 +240,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
-  public async update(model: string, data: any) {
+  public async update(model: string, data: any, options: { transaction?: Transaction }) {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildUpdateSet(model, data, values);
@@ -253,7 +253,10 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
-  public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
+  public async updatePartial(
+    model: string, data: any, conditions: any,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildPartialUpdateSet(model, data, values);

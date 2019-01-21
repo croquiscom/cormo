@@ -85,11 +85,15 @@ declare abstract class AdapterBase {
     /**
      * Updates a record
      */
-    abstract update(model: string, data: any): Promise<void>;
+    abstract update(model: string, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<void>;
     /**
      * Updates some fields of records that match conditions
      */
-    abstract updatePartial(model: string, data: any, conditions: any, options: any): Promise<number>;
+    abstract updatePartial(model: string, data: any, conditions: any, options: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Updates some fields of records that match conditions or inserts a new record
      */

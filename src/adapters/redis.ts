@@ -85,7 +85,7 @@ class RedisAdapter extends AdapterBase {
     return await this._createBulkDefault(model, data, options);
   }
 
-  public async update(model: string, data: any) {
+  public async update(model: string, data: any, options: { transaction?: Transaction }) {
     const key = `${tableize(model)}:${data.id}`;
     delete data.id;
     data.$_$ = ''; // ensure that there is one argument(one field) at least
@@ -110,7 +110,10 @@ class RedisAdapter extends AdapterBase {
     }
   }
 
-  public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
+  public async updatePartial(
+    model: string, data: any, conditions: any,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const fields_to_del = Object.keys(data).filter((key) => data[key] == null);
     fields_to_del.forEach((key) => {
       return delete data[key];

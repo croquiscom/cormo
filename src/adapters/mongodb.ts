@@ -382,7 +382,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
-  public async update(model: any, data: any) {
+  public async update(model: any, data: any, options: { transaction?: Transaction }) {
     const id = data.id;
     delete data.id;
     try {
@@ -392,7 +392,10 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
-  public async updatePartial(model: any, data: any, conditions: any, options: any) {
+  public async updatePartial(
+    model: string, data: any, conditions: any,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const schema = this._connection.models[model]._schema;
     conditions = _buildWhere(schema, conditions);
     if (!conditions) {
