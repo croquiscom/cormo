@@ -14,7 +14,7 @@ import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logger';
 import { BaseModel, IColumnProperty, IModelSchema } from '../model';
-import { Transaction } from '../transaction';
+import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
 
@@ -518,13 +518,27 @@ class Connection extends EventEmitter {
     }
   }
 
-  public async getTransaction(): Promise<Transaction> {
+  public async getTransaction(options?: { isolation_level?: IsolationLevel }): Promise<Transaction> {
     const transaction = new Transaction(this);
     await transaction.setup();
     return transaction;
   }
 
-  public async transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T> {
+  public async transaction<T>(
+    options: { isolation_level?: IsolationLevel } | ((transaction: Transaction) => Promise<T>),
+    block: (transaction: Transaction) => Promise<T>): Promise<T>;
+  public async transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T>;
+  public async transaction<T>(
+    options_or_block: { isolation_level?: IsolationLevel } | ((transaction: Transaction) => Promise<T>),
+    block?: (transaction: Transaction) => Promise<T>): Promise<T> {
+    let options: { isolation_level?: IsolationLevel };
+    if (typeof options_or_block === 'function') {
+      options = {};
+      block = options_or_block;
+    } else {
+      options = options_or_block;
+      block = block!;
+    }
     const transaction = new Transaction(this);
     await transaction.setup();
     try {

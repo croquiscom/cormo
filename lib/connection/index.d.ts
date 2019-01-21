@@ -7,7 +7,7 @@ import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ILogger } from '../logger';
 import { BaseModel, IModelSchema } from '../model';
-import { Transaction } from '../transaction';
+import { IsolationLevel, Transaction } from '../transaction';
 declare type ManipulateCommand = string | {
     [key: string]: any;
 };
@@ -138,7 +138,12 @@ declare class Connection extends EventEmitter {
      * Fetches associated records
      */
     fetchAssociated(records: any, column: any, select?: any, options?: any): Promise<void>;
-    getTransaction(): Promise<Transaction>;
+    getTransaction(options?: {
+        isolation_level?: IsolationLevel;
+    }): Promise<Transaction>;
+    transaction<T>(options: {
+        isolation_level?: IsolationLevel;
+    } | ((transaction: Transaction) => Promise<T>), block: (transaction: Transaction) => Promise<T>): Promise<T>;
     transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T>;
     _checkSchemaApplied(): Promise<void>;
     _connectRedisCache(): any;
