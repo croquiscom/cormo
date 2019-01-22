@@ -1,71 +1,71 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>CORMO - Aggregation</title><script>if (location.protocol.match(/^http/) && location.pathname.match('\.html') === null && location.pathname.slice(-1) !== '/') {
   location.href = location.href + '/';
-}</script><link href="../bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"><!--[if lt IE 9]><script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script><script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]--><link href="../google-code-prettify/prettify.css" rel="stylesheet" type="text/css"><link href="../style.css" rel="stylesheet" type="text/css"><link href="../tocify/jquery.tocify.css" rel="stylesheet" type="text/css"></head><body data-spy="scroll" data-target=".sidebar"><nav class="navbar navbar-default navbar-fixed-top" role="navigation"><div class="navbar-header"><button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#top-navigation-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><div class="collapse navbar-collapse" id="top-navigation-collapse"><ul class="nav navbar-nav"><li><a href="../index.html">Home</a></li><li class="dropdown active"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Guides - Aggregation <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../guides/Aggregation.html">Aggregation</a></li><li><a href="../guides/Association.html">Association</a></li><li><a href="../guides/Callback.html">Callback</a></li><li><a href="../guides/Constraint.html">Constraint</a></li><li><a href="../guides/CreateRecords.html">Create records</a></li><li><a href="../guides/DefineModels.html">Define models</a></li><li><a href="../guides/Geospatial.html">Geospatial</a></li><li><a href="../guides/Miscellaneous.html">Miscellaneous</a></li><li><a href="../guides/Query.html">Query</a></li><li><a href="../guides/Validation.html">Validation</a></li></ul></li><li><a href="../modules/index.html">Modules</a></li><li><a href="../classes/index.html">Classes</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Files <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../files/decorators.ts.html">decorators.ts</a></li><li><a href="../files/index.ts.html">index.ts</a></li><li><a href="../files/query.ts.html">query.ts</a></li><li><a href="../files/types.ts.html">types.ts</a></li><li><a href="../files/adapters.base.ts.html">adapters/base.ts</a></li><li><a href="../files/adapters.mongodb.ts.html">adapters/mongodb.ts</a></li><li><a href="../files/adapters.mysql.ts.html">adapters/mysql.ts</a></li><li><a href="../files/adapters.postgresql.ts.html">adapters/postgresql.ts</a></li><li><a href="../files/adapters.redis.ts.html">adapters/redis.ts</a></li><li><a href="../files/adapters.sql_base.ts.html">adapters/sql_base.ts</a></li><li><a href="../files/adapters.sqlite3.ts.html">adapters/sqlite3.ts</a></li><li><a href="../files/adapters.sqlite3_memory.ts.html">adapters/sqlite3_memory.ts</a></li><li><a href="../files/command.index.ts.html">command/index.ts</a></li><li><a href="../files/connection.index.ts.html">connection/index.ts</a></li><li><a href="../files/model.index.ts.html">model/index.ts</a></li><li><a href="../files/util.index.ts.html">util/index.ts</a></li><li><a href="../files/util.inflector.ts.html">util/inflector.ts</a></li></ul></li></ul><div class="options"><label class="checkbox"><input id="options-private" type="checkbox"> Private </label></div></div></div></nav><div class="container-fluid content"><div class="row"><div class="hidden-xs col-sm-3"><div id="toc"></div></div><div class="col-sm-9"><div><p>CORMO supports some basic aggregation operations via <a href='../classes/Query.html#Query__group'>Query::group</a>.</p>
+}</script><link href="../bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"><!--[if lt IE 9]><script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script><script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]--><link href="../google-code-prettify/prettify.css" rel="stylesheet" type="text/css"><link href="../style.css" rel="stylesheet" type="text/css"><link href="../tocify/jquery.tocify.css" rel="stylesheet" type="text/css"></head><body data-spy="scroll" data-target=".sidebar"><nav class="navbar navbar-default navbar-fixed-top" role="navigation"><div class="navbar-header"><button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#top-navigation-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><div class="collapse navbar-collapse" id="top-navigation-collapse"><ul class="nav navbar-nav"><li><a href="../index.html">Home</a></li><li class="dropdown active"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Guides - Aggregation <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../guides/Aggregation.html">Aggregation</a></li><li><a href="../guides/Association.html">Association</a></li><li><a href="../guides/Callback.html">Callback</a></li><li><a href="../guides/Constraint.html">Constraint</a></li><li><a href="../guides/CreateRecords.html">Create records</a></li><li><a href="../guides/DefineModels.html">Define models</a></li><li><a href="../guides/Geospatial.html">Geospatial</a></li><li><a href="../guides/Miscellaneous.html">Miscellaneous</a></li><li><a href="../guides/Query.html">Query</a></li><li><a href="../guides/Validation.html">Validation</a></li></ul></li><li><a href="../modules/index.html">Modules</a></li><li><a href="../classes/index.html">Classes</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Files <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../files/decorators.ts.html">decorators.ts</a></li><li><a href="../files/index.ts.html">index.ts</a></li><li><a href="../files/query.ts.html">query.ts</a></li><li><a href="../files/transaction.ts.html">transaction.ts</a></li><li><a href="../files/types.ts.html">types.ts</a></li><li><a href="../files/adapters.base.ts.html">adapters/base.ts</a></li><li><a href="../files/adapters.mongodb.ts.html">adapters/mongodb.ts</a></li><li><a href="../files/adapters.mysql.ts.html">adapters/mysql.ts</a></li><li><a href="../files/adapters.postgresql.ts.html">adapters/postgresql.ts</a></li><li><a href="../files/adapters.redis.ts.html">adapters/redis.ts</a></li><li><a href="../files/adapters.sql_base.ts.html">adapters/sql_base.ts</a></li><li><a href="../files/adapters.sqlite3.ts.html">adapters/sqlite3.ts</a></li><li><a href="../files/adapters.sqlite3_memory.ts.html">adapters/sqlite3_memory.ts</a></li><li><a href="../files/command.index.ts.html">command/index.ts</a></li><li><a href="../files/connection.index.ts.html">connection/index.ts</a></li><li><a href="../files/logger.ColorConsoleLogger.ts.html">logger/ColorConsoleLogger.ts</a></li><li><a href="../files/logger.ConsoleLogger.ts.html">logger/ConsoleLogger.ts</a></li><li><a href="../files/logger.EmptyLogger.ts.html">logger/EmptyLogger.ts</a></li><li><a href="../files/logger.ILogger.ts.html">logger/ILogger.ts</a></li><li><a href="../files/logger.index.ts.html">logger/index.ts</a></li><li><a href="../files/model.index.ts.html">model/index.ts</a></li><li><a href="../files/util.index.ts.html">util/index.ts</a></li><li><a href="../files/util.inflector.ts.html">util/inflector.ts</a></li></ul></li></ul><div class="options"><label class="checkbox"><input id="options-private" type="checkbox"> Private </label></div></div></div></nav><div class="container-fluid content"><div class="row"><div class="hidden-xs col-sm-3"><div id="toc"></div></div><div class="col-sm-9"><div><p>CORMO supports some basic aggregation operations via <a href='../classes/Query.html#Query__group'>Query::group</a>.</p>
 <table class='table table-bordered'><thead><tr>
   <th>Description</th><th>CORMO</th><th>SQL</th><th>MongoDB</th>
 </tr></thead><tbody>
 
 <tr>
 <td>Count all</td>
-<td>Order.group(null, count: $sum: 1)</td>
-<td>SELECT COUNT(\*) AS count<br>FROM orders</td>
-<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{\_id:null,count:{$sum:1}}}<br>])</td>
+<td>Order.group(null, { count: { $sum: 1 } })</td>
+<td>SELECT COUNT(*) AS count<br>FROM orders</td>
+<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{_id:null,count:{$sum:1}}}<br>])</td>
 </tr>
 
 <tr>
 <td>Sum all</td>
-<td>Order.group(null, total: $sum: '$price')</td>
+<td>Order.group(null, { total: { $sum: '$price' } })</td>
 <td>SELECT SUM(price) AS total<br>FROM orders</td>
-<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{\_id:null,total:{$sum:'$price'}}}<br>])</td>
+<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{_id:null,total:{$sum:'$price'}}}<br>])</td>
 </tr>
 
 <tr>
 <td>Only for matched records</td>
-<td>Order.where(price: $lt: 10)<br>.group(null, count: {$sum: 1}, total: $sum: '$price')</td>
-<td>SELECT COUNT(\*) AS count, SUM(price) AS total<br>FROM orders<br>WHERE price&lt;10</td>
-<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$match:{price:{$lt:10}}},<br>&nbsp;&nbsp;{$group:{\_id:null,count:{$sum:1},total:{$sum:'$price'}}}<br>])</td>
+<td>Order.where({ price: { $lt: 10 } })<br>.group(null, { count: { $sum: 1 }, total: { $sum: '$price' } })</td>
+<td>SELECT COUNT(*) AS count, SUM(price) AS total<br>FROM orders<br>WHERE price&lt;10</td>
+<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$match:{price:{$lt:10}}},<br>&nbsp;&nbsp;{$group:{_id:null,count:{$sum:1},total:{$sum:'$price'}}}<br>])</td>
 </tr>
 
 <tr>
 <td>Grouping</td>
-<td>Order.group('customer', count: {$sum: 1}, total: $sum: '$price')</td>
-<td>SELECT customer, COUNT(\*) AS count, SUM(price) AS total<br>FROM orders<br>GROUP BY customer</td>
-<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{\_id:'$customer',count:{$sum:1},total:{$sum:'$price'}}}<br>])</td>
+<td>Order.group('customer', { count: { $sum: 1 }, total: { $sum: '$price' } })</td>
+<td>SELECT customer, COUNT(*) AS count, SUM(price) AS total<br>FROM orders<br>GROUP BY customer</td>
+<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{_id:'$customer',count:{$sum:1},total:{$sum:'$price'}}}<br>])</td>
 </tr>
 
 <tr>
 <td>Sort by group column</td>
-<td>Order.group('customer', total: $sum: '$price')<br>.order('customer')</td>
+<td>Order.group('customer', { total: { $sum: '$price' } })<br>.order('customer')</td>
 <td>SELECT customer, SUM(price) AS total<br>FROM orders<br>GROUP BY customer<br>ORDER BY customer</td>
-<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{\_id:'$customer',total:{$sum:'$price'}}},<br>&nbsp;&nbsp;{$sort:{\_id:1}}<br>])</td>
+<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{_id:'$customer',total:{$sum:'$price'}}},<br>&nbsp;&nbsp;{$sort:{\_id:1}}<br>])</td>
 </tr>
 
 <tr>
 <td>Sort by aggregated column</td>
-<td>Order.group('customer', total: $sum: '$price')<br>.order('total')</td>
+<td>Order.group('customer', { total: { $sum: '$price' } })<br>.order('total')</td>
 <td>SELECT customer, SUM(price) AS total<br>FROM orders<br>GROUP BY customer<br>ORDER BY total</td>
-<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{\_id:'$customer',total:{$sum:'$price'}}},<br>&nbsp;&nbsp;{$sort:{total:1}}<br>])</td>
+<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{_id:'$customer',total:{$sum:'$price'}}},<br>&nbsp;&nbsp;{$sort:{total:1}}<br>])</td>
 </tr>
 
 <tr>
 <td>Condition on aggregated column</td>
-<td>Order.group('customer', count: $sum: 1)<br>.where(count: $gte: 3)</td>
-<td>SELECT customer, COUNT(\*) AS count<br>FROM orders<br>GROUP BY customer<br>HAVING count&gt;=3</td>
-<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{\_id:'$customer',count:{$sum:1}}},<br>&nbsp;&nbsp;{$match:{count:{$gte:3}}}<br>])</td>
+<td>Order.group('customer', { count: { $sum: 1 } })<br>.where({ count: { $gte: 3 } })</td>
+<td>SELECT customer, COUNT(*) AS count<br>FROM orders<br>GROUP BY customer<br>HAVING count&gt;=3</td>
+<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{_id:'$customer',count:{$sum:1}}},<br>&nbsp;&nbsp;{$match:{count:{$gte:3}}}<br>])</td>
 </tr>
 
 <tr>
 <td>Grouping by multiple columns</td>
-<td>Order.group('customer date', count: $sum: 1)</td>
-<td>SELECT customer, date, COUNT(\*) AS count<br>FROM orders<br>GROUP BY customer, date</td>
-<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{\_id:{customer:'$customer', date:'$date'},count:{$sum:1}}}<br>])</td>
+<td>Order.group('customer date', { count: { $sum: 1 } })</td>
+<td>SELECT customer, date, COUNT(*) AS count<br>FROM orders<br>GROUP BY customer, date</td>
+<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{_id:{customer:'$customer', date:'$date'},count:{$sum:1}}}<br>])</td>
 </tr>
 
 <tr>
 <td>Min/Max functions</td>
-<td>Order.group('customer', min\_price: {$min: '$price'}, max\_price: $max: '$price'</td>
-<td>SELECT customer, MIN(price) AS min\_price, MAX(price) AS max\_price<br>FROM orders<br>GROUP BY customer</td>
-<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{\_id:'$customer',min\_price:{$min:'$price'},max\_price:{$max:'$price'}}}<br>])</td>
+<td>Order.group('customer', { min_price: { $min: '$price' }, max_price: { $max: '$price' } })</td>
+<td>SELECT customer, MIN(price) AS min_price, MAX(price) AS max_price<br>FROM orders<br>GROUP BY customer</td>
+<td>db.orders.aggregate([<br>&nbsp;&nbsp;{$group:{_id:'$customer',min_price:{$min:'$price'},max_price:{$max:'$price'}}}<br>])</td>
 </tr>
 
 </tbody></table></div></div></div></div><script src="http://code.jquery.com/jquery-1.11.0.min.js"></script><script src="../bootstrap-3.2.0-dist/js/bootstrap.min.js"></script><script src="../google-code-prettify/prettify.js"></script><script src="../script.js"></script><script src="../group-examples.js"></script><script src="http://code.jquery.com/ui/1.9.0/jquery-ui.min.js"></script><script src="../tocify/jquery.tocify.js"></script><script>$(function() {

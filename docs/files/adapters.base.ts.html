@@ -1,7 +1,8 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>CORMO - adapters/base.ts</title><script>if (location.protocol.match(/^http/) && location.pathname.match('\.html') === null && location.pathname.slice(-1) !== '/') {
   location.href = location.href + '/';
-}</script><link href="../bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"><!--[if lt IE 9]><script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script><script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]--><link href="../google-code-prettify/prettify.css" rel="stylesheet" type="text/css"><link href="../style.css" rel="stylesheet" type="text/css"></head><body data-spy="scroll" data-target=".sidebar"><nav class="navbar navbar-default navbar-fixed-top" role="navigation"><div class="navbar-header"><button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#top-navigation-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><div class="collapse navbar-collapse" id="top-navigation-collapse"><ul class="nav navbar-nav"><li><a href="../index.html">Home</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Guides <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../guides/Aggregation.html">Aggregation</a></li><li><a href="../guides/Association.html">Association</a></li><li><a href="../guides/Callback.html">Callback</a></li><li><a href="../guides/Constraint.html">Constraint</a></li><li><a href="../guides/CreateRecords.html">Create records</a></li><li><a href="../guides/DefineModels.html">Define models</a></li><li><a href="../guides/Geospatial.html">Geospatial</a></li><li><a href="../guides/Miscellaneous.html">Miscellaneous</a></li><li><a href="../guides/Query.html">Query</a></li><li><a href="../guides/Validation.html">Validation</a></li></ul></li><li><a href="../modules/index.html">Modules</a></li><li><a href="../classes/index.html">Classes</a></li><li class="dropdown active"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Files - adapters/base.ts <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../files/decorators.ts.html">decorators.ts</a></li><li><a href="../files/index.ts.html">index.ts</a></li><li><a href="../files/query.ts.html">query.ts</a></li><li><a href="../files/types.ts.html">types.ts</a></li><li><a href="../files/adapters.base.ts.html">adapters/base.ts</a></li><li><a href="../files/adapters.mongodb.ts.html">adapters/mongodb.ts</a></li><li><a href="../files/adapters.mysql.ts.html">adapters/mysql.ts</a></li><li><a href="../files/adapters.postgresql.ts.html">adapters/postgresql.ts</a></li><li><a href="../files/adapters.redis.ts.html">adapters/redis.ts</a></li><li><a href="../files/adapters.sql_base.ts.html">adapters/sql_base.ts</a></li><li><a href="../files/adapters.sqlite3.ts.html">adapters/sqlite3.ts</a></li><li><a href="../files/adapters.sqlite3_memory.ts.html">adapters/sqlite3_memory.ts</a></li><li><a href="../files/command.index.ts.html">command/index.ts</a></li><li><a href="../files/connection.index.ts.html">connection/index.ts</a></li><li><a href="../files/model.index.ts.html">model/index.ts</a></li><li><a href="../files/util.index.ts.html">util/index.ts</a></li><li><a href="../files/util.inflector.ts.html">util/inflector.ts</a></li></ul></li></ul><div class="options"><label class="checkbox"><input id="options-private" type="checkbox"> Private </label></div></div></div></nav><div class="container-fluid content"><div class="row"><div class="hidden-xs sidebar col-sm-3" data-spy="affix"><div class="cormo-sidenav"><div class="panel panel-default"><div class="panel-collapse collapse in" id="undefined_body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/decorators.ts.html">decorators.ts</a></li><li><a href="../files/index.ts.html">index.ts</a></li><li><a href="../files/query.ts.html">query.ts</a></li><li><a href="../files/types.ts.html">types.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#adapters__body">adapters/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="adapters__body"><ul class="nav nav-pills nav-stacked"><li class="active"><a href="../files/adapters.base.ts.html">base.ts</a></li><li><a href="../files/adapters.mongodb.ts.html">mongodb.ts</a></li><li><a href="../files/adapters.mysql.ts.html">mysql.ts</a></li><li><a href="../files/adapters.postgresql.ts.html">postgresql.ts</a></li><li><a href="../files/adapters.redis.ts.html">redis.ts</a></li><li><a href="../files/adapters.sql_base.ts.html">sql_base.ts</a></li><li><a href="../files/adapters.sqlite3.ts.html">sqlite3.ts</a></li><li><a href="../files/adapters.sqlite3_memory.ts.html">sqlite3_memory.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#command__body">command/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="command__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/command.index.ts.html">index.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#connection__body">connection/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="connection__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/connection.index.ts.html">index.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#model__body">model/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="model__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/model.index.ts.html">index.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#util__body">util/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="util__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/util.index.ts.html">index.ts</a></li><li><a href="../files/util.inflector.ts.html">inflector.ts</a></li></ul></div></div></div></div><div class="col-sm-9 col-sm-offset-3"><section><h1>adapters/base.ts</h1></section><pre class="prettyprint">import * as stream from 'stream';
+}</script><link href="../bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"><!--[if lt IE 9]><script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script><script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]--><link href="../google-code-prettify/prettify.css" rel="stylesheet" type="text/css"><link href="../style.css" rel="stylesheet" type="text/css"></head><body data-spy="scroll" data-target=".sidebar"><nav class="navbar navbar-default navbar-fixed-top" role="navigation"><div class="navbar-header"><button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#top-navigation-collapse"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><div class="collapse navbar-collapse" id="top-navigation-collapse"><ul class="nav navbar-nav"><li><a href="../index.html">Home</a></li><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Guides <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../guides/Aggregation.html">Aggregation</a></li><li><a href="../guides/Association.html">Association</a></li><li><a href="../guides/Callback.html">Callback</a></li><li><a href="../guides/Constraint.html">Constraint</a></li><li><a href="../guides/CreateRecords.html">Create records</a></li><li><a href="../guides/DefineModels.html">Define models</a></li><li><a href="../guides/Geospatial.html">Geospatial</a></li><li><a href="../guides/Miscellaneous.html">Miscellaneous</a></li><li><a href="../guides/Query.html">Query</a></li><li><a href="../guides/Validation.html">Validation</a></li></ul></li><li><a href="../modules/index.html">Modules</a></li><li><a href="../classes/index.html">Classes</a></li><li class="dropdown active"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Files - adapters/base.ts <span class="caret"></span></a><ul class="dropdown-menu"><li><a href="../files/decorators.ts.html">decorators.ts</a></li><li><a href="../files/index.ts.html">index.ts</a></li><li><a href="../files/query.ts.html">query.ts</a></li><li><a href="../files/transaction.ts.html">transaction.ts</a></li><li><a href="../files/types.ts.html">types.ts</a></li><li><a href="../files/adapters.base.ts.html">adapters/base.ts</a></li><li><a href="../files/adapters.mongodb.ts.html">adapters/mongodb.ts</a></li><li><a href="../files/adapters.mysql.ts.html">adapters/mysql.ts</a></li><li><a href="../files/adapters.postgresql.ts.html">adapters/postgresql.ts</a></li><li><a href="../files/adapters.redis.ts.html">adapters/redis.ts</a></li><li><a href="../files/adapters.sql_base.ts.html">adapters/sql_base.ts</a></li><li><a href="../files/adapters.sqlite3.ts.html">adapters/sqlite3.ts</a></li><li><a href="../files/adapters.sqlite3_memory.ts.html">adapters/sqlite3_memory.ts</a></li><li><a href="../files/command.index.ts.html">command/index.ts</a></li><li><a href="../files/connection.index.ts.html">connection/index.ts</a></li><li><a href="../files/logger.ColorConsoleLogger.ts.html">logger/ColorConsoleLogger.ts</a></li><li><a href="../files/logger.ConsoleLogger.ts.html">logger/ConsoleLogger.ts</a></li><li><a href="../files/logger.EmptyLogger.ts.html">logger/EmptyLogger.ts</a></li><li><a href="../files/logger.ILogger.ts.html">logger/ILogger.ts</a></li><li><a href="../files/logger.index.ts.html">logger/index.ts</a></li><li><a href="../files/model.index.ts.html">model/index.ts</a></li><li><a href="../files/util.index.ts.html">util/index.ts</a></li><li><a href="../files/util.inflector.ts.html">util/inflector.ts</a></li></ul></li></ul><div class="options"><label class="checkbox"><input id="options-private" type="checkbox"> Private </label></div></div></div></nav><div class="container-fluid content"><div class="row"><div class="hidden-xs sidebar col-sm-3" data-spy="affix"><div class="cormo-sidenav"><div class="panel panel-default"><div class="panel-collapse collapse in" id="undefined_body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/decorators.ts.html">decorators.ts</a></li><li><a href="../files/index.ts.html">index.ts</a></li><li><a href="../files/query.ts.html">query.ts</a></li><li><a href="../files/transaction.ts.html">transaction.ts</a></li><li><a href="../files/types.ts.html">types.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#adapters__body">adapters/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="adapters__body"><ul class="nav nav-pills nav-stacked"><li class="active"><a href="../files/adapters.base.ts.html">base.ts</a></li><li><a href="../files/adapters.mongodb.ts.html">mongodb.ts</a></li><li><a href="../files/adapters.mysql.ts.html">mysql.ts</a></li><li><a href="../files/adapters.postgresql.ts.html">postgresql.ts</a></li><li><a href="../files/adapters.redis.ts.html">redis.ts</a></li><li><a href="../files/adapters.sql_base.ts.html">sql_base.ts</a></li><li><a href="../files/adapters.sqlite3.ts.html">sqlite3.ts</a></li><li><a href="../files/adapters.sqlite3_memory.ts.html">sqlite3_memory.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#command__body">command/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="command__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/command.index.ts.html">index.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#connection__body">connection/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="connection__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/connection.index.ts.html">index.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#logger__body">logger/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="logger__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/logger.ColorConsoleLogger.ts.html">ColorConsoleLogger.ts</a></li><li><a href="../files/logger.ConsoleLogger.ts.html">ConsoleLogger.ts</a></li><li><a href="../files/logger.EmptyLogger.ts.html">EmptyLogger.ts</a></li><li><a href="../files/logger.ILogger.ts.html">ILogger.ts</a></li><li><a href="../files/logger.index.ts.html">index.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#model__body">model/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="model__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/model.index.ts.html">index.ts</a></li></ul></div></div><div class="panel panel-default"><div class="panel-heading" data-toggle="collapse" data-target="#util__body">util/<span class="pull-right glyphicon"></span></div><div class="panel-collapse collapse in" id="util__body"><ul class="nav nav-pills nav-stacked"><li><a href="../files/util.index.ts.html">index.ts</a></li><li><a href="../files/util.inflector.ts.html">inflector.ts</a></li></ul></div></div></div></div><div class="col-sm-9 col-sm-offset-3"><section><h1>adapters/base.ts</h1></section><pre class="prettyprint">import * as stream from 'stream';
 import { Connection } from '../connection';
+import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
 
@@ -9,6 +10,26 @@ export interface ISchemas {
   tables: { [table_name: string]: any };
   indexes?: { [table_name: string]: any };
   foreign_keys?: { [table_name: string]: any };
+}
+
+export interface IAdapterFindOptions {
+  orders: any[];
+  near?: any;
+  select?: string[];
+  conditions_of_group: any[];
+  group_fields?: any;
+  group_by?: any;
+  limit?: number;
+  skip?: number;
+  explain?: boolean;
+  transaction?: Transaction;
+}
+
+export interface IAdapterCountOptions {
+  conditions_of_group: any[];
+  group_fields?: any;
+  group_by?: any;
+  transaction?: Transaction;
 }
 
 /**
@@ -133,22 +154,28 @@ abstract class AdapterBase {
   /**
    * Creates a record
    */
-  public abstract async create(model: string, data: object): Promise&lt;any&gt;;
+  public abstract async create(model: string, data: any, options: { transaction?: Transaction }): Promise&lt;any&gt;;
 
   /**
    * Creates records
    */
-  public abstract async createBulk(model: string, data: object[]): Promise&lt;any[]&gt;;
+  public abstract async createBulk(
+    model: string, data: any[],
+    options: { transaction?: Transaction },
+  ): Promise&lt;any[]&gt;;
 
   /**
    * Updates a record
    */
-  public abstract async update(model: string, data: any): Promise&lt;void&gt;;
+  public abstract async update(model: string, data: any, options: { transaction?: Transaction }): Promise&lt;void&gt;;
 
   /**
    * Updates some fields of records that match conditions
    */
-  public abstract async updatePartial(model: string, data: any, conditions: any, options: any): Promise&lt;number&gt;;
+  public abstract async updatePartial(
+    model: string, data: any, conditions: any,
+    options: { transaction?: Transaction },
+  ): Promise&lt;number&gt;;
 
   /**
    * Updates some fields of records that match conditions or inserts a new record
@@ -159,13 +186,16 @@ abstract class AdapterBase {
    * Finds a record by id
    * @see Query::exec
    */
-  public abstract async findById(model: any, id: any, options: any): Promise&lt;any&gt;;
+  public abstract async findById(
+    model: string, id: any,
+    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+  ): Promise&lt;any&gt;;
 
   /**
    * Finds records
    * @see Query::exec
    */
-  public abstract async find(model: any, conditions: any, options: any): Promise&lt;any&gt;;
+  public abstract async find(model: string, conditions: any, options: IAdapterFindOptions): Promise&lt;any&gt;;
 
   /**
    * Streams matching records
@@ -177,18 +207,38 @@ abstract class AdapterBase {
    * Counts records
    * @see Query::count
    */
-  public abstract async count(model: any, conditions: any, options: any): Promise&lt;number&gt;;
+  public abstract async count(model: string, conditions: any, options: IAdapterCountOptions): Promise&lt;number&gt;;
 
   /**
    * Deletes records from the database
    * @see Query::delete
    */
-  public abstract async delete(model: any, conditions: any): Promise&lt;number&gt;;
+  public abstract async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise&lt;number&gt;;
 
   /**
    * Closes connection
    */
   public abstract close(): void;
+
+  public async getConnection(): Promise&lt;any&gt; {
+    //
+  }
+
+  public async releaseConnection(adapter_connection: any): Promise&lt;void&gt; {
+    //
+  }
+
+  public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise&lt;void&gt; {
+    //
+  }
+
+  public async commitTransaction(adapter_connection: any): Promise&lt;void&gt; {
+    //
+  }
+
+  public async rollbackTransaction(adapter_connection: any): Promise&lt;void&gt; {
+    //
+  }
 
   protected _getModelID(data: any) {
     return data.id;
@@ -242,9 +292,9 @@ abstract class AdapterBase {
     return instance;
   }
 
-  protected async _createBulkDefault(model: any, data: any) {
+  protected async _createBulkDefault(model: string, data: any[], options: { transaction?: Transaction }) {
     return await Promise.all(data.map((item: any) =&gt; {
-      return this.create(model, item);
+      return this.create(model, item, options);
     }));
   }
 }

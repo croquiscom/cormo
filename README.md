@@ -274,7 +274,7 @@ const User = connection.model('User', {
   email: String
 });
 
-User.addValidator(function (record) {
+User.addValidator((record) => {
   if (record.age<18) {
     return 'too young';
   }
@@ -313,7 +313,7 @@ const User = connection.model('User', {
   age: Number
 });
 
-User.beforeSave(function () {
+User.beforeSave(() => {
   this.name = this.name.trim();
 });
 ```
