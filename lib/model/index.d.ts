@@ -253,11 +253,15 @@ declare class BaseModel {
     /**
      * Updates some fields of records that match conditions
      */
-    static update(updates: any, condition?: object): Promise<number>;
+    static update(updates: any, condition?: object, options?: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Deletes records by conditions
      */
-    static delete(condition?: object): Promise<number>;
+    static delete(condition?: object, options?: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Adds 'created_at' and 'updated_at' fields to records
      */

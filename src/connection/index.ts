@@ -77,6 +77,8 @@ interface ITxModelClass<M extends BaseModel> {
   create(data?: ModelValueObject<M>): Promise<M>;
   createBulk(data?: Array<ModelValueObject<M>>): Promise<M[]>;
   count(condition?: object): Promise<number>;
+  update(updates: any, condition?: object): Promise<number>;
+  delete(condition?: object): Promise<number>;
   find(id: types.RecordID): IQuerySingle<M>;
   find(id: types.RecordID[]): IQueryArray<M>;
   where(condition?: object): IQueryArray<M>;
@@ -563,14 +565,20 @@ class Connection extends EventEmitter {
           instance._transaction = transaction;
           return instance;
         };
-        txModel.count = (condition?: object) => {
-          return model.count(condition, { transaction });
-        };
         txModel.create = (data?: any) => {
           return model.create(data, { transaction });
         };
         txModel.createBulk = (data?: any[]) => {
           return model.createBulk(data, { transaction });
+        };
+        txModel.count = (condition?: object) => {
+          return model.count(condition, { transaction });
+        };
+        txModel.update = (updates: any, condition?: object) => {
+          return model.update(updates, condition, { transaction });
+        };
+        txModel.delete = (condition?: object) => {
+          return model.delete(condition, { transaction });
         };
         txModel.find = (id: types.RecordID | types.RecordID[]) => {
           return model.find(id, { transaction });

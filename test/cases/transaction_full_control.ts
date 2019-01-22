@@ -228,5 +228,57 @@ export default function(models: {
 
       expect(await models.User.where()).to.eql([]);
     });
+
+    it('Model.count', async () => {
+      const tx = await models.connection!.getTransaction();
+
+      try {
+        const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+        expect(await models.User.count(undefined, { transaction: tx })).to.eql(1);
+        await tx.rollback();
+      } finally {
+        try { await tx.rollback(); } catch (error) { /**/ }
+      }
+
+      expect(await models.User.where()).to.eql([]);
+    });
+
+    it('Model.update', async () => {
+      const user = await models.User.create({ name: 'John Doe', age: 27 });
+
+      const tx = await models.connection!.getTransaction();
+
+      try {
+        await models.User.update({ age: 30 }, undefined, { transaction: tx });
+        expect(await models.User.where().transaction(tx)).to.eql([
+          { id: user.id, name: 'John Doe', age: 30 },
+        ]);
+        await tx.rollback();
+      } finally {
+        try { await tx.rollback(); } catch (error) { /**/ }
+      }
+
+      expect(await models.User.where()).to.eql([
+        { id: user.id, name: 'John Doe', age: 27 },
+      ]);
+    });
+
+    it('Model.delete', async () => {
+      const user = await models.User.create({ name: 'John Doe', age: 27 });
+
+      const tx = await models.connection!.getTransaction();
+
+      try {
+        await models.User.delete(undefined, { transaction: tx });
+        expect(await models.User.where().transaction(tx)).to.eql([]);
+        await tx.rollback();
+      } finally {
+        try { await tx.rollback(); } catch (error) { /**/ }
+      }
+
+      expect(await models.User.where()).to.eql([
+        { id: user.id, name: 'John Doe', age: 27 },
+      ]);
+    });
   });
 }

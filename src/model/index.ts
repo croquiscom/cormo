@@ -663,21 +663,24 @@ class BaseModel {
    * Counts records by conditions
    */
   public static async count(condition?: object, options?: { transaction?: Transaction }): Promise<number> {
-    return await this.query().where(condition).transaction(options && options.transaction).count();
+    return await this.query(options).where(condition).count();
   }
 
   /**
    * Updates some fields of records that match conditions
    */
-  public static async update(updates: any, condition?: object): Promise<number> {
-    return await this.query().where(condition).update(updates);
+  public static async update(
+    updates: any, condition?: object,
+    options?: { transaction?: Transaction },
+  ): Promise<number> {
+    return await this.query(options).where(condition).update(updates);
   }
 
   /**
    * Deletes records by conditions
    */
-  public static async delete(condition?: object): Promise<number> {
-    return await this.query().where(condition).delete();
+  public static async delete(condition?: object, options?: { transaction?: Transaction }): Promise<number> {
+    return await this.query(options).where(condition).delete();
   }
 
   /**

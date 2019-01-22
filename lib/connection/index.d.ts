@@ -56,6 +56,8 @@ interface ITxModelClass<M extends BaseModel> {
     create(data?: ModelValueObject<M>): Promise<M>;
     createBulk(data?: Array<ModelValueObject<M>>): Promise<M[]>;
     count(condition?: object): Promise<number>;
+    update(updates: any, condition?: object): Promise<number>;
+    delete(condition?: object): Promise<number>;
     find(id: types.RecordID): IQuerySingle<M>;
     find(id: types.RecordID[]): IQueryArray<M>;
     where(condition?: object): IQueryArray<M>;
