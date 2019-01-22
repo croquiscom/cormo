@@ -17,9 +17,10 @@ export interface IAdapterSettingsRedis {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
+import { Transaction } from '../transaction';
 import * as types from '../types';
 import { tableize } from '../util/inflector';
-import { AdapterBase } from './base';
+import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions } from './base';
 
 // Adapter for Redis
 // @namespace adapter
@@ -37,7 +38,7 @@ class RedisAdapter extends AdapterBase {
   }
 
   public async drop(model: string) {
-    await this.delete(model, []);
+    await this.delete(model, [], {});
   }
 
   public valueToDB(value: any, column: any, property: any) {
@@ -64,7 +65,7 @@ class RedisAdapter extends AdapterBase {
     }
   }
 
-  public async create(model: string, data: any): Promise<any> {
+  public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
     data.$_$ = ''; // ensure that there is one argument(one field) at least
     let id;
     try {
@@ -80,11 +81,11 @@ class RedisAdapter extends AdapterBase {
     return id;
   }
 
-  public async createBulk(model: string, data: any[]): Promise<any[]> {
-    return await this._createBulkDefault(model, data);
+  public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
+    return await this._createBulkDefault(model, data, options);
   }
 
-  public async update(model: string, data: any) {
+  public async update(model: string, data: any, options: { transaction?: Transaction }) {
     const key = `${tableize(model)}:${data.id}`;
     delete data.id;
     data.$_$ = ''; // ensure that there is one argument(one field) at least
@@ -109,7 +110,10 @@ class RedisAdapter extends AdapterBase {
     }
   }
 
-  public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
+  public async updatePartial(
+    model: string, data: any, conditions: any,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const fields_to_del = Object.keys(data).filter((key) => data[key] == null);
     fields_to_del.forEach((key) => {
       return delete data[key];
@@ -139,7 +143,10 @@ class RedisAdapter extends AdapterBase {
     throw new Error('not implemented');
   }
 
-  public async findById(model: any, id: any, options: any): Promise<any> {
+  public async findById(
+    model: string, id: any,
+    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+  ): Promise<any> {
     let result;
     try {
       result = (await this._client.hgetallAsync(`${tableize(model)}:${id}`));
@@ -154,7 +161,7 @@ class RedisAdapter extends AdapterBase {
     }
   }
 
-  public async find(model: any, conditions: any, options: any): Promise<any> {
+  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const table = tableize(model);
     const keys = await this._getKeys(table, conditions);
     let records: any[] = await Promise.all(keys.map(async (key: any) => {
@@ -174,11 +181,11 @@ class RedisAdapter extends AdapterBase {
     throw new Error('not implemented');
   }
 
-  public async count(model: any, conditions: any, options: any): Promise<number> {
+  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     throw new Error('not implemented');
   }
 
-  public async delete(model: any, conditions: any): Promise<number> {
+  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const keys = await this._getKeys(tableize(model), conditions);
     if (keys.length === 0) {
       return 0;

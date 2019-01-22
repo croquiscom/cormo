@@ -13,7 +13,9 @@ import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logger';
-import { BaseModel, IColumnProperty, IModelSchema } from '../model';
+import { BaseModel, IColumnProperty, IModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
+import { IQueryArray, IQuerySingle } from '../query';
+import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
 
@@ -68,6 +70,28 @@ interface IAssociation {
   this_model: typeof BaseModel;
   target_model_or_column: string | typeof BaseModel;
   options?: IAssociationHasManyOptions | IAssociationHasOneOptions | IAssociationBelongsToOptions;
+}
+
+interface ITxModelClass<M extends BaseModel> {
+  new(data?: object): M;
+  create(data?: ModelValueObject<M>): Promise<M>;
+  createBulk(data?: Array<ModelValueObject<M>>): Promise<M[]>;
+  count(condition?: object): Promise<number>;
+  update(updates: any, condition?: object): Promise<number>;
+  delete(condition?: object): Promise<number>;
+  query(): IQueryArray<M>;
+  find(id: types.RecordID): IQuerySingle<M>;
+  find(id: types.RecordID[]): IQueryArray<M>;
+  findPreserve(ids: types.RecordID[]): IQueryArray<M>;
+  where(condition?: object): IQueryArray<M>;
+  select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<M, Pick<M, K>>;
+  select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<M, Pick<M, K>>;
+  order(orders: string): IQueryArray<M>;
+  group<G extends ModelColumnNamesWithId<M>, F>(
+    group_by: G | G[], fields?: F,
+  ): IQueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
+  group<F>(group_by: null, fields?: F): IQueryArray<M, { [field in keyof F]: number }>;
+  group<U>(group_by: string | null, fields?: object): IQueryArray<M, U>;
 }
 
 /**
@@ -514,6 +538,88 @@ class Connection extends EventEmitter {
         column, select, options);
     } else {
       throw new Error(`unknown column '${column}'`);
+    }
+  }
+
+  public async getTransaction(options?: { isolation_level?: IsolationLevel }): Promise<Transaction> {
+    const transaction = new Transaction(this);
+    await transaction.setup(options && options.isolation_level);
+    return transaction;
+  }
+
+  public async transaction<T, M1 extends BaseModel>(
+    options: { isolation_level?: IsolationLevel, models: [ITxModelClass<M1>] },
+    block: (m1: ITxModelClass<M1>, transaction: Transaction) => Promise<T>): Promise<T>;
+  public async transaction<T>(
+    options: { isolation_level?: IsolationLevel },
+    block: (transaction: Transaction) => Promise<T>): Promise<T>;
+  public async transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T>;
+  public async transaction<T>(
+    options_or_block: { isolation_level?: IsolationLevel, models?: any[] } | ((...args: any[]) => Promise<T>),
+    block?: (...args: any[]) => Promise<T>): Promise<T> {
+    let options: { isolation_level?: IsolationLevel, models?: any[] };
+    if (typeof options_or_block === 'function') {
+      options = {};
+      block = options_or_block;
+    } else {
+      options = options_or_block;
+      block = block!;
+    }
+    const transaction = new Transaction(this);
+    await transaction.setup(options && options.isolation_level);
+    try {
+      const args: any[] = (options.models || []).map((model) => {
+        // tslint:disable-next-line:only-arrow-functions
+        const txModel = function(data?: object) {
+          const instance = new model(data);
+          instance._transaction = transaction;
+          return instance;
+        };
+        txModel.create = (data?: any) => {
+          return model.create(data, { transaction });
+        };
+        txModel.createBulk = (data?: any[]) => {
+          return model.createBulk(data, { transaction });
+        };
+        txModel.count = (condition?: object) => {
+          return model.count(condition, { transaction });
+        };
+        txModel.update = (updates: any, condition?: object) => {
+          return model.update(updates, condition, { transaction });
+        };
+        txModel.delete = (condition?: object) => {
+          return model.delete(condition, { transaction });
+        };
+        txModel.query = () => {
+          return model.query({ transaction });
+        };
+        txModel.find = (id: types.RecordID | types.RecordID[]) => {
+          return model.find(id, { transaction });
+        };
+        txModel.findPreserve = (ids: types.RecordID[]) => {
+          return model.findPreserve(ids, { transaction });
+        };
+        txModel.where = (condition?: object) => {
+          return model.where(condition, { transaction });
+        };
+        txModel.select = (columns?: any) => {
+          return model.select(columns, { transaction });
+        };
+        txModel.order = (orders: string) => {
+          return model.order(orders, { transaction });
+        };
+        txModel.group = (group_by: string | null, fields?: object) => {
+          return model.group(group_by, fields, { transaction });
+        };
+        return txModel;
+      });
+      args.push(transaction);
+      const result = await block(...args);
+      await transaction.commit();
+      return result;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
   }
 

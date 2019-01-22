@@ -1,6 +1,7 @@
 import { AdapterBase } from '../adapters/base';
 import { Connection, IAssociationBelongsToOptions, IAssociationHasManyOptions, IAssociationHasOneOptions } from '../connection';
 import { IQueryArray, IQuerySingle } from '../query';
+import { Transaction } from '../transaction';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
 export declare type ModelColumnNames<M> = Exclude<keyof M, keyof BaseModel>;
@@ -188,62 +189,93 @@ declare class BaseModel {
      * 'Model.create(data)' is the same as 'Model.build(data).save()'
      */
     static create<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, data?: ModelValueObject<M>, options?: {
-        skip_log: boolean;
+        transaction?: Transaction;
+        skip_log?: boolean;
     }): Promise<M>;
     /**
      * Creates multiple records and saves them to the database.
      */
-    static createBulk<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, data?: Array<ModelValueObject<M>>): Promise<M[]>;
+    static createBulk<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, data?: Array<ModelValueObject<M>>, options?: {
+        transaction?: Transaction;
+    }): Promise<M[]>;
     /**
      * Creates q query object
      */
-    static query<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel): IQueryArray<M>;
+    static query<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M>;
     /**
      * Finds a record by id
      * @throws {Error('not found')}
      */
-    static find<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, id: types.RecordID): IQuerySingle<M>;
-    static find<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, id: types.RecordID[]): IQueryArray<M>;
+    static find<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, id: types.RecordID, options?: {
+        transaction?: Transaction;
+    }): IQuerySingle<M>;
+    static find<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, id: types.RecordID[], options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M>;
     /**
      * Finds records by ids while preserving order.
      * @throws {Error('not found')}
      */
-    static findPreserve<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, ids: types.RecordID[]): IQueryArray<M>;
+    static findPreserve<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, ids: types.RecordID[], options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M>;
     /**
      * Finds records by conditions
      */
-    static where<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, condition?: object): IQueryArray<M>;
+    static where<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, condition?: object, options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M>;
     /**
      * Selects columns for result
      */
-    static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(this: (new (data?: any) => M) & typeof BaseModel, columns: K[]): IQueryArray<M, Pick<M, K>>;
-    static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(this: (new (data?: any) => M) & typeof BaseModel, columns?: string): IQueryArray<M, Pick<M, K>>;
+    static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(this: (new (data?: any) => M) & typeof BaseModel, columns: K[], options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M, Pick<M, K>>;
+    static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(this: (new (data?: any) => M) & typeof BaseModel, columns?: string, options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M, Pick<M, K>>;
     /**
      * Specifies orders of result
      */
-    static order<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, orders: string): IQueryArray<M>;
+    static order<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, orders: string, options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M>;
     /**
      * Groups result records
      */
-    static group<M extends BaseModel, G extends ModelColumnNamesWithId<M>, F>(this: (new (data?: any) => M) & typeof BaseModel, group_by: G | G[], fields?: F): IQueryArray<M, {
+    static group<M extends BaseModel, G extends ModelColumnNamesWithId<M>, F>(this: (new (data?: any) => M) & typeof BaseModel, group_by: G | G[], fields?: F, options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M, {
         [field in keyof F]: number;
     } & Pick<M, G>>;
-    static group<M extends BaseModel, F>(this: (new (data?: any) => M) & typeof BaseModel, group_by: null, fields?: F): IQueryArray<M, {
+    static group<M extends BaseModel, F>(this: (new (data?: any) => M) & typeof BaseModel, group_by: null, fields?: F, options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M, {
         [field in keyof F]: number;
     }>;
-    static group<M extends BaseModel, U>(this: (new (data?: any) => M) & typeof BaseModel, group_by: string | null, fields?: object): IQueryArray<M, U>;
+    static group<M extends BaseModel, U>(this: (new (data?: any) => M) & typeof BaseModel, group_by: string | null, fields?: object, options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M, U>;
     /**
      * Counts records by conditions
      */
-    static count(condition?: object): Promise<number>;
+    static count(condition?: object, options?: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Updates some fields of records that match conditions
      */
-    static update(updates: any, condition?: object): Promise<number>;
+    static update(updates: any, condition?: object, options?: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Deletes records by conditions
      */
-    static delete(condition?: object): Promise<number>;
+    static delete(condition?: object, options?: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Adds 'created_at' and 'updated_at' fields to records
      */
@@ -305,6 +337,7 @@ declare class BaseModel {
      * Saves data to the database
      */
     save(options?: {
+        transaction?: Transaction;
         skip_log?: boolean;
         validate?: boolean;
     }): Promise<this>;

@@ -1,5 +1,6 @@
 import * as stream from 'stream';
 import { Connection } from '../connection';
+import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
 
@@ -7,6 +8,26 @@ export interface ISchemas {
   tables: { [table_name: string]: any };
   indexes?: { [table_name: string]: any };
   foreign_keys?: { [table_name: string]: any };
+}
+
+export interface IAdapterFindOptions {
+  orders: any[];
+  near?: any;
+  select?: string[];
+  conditions_of_group: any[];
+  group_fields?: any;
+  group_by?: any;
+  limit?: number;
+  skip?: number;
+  explain?: boolean;
+  transaction?: Transaction;
+}
+
+export interface IAdapterCountOptions {
+  conditions_of_group: any[];
+  group_fields?: any;
+  group_by?: any;
+  transaction?: Transaction;
 }
 
 /**
@@ -131,22 +152,28 @@ abstract class AdapterBase {
   /**
    * Creates a record
    */
-  public abstract async create(model: string, data: object): Promise<any>;
+  public abstract async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any>;
 
   /**
    * Creates records
    */
-  public abstract async createBulk(model: string, data: object[]): Promise<any[]>;
+  public abstract async createBulk(
+    model: string, data: any[],
+    options: { transaction?: Transaction },
+  ): Promise<any[]>;
 
   /**
    * Updates a record
    */
-  public abstract async update(model: string, data: any): Promise<void>;
+  public abstract async update(model: string, data: any, options: { transaction?: Transaction }): Promise<void>;
 
   /**
    * Updates some fields of records that match conditions
    */
-  public abstract async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number>;
+  public abstract async updatePartial(
+    model: string, data: any, conditions: any,
+    options: { transaction?: Transaction },
+  ): Promise<number>;
 
   /**
    * Updates some fields of records that match conditions or inserts a new record
@@ -157,13 +184,16 @@ abstract class AdapterBase {
    * Finds a record by id
    * @see Query::exec
    */
-  public abstract async findById(model: any, id: any, options: any): Promise<any>;
+  public abstract async findById(
+    model: string, id: any,
+    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+  ): Promise<any>;
 
   /**
    * Finds records
    * @see Query::exec
    */
-  public abstract async find(model: any, conditions: any, options: any): Promise<any>;
+  public abstract async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any>;
 
   /**
    * Streams matching records
@@ -175,18 +205,38 @@ abstract class AdapterBase {
    * Counts records
    * @see Query::count
    */
-  public abstract async count(model: any, conditions: any, options: any): Promise<number>;
+  public abstract async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number>;
 
   /**
    * Deletes records from the database
    * @see Query::delete
    */
-  public abstract async delete(model: any, conditions: any): Promise<number>;
+  public abstract async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number>;
 
   /**
    * Closes connection
    */
   public abstract close(): void;
+
+  public async getConnection(): Promise<any> {
+    //
+  }
+
+  public async releaseConnection(adapter_connection: any): Promise<void> {
+    //
+  }
+
+  public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
+    //
+  }
+
+  public async commitTransaction(adapter_connection: any): Promise<void> {
+    //
+  }
+
+  public async rollbackTransaction(adapter_connection: any): Promise<void> {
+    //
+  }
 
   protected _getModelID(data: any) {
     return data.id;
@@ -240,9 +290,9 @@ abstract class AdapterBase {
     return instance;
   }
 
-  protected async _createBulkDefault(model: any, data: any) {
+  protected async _createBulkDefault(model: string, data: any[], options: { transaction?: Transaction }) {
     return await Promise.all(data.map((item: any) => {
-      return this.create(model, item);
+      return this.create(model, item, options);
     }));
   }
 }

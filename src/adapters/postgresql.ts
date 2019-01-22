@@ -26,8 +26,9 @@ export interface IAdapterSettingsPostgreSQL {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import { IColumnPropertyInternal } from '../model';
+import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { ISchemas } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: IColumnPropertyInternal) {
@@ -96,6 +97,9 @@ class PostgreSQLAdapter extends SQLAdapterBase {
   public support_string_type_with_length = true;
 
   public native_integrity = true;
+
+  public support_isolation_level_read_uncommitted = false;
+  public support_isolation_level_repeatable_read = false;
 
   protected _contains_op = 'ILIKE';
 
@@ -211,14 +215,14 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
-  public async create(model: string, data: object): Promise<any> {
+  public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields, places] = this._buildUpdateSet(model, data, values, true);
     const sql = `INSERT INTO "${table_name}" (${fields}) VALUES (${places}) RETURNING id`;
     let result;
     try {
-      result = await this._pool.query(sql, values);
+      result = await this.query(sql, values, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw _processSaveError(table_name, error);
     }
@@ -230,7 +234,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
-  public async createBulk(model: string, data: object[]): Promise<any[]> {
+  public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     let fields: any;
@@ -243,7 +247,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     const sql = `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')} RETURNING id`;
     let result;
     try {
-      result = await this._pool.query(sql, values);
+      result = await this.query(sql, values, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw _processSaveError(table_name, error);
     }
@@ -255,20 +259,23 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
-  public async update(model: string, data: any) {
+  public async update(model: string, data: any, options: { transaction?: Transaction }) {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildUpdateSet(model, data, values);
     values.push(data.id);
     const sql = `UPDATE "${table_name}" SET ${fields} WHERE id=$${values.length}`;
     try {
-      await this._pool.query(sql, values);
+      await this.query(sql, values, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw _processSaveError(table_name, error);
     }
   }
 
-  public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
+  public async updatePartial(
+    model: string, data: any, conditions: any,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildPartialUpdateSet(model, data, values);
@@ -282,23 +289,26 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = (await this._pool.query(sql, values));
+      result = await this.query(sql, values, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw _processSaveError(table_name, error);
     }
     return result.rowCount;
   }
 
-  public async findById(model: any, id: any, options: any): Promise<any> {
+  public async findById(
+    model: string, id: any,
+    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+  ): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
     const table_name = this._connection.models[model].table_name;
     const sql = `SELECT ${select} FROM "${table_name}" WHERE id=$1 LIMIT 1`;
     if (options.explain) {
-      return (await this._pool.query(`EXPLAIN ${sql}`, [id]));
+      return await this.query(`EXPLAIN ${sql}`, [id], options.transaction && options.transaction._adapter_connection);
     }
     let result;
     try {
-      result = (await this._pool.query(sql, [id]));
+      result = await this.query(sql, [id], options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
@@ -312,14 +322,14 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
-  public async find(model: any, conditions: any, options: any): Promise<any> {
+  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
-      return await this._pool.query(`EXPLAIN ${sql}`, params);
+      return await this.query(`EXPLAIN ${sql}`, params, options.transaction && options.transaction._adapter_connection);
     }
     let result;
     try {
-      result = await this._pool.query(sql, params);
+      result = await this.query(sql, params, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
@@ -364,7 +374,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return transformer;
   }
 
-  public async count(model: any, conditions: any, options: any): Promise<number> {
+  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `SELECT COUNT(*) AS count FROM "${table_name}"`;
@@ -380,7 +390,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = await this._pool.query(sql, params);
+      result = await this.query(sql, params, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
@@ -391,7 +401,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return Number(rows[0].count);
   }
 
-  public async delete(model: any, conditions: any): Promise<number> {
+  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `DELETE FROM "${table_name}"`;
@@ -400,7 +410,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = await this._pool.query(sql, params);
+      result = await this.query(sql, params, options.transaction && options.transaction._adapter_connection);
     } catch (error) {
       if (error.code === '23503') {
         throw new Error('rejected');
@@ -442,11 +452,40 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     this._pool = null;
   }
 
+  public async getConnection(): Promise<any> {
+    const adapter_connection = await this._pool.connect();
+    return adapter_connection;
+  }
+
+  public async releaseConnection(adapter_connection: any): Promise<void> {
+    adapter_connection.release();
+  }
+
+  public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
+    if (isolation_level) {
+      await adapter_connection.query(`START TRANSACTION ISOLATION LEVEL ${isolation_level}`);
+    } else {
+      await adapter_connection.query('START TRANSACTION');
+    }
+  }
+
+  public async commitTransaction(adapter_connection: any): Promise<void> {
+    await adapter_connection.query('COMMIT');
+  }
+
+  public async rollbackTransaction(adapter_connection: any): Promise<void> {
+    await adapter_connection.query('ROLLBACK');
+  }
+
   /**
    * Exposes pg module's query method
    */
-  public query() {
-    return this._pool.query.apply(this._pool, arguments);
+  public async query(text: string, values?: any[], adapter_connection?: any) {
+    if (adapter_connection) {
+      return await adapter_connection.query(text, values);
+    } else {
+      return await this._pool.query(text, values);
+    }
   }
 
   protected _param_place_holder(pos: any) {
@@ -602,7 +641,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return [fields.join(','), places.join(',')];
   }
 
-  private _buildSqlForFind(model: any, conditions: any, options: any) {
+  private _buildSqlForFind(model: any, conditions: any, options: any): [string, any[]] {
     let select;
     if (options.group_by || options.group_fields) {
       select = this._buildGroupFields(options.group_by, options.group_fields);

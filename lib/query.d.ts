@@ -1,9 +1,9 @@
 /// <reference types="node" />
 import * as stream from 'stream';
 import { BaseModel, ModelColumnNamesWithId } from './model';
+import { Transaction } from './transaction';
 import { RecordID } from './types';
 interface IQueryOptions {
-    conditions_of_group: any[];
     lean: boolean;
     orders: any[];
     near?: any;
@@ -11,6 +11,7 @@ interface IQueryOptions {
     select_single: boolean;
     select?: string[];
     select_raw?: string[];
+    conditions_of_group: any[];
     group_fields?: any;
     group_by?: any;
     limit?: number;
@@ -22,6 +23,7 @@ interface IQueryOptions {
         ttl: number;
         refresh?: boolean;
     };
+    transaction?: Transaction;
 }
 export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
     find(id: RecordID): IQuerySingle<M, T>;
@@ -48,6 +50,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
     endif(): IQuerySingle<M, T>;
     cache(options: IQueryOptions['cache']): IQuerySingle<M, T>;
     include(column: string, select?: string): IQuerySingle<M, T>;
+    transaction(transaction?: Transaction): IQuerySingle<M, T>;
     exec(options?: any): PromiseLike<T>;
     stream(): stream.Readable;
     explain(): PromiseLike<any>;
@@ -81,6 +84,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
     endif(): IQueryArray<M, T>;
     cache(options: IQueryOptions['cache']): IQueryArray<M, T>;
     include(column: string, select?: string): IQueryArray<M, T>;
+    transaction(transaction?: Transaction): IQueryArray<M, T>;
     exec(options?: any): PromiseLike<T[]>;
     stream(): stream.Readable;
     explain(): PromiseLike<any>;
@@ -185,6 +189,7 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
      * Returns associated objects also
      */
     include(column: any, select: any): this;
+    transaction(transaction?: Transaction): this;
     /**
      * Executes the query
      * @see AdapterBase::findById

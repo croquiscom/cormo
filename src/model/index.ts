@@ -8,6 +8,7 @@ import {
   IAssociationHasOneOptions,
 } from '../connection';
 import { IQueryArray, IQuerySingle, Query } from '../query';
+import { Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
 import { tableize } from '../util/inflector';
@@ -506,7 +507,7 @@ class BaseModel {
   public static async create<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     data?: ModelValueObject<M>,
-    options?: { skip_log: boolean },
+    options?: { transaction?: Transaction, skip_log?: boolean },
   ): Promise<M> {
     await this._checkReady();
     return await this.build<M>(data).save(options);
@@ -518,6 +519,7 @@ class BaseModel {
   public static async createBulk<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     data?: Array<ModelValueObject<M>>,
+    options?: { transaction?: Transaction },
   ): Promise<M[]> {
     await this._checkReady();
     if (!Array.isArray(data)) {
@@ -538,7 +540,7 @@ class BaseModel {
       record._runCallbacks('create', 'before');
     }
     try {
-      return await this._createBulk(records);
+      return await this._createBulk(records, options);
     } finally {
       for (const record of records) {
         record._runCallbacks('create', 'after');
@@ -554,8 +556,9 @@ class BaseModel {
    */
   public static query<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return new Query<M>(this);
+    return new Query<M>(this).transaction(options && options.transaction);
   }
 
   /**
@@ -565,16 +568,19 @@ class BaseModel {
   public static find<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID,
+    options?: { transaction?: Transaction },
   ): IQuerySingle<M>;
   public static find<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID[],
+    options?: { transaction?: Transaction },
   ): IQueryArray<M>;
   public static find<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID | types.RecordID[],
+    options?: { transaction?: Transaction },
   ): IQuerySingle<M> | IQueryArray<M> {
-    return this.query().find(id as types.RecordID);
+    return this.query(options).find(id as types.RecordID);
   }
 
   /**
@@ -584,8 +590,9 @@ class BaseModel {
   public static findPreserve<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     ids: types.RecordID[],
+    options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return this.query().findPreserve(ids);
+    return this.query(options).findPreserve(ids);
   }
 
   /**
@@ -594,8 +601,9 @@ class BaseModel {
   public static where<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     condition?: object,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return this.query().where(condition);
+    return this.query(options).where(condition);
   }
 
   /**
@@ -604,16 +612,19 @@ class BaseModel {
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
     this: (new (data?: any) => M) & typeof BaseModel,
     columns: K[],
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, Pick<M, K>>;
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
     this: (new (data?: any) => M) & typeof BaseModel,
     columns?: string,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, Pick<M, K>>;
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
     this: (new (data?: any) => M) & typeof BaseModel,
     columns?: string | K[],
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, Pick<M, K>> {
-    return this.query().select<K>(columns as string);
+    return this.query(options).select<K>(columns as string);
   }
 
   /**
@@ -622,8 +633,9 @@ class BaseModel {
   public static order<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     orders: string,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return this.query().order(orders);
+    return this.query(options).order(orders);
   }
 
   /**
@@ -633,44 +645,51 @@ class BaseModel {
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: G | G[],
     fields?: F,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
   public static group<M extends BaseModel, F>(
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: null,
     fields?: F,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, { [field in keyof F]: number }>;
   public static group<M extends BaseModel, U>(
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: string | null,
     fields?: object,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, U>;
   public static group<M extends BaseModel, U>(
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: string | null,
     fields?: object,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, U> {
-    return this.query().group<U>(group_by, fields);
+    return this.query(options).group<U>(group_by, fields);
   }
 
   /**
    * Counts records by conditions
    */
-  public static async count(condition?: object): Promise<number> {
-    return await this.query().where(condition).count();
+  public static async count(condition?: object, options?: { transaction?: Transaction }): Promise<number> {
+    return await this.query(options).where(condition).count();
   }
 
   /**
    * Updates some fields of records that match conditions
    */
-  public static async update(updates: any, condition?: object): Promise<number> {
-    return await this.query().where(condition).update(updates);
+  public static async update(
+    updates: any, condition?: object,
+    options?: { transaction?: Transaction },
+  ): Promise<number> {
+    return await this.query(options).where(condition).update(updates);
   }
 
   /**
    * Deletes records by conditions
    */
-  public static async delete(condition?: object): Promise<number> {
-    return await this.query().where(condition).delete();
+  public static async delete(condition?: object, options?: { transaction?: Transaction }): Promise<number> {
+    return await this.query(options).where(condition).delete();
   }
 
   /**
@@ -777,7 +796,7 @@ class BaseModel {
     return callbacks.push({ type, method });
   }
 
-  private static async _createBulk(records: any[]) {
+  private static async _createBulk(records: any[], options: { transaction?: Transaction } = {}) {
     let error;
     const data_array = records.map((record) => {
       try {
@@ -790,7 +809,7 @@ class BaseModel {
       throw error;
     }
     this._connection.log(this._name, 'createBulk', data_array);
-    const ids = await this._adapter.createBulk(this._name, data_array);
+    const ids = await this._adapter.createBulk(this._name, data_array, { transaction: options.transaction });
     records.forEach((record, i) => {
       Object.defineProperty(record, 'id', {
         configurable: false,
@@ -841,6 +860,9 @@ class BaseModel {
   }
 
   public readonly id?: any;
+
+  /** @internal */
+  public _transaction?: Transaction;
 
   private _intermediates?: any;
   private _prev_attributes?: any;
@@ -1044,7 +1066,7 @@ class BaseModel {
    * Saves data to the database
    */
   public async save(
-    options: { skip_log?: boolean, validate?: boolean } = {},
+    options: { transaction?: Transaction, skip_log?: boolean, validate?: boolean } = {},
   ): Promise<this> {
     const ctor = this.constructor as typeof BaseModel;
     await ctor._checkReady();
@@ -1156,13 +1178,13 @@ class BaseModel {
     return data;
   }
 
-  private async _create(options: any) {
+  private async _create(options: { transaction?: Transaction, skip_log?: boolean }) {
     const data = this._buildSaveData();
     const ctor = this.constructor as typeof BaseModel;
     if (!(options && options.skip_log)) {
       ctor._connection.log(ctor._name, 'create', data);
     }
-    const id = await ctor._adapter.create(ctor._name, data);
+    const id = await ctor._adapter.create(ctor._name, data, { transaction: options.transaction || this._transaction });
     Object.defineProperty(this, 'id', {
       configurable: false,
       enumerable: true,
@@ -1182,7 +1204,7 @@ class BaseModel {
         sub[foreign_key] = id;
         return sub.save();
       });
-      return (await Promise.all(sub_promises));
+      return await Promise.all(sub_promises);
     });
     try {
       await Promise.all(promises);
@@ -1192,7 +1214,7 @@ class BaseModel {
     return this._prev_attributes = {};
   }
 
-  private async _update(options: any) {
+  private async _update(options: { transaction?: Transaction, skip_log?: boolean }) {
     const ctor = this.constructor as typeof BaseModel;
     if (ctor.dirty_tracking) {
       // update changed values only
@@ -1217,7 +1239,7 @@ class BaseModel {
       if (!(options && options.skip_log)) {
         ctor._connection.log(ctor._name, 'update', data);
       }
-      await ctor._adapter.update(ctor._name, data);
+      await ctor._adapter.update(ctor._name, data, { transaction: options.transaction || this._transaction });
       return this._prev_attributes = {};
     }
   }

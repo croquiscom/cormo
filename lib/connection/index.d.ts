@@ -6,7 +6,10 @@ import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ILogger } from '../logger';
-import { BaseModel, IModelSchema } from '../model';
+import { BaseModel, IModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
+import { IQueryArray, IQuerySingle } from '../query';
+import { IsolationLevel, Transaction } from '../transaction';
+import * as types from '../types';
 declare type ManipulateCommand = string | {
     [key: string]: any;
 };
@@ -47,6 +50,29 @@ interface IAssociation {
     this_model: typeof BaseModel;
     target_model_or_column: string | typeof BaseModel;
     options?: IAssociationHasManyOptions | IAssociationHasOneOptions | IAssociationBelongsToOptions;
+}
+interface ITxModelClass<M extends BaseModel> {
+    new (data?: object): M;
+    create(data?: ModelValueObject<M>): Promise<M>;
+    createBulk(data?: Array<ModelValueObject<M>>): Promise<M[]>;
+    count(condition?: object): Promise<number>;
+    update(updates: any, condition?: object): Promise<number>;
+    delete(condition?: object): Promise<number>;
+    query(): IQueryArray<M>;
+    find(id: types.RecordID): IQuerySingle<M>;
+    find(id: types.RecordID[]): IQueryArray<M>;
+    findPreserve(ids: types.RecordID[]): IQueryArray<M>;
+    where(condition?: object): IQueryArray<M>;
+    select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<M, Pick<M, K>>;
+    select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<M, Pick<M, K>>;
+    order(orders: string): IQueryArray<M>;
+    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): IQueryArray<M, {
+        [field in keyof F]: number;
+    } & Pick<M, G>>;
+    group<F>(group_by: null, fields?: F): IQueryArray<M, {
+        [field in keyof F]: number;
+    }>;
+    group<U>(group_by: string | null, fields?: object): IQueryArray<M, U>;
 }
 /**
  * Manages connection to a database
@@ -137,6 +163,17 @@ declare class Connection extends EventEmitter {
      * Fetches associated records
      */
     fetchAssociated(records: any, column: any, select?: any, options?: any): Promise<void>;
+    getTransaction(options?: {
+        isolation_level?: IsolationLevel;
+    }): Promise<Transaction>;
+    transaction<T, M1 extends BaseModel>(options: {
+        isolation_level?: IsolationLevel;
+        models: [ITxModelClass<M1>];
+    }, block: (m1: ITxModelClass<M1>, transaction: Transaction) => Promise<T>): Promise<T>;
+    transaction<T>(options: {
+        isolation_level?: IsolationLevel;
+    }, block: (transaction: Transaction) => Promise<T>): Promise<T>;
+    transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T>;
     _checkSchemaApplied(): Promise<void>;
     _connectRedisCache(): any;
     private _initializeModels;

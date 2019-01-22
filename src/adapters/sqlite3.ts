@@ -16,8 +16,9 @@ import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
 import { IColumnPropertyInternal } from '../model';
+import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { ISchemas } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: IColumnPropertyInternal) {
@@ -76,6 +77,8 @@ class SQLite3Adapter extends SQLAdapterBase {
   protected _false_value = '0';
 
   private _client: any;
+
+  private _settings!: IAdapterSettingsSQLite3;
 
   // Creates a SQLite3 adapter
   constructor(connection: any) {
@@ -170,29 +173,41 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
-  public async create(model: string, data: object): Promise<any> {
+  public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields, places] = this._buildUpdateSet(model, data, values, true);
     const sql = `INSERT INTO "${table_name}" (${fields}) VALUES (${places})`;
     let id;
     try {
-      id = await new Promise((resolve, reject) => {
-        this._client.run(sql, values, function(this: any, error: any) {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(this.lastID);
-          }
+      if (options.transaction) {
+        id = await new Promise((resolve, reject) => {
+          options.transaction!._adapter_connection.run(sql, values, function(this: any, error: any) {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(this.lastID);
+            }
+          });
         });
-      });
+      } else {
+        id = await new Promise((resolve, reject) => {
+          this._client.run(sql, values, function(this: any, error: any) {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(this.lastID);
+            }
+          });
+        });
+      }
     } catch (error) {
       throw _processSaveError(error);
     }
     return id;
   }
 
-  public async createBulk(model: string, data: object[]): Promise<any[]> {
+  public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     let fields: any;
@@ -225,7 +240,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
-  public async update(model: string, data: any) {
+  public async update(model: string, data: any, options: { transaction?: Transaction }) {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildUpdateSet(model, data, values);
@@ -238,7 +253,10 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
-  public async updatePartial(model: string, data: any, conditions: any, options: any): Promise<number> {
+  public async updatePartial(
+    model: string, data: any, conditions: any,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
     const [fields] = this._buildPartialUpdateSet(model, data, values);
@@ -261,7 +279,10 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
-  public async findById(model: any, id: any, options: any): Promise<any> {
+  public async findById(
+    model: string, id: any,
+    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+  ): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
     const table_name = this._connection.models[model].table_name;
     const sql = `SELECT ${select} FROM "${table_name}" WHERE id=? LIMIT 1`;
@@ -283,7 +304,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
-  public async find(model: any, conditions: any, options: any): Promise<any> {
+  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
       return await this._client.allAsync(`EXPLAIN QUERY PLAN ${sql}`, params);
@@ -329,7 +350,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return readable;
   }
 
-  public async count(model: any, conditions: any, options: any): Promise<number> {
+  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `SELECT COUNT(*) AS count FROM "${table_name}"`;
@@ -355,7 +376,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return Number(result[0].count);
   }
 
-  public async delete(model: any, conditions: any): Promise<number> {
+  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `DELETE FROM "${table_name}"`;
@@ -385,18 +406,8 @@ class SQLite3Adapter extends SQLAdapterBase {
    */
   public async connect(settings: IAdapterSettingsSQLite3) {
     try {
-      this._client = await new Promise((resolve, reject) => {
-        const client = new sqlite3.Database(settings.database, (error: any) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-          client.allAsync = util.promisify(client.all);
-          client.runAsync = util.promisify(client.run);
-          resolve(client);
-        });
-        return client;
-      });
+      this._settings = settings;
+      this._client = await this._getClient();
     } catch (error) {
       throw SQLite3Adapter.wrapError('failed to open', error);
     }
@@ -408,6 +419,27 @@ class SQLite3Adapter extends SQLAdapterBase {
       this._client.close();
     }
     this._client = null;
+  }
+
+  public async getConnection(): Promise<any> {
+    const adapter_connection = await this._getClient();
+    return adapter_connection;
+  }
+
+  public async releaseConnection(adapter_connection: any): Promise<void> {
+    adapter_connection.close();
+  }
+
+  public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
+    await adapter_connection.allAsync('BEGIN TRANSACTION');
+  }
+
+  public async commitTransaction(adapter_connection: any): Promise<void> {
+    await adapter_connection.allAsync('COMMIT');
+  }
+
+  public async rollbackTransaction(adapter_connection: any): Promise<void> {
+    await adapter_connection.allAsync('ROLLBACK');
   }
 
   /**
@@ -445,6 +477,20 @@ class SQLite3Adapter extends SQLAdapterBase {
       return null;
     }
     return Number(data.id);
+  }
+
+  private async _getClient() {
+    return await new Promise((resolve, reject) => {
+      const client = new sqlite3.Database(this._settings.database, (error: any) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        client.allAsync = util.promisify(client.all);
+        client.runAsync = util.promisify(client.run);
+        resolve(client);
+      });
+    });
   }
 
   private async _getTables() {

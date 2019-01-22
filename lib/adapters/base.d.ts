@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import * as stream from 'stream';
 import { Connection } from '../connection';
+import { IsolationLevel, Transaction } from '../transaction';
 export interface ISchemas {
     tables: {
         [table_name: string]: any;
@@ -11,6 +12,24 @@ export interface ISchemas {
     foreign_keys?: {
         [table_name: string]: any;
     };
+}
+export interface IAdapterFindOptions {
+    orders: any[];
+    near?: any;
+    select?: string[];
+    conditions_of_group: any[];
+    group_fields?: any;
+    group_by?: any;
+    limit?: number;
+    skip?: number;
+    explain?: boolean;
+    transaction?: Transaction;
+}
+export interface IAdapterCountOptions {
+    conditions_of_group: any[];
+    group_fields?: any;
+    group_by?: any;
+    transaction?: Transaction;
 }
 /**
  * Base class for adapters
@@ -72,19 +91,27 @@ declare abstract class AdapterBase {
     /**
      * Creates a record
      */
-    abstract create(model: string, data: object): Promise<any>;
+    abstract create(model: string, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<any>;
     /**
      * Creates records
      */
-    abstract createBulk(model: string, data: object[]): Promise<any[]>;
+    abstract createBulk(model: string, data: any[], options: {
+        transaction?: Transaction;
+    }): Promise<any[]>;
     /**
      * Updates a record
      */
-    abstract update(model: string, data: any): Promise<void>;
+    abstract update(model: string, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<void>;
     /**
      * Updates some fields of records that match conditions
      */
-    abstract updatePartial(model: string, data: any, conditions: any, options: any): Promise<number>;
+    abstract updatePartial(model: string, data: any, conditions: any, options: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Updates some fields of records that match conditions or inserts a new record
      */
@@ -93,12 +120,16 @@ declare abstract class AdapterBase {
      * Finds a record by id
      * @see Query::exec
      */
-    abstract findById(model: any, id: any, options: any): Promise<any>;
+    abstract findById(model: string, id: any, options: {
+        select?: string[];
+        explain?: boolean;
+        transaction?: Transaction;
+    }): Promise<any>;
     /**
      * Finds records
      * @see Query::exec
      */
-    abstract find(model: any, conditions: any, options: any): Promise<any>;
+    abstract find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any>;
     /**
      * Streams matching records
      * @see Query::stream
@@ -108,20 +139,29 @@ declare abstract class AdapterBase {
      * Counts records
      * @see Query::count
      */
-    abstract count(model: any, conditions: any, options: any): Promise<number>;
+    abstract count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number>;
     /**
      * Deletes records from the database
      * @see Query::delete
      */
-    abstract delete(model: any, conditions: any): Promise<number>;
+    abstract delete(model: string, conditions: any, options: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Closes connection
      */
     abstract close(): void;
+    getConnection(): Promise<any>;
+    releaseConnection(adapter_connection: any): Promise<void>;
+    startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void>;
+    commitTransaction(adapter_connection: any): Promise<void>;
+    rollbackTransaction(adapter_connection: any): Promise<void>;
     protected _getModelID(data: any): any;
     protected valueToModel(value: any, property: any): any;
     protected _convertToModelInstance(model: any, data: any, options: any): any;
     protected _convertToGroupInstance(model: any, data: any, group_by: any, group_fields: any): any;
-    protected _createBulkDefault(model: any, data: any): Promise<[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}]>;
+    protected _createBulkDefault(model: string, data: any[], options: {
+        transaction?: Transaction;
+    }): Promise<any[]>;
 }
 export { AdapterBase };

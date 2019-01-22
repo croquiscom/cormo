@@ -9,7 +9,8 @@ export interface IAdapterSettingsMongoDB {
 declare class CormoTypesObjectId {
 }
 import * as stream from 'stream';
-import { AdapterBase, ISchemas } from './base';
+import { Transaction } from '../transaction';
+import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
 declare class MongoDBAdapter extends AdapterBase {
     key_type: any;
     key_type_internal: typeof CormoTypesObjectId;
@@ -25,16 +26,30 @@ declare class MongoDBAdapter extends AdapterBase {
     drop(model: any): Promise<void>;
     idToDB(value: any): any;
     valueToDB(value: any, column: any, property: any): any;
-    create(model: any, data: any): Promise<any>;
-    createBulk(model: any, data: any): Promise<any>;
-    update(model: any, data: any): Promise<void>;
-    updatePartial(model: any, data: any, conditions: any, options: any): Promise<any>;
+    create(model: string, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<any>;
+    createBulk(model: string, data: any[], options: {
+        transaction?: Transaction;
+    }): Promise<any>;
+    update(model: any, data: any, options: {
+        transaction?: Transaction;
+    }): Promise<void>;
+    updatePartial(model: string, data: any, conditions: any, options: {
+        transaction?: Transaction;
+    }): Promise<number>;
     upsert(model: any, data: any, conditions: any, options: any): Promise<void>;
-    findById(model: any, id: any, options: any): Promise<any>;
-    find(model: any, conditions: any, options: any): Promise<any>;
+    findById(model: string, id: any, options: {
+        select?: string[];
+        explain?: boolean;
+        transaction?: Transaction;
+    }): Promise<any>;
+    find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any>;
     stream(model: any, conditions: any, options: any): stream.Readable;
-    count(model: any, conditions: any, options: any): Promise<any>;
-    delete(model: any, conditions: any): Promise<any>;
+    count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number>;
+    delete(model: string, conditions: any, options: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Connects to the database
      */
