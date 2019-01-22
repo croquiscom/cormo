@@ -6,7 +6,7 @@ import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ILogger } from '../logger';
-import { BaseModel, IModelSchema, ModelValueObject } from '../model';
+import { BaseModel, IModelSchema, ModelValueObject, ModelColumnNamesWithId } from '../model';
 import { IQueryArray, IQuerySingle } from '../query';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
@@ -58,9 +58,21 @@ interface ITxModelClass<M extends BaseModel> {
     count(condition?: object): Promise<number>;
     update(updates: any, condition?: object): Promise<number>;
     delete(condition?: object): Promise<number>;
+    query(): IQueryArray<M>;
     find(id: types.RecordID): IQuerySingle<M>;
     find(id: types.RecordID[]): IQueryArray<M>;
+    findPreserve(ids: types.RecordID[]): IQueryArray<M>;
     where(condition?: object): IQueryArray<M>;
+    select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<M, Pick<M, K>>;
+    select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<M, Pick<M, K>>;
+    order(orders: string): IQueryArray<M>;
+    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): IQueryArray<M, {
+        [field in keyof F]: number;
+    } & Pick<M, G>>;
+    group<F>(group_by: null, fields?: F): IQueryArray<M, {
+        [field in keyof F]: number;
+    }>;
+    group<U>(group_by: string | null, fields?: object): IQueryArray<M, U>;
 }
 /**
  * Manages connection to a database

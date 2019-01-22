@@ -590,8 +590,9 @@ class BaseModel {
   public static findPreserve<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     ids: types.RecordID[],
+    options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return this.query().findPreserve(ids);
+    return this.query(options).findPreserve(ids);
   }
 
   /**
@@ -611,16 +612,19 @@ class BaseModel {
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
     this: (new (data?: any) => M) & typeof BaseModel,
     columns: K[],
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, Pick<M, K>>;
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
     this: (new (data?: any) => M) & typeof BaseModel,
     columns?: string,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, Pick<M, K>>;
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
     this: (new (data?: any) => M) & typeof BaseModel,
     columns?: string | K[],
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, Pick<M, K>> {
-    return this.query().select<K>(columns as string);
+    return this.query(options).select<K>(columns as string);
   }
 
   /**
@@ -629,8 +633,9 @@ class BaseModel {
   public static order<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     orders: string,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return this.query().order(orders);
+    return this.query(options).order(orders);
   }
 
   /**
@@ -640,23 +645,27 @@ class BaseModel {
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: G | G[],
     fields?: F,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
   public static group<M extends BaseModel, F>(
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: null,
     fields?: F,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, { [field in keyof F]: number }>;
   public static group<M extends BaseModel, U>(
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: string | null,
     fields?: object,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, U>;
   public static group<M extends BaseModel, U>(
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: string | null,
     fields?: object,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M, U> {
-    return this.query().group<U>(group_by, fields);
+    return this.query(options).group<U>(group_by, fields);
   }
 
   /**

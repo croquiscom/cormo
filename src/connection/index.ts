@@ -13,7 +13,7 @@ import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logger';
-import { BaseModel, IColumnProperty, IModelSchema, ModelValueObject } from '../model';
+import { BaseModel, IColumnProperty, IModelSchema, ModelValueObject, ModelColumnNamesWithId } from '../model';
 import { IQueryArray, IQuerySingle } from '../query';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
@@ -79,9 +79,19 @@ interface ITxModelClass<M extends BaseModel> {
   count(condition?: object): Promise<number>;
   update(updates: any, condition?: object): Promise<number>;
   delete(condition?: object): Promise<number>;
+  query(): IQueryArray<M>;
   find(id: types.RecordID): IQuerySingle<M>;
   find(id: types.RecordID[]): IQueryArray<M>;
+  findPreserve(ids: types.RecordID[]): IQueryArray<M>;
   where(condition?: object): IQueryArray<M>;
+  select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<M, Pick<M, K>>;
+  select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<M, Pick<M, K>>;
+  order(orders: string): IQueryArray<M>;
+  group<G extends ModelColumnNamesWithId<M>, F>(
+    group_by: G | G[], fields?: F,
+  ): IQueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
+  group<F>(group_by: null, fields?: F): IQueryArray<M, { [field in keyof F]: number }>;
+  group<U>(group_by: string | null, fields?: object): IQueryArray<M, U>;
 }
 
 /**
@@ -580,11 +590,26 @@ class Connection extends EventEmitter {
         txModel.delete = (condition?: object) => {
           return model.delete(condition, { transaction });
         };
+        txModel.query = () => {
+          return model.query({ transaction });
+        };
         txModel.find = (id: types.RecordID | types.RecordID[]) => {
           return model.find(id, { transaction });
         };
+        txModel.findPreserve = (ids: types.RecordID[]) => {
+          return model.findPreserve(ids, { transaction });
+        };
         txModel.where = (condition?: object) => {
           return model.where(condition, { transaction });
+        };
+        txModel.select = (columns?: any) => {
+          return model.select(columns, { transaction });
+        };
+        txModel.order = (orders: string) => {
+          return model.order(orders, { transaction });
+        };
+        txModel.group = (group_by: string | null, fields?: object) => {
+          return model.group(group_by, fields, { transaction });
         };
         return txModel;
       });
