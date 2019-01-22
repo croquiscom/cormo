@@ -6,7 +6,7 @@ import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ILogger } from '../logger';
-import { BaseModel, IModelSchema, ModelValueObject, ModelColumnNamesWithId } from '../model';
+import { BaseModel, IModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
 import { IQueryArray, IQuerySingle } from '../query';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
