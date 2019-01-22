@@ -556,8 +556,9 @@ class BaseModel {
    */
   public static query<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return new Query<M>(this);
+    return new Query<M>(this).transaction(options && options.transaction);
   }
 
   /**
@@ -567,16 +568,19 @@ class BaseModel {
   public static find<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID,
+    options?: { transaction?: Transaction },
   ): IQuerySingle<M>;
   public static find<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID[],
+    options?: { transaction?: Transaction },
   ): IQueryArray<M>;
   public static find<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID | types.RecordID[],
+    options?: { transaction?: Transaction },
   ): IQuerySingle<M> | IQueryArray<M> {
-    return this.query().find(id as types.RecordID);
+    return this.query(options).find(id as types.RecordID);
   }
 
   /**
@@ -596,8 +600,9 @@ class BaseModel {
   public static where<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     condition?: object,
+    options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return this.query().where(condition);
+    return this.query(options).where(condition);
   }
 
   /**
@@ -657,8 +662,8 @@ class BaseModel {
   /**
    * Counts records by conditions
    */
-  public static async count(condition?: object): Promise<number> {
-    return await this.query().where(condition).count();
+  public static async count(condition?: object, options?: { transaction?: Transaction }): Promise<number> {
+    return await this.query().where(condition).transaction(options && options.transaction).count();
   }
 
   /**

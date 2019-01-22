@@ -79,6 +79,22 @@ async function count() {
   console.log(c);
 }
 
+async function transaction() {
+  console.log('count before transaction =', await User.count());
+  try {
+    // tslint:disable-next-line:variable-name
+    await connection.transaction<void, User>({ models: [User] }, async (TxUser) => {
+      const user = await TxUser.create({ name: { first: 'Daniel', last: 'Smith' }, age: 8 });
+      console.log(user.name, user.age);
+      console.log(await TxUser.count());
+      throw new Error('abort');
+    });
+  } catch (error) {
+    //
+  }
+  console.log('count after transaction =', await User.count());
+}
+
 async function run() {
   await create1();
   await create2();
@@ -87,6 +103,7 @@ async function run() {
   await getAll();
   await query();
   await count();
+  await transaction();
   await User.drop();
 }
 

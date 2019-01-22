@@ -2,8 +2,9 @@
 
 import * as cormo from '..';
 import { UserRef } from './cases/transaction';
-import cases_full_control from './cases/transaction_full_control';
+import cases_bind from './cases/transaction_bind';
 import cases_block from './cases/transaction_block';
+import cases_full_control from './cases/transaction_full_control';
 import _g = require('./support/common');
 
 const _dbs = ['mysql', 'postgresql'];
@@ -51,6 +52,9 @@ _dbs.forEach((db) => {
     });
     describe('#block', () => {
       cases_block(models);
+    });
+    describe('#bind', () => {
+      cases_bind(models);
     });
   });
 });

@@ -201,13 +201,19 @@ declare class BaseModel {
     /**
      * Creates q query object
      */
-    static query<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel): IQueryArray<M>;
+    static query<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M>;
     /**
      * Finds a record by id
      * @throws {Error('not found')}
      */
-    static find<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, id: types.RecordID): IQuerySingle<M>;
-    static find<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, id: types.RecordID[]): IQueryArray<M>;
+    static find<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, id: types.RecordID, options?: {
+        transaction?: Transaction;
+    }): IQuerySingle<M>;
+    static find<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, id: types.RecordID[], options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M>;
     /**
      * Finds records by ids while preserving order.
      * @throws {Error('not found')}
@@ -216,7 +222,9 @@ declare class BaseModel {
     /**
      * Finds records by conditions
      */
-    static where<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, condition?: object): IQueryArray<M>;
+    static where<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, condition?: object, options?: {
+        transaction?: Transaction;
+    }): IQueryArray<M>;
     /**
      * Selects columns for result
      */
@@ -239,7 +247,9 @@ declare class BaseModel {
     /**
      * Counts records by conditions
      */
-    static count(condition?: object): Promise<number>;
+    static count(condition?: object, options?: {
+        transaction?: Transaction;
+    }): Promise<number>;
     /**
      * Updates some fields of records that match conditions
      */

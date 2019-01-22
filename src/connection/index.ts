@@ -13,7 +13,8 @@ import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logger';
-import { BaseModel, IColumnProperty, IModelSchema } from '../model';
+import { BaseModel, IColumnProperty, IModelSchema, ModelValueObject } from '../model';
+import { IQueryArray, IQuerySingle } from '../query';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
@@ -69,6 +70,14 @@ interface IAssociation {
   this_model: typeof BaseModel;
   target_model_or_column: string | typeof BaseModel;
   options?: IAssociationHasManyOptions | IAssociationHasOneOptions | IAssociationBelongsToOptions;
+}
+
+interface ITxModelClass<M extends BaseModel> {
+  create(data?: ModelValueObject<M>): Promise<M>;
+  count(condition?: object): Promise<number>;
+  find(id: types.RecordID): IQuerySingle<M>;
+  find(id: types.RecordID[]): IQueryArray<M>;
+  where(condition?: object): IQueryArray<M>;
 }
 
 /**
@@ -524,14 +533,17 @@ class Connection extends EventEmitter {
     return transaction;
   }
 
+  public async transaction<T, M1 extends BaseModel>(
+    options: { isolation_level?: IsolationLevel, models: [ITxModelClass<M1>] },
+    block: (m1: ITxModelClass<M1>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T>(
-    options: { isolation_level?: IsolationLevel } | ((transaction: Transaction) => Promise<T>),
+    options: { isolation_level?: IsolationLevel },
     block: (transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T>(
-    options_or_block: { isolation_level?: IsolationLevel } | ((transaction: Transaction) => Promise<T>),
-    block?: (transaction: Transaction) => Promise<T>): Promise<T> {
-    let options: { isolation_level?: IsolationLevel };
+    options_or_block: { isolation_level?: IsolationLevel, models?: any[] } | ((...args: any[]) => Promise<T>),
+    block?: (...args: any[]) => Promise<T>): Promise<T> {
+    let options: { isolation_level?: IsolationLevel, models?: any[] };
     if (typeof options_or_block === 'function') {
       options = {};
       block = options_or_block;
@@ -542,7 +554,22 @@ class Connection extends EventEmitter {
     const transaction = new Transaction(this);
     await transaction.setup(options && options.isolation_level);
     try {
-      const result = await block(transaction);
+      const args: any[] = (options.models || []).map((model) => ({
+        count: (condition?: object) => {
+          return model.count(condition, { transaction });
+        },
+        create: (data?: any) => {
+          return model.create(data, { transaction });
+        },
+        find: (id: types.RecordID | types.RecordID[]) => {
+          return model.find(id, { transaction });
+        },
+        where: (condition?: object) => {
+          return model.where(condition, { transaction });
+        },
+      }));
+      args.push(transaction);
+      const result = await block(...args);
       await transaction.commit();
       return result;
     } catch (error) {

@@ -6,8 +6,10 @@ import { IAdapterSettingsMySQL } from '../adapters/mysql';
 import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
 import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
 import { ILogger } from '../logger';
-import { BaseModel, IModelSchema } from '../model';
+import { BaseModel, IModelSchema, ModelValueObject } from '../model';
+import { IQueryArray, IQuerySingle } from '../query';
 import { IsolationLevel, Transaction } from '../transaction';
+import * as types from '../types';
 declare type ManipulateCommand = string | {
     [key: string]: any;
 };
@@ -48,6 +50,13 @@ interface IAssociation {
     this_model: typeof BaseModel;
     target_model_or_column: string | typeof BaseModel;
     options?: IAssociationHasManyOptions | IAssociationHasOneOptions | IAssociationBelongsToOptions;
+}
+interface ITxModelClass<M extends BaseModel> {
+    create(data?: ModelValueObject<M>): Promise<M>;
+    count(condition?: object): Promise<number>;
+    find(id: types.RecordID): IQuerySingle<M>;
+    find(id: types.RecordID[]): IQueryArray<M>;
+    where(condition?: object): IQueryArray<M>;
 }
 /**
  * Manages connection to a database
@@ -141,9 +150,13 @@ declare class Connection extends EventEmitter {
     getTransaction(options?: {
         isolation_level?: IsolationLevel;
     }): Promise<Transaction>;
+    transaction<T, M1 extends BaseModel>(options: {
+        isolation_level?: IsolationLevel;
+        models: [ITxModelClass<M1>];
+    }, block: (m1: ITxModelClass<M1>, transaction: Transaction) => Promise<T>): Promise<T>;
     transaction<T>(options: {
         isolation_level?: IsolationLevel;
-    } | ((transaction: Transaction) => Promise<T>), block: (transaction: Transaction) => Promise<T>): Promise<T>;
+    }, block: (transaction: Transaction) => Promise<T>): Promise<T>;
     transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T>;
     _checkSchemaApplied(): Promise<void>;
     _connectRedisCache(): any;
