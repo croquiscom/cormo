@@ -73,7 +73,9 @@ interface IAssociation {
 }
 
 interface ITxModelClass<M extends BaseModel> {
+  new(data?: object): M;
   create(data?: ModelValueObject<M>): Promise<M>;
+  createBulk(data?: Array<ModelValueObject<M>>): Promise<M[]>;
   count(condition?: object): Promise<number>;
   find(id: types.RecordID): IQuerySingle<M>;
   find(id: types.RecordID[]): IQueryArray<M>;
@@ -554,20 +556,30 @@ class Connection extends EventEmitter {
     const transaction = new Transaction(this);
     await transaction.setup(options && options.isolation_level);
     try {
-      const args: any[] = (options.models || []).map((model) => ({
-        count: (condition?: object) => {
+      const args: any[] = (options.models || []).map((model) => {
+        // tslint:disable-next-line:only-arrow-functions
+        const txModel = function(data?: object) {
+          const instance = new model(data);
+          instance._transaction = transaction;
+          return instance;
+        };
+        txModel.count = (condition?: object) => {
           return model.count(condition, { transaction });
-        },
-        create: (data?: any) => {
+        };
+        txModel.create = (data?: any) => {
           return model.create(data, { transaction });
-        },
-        find: (id: types.RecordID | types.RecordID[]) => {
+        };
+        txModel.createBulk = (data?: any[]) => {
+          return model.createBulk(data, { transaction });
+        };
+        txModel.find = (id: types.RecordID | types.RecordID[]) => {
           return model.find(id, { transaction });
-        },
-        where: (condition?: object) => {
+        };
+        txModel.where = (condition?: object) => {
           return model.where(condition, { transaction });
-        },
-      }));
+        };
+        return txModel;
+      });
       args.push(transaction);
       const result = await block(...args);
       await transaction.commit();

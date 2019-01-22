@@ -52,7 +52,9 @@ interface IAssociation {
     options?: IAssociationHasManyOptions | IAssociationHasOneOptions | IAssociationBelongsToOptions;
 }
 interface ITxModelClass<M extends BaseModel> {
+    new (data?: object): M;
     create(data?: ModelValueObject<M>): Promise<M>;
+    createBulk(data?: Array<ModelValueObject<M>>): Promise<M[]>;
     count(condition?: object): Promise<number>;
     find(id: types.RecordID): IQuerySingle<M>;
     find(id: types.RecordID[]): IQueryArray<M>;

@@ -849,6 +849,9 @@ class BaseModel {
 
   public readonly id?: any;
 
+  /** @internal */
+  public _transaction?: Transaction;
+
   private _intermediates?: any;
   private _prev_attributes?: any;
   private _attributes?: any;
@@ -1169,7 +1172,7 @@ class BaseModel {
     if (!(options && options.skip_log)) {
       ctor._connection.log(ctor._name, 'create', data);
     }
-    const id = await ctor._adapter.create(ctor._name, data, { transaction: options.transaction });
+    const id = await ctor._adapter.create(ctor._name, data, { transaction: options.transaction || this._transaction });
     Object.defineProperty(this, 'id', {
       configurable: false,
       enumerable: true,
@@ -1224,7 +1227,7 @@ class BaseModel {
       if (!(options && options.skip_log)) {
         ctor._connection.log(ctor._name, 'update', data);
       }
-      await ctor._adapter.update(ctor._name, data, { transaction: options.transaction });
+      await ctor._adapter.update(ctor._name, data, { transaction: options.transaction || this._transaction });
       return this._prev_attributes = {};
     }
   }

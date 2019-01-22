@@ -156,4 +156,60 @@ export default function(models: {
       ]);
     });
   });
+
+  describe('various path', () => {
+    it('Model.create', async () => {
+      try {
+        await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
+          const user = await TxUser.create({ name: 'John Doe', age: 27 });
+          expect(await TxUser.where()).to.eql([
+            { id: user.id, name: 'John Doe', age: 27 },
+          ]);
+          throw new Error('force fail');
+        });
+        throw new Error('must throw an error.');
+      } catch (error) {
+        expect(error.message).to.equal('force fail');
+      }
+
+      expect(await models.User.where()).to.eql([]);
+    });
+
+    it('Model.createBulk', async () => {
+      try {
+        await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
+          const users = await TxUser.createBulk([{ name: 'John Doe', age: 27 }]);
+          expect(await TxUser.where()).to.eql([
+            { id: users[0].id, name: 'John Doe', age: 27 },
+          ]);
+          throw new Error('force fail');
+        });
+        throw new Error('must throw an error.');
+      } catch (error) {
+        expect(error.message).to.equal('force fail');
+      }
+
+      expect(await models.User.where()).to.eql([]);
+    });
+
+    it('Model::save', async () => {
+      try {
+        await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
+          const user = await new TxUser();
+          user.name = 'John Doe';
+          user.age = 27;
+          await user.save();
+          expect(await TxUser.where()).to.eql([
+            { id: user.id, name: 'John Doe', age: 27 },
+          ]);
+          throw new Error('force fail');
+        });
+        throw new Error('must throw an error.');
+      } catch (error) {
+        expect(error.message).to.equal('force fail');
+      }
+
+      expect(await models.User.where()).to.eql([]);
+    });
+  });
 }

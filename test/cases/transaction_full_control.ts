@@ -12,25 +12,37 @@ export default function(models: {
   it('transaction success', async () => {
     const tx = await models.connection!.getTransaction();
 
-    const user1 = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-    const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx });
+    let user1_id;
+    let user2_id;
+    try {
+      const user1 = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+      user1_id = user1.id;
+      const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx });
+      user2_id = user2.id;
 
-    await tx.commit();
+      await tx.commit();
+    } finally {
+      try { await tx.rollback(); } catch (error) { /**/ }
+    }
 
     const users = await models.User.where();
     expect(users).to.eql([
-      { id: user1.id, name: 'John Doe', age: 27 },
-      { id: user2.id, name: 'Bill Smith', age: 45 },
+      { id: user1_id, name: 'John Doe', age: 27 },
+      { id: user2_id, name: 'Bill Smith', age: 45 },
     ]);
   });
 
   it('transaction fail', async () => {
     const tx = await models.connection!.getTransaction();
 
-    const user1 = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-    const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx });
+    try {
+      const user1 = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+      const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx });
 
-    await tx.rollback();
+      await tx.rollback();
+    } finally {
+      try { await tx.rollback(); } catch (error) { /**/ }
+    }
 
     const users = await models.User.where();
     expect(users).to.eql([]);
@@ -39,15 +51,21 @@ export default function(models: {
   it('normal operation inside transaction', async () => {
     const tx = await models.connection!.getTransaction();
 
-    const user1 = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-    const user3 = await models.User.create({ name: 'Alice Jackson', age: 27 });
-    const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx });
+    let user3_id;
+    try {
+      const user1 = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+      const user3 = await models.User.create({ name: 'Alice Jackson', age: 27 });
+      user3_id = user3.id;
+      const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx });
 
-    await tx.rollback();
+      await tx.rollback();
+    } finally {
+      try { await tx.rollback(); } catch (error) { /**/ }
+    }
 
     const users = await models.User.where();
     expect(users).to.eql([
-      { id: user3.id, name: 'Alice Jackson', age: 27 },
+      { id: user3_id, name: 'Alice Jackson', age: 27 },
     ]);
   });
 
@@ -80,16 +98,8 @@ export default function(models: {
 
         await tx1.commit();
       } finally {
-        try {
-          await tx1.rollback();
-        } catch (error) {
-          //
-        }
-        try {
-          await tx2.rollback();
-        } catch (error) {
-          //
-        }
+        try { await tx1.rollback(); } catch (error) { /**/ }
+        try { await tx2.rollback(); } catch (error) { /**/ }
       }
     });
 
@@ -117,16 +127,8 @@ export default function(models: {
 
         await tx1.commit();
       } finally {
-        try {
-          await tx1.rollback();
-        } catch (error) {
-          //
-        }
-        try {
-          await tx2.rollback();
-        } catch (error) {
-          //
-        }
+        try { await tx1.rollback(); } catch (error) { /**/ }
+        try { await tx2.rollback(); } catch (error) { /**/ }
       }
     });
 
@@ -167,17 +169,64 @@ export default function(models: {
           { id: user2.id, name: 'Bill Smith', age: 55 },
         ]);
       } finally {
-        try {
-          await tx1.rollback();
-        } catch (error) {
-          //
-        }
-        try {
-          await tx2.rollback();
-        } catch (error) {
-          //
-        }
+        try { await tx1.rollback(); } catch (error) { /**/ }
+        try { await tx2.rollback(); } catch (error) { /**/ }
       }
+    });
+  });
+
+  describe('various path', () => {
+    it('Model.create', async () => {
+      const tx = await models.connection!.getTransaction();
+
+      try {
+        const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+        expect(await models.User.where().transaction(tx)).to.eql([
+          { id: user.id, name: 'John Doe', age: 27 },
+        ]);
+        await tx.rollback();
+      } finally {
+        try { await tx.rollback(); } catch (error) { /**/ }
+      }
+
+      expect(await models.User.where()).to.eql([]);
+    });
+
+    it('Model.createBulk', async () => {
+      const tx = await models.connection!.getTransaction();
+
+      try {
+        const users = await models.User.createBulk([
+          { name: 'John Doe', age: 27 },
+        ], { transaction: tx });
+        expect(await models.User.where().transaction(tx)).to.eql([
+          { id: users[0].id, name: 'John Doe', age: 27 },
+        ]);
+        await tx.rollback();
+      } finally {
+        try { await tx.rollback(); } catch (error) { /**/ }
+      }
+
+      expect(await models.User.where()).to.eql([]);
+    });
+
+    it('Model::save', async () => {
+      const tx = await models.connection!.getTransaction();
+
+      try {
+        const user = await new models.User();
+        user.name = 'John Doe';
+        user.age = 27;
+        await user.save({ transaction: tx });
+        expect(await models.User.where().transaction(tx)).to.eql([
+          { id: user.id, name: 'John Doe', age: 27 },
+        ]);
+        await tx.rollback();
+      } finally {
+        try { await tx.rollback(); } catch (error) { /**/ }
+      }
+
+      expect(await models.User.where()).to.eql([]);
     });
   });
 }

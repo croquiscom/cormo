@@ -148,4 +148,60 @@ export default function(models: {
       ]);
     });
   });
+
+  describe('various path', () => {
+    it('Model.create', async () => {
+      try {
+        await models.connection!.transaction(async (tx) => {
+          const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+          expect(await models.User.where().transaction(tx)).to.eql([
+            { id: user.id, name: 'John Doe', age: 27 },
+          ]);
+          throw new Error('force fail');
+        });
+        throw new Error('must throw an error.');
+      } catch (error) {
+        expect(error.message).to.equal('force fail');
+      }
+
+      expect(await models.User.where()).to.eql([]);
+    });
+
+    it('Model.createBulk', async () => {
+      try {
+        await models.connection!.transaction(async (tx) => {
+          const users = await models.User.createBulk([{ name: 'John Doe', age: 27 }], { transaction: tx });
+          expect(await models.User.where().transaction(tx)).to.eql([
+            { id: users[0].id, name: 'John Doe', age: 27 },
+          ]);
+          throw new Error('force fail');
+        });
+        throw new Error('must throw an error.');
+      } catch (error) {
+        expect(error.message).to.equal('force fail');
+      }
+
+      expect(await models.User.where()).to.eql([]);
+    });
+
+    it('Model::save', async () => {
+      try {
+        await models.connection!.transaction(async (tx) => {
+          const user = await new models.User();
+          user.name = 'John Doe';
+          user.age = 27;
+          await user.save({ transaction: tx });
+          expect(await models.User.where().transaction(tx)).to.eql([
+            { id: user.id, name: 'John Doe', age: 27 },
+          ]);
+          throw new Error('force fail');
+        });
+        throw new Error('must throw an error.');
+      } catch (error) {
+        expect(error.message).to.equal('force fail');
+      }
+
+      expect(await models.User.where()).to.eql([]);
+    });
+  });
 }
