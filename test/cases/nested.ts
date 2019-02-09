@@ -431,4 +431,38 @@ export default function(db: any, db_config: any) {
     }
     await User.create({ name: { first: 'John', last: 'Doe' }, age: 20 });
   });
+
+  it('deep nested', async () => {
+    class Name {
+      @cormo.Column(String)
+      public first?: string;
+
+      @cormo.Column(String)
+      public last?: string;
+    }
+    class User {
+      @cormo.ObjectColumn(Name)
+      public name?: Name;
+
+      @cormo.Column(String)
+      public tel?: string;
+    }
+    @cormo.Model()
+    class Order extends cormo.BaseModel {
+      @cormo.ObjectColumn(User)
+      public orderer?: User;
+
+      @cormo.ObjectColumn(User)
+      public receiver?: User;
+    }
+    const order = await Order.create({
+      orderer: { name: { first: 'John', last: 'Doe' }, tel: '1111-1111' },
+      receiver: { name: { first: 'Bill', last: 'Smith' }, tel: '2222-2222' },
+    });
+    expect(order).to.have.keys('id', 'orderer', 'receiver');
+    expect(order.orderer!.name).to.eql({ first: 'John', last: 'Doe' });
+    const record = await Order.find(order.id);
+    expect(record).to.have.keys('id', 'orderer', 'receiver');
+    expect(record.orderer!.name).to.eql({ first: 'John', last: 'Doe' });
+  });
 }
