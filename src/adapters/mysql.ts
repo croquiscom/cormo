@@ -83,6 +83,25 @@ function _processSaveError(error: any) {
   }
 }
 
+async function _tryCreateConnection(config: any, count: number): Promise<any> {
+  count--;
+  let client: any;
+  try {
+    client = mysql.createConnection({ ...config, connectTimeout: 1000 });
+    client.connectAsync = util.promisify(client.connect);
+    client.queryAsync = util.promisify(client.query);
+    await client.connectAsync();
+    return client;
+  } catch (error) {
+    client.end();
+    if (error.errorno === 'ETIMEDOUT' && count > 0) {
+      console.log('try to create connection again by ETIMEDOUT');
+      return await _tryCreateConnection(config, count);
+    }
+    throw error;
+  }
+}
+
 // Adapter for MySQL
 // @namespace adapter
 class MySQLAdapter extends SQLAdapterBase {
@@ -455,21 +474,18 @@ class MySQLAdapter extends SQLAdapterBase {
    */
   public async connect(settings: IAdapterSettingsMySQL) {
     // connect
-    const client = mysql.createConnection({
-      charset: settings.charset,
-      host: settings.host,
-      password: settings.password,
-      port: settings.port,
-      user: settings.user,
-    });
-    client.connectAsync = util.promisify(client.connect);
-    client.queryAsync = util.promisify(client.query);
+    let client: any;
     this._database = settings.database;
     this._settings = settings;
     try {
-      await client.connectAsync();
+      client = await _tryCreateConnection({
+        charset: settings.charset,
+        host: settings.host,
+        password: settings.password,
+        port: settings.port,
+        user: settings.user,
+      }, 3);
     } catch (error) {
-      client.end();
       throw MySQLAdapter.wrapError('failed to connect', error);
     }
     try {
