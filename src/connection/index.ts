@@ -550,6 +550,28 @@ class Connection extends EventEmitter {
   public async transaction<T, M1 extends BaseModel>(
     options: { isolation_level?: IsolationLevel, models: [ITxModelClass<M1>] },
     block: (m1: ITxModelClass<M1>, transaction: Transaction) => Promise<T>): Promise<T>;
+  public async transaction<T, M1 extends BaseModel, M2 extends BaseModel>(
+    options: { isolation_level?: IsolationLevel, models: [ITxModelClass<M1>, ITxModelClass<M2>] },
+    block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>, transaction: Transaction) => Promise<T>): Promise<T>;
+  public async transaction<T, M1 extends BaseModel, M2 extends BaseModel, M3 extends BaseModel>(
+    options: { isolation_level?: IsolationLevel, models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>] },
+    block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>,
+      m3: ITxModelClass<M3>, transaction: Transaction) => Promise<T>): Promise<T>;
+  public async transaction<T, M1 extends BaseModel, M2 extends BaseModel, M3 extends BaseModel, M4 extends BaseModel>(
+    options: {
+      isolation_level?: IsolationLevel,
+      models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>, ITxModelClass<M4>],
+    },
+    block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>,
+      m3: ITxModelClass<M3>, m4: ITxModelClass<M4>, transaction: Transaction) => Promise<T>): Promise<T>;
+  public async transaction<T, M1 extends BaseModel, M2 extends BaseModel,
+    M3 extends BaseModel, M4 extends BaseModel, M5 extends BaseModel>(
+      options: {
+        isolation_level?: IsolationLevel,
+        models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>, ITxModelClass<M4>, ITxModelClass<M4>],
+      },
+      block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>, m3: ITxModelClass<M3>,
+        m4: ITxModelClass<M4>, m5: ITxModelClass<M5>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T>(
     options: { isolation_level?: IsolationLevel },
     block: (transaction: Transaction) => Promise<T>): Promise<T>;

@@ -3,7 +3,7 @@
 import { expect } from 'chai';
 import * as cormo from '../..';
 
-import { UserRef, UserRefVO } from './query';
+import { UserRef, UserRefVO } from './transaction';
 
 export default function(models: {
   User: typeof UserRef,

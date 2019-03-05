@@ -3,10 +3,11 @@
 import { expect } from 'chai';
 import * as cormo from '../..';
 
-import { UserRef, UserRefVO } from './query';
+import { UserExtraRef, UserRef, UserRefVO } from './transaction';
 
 export default function(models: {
   User: typeof UserRef,
+  UserExtra: typeof UserExtraRef,
   connection: cormo.Connection | null,
 }) {
   it('transaction success', async () => {
@@ -59,6 +60,35 @@ export default function(models: {
     const users = await models.User.where();
     expect(users).to.eql([
       { id: user3_id, name: 'Alice Jackson', age: 27 },
+    ]);
+  });
+
+  it('multiple model', async () => {
+    let user_id;
+    let user_extra2_id;
+    try {
+      await models.connection!.transaction<void, UserRef, UserExtraRef>(
+        { models: [models.User, models.UserExtra] },
+        async (TxUser, TxUserExtra) => {
+          const user = await TxUser.create({ name: 'John Doe', age: 27 });
+          user_id = user.id;
+          const user_extra1 = await TxUserExtra.create({ user_id: user.id, phone_number: '1234-5678' });
+          const user_extra2 = await models.UserExtra.create({ user_id: user.id, phone_number: '9876-5432' });
+          user_extra2_id = user_extra2.id;
+          expect(await TxUserExtra.where()).to.eql([
+            { id: user_extra1.id, user_id, phone_number: '1234-5678' },
+            { id: user_extra2_id, user_id, phone_number: '9876-5432' },
+          ]);
+          throw new Error('force fail');
+        });
+      throw new Error('must throw an error.');
+    } catch (error) {
+      expect(error.message).to.equal('force fail');
+    }
+
+    expect(await models.User.where()).to.eql([]);
+    expect(await models.UserExtra.where()).to.eql([
+      { id: user_extra2_id, user_id, phone_number: '9876-5432' },
     ]);
   });
 

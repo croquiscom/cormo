@@ -1,7 +1,7 @@
 // tslint:disable:max-classes-per-file
 
 import * as cormo from '..';
-import { UserRef } from './cases/transaction';
+import { UserExtraRef, UserRef } from './cases/transaction';
 import cases_bind from './cases/transaction_bind';
 import cases_block from './cases/transaction_block';
 import cases_full_control from './cases/transaction_full_control';
@@ -17,6 +17,7 @@ _dbs.forEach((db) => {
   describe('transaction-' + db, () => {
     const models = {
       User: UserRef,
+      UserExtra: UserExtraRef,
       connection: null as cormo.Connection | null,
     };
 
@@ -33,11 +34,22 @@ _dbs.forEach((db) => {
       }
       models.User = User;
 
+      @cormo.Model()
+      class UserExtra extends cormo.BaseModel {
+        @cormo.BelongsTo({ type: 'User' })
+        public user?: () => User | null;
+        public user_id?: number;
+
+        @cormo.Column(String)
+        public phone_number?: string | null;
+      }
+      models.UserExtra = UserExtra;
+
       await _g.connection.dropAllModels();
     });
 
     beforeEach(async () => {
-      await _g.deleteAllRecords([models.User]);
+      await _g.deleteAllRecords([models.User, models.UserExtra]);
     });
 
     after(async () => {
