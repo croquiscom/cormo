@@ -69,6 +69,10 @@ declare class MySQLAdapter extends SQLAdapterBase {
      * Exposes mysql module's query method
      */
     query(text: string, values?: any[], adapter_connection?: any): Promise<any>;
+    /**
+     * Remove all unused connections from pool.
+     */
+    emptyFreeConnections(): void;
     protected valueToModel(value: any, property: any): any;
     protected _getModelID(data: any): number | null;
     private _getTables;

@@ -559,6 +559,18 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /**
+   * Remove all unused connections from pool.
+   */
+  public emptyFreeConnections() {
+    if (!this._client) {
+      return;
+    }
+    while (this._client._freeConnections.length > 0) {
+      this._client._purgeConnection(this._client._freeConnections[0]);
+    }
+  }
+
   protected valueToModel(value: any, property: any) {
     if (property.type_class === types.Object || property.array) {
       try {
