@@ -77,7 +77,7 @@ interface ITxModelClass<M extends BaseModel> {
 /**
  * Manages connection to a database
  */
-declare class Connection extends EventEmitter {
+declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmitter {
     /**
      * Default connection
      * @see Connection::constructor
@@ -88,7 +88,8 @@ declare class Connection extends EventEmitter {
      * @private
      * @see Connection::constructor
      */
-    _adapter: AdapterBase;
+    _adapter: AdapterType;
+    readonly adapter: AdapterType;
     /**
      * Model lists using this connection.
      * Maps from model name to model class
@@ -112,7 +113,7 @@ declare class Connection extends EventEmitter {
     constructor(adapter: 'mysql', settings: IConnectionSettings & IAdapterSettingsMySQL);
     constructor(adapter: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
     constructor(adapter: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
-    constructor(adapter: 'sqlite3_memory' | ((connection: any) => AdapterBase), settings: IConnectionSettings);
+    constructor(adapter: 'sqlite3_memory' | ((connection: any) => AdapterType), settings: IConnectionSettings);
     /**
      * Set logger
      */

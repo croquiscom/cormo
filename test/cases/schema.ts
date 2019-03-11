@@ -104,7 +104,7 @@ export default function(db: any, db_config: any) {
     await connection.applySchemas();
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
-    const schema = await connection._adapter.getSchemas();
+    const schema = await (connection._adapter as any).getSchemas();
     const table_names = Object.keys(schema.tables);
     expect(table_names.sort()).to.eql(['Guest', 'User', 'people']);
   });

@@ -104,32 +104,44 @@ async function _tryCreateConnection(config: any, count: number): Promise<any> {
 
 // Adapter for MySQL
 // @namespace adapter
-class MySQLAdapter extends SQLAdapterBase {
+export class MySQLAdapter extends SQLAdapterBase {
+  /** @internal */
   public key_type: any = types.Integer;
 
+  /** @internal */
   public support_geopoint = true;
 
+  /** @internal */
   public support_string_type_with_length = true;
 
+  /** @internal */
   public native_integrity = true;
 
+  /** @internal */
   public support_isolation_level_read_uncommitted = true;
+  /** @internal */
   public support_isolation_level_repeatable_read = true;
 
+  /** @internal */
   protected _escape_ch = '`';
 
+  /** @internal */
   private _client: any;
 
+  /** @internal */
   private _database?: string;
 
+  /** @internal */
   private _settings?: IAdapterSettingsMySQL;
 
   // Creates a MySQL adapter
+  /** @internal */
   constructor(connection: any) {
     super();
     this._connection = connection;
   }
 
+  /** @internal */
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
     const table_schemas: { [table_name: string]: any } = {};
@@ -145,6 +157,7 @@ class MySQLAdapter extends SQLAdapterBase {
     };
   }
 
+  /** @internal */
   public async createTable(model: string) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -171,6 +184,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async addColumn(model: string, column_property: any) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -183,6 +197,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async createIndex(model: string, index: any) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -201,6 +216,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async createForeignKey(model: string, column: string, type: string, references: any) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -225,6 +241,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async drop(model: string) {
     const table_name = this._connection.models[model].table_name;
     try {
@@ -234,6 +251,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
@@ -253,6 +271,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
@@ -278,6 +297,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async update(model: string, data: any, options: { transaction?: Transaction }) {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
@@ -291,6 +311,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async updatePartial(
     model: string, data: any, conditions: any,
     options: { transaction?: Transaction },
@@ -318,6 +339,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return result.affectedRows;
   }
 
+  /** @internal */
   public async upsert(model: string, data: any, conditions: any, options: any) {
     const table_name = this._connection.models[model].table_name;
     const insert_data: any = {};
@@ -351,6 +373,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async findById(
     model: string, id: any,
     options: { select?: string[], explain?: boolean, transaction?: Transaction },
@@ -377,6 +400,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
@@ -399,6 +423,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public stream(model: any, conditions: any, options: any): stream.Readable {
     let sql;
     let params;
@@ -421,6 +446,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return transformer;
   }
 
+  /** @internal */
   public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
@@ -447,6 +473,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return Number(result[0].count);
   }
 
+  /** @internal */
   public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
@@ -471,6 +498,7 @@ class MySQLAdapter extends SQLAdapterBase {
 
   /**
    * Connects to the database
+   * @internal
    */
   public async connect(settings: IAdapterSettingsMySQL) {
     // connect
@@ -512,6 +540,7 @@ class MySQLAdapter extends SQLAdapterBase {
     this._client.getConnectionAsync = util.promisify(this._client.getConnection);
   }
 
+  /** @internal */
   public close() {
     if (this._client) {
       this._client.end();
@@ -519,6 +548,7 @@ class MySQLAdapter extends SQLAdapterBase {
     this._client = null;
   }
 
+  /** @internal */
   public async getConnection(): Promise<any> {
     const adapter_connection = await this._client.getConnectionAsync();
     adapter_connection.queryAsync = util.promisify(adapter_connection.query);
@@ -528,10 +558,12 @@ class MySQLAdapter extends SQLAdapterBase {
     return adapter_connection;
   }
 
+  /** @internal */
   public async releaseConnection(adapter_connection: any): Promise<void> {
     adapter_connection.release();
   }
 
+  /** @internal */
   public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
     if (isolation_level) {
       await adapter_connection.queryAsync(`SET TRANSACTION ISOLATION LEVEL ${isolation_level}`);
@@ -539,10 +571,12 @@ class MySQLAdapter extends SQLAdapterBase {
     await adapter_connection.beginTransactionAsync();
   }
 
+  /** @internal */
   public async commitTransaction(adapter_connection: any): Promise<void> {
     await adapter_connection.commitAsync();
   }
 
+  /** @internal */
   public async rollbackTransaction(adapter_connection: any): Promise<void> {
     await adapter_connection.rollbackAsync();
   }
@@ -571,6 +605,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   protected valueToModel(value: any, property: any) {
     if (property.type_class === types.Object || property.array) {
       try {
@@ -587,6 +622,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   protected _getModelID(data: any) {
     if (!data.id) {
       return null;
@@ -594,6 +630,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return Number(data.id);
   }
 
+  /** @internal */
   private async _getTables(): Promise<any> {
     let tables = await this._client.queryAsync('SHOW TABLES');
     tables = tables.map((table: any) => {
@@ -603,6 +640,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return tables;
   }
 
+  /** @internal */
   private async _getSchema(table: string): Promise<any> {
     const columns = await this._client.queryAsync(`SHOW COLUMNS FROM \`${table}\``);
     const schema: any = {};
@@ -622,6 +660,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return schema;
   }
 
+  /** @internal */
   private async _getIndexes(): Promise<{ [table_name: string]: any }> {
     const sql = 'SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX';
     const rows = await this._client.queryAsync(sql, [this._database]);
@@ -633,6 +672,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return indexes;
   }
 
+  /** @internal */
   private async _getForeignKeys(): Promise<any> {
     const sql = `SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE
       REFERENCED_TABLE_NAME IS NOT NULL AND CONSTRAINT_SCHEMA = ?`;
@@ -645,6 +685,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return foreign_keys;
   }
 
+  /** @internal */
   private _buildUpdateSetOfColumn(
     property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
   ) {
@@ -673,6 +714,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   private _buildUpdateSet(model: string, data: any, values: any, insert: boolean = false) {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
@@ -688,6 +730,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return [fields.join(','), places.join(',')];
   }
 
+  /** @internal */
   private _buildPartialUpdateSet(model: string, data: any, values: any[]) {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
@@ -704,6 +747,7 @@ class MySQLAdapter extends SQLAdapterBase {
     return [fields.join(','), places.join(',')];
   }
 
+  /** @internal */
   private _buildSqlForFind(model: any, conditions: any, options: any): [string, any[]] {
     let select;
     if (options.group_by || options.group_fields) {
@@ -762,6 +806,7 @@ class MySQLAdapter extends SQLAdapterBase {
   }
 
   // create database if not exist
+  /** @internal */
   private async _createDatabase(client: any): Promise<any> {
     try {
       // check database existence
@@ -783,6 +828,7 @@ class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   private async _checkFeatures(client: any) {
     try {
       await client.queryAsync('CREATE TABLE _temp (date DATETIME(10))');

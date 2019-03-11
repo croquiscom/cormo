@@ -62,7 +62,7 @@ export default function(models: {
 
   describe('isolation levels', () => {
     it('read uncommited', async () => {
-      if (!models.connection!.adapter.support_isolation_level_read_uncommitted) {
+      if (!(models.connection!.adapter as any).support_isolation_level_read_uncommitted) {
         return;
       }
       const user1 = await models.User.create({ name: 'John Doe', age: 27 });
@@ -114,7 +114,7 @@ export default function(models: {
     });
 
     it('repeatable read', async () => {
-      if (!models.connection!.adapter.support_isolation_level_repeatable_read) {
+      if (!(models.connection!.adapter as any).support_isolation_level_repeatable_read) {
         return;
       }
       const user1 = await models.User.create({ name: 'John Doe', age: 27 });

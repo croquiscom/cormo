@@ -24,23 +24,29 @@ import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions } from './base';
 
 // Adapter for Redis
 // @namespace adapter
-class RedisAdapter extends AdapterBase {
+export class RedisAdapter extends AdapterBase {
+  /** @internal */
   public support_upsert = false;
 
+  /** @internal */
   public key_type: any = types.Integer;
 
+  /** @internal */
   private _client: any;
 
   // Creates a Redis adapter
+  /** @internal */
   constructor(connection: any) {
     super();
     this._connection = connection;
   }
 
+  /** @internal */
   public async drop(model: string) {
     await this.delete(model, [], {});
   }
 
+  /** @internal */
   public valueToDB(value: any, column: any, property: any) {
     if (value == null) {
       return;
@@ -65,6 +71,7 @@ class RedisAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
     data.$_$ = ''; // ensure that there is one argument(one field) at least
     let id;
@@ -81,10 +88,12 @@ class RedisAdapter extends AdapterBase {
     return id;
   }
 
+  /** @internal */
   public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
     return await this._createBulkDefault(model, data, options);
   }
 
+  /** @internal */
   public async update(model: string, data: any, options: { transaction?: Transaction }) {
     const key = `${tableize(model)}:${data.id}`;
     delete data.id;
@@ -110,6 +119,7 @@ class RedisAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async updatePartial(
     model: string, data: any, conditions: any,
     options: { transaction?: Transaction },
@@ -139,10 +149,12 @@ class RedisAdapter extends AdapterBase {
     return keys.length;
   }
 
+  /** @internal */
   public async upsert(model: string, data: any, conditions: any, options: any): Promise<void> {
     throw new Error('not implemented');
   }
 
+  /** @internal */
   public async findById(
     model: string, id: any,
     options: { select?: string[], explain?: boolean, transaction?: Transaction },
@@ -161,6 +173,7 @@ class RedisAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const table = tableize(model);
     const keys = await this._getKeys(table, conditions);
@@ -177,14 +190,17 @@ class RedisAdapter extends AdapterBase {
     });
   }
 
+  /** @internal */
   public stream(model: any, conditions: any, options: any): stream.Readable {
     throw new Error('not implemented');
   }
 
+  /** @internal */
   public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     throw new Error('not implemented');
   }
 
+  /** @internal */
   public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const keys = await this._getKeys(tableize(model), conditions);
     if (keys.length === 0) {
@@ -199,12 +215,14 @@ class RedisAdapter extends AdapterBase {
     return count;
   }
 
+  /** @internal */
   public close(): void {
     //
   }
 
   /**
    * Connects to the database
+   * @internal
    */
   public async connect(settings: IAdapterSettingsRedis) {
     const methods = ['del', 'exists', 'hdel', 'hgetall', 'hmset', 'incr', 'keys', 'select'];
@@ -215,6 +233,7 @@ class RedisAdapter extends AdapterBase {
     return (await this._client.selectAsync(settings.database || 0));
   }
 
+  /** @internal */
   protected valueToModel(value: any, property: any) {
     switch (property.type_class) {
       case types.Number:
@@ -231,6 +250,7 @@ class RedisAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   private async _getKeys(table: any, conditions: any) {
     if (Array.isArray(conditions)) {
       if (conditions.length === 0) {

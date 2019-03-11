@@ -27,3 +27,4 @@ import * as types from './types';
 export { types };
 export { IsolationLevel } from './transaction';
 export * from './logger';
+export * from './adapters';

@@ -226,26 +226,35 @@ function _getMongoDBColName(name: any) {
 
 // Adapter for MongoDB
 // @namespace adapter
-class MongoDBAdapter extends AdapterBase {
+export class MongoDBAdapter extends AdapterBase {
+  /** @internal */
   public key_type: any = types.String;
 
+  /** @internal */
   public key_type_internal = CormoTypesObjectId;
 
+  /** @internal */
   public support_geopoint = true;
 
+  /** @internal */
   public support_nested = true;
 
+  /** @internal */
   private _collections: any;
+  /** @internal */
   private _db: any;
+  /** @internal */
   private _client: any;
 
   // Creates a MongoDB adapter
+  /** @internal */
   constructor(connection: any) {
     super();
     this._connection = connection;
     this._collections = {};
   }
 
+  /** @internal */
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
     const table_schemas: any = {};
@@ -260,6 +269,7 @@ class MongoDBAdapter extends AdapterBase {
     };
   }
 
+  /** @internal */
   public async createTable(model: any) {
     const collection = this._collection(model);
     const model_class = this._connection.models[model];
@@ -280,6 +290,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async createIndex(model: any, index: any) {
     const collection = this._collection(model);
     const options = {
@@ -297,6 +308,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async drop(model: any) {
     const name = this._connection.models[model].table_name;
     delete this._collections[name];
@@ -310,10 +322,12 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public idToDB(value: any) {
     return _convertValueToObjectID(value, 'id');
   }
 
+  /** @internal */
   public valueToDB(value: any, column: any, property: any) {
     if (value == null) {
       return;
@@ -329,6 +343,7 @@ class MongoDBAdapter extends AdapterBase {
     return value;
   }
 
+  /** @internal */
   public async create(model: string, data: any, options: { transaction?: Transaction }) {
     let result: any;
     try {
@@ -345,6 +360,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async createBulk(model: string, data: any[], options: { transaction?: Transaction }) {
     if (data.length > 1000) {
       const chunks = [];
@@ -382,6 +398,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async update(model: any, data: any, options: { transaction?: Transaction }) {
     const id = data.id;
     delete data.id;
@@ -392,6 +409,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async updatePartial(
     model: string, data: any, conditions: any,
     options: { transaction?: Transaction },
@@ -424,6 +442,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async upsert(model: any, data: any, conditions: any, options: any) {
     const schema = this._connection.models[model]._schema;
     conditions = _buildWhere(schema, conditions);
@@ -457,6 +476,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async findById(
     model: string, id: any,
     options: { select?: string[], explain?: boolean, transaction?: Transaction },
@@ -488,6 +508,7 @@ class MongoDBAdapter extends AdapterBase {
     return this._convertToModelInstance(model, result, options);
   }
 
+  /** @internal */
   public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     let fields: any;
     let orders: any;
@@ -554,6 +575,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public stream(model: any, conditions: any, options: any) {
     let fields: any;
     let orders: any;
@@ -584,6 +606,7 @@ class MongoDBAdapter extends AdapterBase {
     return transformer;
   }
 
+  /** @internal */
   public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     conditions = _buildWhere(this._connection.models[model]._schema, conditions);
     // console.log(JSON.stringify(conditions))
@@ -618,6 +641,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const model_class = this._connection.models[model];
     conditions = _buildWhere(model_class._schema, conditions);
@@ -632,6 +656,7 @@ class MongoDBAdapter extends AdapterBase {
 
   /**
    * Connects to the database
+   * @internal
    */
   public async connect(settings: IAdapterSettingsMongoDB) {
     let url;
@@ -651,6 +676,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   public close() {
     if (this._client) {
       this._client.close();
@@ -666,6 +692,7 @@ class MongoDBAdapter extends AdapterBase {
     return this._collection(model);
   }
 
+  /** @internal */
   protected _getModelID(data: any) {
     if (!data._id) {
       return null;
@@ -673,6 +700,7 @@ class MongoDBAdapter extends AdapterBase {
     return _objectIdToString(data._id);
   }
 
+  /** @internal */
   protected valueToModel(value: any, property: any) {
     if (property.type_class === CormoTypesObjectId) {
       if (property.array) {
@@ -685,6 +713,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   private _buildSelect(select?: string[]) {
     if (select) {
       const fields: any = {};
@@ -700,6 +729,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   private _collection(model: any): any {
     const name = this._connection.models[model].table_name;
     if (!this._collections[name]) {
@@ -709,16 +739,19 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   private async _getTables() {
     const collections = await this._db.listCollections().toArray();
     const tables = collections.map((collection: any) => collection.name);
     return tables;
   }
 
+  /** @internal */
   private async _getSchema(table: any) {
     return 'NO SCHEMA';
   }
 
+  /** @internal */
   private async _getIndexes(table: any) {
     const rows = await this._db.collection(table).listIndexes().toArray();
     const indexes: any = {};
@@ -728,6 +761,7 @@ class MongoDBAdapter extends AdapterBase {
     return indexes;
   }
 
+  /** @internal */
   private _buildUpdateOps(schema: IModelSchemaInternal, update_ops: any, data: any, path: any, object: any): any {
     // tslint:disable-next-line:forin
     for (const column in object) {
@@ -752,6 +786,7 @@ class MongoDBAdapter extends AdapterBase {
     }
   }
 
+  /** @internal */
   private _buildConditionsForFind(model: any, conditions: any, options: IAdapterFindOptions) {
     const fields = this._buildSelect(options.select);
     let orders: any;

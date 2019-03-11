@@ -39,6 +39,7 @@ abstract class AdapterBase {
    * Wraps adapter specific errors
    * @param msg CORMO's error message
    * @param cause adapter specific error object
+   * @internal
    */
   public static wrapError(msg: string, cause?: Error): Error {
     const error = new Error(msg);
@@ -46,23 +47,33 @@ abstract class AdapterBase {
     return error;
   }
 
+  /** @internal */
   public _connection!: Connection;
 
+  /** @internal */
   public support_fractional_seconds = true;
 
+  /** @internal */
   public support_upsert = true;
 
+  /** @internal */
   public support_nested = false;
 
+  /** @internal */
   public support_geopoint = false;
 
+  /** @internal */
   public support_string_type_with_length = false;
 
+  /** @internal */
   public key_type: any;
+  /** @internal */
   public key_type_internal: any;
 
+  /** @internal */
   public native_integrity = false;
 
+  /** @internal */
   public async connect(settings: {}) {
     return;
   }
@@ -71,6 +82,7 @@ abstract class AdapterBase {
    * Returns current schemas.
    * @abstract
    * @see Connection::applySchemas
+   * @internal
    */
   public async getSchemas(): Promise<ISchemas> {
     return { tables: {} };
@@ -80,6 +92,7 @@ abstract class AdapterBase {
    * Creates a table.
    * @abstract
    * @see Connection::applySchemas
+   * @internal
    */
   public async createTable(model: string) {
     return;
@@ -88,6 +101,7 @@ abstract class AdapterBase {
   /** Adds a column to a table
    * @abstract
    * @see Connection::applySchemas
+   * @internal
    */
   public async addColumn(model: string, column_property: object) {
     return;
@@ -96,6 +110,7 @@ abstract class AdapterBase {
   /** Creates an index.
    * @abstract
    * @see Connection::applySchemas
+   * @internal
    */
   public async createIndex(model: string, index: {}) {
     return;
@@ -104,6 +119,7 @@ abstract class AdapterBase {
   /** Creates a foreign key.
    * @abstract
    * @see Connection::applySchemas
+   * @internal
    */
   public async createForeignKey(model: string, column: string, type: string, references: {}) {
     return;
@@ -113,15 +129,18 @@ abstract class AdapterBase {
    * Drops a model from the database
    * @abstract
    * @see BaseModel.drop
+   * @internal
    */
   public async drop(model: string) {
     throw new Error('not implemented');
   }
 
+  /** @internal */
   public idToDB(value: any) {
     return value;
   }
 
+  /** @internal */
   public valueToDB(value: any, column: any, property: any) {
     if (property.type_class === types.Object || property.array) {
       return JSON.stringify(value);
@@ -132,6 +151,7 @@ abstract class AdapterBase {
     }
   }
 
+  /** @internal */
   public setValuesFromDB(instance: any, data: any, schema: any, selected_columns: any) {
     if (!selected_columns) {
       selected_columns = Object.keys(schema);
@@ -151,11 +171,13 @@ abstract class AdapterBase {
 
   /**
    * Creates a record
+   * @internal
    */
   public abstract async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any>;
 
   /**
    * Creates records
+   * @internal
    */
   public abstract async createBulk(
     model: string, data: any[],
@@ -164,11 +186,13 @@ abstract class AdapterBase {
 
   /**
    * Updates a record
+   * @internal
    */
   public abstract async update(model: string, data: any, options: { transaction?: Transaction }): Promise<void>;
 
   /**
    * Updates some fields of records that match conditions
+   * @internal
    */
   public abstract async updatePartial(
     model: string, data: any, conditions: any,
@@ -177,12 +201,14 @@ abstract class AdapterBase {
 
   /**
    * Updates some fields of records that match conditions or inserts a new record
+   * @internal
    */
   public abstract async upsert(model: string, data: any, conditions: any, options: any): Promise<void>;
 
   /**
    * Finds a record by id
    * @see Query::exec
+   * @internal
    */
   public abstract async findById(
     model: string, id: any,
@@ -192,56 +218,68 @@ abstract class AdapterBase {
   /**
    * Finds records
    * @see Query::exec
+   * @internal
    */
   public abstract async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any>;
 
   /**
    * Streams matching records
    * @see Query::stream
+   * @internal
    */
   public abstract stream(model: any, conditions: any, options: any): stream.Readable;
 
   /**
    * Counts records
    * @see Query::count
+   * @internal
    */
   public abstract async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number>;
 
   /**
    * Deletes records from the database
    * @see Query::delete
+   * @internal
    */
   public abstract async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number>;
 
   /**
    * Closes connection
+   * @internal
    */
   public abstract close(): void;
 
+  /** @internal */
   public async getConnection(): Promise<any> {
     //
   }
 
+  /** @internal */
   public async releaseConnection(adapter_connection: any): Promise<void> {
     //
   }
 
+  /** @internal */
   public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
     //
   }
 
+  /** @internal */
   public async commitTransaction(adapter_connection: any): Promise<void> {
     //
   }
 
+  /** @internal */
   public async rollbackTransaction(adapter_connection: any): Promise<void> {
     //
   }
 
+  /** @internal */
   protected _getModelID(data: any) {
     return data.id;
   }
 
+  /** @internal */
   protected valueToModel(value: any, property: any) {
     if (property.type_class === types.Object || property.array) {
       return JSON.parse(value);
@@ -250,6 +288,7 @@ abstract class AdapterBase {
     }
   }
 
+  /** @internal */
   protected _convertToModelInstance(model: any, data: any, options: any) {
     if (options.lean) {
       model = this._connection.models[model];
@@ -268,6 +307,7 @@ abstract class AdapterBase {
     }
   }
 
+  /** @internal */
   protected _convertToGroupInstance(model: any, data: any, group_by: any, group_fields: any) {
     const instance: any = {};
     if (group_by) {
@@ -290,6 +330,7 @@ abstract class AdapterBase {
     return instance;
   }
 
+  /** @internal */
   protected async _createBulkDefault(model: string, data: any[], options: { transaction?: Transaction }) {
     return await Promise.all(data.map((item: any) => {
       return this.create(model, item, options);

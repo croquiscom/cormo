@@ -82,7 +82,7 @@ export default function(models: {
   });
 
   it('date with fractional seconds', async () => {
-    if (!models.connection!.adapter.support_fractional_seconds) {
+    if (!(models.connection!.adapter as any).support_fractional_seconds) {
       return;
     }
     const data = [

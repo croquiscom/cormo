@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import * as cormo from '../..';
 
 export default function(models: {
-  connection: cormo.Connection | null,
+  connection: cormo.Connection<cormo.SQLite3Adapter> | null,
 }) {
   describe('issues', () => {
     it('reserved words', async () => {

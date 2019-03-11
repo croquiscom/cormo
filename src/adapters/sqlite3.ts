@@ -67,25 +67,33 @@ function _processSaveError(error: any) {
 
 // Adapter for SQLite3
 // @namespace adapter
-class SQLite3Adapter extends SQLAdapterBase {
+export class SQLite3Adapter extends SQLAdapterBase {
+  /** @internal */
   public key_type: any = types.Integer;
 
+  /** @internal */
   public native_integrity = true;
 
+  /** @internal */
   protected _regexp_op = null;
 
+  /** @internal */
   protected _false_value = '0';
 
+  /** @internal */
   private _client: any;
 
+  /** @internal */
   private _settings!: IAdapterSettingsSQLite3;
 
   // Creates a SQLite3 adapter
+  /** @internal */
   constructor(connection: any) {
     super();
     this._connection = connection;
   }
 
+  /** @internal */
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
     const table_schemas: { [table_name: string]: any } = {};
@@ -100,6 +108,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     };
   }
 
+  /** @internal */
   public async createTable(model: string) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -134,6 +143,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async addColumn(model: string, column_property: any) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -146,6 +156,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async createIndex(model: string, index: any) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -164,6 +175,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async drop(model: string) {
     const table_name = this._connection.models[model].table_name;
     try {
@@ -173,6 +185,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
@@ -207,6 +220,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return id;
   }
 
+  /** @internal */
   public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
@@ -240,6 +254,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async update(model: string, data: any, options: { transaction?: Transaction }) {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
@@ -253,6 +268,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async updatePartial(
     model: string, data: any, conditions: any,
     options: { transaction?: Transaction },
@@ -279,6 +295,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async findById(
     model: string, id: any,
     options: { select?: string[], explain?: boolean, transaction?: Transaction },
@@ -304,6 +321,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
@@ -326,6 +344,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public stream(model: any, conditions: any, options: any): stream.Readable {
     let sql;
     let params;
@@ -350,6 +369,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return readable;
   }
 
+  /** @internal */
   public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
@@ -376,6 +396,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return Number(result[0].count);
   }
 
+  /** @internal */
   public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
@@ -403,6 +424,7 @@ class SQLite3Adapter extends SQLAdapterBase {
 
   /**
    * Connects to the database
+   * @internal
    */
   public async connect(settings: IAdapterSettingsSQLite3) {
     try {
@@ -414,6 +436,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     await this._client.runAsync('PRAGMA foreign_keys=ON');
   }
 
+  /** @internal */
   public close() {
     if (this._client) {
       this._client.close();
@@ -421,23 +444,28 @@ class SQLite3Adapter extends SQLAdapterBase {
     this._client = null;
   }
 
+  /** @internal */
   public async getConnection(): Promise<any> {
     const adapter_connection = await this._getClient();
     return adapter_connection;
   }
 
+  /** @internal */
   public async releaseConnection(adapter_connection: any): Promise<void> {
     adapter_connection.close();
   }
 
+  /** @internal */
   public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
     await adapter_connection.allAsync('BEGIN TRANSACTION');
   }
 
+  /** @internal */
   public async commitTransaction(adapter_connection: any): Promise<void> {
     await adapter_connection.allAsync('COMMIT');
   }
 
+  /** @internal */
   public async rollbackTransaction(adapter_connection: any): Promise<void> {
     await adapter_connection.allAsync('ROLLBACK');
   }
@@ -445,17 +473,18 @@ class SQLite3Adapter extends SQLAdapterBase {
   /**
    * Exposes sqlite3 module's run method
    */
-  public run() {
+  public run(sql: string, ...params: any[]) {
     return this._client.run.apply(this._client, arguments);
   }
 
   /**
    * Exposes sqlite3 module's all method
    */
-  public all() {
+  public all(sql: string, ...params: any[]) {
     return this._client.all.apply(this._client, arguments);
   }
 
+  /** @internal */
   protected valueToModel(value: any, property: any) {
     if (property.type_class === types.Object || property.array) {
       try {
@@ -472,6 +501,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   protected _getModelID(data: any) {
     if (!data.id) {
       return null;
@@ -479,6 +509,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return Number(data.id);
   }
 
+  /** @internal */
   private async _getClient() {
     return await new Promise((resolve, reject) => {
       const client = new sqlite3.Database(this._settings.database, (error: any) => {
@@ -493,6 +524,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     });
   }
 
+  /** @internal */
   private async _getTables() {
     const query = `SELECT name FROM sqlite_master
       WHERE type='table' and name!='sqlite_sequence'`;
@@ -501,6 +533,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return tables;
   }
 
+  /** @internal */
   private async _getSchema(table: string): Promise<any> {
     const columns = (await this._client.allAsync(`PRAGMA table_info(\`${table}\`)`));
     const schema: any = {};
@@ -519,6 +552,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return schema;
   }
 
+  /** @internal */
   private async _getIndexes(table: string): Promise<any> {
     const rows = await this._client.allAsync(`PRAGMA index_list(\`${table}\`)`);
     const indexes: any = {};
@@ -534,6 +568,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return indexes;
   }
 
+  /** @internal */
   private _buildUpdateSetOfColumn(
     property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
   ) {
@@ -557,6 +592,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   private _buildUpdateSet(model: string, data: any, values: any, insert: boolean = false) {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
@@ -572,6 +608,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return [fields.join(','), places.join(',')];
   }
 
+  /** @internal */
   private _buildPartialUpdateSet(model: string, data: any, values: any[]) {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
@@ -588,6 +625,7 @@ class SQLite3Adapter extends SQLAdapterBase {
     return [fields.join(','), places.join(',')];
   }
 
+  /** @internal */
   private _buildSqlForFind(model: any, conditions: any, options: any) {
     let select;
     if (options.group_by || options.group_fields) {

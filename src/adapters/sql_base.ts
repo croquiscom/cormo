@@ -6,11 +6,16 @@ import { AdapterBase } from './base';
 // Base class for SQL adapters
 // @namespace adapter
 abstract class SQLAdapterBase extends AdapterBase {
+  /** @internal */
   protected _contains_op = 'LIKE';
+  /** @internal */
   protected _regexp_op: string | null = 'REGEXP';
+  /** @internal */
   protected _false_value = 'FALSE';
+  /** @internal */
   protected _escape_ch = '"';
 
+  /** @internal */
   public async upsert(model: any, data: any, conditions: any, options: any) {
     const count = await this.updatePartial(model, data, conditions, options);
     if (count > 0) {
@@ -43,10 +48,12 @@ abstract class SQLAdapterBase extends AdapterBase {
     }
   }
 
+  /** @internal */
   protected _param_place_holder(pos: any) {
     return '?';
   }
 
+  /** @internal */
   protected _convertValueType(value: any, property_type_class: any) {
     if (property_type_class === types.Date) {
       value = new Date(value);
@@ -65,6 +72,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     return value;
   }
 
+  /** @internal */
   protected _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: any, params: any): any {
     let property_type_class;
     if (key === 'id') {
@@ -171,6 +179,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     return column + op + this._param_place_holder(params.length);
   }
 
+  /** @internal */
   protected _buildWhere(schema: IModelSchemaInternal, conditions: any, params: any, conjunction = 'AND'): any {
     let subs: any[] = [];
     let keys: string[];
@@ -212,6 +221,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     }
   }
 
+  /** @internal */
   protected _buildGroupExpr(group_expr: any) {
     const op = Object.keys(group_expr)[0];
     if (op === '$sum') {
@@ -242,6 +252,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     }
   }
 
+  /** @internal */
   protected _buildGroupFields(group_by: any, group_fields: any) {
     const selects: any[] = [];
     if (group_by) {
@@ -255,6 +266,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     return selects.join(',');
   }
 
+  /** @internal */
   protected _buildSelect(model_class: any, select: any) {
     if (select) {
       const schema = model_class._schema;

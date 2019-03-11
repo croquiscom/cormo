@@ -128,7 +128,7 @@ declare class BaseModel {
      */
     static belongsTo(target_model_or_column: string | typeof BaseModel, options?: IAssociationBelongsToOptions): void;
     static inspect(depth: number): string;
-    static _getKeyType(target_connection?: Connection): any;
+    static _getKeyType(target_connection?: Connection<AdapterBase>): any;
     /**
      * Set nested object null if all children are null
      */

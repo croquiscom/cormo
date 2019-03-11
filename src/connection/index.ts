@@ -97,7 +97,7 @@ interface ITxModelClass<M extends BaseModel> {
 /**
  * Manages connection to a database
  */
-class Connection extends EventEmitter {
+class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmitter {
   /**
    * Default connection
    * @see Connection::constructor
@@ -109,7 +109,11 @@ class Connection extends EventEmitter {
    * @private
    * @see Connection::constructor
    */
-  public _adapter: AdapterBase;
+  public _adapter: AdapterType;
+
+  public get adapter(): AdapterType {
+    return this._adapter;
+  }
 
   /**
    * Model lists using this connection.
@@ -139,8 +143,8 @@ class Connection extends EventEmitter {
   constructor(adapter: 'mysql', settings: IConnectionSettings & IAdapterSettingsMySQL);
   constructor(adapter: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
   constructor(adapter: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
-  constructor(adapter: 'sqlite3_memory' | ((connection: any) => AdapterBase), settings: IConnectionSettings);
-  constructor(adapter: string | ((connection: any) => AdapterBase), settings: IConnectionSettings) {
+  constructor(adapter: 'sqlite3_memory' | ((connection: any) => AdapterType), settings: IConnectionSettings);
+  constructor(adapter: string | ((connection: any) => AdapterType), settings: IConnectionSettings) {
     super();
     if (settings.is_default !== false) {
       Connection.defaultConnection = this;
@@ -161,9 +165,6 @@ class Connection extends EventEmitter {
     }).catch((error: Error) => {
       (this._adapter as any) = undefined;
       console.log('fail to connect', error);
-    });
-    Object.defineProperty(this, 'adapter', {
-      get() { return this._adapter; },
     });
     this.setLogger(settings.logger);
   }

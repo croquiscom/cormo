@@ -89,30 +89,41 @@ function _processSaveError(table_name: any, error: any) {
 
 // Adapter for PostgreSQL
 // @namespace adapter
-class PostgreSQLAdapter extends SQLAdapterBase {
+export class PostgreSQLAdapter extends SQLAdapterBase {
+  /** @internal */
   public key_type: any = types.Integer;
 
+  /** @internal */
   public support_geopoint = true;
 
+  /** @internal */
   public support_string_type_with_length = true;
 
+  /** @internal */
   public native_integrity = true;
 
+  /** @internal */
   public support_isolation_level_read_uncommitted = false;
+  /** @internal */
   public support_isolation_level_repeatable_read = false;
 
+  /** @internal */
   protected _contains_op = 'ILIKE';
 
+  /** @internal */
   protected _regexp_op = '~*';
 
+  /** @internal */
   private _pool: any;
 
   // Creates a PostgreSQL adapter
+  /** @internal */
   constructor(connection: any) {
     super();
     this._connection = connection;
   }
 
+  /** @internal */
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
     const table_schemas: { [table_name: string]: any } = {};
@@ -128,6 +139,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     };
   }
 
+  /** @internal */
   public async createTable(model: string) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -152,6 +164,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async addColumn(model: string, column_property: any) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -164,6 +177,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async createIndex(model: string, index: any) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -182,6 +196,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async createForeignKey(model: string, column: string, type: string, references: any) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
@@ -206,6 +221,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async drop(model: string) {
     const table_name = this._connection.models[model].table_name;
     try {
@@ -215,6 +231,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
@@ -234,6 +251,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
@@ -259,6 +277,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async update(model: string, data: any, options: { transaction?: Transaction }) {
     const table_name = this._connection.models[model].table_name;
     const values: any[] = [];
@@ -272,6 +291,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async updatePartial(
     model: string, data: any, conditions: any,
     options: { transaction?: Transaction },
@@ -296,6 +316,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return result.rowCount;
   }
 
+  /** @internal */
   public async findById(
     model: string, id: any,
     options: { select?: string[], explain?: boolean, transaction?: Transaction },
@@ -322,6 +343,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
@@ -345,6 +367,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public stream(model: any, conditions: any, options: any): stream.Readable {
     if (!QueryStream) {
       console.log('Install pg-query-stream module to use stream');
@@ -374,6 +397,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return transformer;
   }
 
+  /** @internal */
   public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
@@ -401,6 +425,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return Number(rows[0].count);
   }
 
+  /** @internal */
   public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
@@ -425,6 +450,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
 
   /**
    * Connects to the database
+   * @internal
    */
   public async connect(settings: IAdapterSettingsPostgreSQL) {
     // connect
@@ -447,20 +473,24 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public close() {
     this._pool.end();
     this._pool = null;
   }
 
+  /** @internal */
   public async getConnection(): Promise<any> {
     const adapter_connection = await this._pool.connect();
     return adapter_connection;
   }
 
+  /** @internal */
   public async releaseConnection(adapter_connection: any): Promise<void> {
     adapter_connection.release();
   }
 
+  /** @internal */
   public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
     if (isolation_level) {
       await adapter_connection.query(`START TRANSACTION ISOLATION LEVEL ${isolation_level}`);
@@ -469,10 +499,12 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   public async commitTransaction(adapter_connection: any): Promise<void> {
     await adapter_connection.query('COMMIT');
   }
 
+  /** @internal */
   public async rollbackTransaction(adapter_connection: any): Promise<void> {
     await adapter_connection.query('ROLLBACK');
   }
@@ -488,14 +520,17 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   protected _param_place_holder(pos: any) {
     return '$' + pos;
   }
 
+  /** @internal */
   protected valueToModel(value: any, property: any) {
     return value;
   }
 
+  /** @internal */
   protected _getModelID(data: any) {
     if (!data.id) {
       return null;
@@ -503,6 +538,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return Number(data.id);
   }
 
+  /** @internal */
   protected _buildSelect(model_class: any, select: any) {
     if (!select) {
       select = Object.keys(model_class._schema);
@@ -521,6 +557,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return select.join(',');
   }
 
+  /** @internal */
   private async _getTables(): Promise<any> {
     const query = `SELECT table_name FROM INFORMATION_SCHEMA.TABLES
       WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name != 'spatial_ref_sys'`;
@@ -529,6 +566,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return tables;
   }
 
+  /** @internal */
   private async _getSchema(table: string): Promise<any> {
     const query = 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1';
     const result = await this._pool.query(query, [table]);
@@ -551,6 +589,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return schema;
   }
 
+  /** @internal */
   private async _getIndexes(): Promise<any> {
     // see http://stackoverflow.com/a/2213199/3239514
     const query = `SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name
@@ -565,6 +604,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return indexes;
   }
 
+  /** @internal */
   private async _getForeignKeys(): Promise<any> {
     // see http://stackoverflow.com/a/1152321/3239514
     const query = `SELECT tc.table_name AS table_name, kcu.column_name AS column_name,
@@ -582,6 +622,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return foreign_keys;
   }
 
+  /** @internal */
   private _buildUpdateSetOfColumn(
     property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
   ) {
@@ -610,6 +651,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     }
   }
 
+  /** @internal */
   private _buildUpdateSet(model: string, data: any, values: any, insert: boolean = false) {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
@@ -625,6 +667,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return [fields.join(','), places.join(',')];
   }
 
+  /** @internal */
   private _buildPartialUpdateSet(model: string, data: any, values: any[]) {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
@@ -641,6 +684,7 @@ class PostgreSQLAdapter extends SQLAdapterBase {
     return [fields.join(','), places.join(',')];
   }
 
+  /** @internal */
   private _buildSqlForFind(model: any, conditions: any, options: any): [string, any[]] {
     let select;
     if (options.group_by || options.group_fields) {
