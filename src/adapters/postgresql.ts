@@ -6,8 +6,7 @@ try {
   // tslint:disable-next-line:no-var-requires
   pg = require('pg');
 } catch (error) {
-  console.log('Install pg module to use this adapter');
-  process.exit(1);
+  //
 }
 
 try {
@@ -744,5 +743,9 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
 }
 
 export default (connection: any) => {
+  if (!pg) {
+    console.log('Install pg module to use this adapter');
+    process.exit(1);
+  }
   return new PostgreSQLAdapter(connection);
 };

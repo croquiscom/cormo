@@ -6,8 +6,7 @@ try {
   // tslint:disable-next-line:no-var-requires
   mongodb = require('mongodb');
 } catch (error) {
-  console.log('Install mongodb module to use this adapter');
-  process.exit(1);
+  //
 }
 
 const ObjectID = mongodb.ObjectID;
@@ -856,5 +855,9 @@ export class MongoDBAdapter extends AdapterBase {
 }
 
 export default (connection: any) => {
+  if (!mongodb) {
+    console.log('Install mongodb module to use this adapter');
+    process.exit(1);
+  }
   return new MongoDBAdapter(connection);
 };

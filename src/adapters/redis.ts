@@ -4,8 +4,7 @@ try {
   // tslint:disable-next-line:no-var-requires
   redis = require('redis');
 } catch (error) {
-  console.log('Install redis module to use this adapter');
-  process.exit(1);
+  //
 }
 
 export interface IAdapterSettingsRedis {
@@ -275,5 +274,9 @@ export class RedisAdapter extends AdapterBase {
 }
 
 export default (connection: any) => {
+  if (!redis) {
+    console.log('Install redis module to use this adapter');
+    process.exit(1);
+  }
   return new RedisAdapter(connection);
 };

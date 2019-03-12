@@ -4,8 +4,7 @@ try {
   // tslint:disable-next-line:no-var-requires
   mysql = require('mysql');
 } catch (error) {
-  console.log('Install mysql module to use this adapter');
-  process.exit(1);
+  //
 }
 
 export interface IAdapterSettingsMySQL {
@@ -848,5 +847,9 @@ export class MySQLAdapter extends SQLAdapterBase {
 }
 
 export default (connection: any) => {
+  if (!mysql) {
+    console.log('Install mysql module to use this adapter');
+    process.exit(1);
+  }
   return new MySQLAdapter(connection);
 };

@@ -4,8 +4,7 @@ try {
   // tslint:disable-next-line:no-var-requires
   sqlite3 = require('sqlite3');
 } catch (error) {
-  console.log('Install sqlite3 module to use this adapter');
-  process.exit(1);
+  //
 }
 
 export interface IAdapterSettingsSQLite3 {
@@ -675,5 +674,9 @@ export class SQLite3Adapter extends SQLAdapterBase {
 }
 
 export default (connection: any) => {
+  if (!sqlite3) {
+    console.log('Install sqlite3 module to use this adapter');
+    process.exit(1);
+  }
   return new SQLite3Adapter(connection);
 };
