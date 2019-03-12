@@ -9,8 +9,6 @@ try {
   //
 }
 
-const ObjectID = mongodb && mongodb.ObjectID;
-
 export interface IAdapterSettingsMongoDB {
   host?: string;
   port?: number;
@@ -33,7 +31,7 @@ function _convertValueToObjectID(value: any, key: any) {
     return null;
   }
   try {
-    return new ObjectID(value);
+    return new mongodb.ObjectID(value);
   } catch (error) {
     throw new Error(`'${key}' is not a valid id`);
   }
