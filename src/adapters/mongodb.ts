@@ -9,7 +9,7 @@ try {
   //
 }
 
-const ObjectID = mongodb.ObjectID;
+const ObjectID = mongodb && mongodb.ObjectID;
 
 export interface IAdapterSettingsMongoDB {
   host?: string;
