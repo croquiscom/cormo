@@ -19,8 +19,8 @@ if (_g.db_configs.mysql && _g.db_configs.mongodb) {
     };
 
     before(async () => {
-      mysql = new cormo.Connection('mysql', _g.db_configs.mysql);
-      mongodb = new cormo.Connection('mongodb', _g.db_configs.mongodb);
+      mysql = new cormo.MySQLConnection(_g.db_configs.mysql);
+      mongodb = new cormo.MongoDBConnection(_g.db_configs.mongodb);
       if (_g.use_class) {
         @cormo.Model({ connection: mongodb })
         class User extends cormo.BaseModel {

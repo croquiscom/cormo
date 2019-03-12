@@ -3,7 +3,7 @@
 import * as util from 'util';
 import * as cormo from '../../src';
 
-const connection = new cormo.Connection('mysql', {
+const connection = new cormo.MySQLConnection({
   database: 'cormo_test',
   password: 'cormo_test',
   port: 21860,

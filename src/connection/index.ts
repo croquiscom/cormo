@@ -1,3 +1,5 @@
+// tslint:disable:max-classes-per-file
+
 let redis: any;
 
 import { EventEmitter } from 'events';
@@ -8,10 +10,10 @@ import { inspect } from 'util';
 const Toposort = require('toposort-class');
 
 import { AdapterBase } from '../adapters/base';
-import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
-import { IAdapterSettingsMySQL } from '../adapters/mysql';
-import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
-import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
+import { IAdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
+import { IAdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
+import { IAdapterSettingsPostgreSQL, PostgreSQLAdapter } from '../adapters/postgresql';
+import { IAdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
 import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logger';
 import { BaseModel, IColumnProperty, IModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
 import { IQueryArray, IQuerySingle } from '../query';
@@ -201,7 +203,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /**
    * Creates a model class
    */
-  public model(name: string, schema: IModelSchema) {
+  public model(name: string, schema: IModelSchema): typeof BaseModel {
     return BaseModel.newModel(this, name, schema);
   }
 
@@ -1139,6 +1141,30 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         //
       }
     }
+  }
+}
+
+export class MongoDBConnection extends Connection<MongoDBAdapter> {
+  constructor(settings: IConnectionSettings & IAdapterSettingsMongoDB) {
+    super('mongodb', settings);
+  }
+}
+
+export class MySQLConnection extends Connection<MySQLAdapter> {
+  constructor(settings: IConnectionSettings & IAdapterSettingsMySQL) {
+    super('mysql', settings);
+  }
+}
+
+export class PostgreSQLConnection extends Connection<PostgreSQLAdapter> {
+  constructor(settings: IConnectionSettings & IAdapterSettingsPostgreSQL) {
+    super('postgresql', settings);
+  }
+}
+
+export class SQLite3Connection extends Connection<SQLite3Adapter> {
+  constructor(settings: IConnectionSettings & IAdapterSettingsSQLite3) {
+    super('sqlite3', settings);
   }
 }
 

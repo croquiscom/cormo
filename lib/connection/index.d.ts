@@ -1,10 +1,10 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
 import { AdapterBase } from '../adapters/base';
-import { IAdapterSettingsMongoDB } from '../adapters/mongodb';
-import { IAdapterSettingsMySQL } from '../adapters/mysql';
-import { IAdapterSettingsPostgreSQL } from '../adapters/postgresql';
-import { IAdapterSettingsSQLite3 } from '../adapters/sqlite3';
+import { IAdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
+import { IAdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
+import { IAdapterSettingsPostgreSQL, PostgreSQLAdapter } from '../adapters/postgresql';
+import { IAdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
 import { ILogger } from '../logger';
 import { BaseModel, IModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
 import { IQueryArray, IQuerySingle } from '../query';
@@ -221,5 +221,17 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
     private _belongsTo;
     private _fetchAssociatedBelongsTo;
     private _fetchAssociatedHasMany;
+}
+export declare class MongoDBConnection extends Connection<MongoDBAdapter> {
+    constructor(settings: IConnectionSettings & IAdapterSettingsMongoDB);
+}
+export declare class MySQLConnection extends Connection<MySQLAdapter> {
+    constructor(settings: IConnectionSettings & IAdapterSettingsMySQL);
+}
+export declare class PostgreSQLConnection extends Connection<PostgreSQLAdapter> {
+    constructor(settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
+}
+export declare class SQLite3Connection extends Connection<SQLite3Adapter> {
+    constructor(settings: IConnectionSettings & IAdapterSettingsSQLite3);
 }
 export { Connection };
