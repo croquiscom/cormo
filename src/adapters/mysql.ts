@@ -87,16 +87,18 @@ async function _tryCreateConnection(config: any, count: number): Promise<any> {
   count--;
   let client: any;
   try {
-    client = mysql.createConnection({ ...config, connectTimeout: 1000 });
+    client = mysql.createConnection({ ...config, connectTimeout: 2000 });
     client.connectAsync = util.promisify(client.connect);
     client.queryAsync = util.promisify(client.query);
     await client.connectAsync();
     return client;
   } catch (error) {
     client.end();
-    if (error.errorno === 'ETIMEDOUT' && count > 0) {
-      console.log('try to create connection again by ETIMEDOUT');
-      return await _tryCreateConnection(config, count);
+    if (error.errorno === 'ETIMEDOUT') {
+      if (count > 0) {
+        return await _tryCreateConnection(config, count);
+      }
+      console.log('failed to create connection by ETIMEDOUT');
     }
     throw error;
   }
