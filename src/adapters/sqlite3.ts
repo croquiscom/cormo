@@ -193,6 +193,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     let id;
     try {
       if (options.transaction) {
+        options.transaction.checkFinished();
         id = await new Promise((resolve, reject) => {
           options.transaction!._adapter_connection.run(sql, values, function(this: any, error: any) {
             if (error) {

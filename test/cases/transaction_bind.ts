@@ -42,6 +42,26 @@ export default function(models: {
     expect(users).to.eql([]);
   });
 
+  it('can not run command with finished transaction', async () => {
+    let TxUser: any;
+    try {
+      await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (_TxUser) => {
+        TxUser = _TxUser;
+        throw new Error('force fail');
+      });
+    } catch (error) {
+      //
+    }
+
+    try {
+      await TxUser.create({ name: 'John Doe', age: 27 });
+      throw new Error('must throw an error.');
+    } catch (error) {
+      expect(error).to.be.an.instanceof(Error);
+      expect(error.message).to.equal('transaction finished');
+    }
+  });
+
   it('normal operation inside transaction', async () => {
     let user3_id;
     try {

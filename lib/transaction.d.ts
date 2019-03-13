@@ -13,5 +13,6 @@ declare class Transaction {
     setup(isolation_level?: IsolationLevel): Promise<void>;
     commit(): Promise<void>;
     rollback(): Promise<void>;
+    checkFinished(): void;
 }
 export { Transaction };

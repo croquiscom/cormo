@@ -48,6 +48,19 @@ export default function(models: {
     expect(users).to.eql([]);
   });
 
+  it('can not run command with finished transaction', async () => {
+    const tx = await models.connection!.getTransaction();
+    await tx.rollback();
+
+    try {
+      await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+      throw new Error('must throw an error.');
+    } catch (error) {
+      expect(error).to.be.an.instanceof(Error);
+      expect(error.message).to.equal('transaction finished');
+    }
+  });
+
   it('normal operation inside transaction', async () => {
     const tx = await models.connection!.getTransaction();
 

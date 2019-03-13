@@ -43,6 +43,12 @@ class Transaction {
     await this._connection._adapter.releaseConnection(this._adapter_connection);
     this._status = 'rollbacked';
   }
+
+  public checkFinished() {
+    if (this._status === 'committed' || this._status === 'rollbacked') {
+      throw new Error('transaction finished');
+    }
+  }
 }
 
 export { Transaction };

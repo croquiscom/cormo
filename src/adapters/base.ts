@@ -42,6 +42,9 @@ abstract class AdapterBase {
    * @internal
    */
   public static wrapError(msg: string, cause?: Error): Error {
+    if (msg === 'unknown error' && cause && cause.message === 'transaction finished') {
+      return cause;
+    }
     const error = new Error(msg);
     (error as any).cause = cause;
     return error;
@@ -342,6 +345,9 @@ export { AdapterBase };
 
 if (process.env.NODE_ENV === 'test') {
   (AdapterBase as any).wrapError = (msg: string, cause: Error): Error => {
+    if (msg === 'unknown error' && cause && cause.message === 'transaction finished') {
+      return cause;
+    }
     return new Error(msg + ' caused by ' + cause.toString());
   };
 }
