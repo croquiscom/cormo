@@ -5,6 +5,7 @@ export interface IAdapterSettingsMongoDB {
     password?: string;
     database: string;
 }
+import { Connection } from '../connection';
 import { AdapterBase } from './base';
 export declare class MongoDBAdapter extends AdapterBase {
     /**
@@ -12,5 +13,4 @@ export declare class MongoDBAdapter extends AdapterBase {
      */
     collection(model: any): any;
 }
-declare const _default: (connection: any) => MongoDBAdapter;
-export default _default;
+export declare function createAdapter(connection: Connection): MongoDBAdapter;

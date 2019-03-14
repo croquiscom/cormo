@@ -1,7 +1,8 @@
-import SQLite3Adapter_createAdapter from './sqlite3';
+import { Connection } from '../connection';
+import { createAdapter as createSQLite3Adapter } from './sqlite3';
 
-export default (connection: any) => {
-  const adapter: any = SQLite3Adapter_createAdapter(connection);
+export function createAdapter(connection: Connection) {
+  const adapter: any = createSQLite3Adapter(connection);
   const _super_connect = adapter.connect;
   adapter.connect = async function() {
     await _super_connect.call(this, {
@@ -9,4 +10,4 @@ export default (connection: any) => {
     });
   };
   return adapter;
-};
+}

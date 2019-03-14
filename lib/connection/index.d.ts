@@ -1,10 +1,10 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
 import { AdapterBase } from '../adapters/base';
-import { IAdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
-import { IAdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
-import { IAdapterSettingsPostgreSQL, PostgreSQLAdapter } from '../adapters/postgresql';
-import { IAdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
+import { createAdapter as createMongoDBAdapter, IAdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
+import { createAdapter as createMySQLAdapter, IAdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
+import { createAdapter as createPostgreSQLAdapter, IAdapterSettingsPostgreSQL, PostgreSQLAdapter } from '../adapters/postgresql';
+import { createAdapter as createSQLite3Adapter, IAdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
 import { ILogger } from '../logger';
 import { BaseModel, IModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
 import { IQueryArray, IQuerySingle } from '../query';
@@ -109,11 +109,11 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
      * @see SQLite3Adapter::connect
      * @see RedisAdapter::connect
      */
-    constructor(adapter: 'mongodb', settings: IConnectionSettings & IAdapterSettingsMongoDB);
-    constructor(adapter: 'mysql', settings: IConnectionSettings & IAdapterSettingsMySQL);
-    constructor(adapter: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
-    constructor(adapter: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
-    constructor(adapter: 'sqlite3_memory' | ((connection: any) => AdapterType), settings: IConnectionSettings);
+    constructor(adapter: 'mongodb' | typeof createMongoDBAdapter, settings: IConnectionSettings & IAdapterSettingsMongoDB);
+    constructor(adapter: 'mysql' | typeof createMySQLAdapter, settings: IConnectionSettings & IAdapterSettingsMySQL);
+    constructor(adapter: 'postgresql' | typeof createPostgreSQLAdapter, settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
+    constructor(adapter: 'sqlite3' | typeof createSQLite3Adapter, settings: IConnectionSettings & IAdapterSettingsSQLite3);
+    constructor(adapter: 'sqlite3_memory' | typeof createSQLite3Adapter, settings: IConnectionSettings);
     /**
      * Set logger
      */

@@ -1,6 +1,7 @@
 export interface IAdapterSettingsSQLite3 {
     database: string;
 }
+import { Connection } from '../connection';
 import { SQLAdapterBase } from './sql_base';
 export declare class SQLite3Adapter extends SQLAdapterBase {
     /**
@@ -12,5 +13,4 @@ export declare class SQLite3Adapter extends SQLAdapterBase {
      */
     all(sql: string, ...params: any[]): any;
 }
-declare const _default: (connection: any) => SQLite3Adapter;
-export default _default;
+export declare function createAdapter(connection: Connection): SQLite3Adapter;

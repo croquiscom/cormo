@@ -24,6 +24,7 @@ export interface IAdapterSettingsPostgreSQL {
 
 import * as _ from 'lodash';
 import * as stream from 'stream';
+import { Connection } from '../connection';
 import { IColumnPropertyInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
@@ -117,7 +118,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
 
   // Creates a PostgreSQL adapter
   /** @internal */
-  constructor(connection: any) {
+  constructor(connection: Connection) {
     super();
     this._connection = connection;
   }
@@ -743,10 +744,10 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 }
 
-export default (connection: any) => {
+export function createAdapter(connection: Connection) {
   if (!pg) {
     console.log('Install pg module to use this adapter');
     process.exit(1);
   }
   return new PostgreSQLAdapter(connection);
-};
+}

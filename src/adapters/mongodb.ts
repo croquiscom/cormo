@@ -21,6 +21,7 @@ class CormoTypesObjectId { }
 
 import * as _ from 'lodash';
 import * as stream from 'stream';
+import { Connection } from '../connection';
 import { IColumnPropertyInternal, IModelSchemaInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
@@ -245,7 +246,7 @@ export class MongoDBAdapter extends AdapterBase {
 
   // Creates a MongoDB adapter
   /** @internal */
-  constructor(connection: any) {
+  constructor(connection: Connection) {
     super();
     this._connection = connection;
     this._collections = {};
@@ -852,10 +853,10 @@ export class MongoDBAdapter extends AdapterBase {
   }
 }
 
-export default (connection: any) => {
+export function createAdapter(connection: Connection) {
   if (!mongodb) {
     console.log('Install mongodb module to use this adapter');
     process.exit(1);
   }
   return new MongoDBAdapter(connection);
-};
+}

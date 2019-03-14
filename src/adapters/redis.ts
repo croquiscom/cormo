@@ -16,6 +16,7 @@ export interface IAdapterSettingsRedis {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
+import { Connection } from '../connection';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 import { tableize } from '../util/inflector';
@@ -35,7 +36,7 @@ export class RedisAdapter extends AdapterBase {
 
   // Creates a Redis adapter
   /** @internal */
-  constructor(connection: any) {
+  constructor(connection: Connection) {
     super();
     this._connection = connection;
   }
@@ -270,13 +271,12 @@ export class RedisAdapter extends AdapterBase {
     }
     return [];
   }
-
 }
 
-export default (connection: any) => {
+export function createAdapter(connection: Connection) {
   if (!redis) {
     console.log('Install redis module to use this adapter');
     process.exit(1);
   }
   return new RedisAdapter(connection);
-};
+}

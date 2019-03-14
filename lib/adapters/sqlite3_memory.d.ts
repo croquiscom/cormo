@@ -1,2 +1,2 @@
-declare const _default: (connection: any) => any;
-export default _default;
+import { Connection } from '../connection';
+export declare function createAdapter(connection: Connection): any;

@@ -8,6 +8,7 @@ export interface IAdapterSettingsMySQL {
     collation?: string;
     pool_size?: number;
 }
+import { Connection } from '../connection';
 import { Transaction } from '../transaction';
 import { SQLAdapterBase } from './sql_base';
 export declare class MySQLAdapter extends SQLAdapterBase {
@@ -20,5 +21,4 @@ export declare class MySQLAdapter extends SQLAdapterBase {
      */
     emptyFreeConnections(): void;
 }
-declare const _default: (connection: any) => MySQLAdapter;
-export default _default;
+export declare function createAdapter(connection: Connection): MySQLAdapter;

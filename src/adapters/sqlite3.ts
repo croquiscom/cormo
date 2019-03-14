@@ -14,6 +14,7 @@ export interface IAdapterSettingsSQLite3 {
 import * as _ from 'lodash';
 import * as stream from 'stream';
 import * as util from 'util';
+import { Connection } from '../connection';
 import { IColumnPropertyInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
@@ -87,7 +88,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
 
   // Creates a SQLite3 adapter
   /** @internal */
-  constructor(connection: any) {
+  constructor(connection: Connection) {
     super();
     this._connection = connection;
   }
@@ -674,10 +675,10 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 }
 
-export default (connection: any) => {
+export function createAdapter(connection: Connection) {
   if (!sqlite3) {
     console.log('Install sqlite3 module to use this adapter');
     process.exit(1);
   }
   return new SQLite3Adapter(connection);
-};
+}

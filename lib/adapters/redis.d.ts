@@ -3,8 +3,8 @@ export interface IAdapterSettingsRedis {
     port?: number;
     database: string;
 }
+import { Connection } from '../connection';
 import { AdapterBase } from './base';
 export declare class RedisAdapter extends AdapterBase {
 }
-declare const _default: (connection: any) => RedisAdapter;
-export default _default;
+export declare function createAdapter(connection: Connection): RedisAdapter;

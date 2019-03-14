@@ -5,6 +5,7 @@ export interface IAdapterSettingsPostgreSQL {
     password?: string;
     database: string;
 }
+import { Connection } from '../connection';
 import { Transaction } from '../transaction';
 import { SQLAdapterBase } from './sql_base';
 export declare class PostgreSQLAdapter extends SQLAdapterBase {
@@ -13,5 +14,4 @@ export declare class PostgreSQLAdapter extends SQLAdapterBase {
      */
     query(text: string, values?: any[], transaction?: Transaction): Promise<any>;
 }
-declare const _default: (connection: any) => PostgreSQLAdapter;
-export default _default;
+export declare function createAdapter(connection: Connection): PostgreSQLAdapter;

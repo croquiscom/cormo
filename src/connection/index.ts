@@ -10,10 +10,12 @@ import { inspect } from 'util';
 const Toposort = require('toposort-class');
 
 import { AdapterBase } from '../adapters/base';
-import { IAdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
-import { IAdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
-import { IAdapterSettingsPostgreSQL, PostgreSQLAdapter } from '../adapters/postgresql';
-import { IAdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
+import { createAdapter as createMongoDBAdapter, IAdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
+import { createAdapter as createMySQLAdapter, IAdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
+import {
+  createAdapter as createPostgreSQLAdapter, IAdapterSettingsPostgreSQL, PostgreSQLAdapter,
+} from '../adapters/postgresql';
+import { createAdapter as createSQLite3Adapter, IAdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
 import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logger';
 import { BaseModel, IColumnProperty, IModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
 import { IQueryArray, IQuerySingle } from '../query';
@@ -141,12 +143,16 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    * @see SQLite3Adapter::connect
    * @see RedisAdapter::connect
    */
-  constructor(adapter: 'mongodb', settings: IConnectionSettings & IAdapterSettingsMongoDB);
-  constructor(adapter: 'mysql', settings: IConnectionSettings & IAdapterSettingsMySQL);
-  constructor(adapter: 'postgresql', settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
-  constructor(adapter: 'sqlite3', settings: IConnectionSettings & IAdapterSettingsSQLite3);
-  constructor(adapter: 'sqlite3_memory' | ((connection: any) => AdapterType), settings: IConnectionSettings);
-  constructor(adapter: string | ((connection: any) => AdapterType), settings: IConnectionSettings) {
+  constructor(adapter: 'mongodb' | typeof createMongoDBAdapter,
+    settings: IConnectionSettings & IAdapterSettingsMongoDB);
+  constructor(adapter: 'mysql' | typeof createMySQLAdapter,
+    settings: IConnectionSettings & IAdapterSettingsMySQL);
+  constructor(adapter: 'postgresql' | typeof createPostgreSQLAdapter,
+    settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
+  constructor(adapter: 'sqlite3' | typeof createSQLite3Adapter,
+    settings: IConnectionSettings & IAdapterSettingsSQLite3);
+  constructor(adapter: 'sqlite3_memory' | typeof createSQLite3Adapter, settings: IConnectionSettings);
+  constructor(adapter: string | ((connection: Connection) => AdapterType), settings: IConnectionSettings) {
     super();
     if (settings.is_default !== false) {
       Connection.defaultConnection = this;
@@ -158,7 +164,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     this._pending_associations = [];
     this._schema_changed = false;
     if (typeof adapter === 'string') {
-      this._adapter = require(__dirname + '/../adapters/' + adapter).default(this);
+      this._adapter = require(__dirname + '/../adapters/' + adapter).createAdapter(this);
     } else {
       this._adapter = adapter(this);
     }
@@ -1146,25 +1152,25 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
 
 export class MongoDBConnection extends Connection<MongoDBAdapter> {
   constructor(settings: IConnectionSettings & IAdapterSettingsMongoDB) {
-    super('mongodb', settings);
+    super(createMongoDBAdapter, settings);
   }
 }
 
 export class MySQLConnection extends Connection<MySQLAdapter> {
   constructor(settings: IConnectionSettings & IAdapterSettingsMySQL) {
-    super('mysql', settings);
+    super(createMySQLAdapter, settings);
   }
 }
 
 export class PostgreSQLConnection extends Connection<PostgreSQLAdapter> {
   constructor(settings: IConnectionSettings & IAdapterSettingsPostgreSQL) {
-    super('postgresql', settings);
+    super(createPostgreSQLAdapter, settings);
   }
 }
 
 export class SQLite3Connection extends Connection<SQLite3Adapter> {
   constructor(settings: IConnectionSettings & IAdapterSettingsSQLite3) {
-    super('sqlite3', settings);
+    super(createSQLite3Adapter, settings);
   }
 }
 
