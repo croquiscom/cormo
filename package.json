@@ -1,7 +1,7 @@
 {
   "name": "cormo",
   "description": "ORM framework for Node.js",
-  "version": "0.11.8",
+  "version": "0.11.9",
   "keywords": [
     "orm",
     "mongodb",
@@ -45,7 +45,7 @@
     "@types/mocha": "^5.2.6",
     "@types/mongodb": "^3.1.22",
     "@types/node": "^8.10.44",
-    "@types/sinon": "^7.0.9",
+    "@types/sinon": "^7.0.10",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "coffee-coverage": "^3.0.1",
@@ -55,14 +55,14 @@
     "mocha": "^6.0.2",
     "mongodb": "^3.1.13",
     "mysql": "^2.16.0",
-    "pg": "^7.8.2",
+    "pg": "^7.9.0",
     "pg-query-stream": "^2.0.0",
     "redis": "^2.7.1",
     "rimraf": "^2.6.3",
-    "sinon": "^7.2.7",
+    "sinon": "^7.3.0",
     "sqlite3": "^4.0.6",
     "ts-node": "^8.0.3",
     "tslint": "^5.14.0",
-    "typescript": "^3.3.3333"
+    "typescript": "^3.3.4000"
   }
 }
