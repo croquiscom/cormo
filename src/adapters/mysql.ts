@@ -83,8 +83,8 @@ function _processSaveError(error: any) {
   }
 }
 
-async function _tryCreateConnection(config: any, count: number): Promise<any> {
-  count--;
+async function _tryCreateConnection(config: any, count: number = 0): Promise<any> {
+  count++;
   let client: any;
   try {
     client = mysql.createConnection({ ...config, connectTimeout: 2000 });
@@ -95,7 +95,11 @@ async function _tryCreateConnection(config: any, count: number): Promise<any> {
   } catch (error) {
     client.end();
     if (error.errorno === 'ETIMEDOUT') {
-      if (count > 0) {
+      if (count < 5) {
+        await new Promise((resolve) => {
+          const time = Math.floor(Math.random() * Math.pow(2, count) * 200);
+          setTimeout(() => resolve(), time);
+        });
         return await _tryCreateConnection(config, count);
       }
       console.log('failed to create connection by ETIMEDOUT');
@@ -514,7 +518,7 @@ export class MySQLAdapter extends SQLAdapterBase {
         password: settings.password,
         port: settings.port,
         user: settings.user,
-      }, 3);
+      });
     } catch (error) {
       throw MySQLAdapter.wrapError('failed to connect', error);
     }
