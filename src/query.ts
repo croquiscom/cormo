@@ -17,7 +17,7 @@ interface IQueryOptions {
   select_raw?: string[];
   conditions_of_group: any[];
   group_fields?: any;
-  group_by?: any;
+  group_by?: string[];
   limit?: number;
   skip?: number;
   one?: boolean;
@@ -267,15 +267,12 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
     if (!this._current_if) {
       return this as any;
     }
-    this._options.group_by = null;
-    const schema_columns = Object.keys(this._model._schema);
+    this._options.group_by = undefined;
     if (group_by) {
       if (typeof group_by === 'string') {
         group_by = group_by.split(/\s+/);
       }
-      this._options.group_by = group_by.filter((column) => {
-        return schema_columns.indexOf(column) >= 0;
-      });
+      this._options.group_by = group_by;
     }
     this._options.group_fields = fields;
     return this as any;
@@ -614,6 +611,12 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
         this._options.select = select;
         this._options.select_raw = select_raw;
       }
+    }
+    if (this._options.group_by) {
+      const schema_columns = Object.keys(this._model._schema);
+      this._options.group_by = this._options.group_by.filter((column) => {
+        return schema_columns.indexOf(column) >= 0;
+      });
     }
     const records = await this._exec(options);
     if (this._options.select_single) {

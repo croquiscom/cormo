@@ -82,6 +82,47 @@ export default function(models: {
         { title: 'Second Post', user_id },
       ]);
     });
+
+    it('group for associated column without applySchemas', async () => {
+      await models.connection!.adapter.query(`
+        CREATE TABLE users (id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY, name VARCHAR(255));
+      `);
+      await models.connection!.adapter.query(`
+        CREATE TABLE posts (id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+          title VARCHAR(255), user_id INT,
+          FOREIGN KEY (user_id) REFERENCES users(id)
+          );
+      `);
+      const result = await models.connection!.adapter.query(`INSERT INTO users (name) VALUES ('John Doe')`);
+      const user_id = result.insertId;
+      models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('First Post', ${user_id})`);
+      models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('Second Post', ${user_id})`);
+
+      @cormo.Model()
+      class User extends cormo.BaseModel {
+        @cormo.Column(String)
+        public name?: string | null;
+
+        @cormo.HasMany()
+        public posts?: { build: (data: any) => Post } & ((reload?: boolean) => Post[]);
+      }
+
+      @cormo.Model()
+      class Post extends cormo.BaseModel {
+        @cormo.Column(String)
+        public title?: string | null;
+
+        @cormo.BelongsTo()
+        public user?: () => User | null;
+
+        public user_id?: number | null;
+      }
+
+      const records = await Post.query().group('user_id', { count: { $sum: 1 } });
+      expect(records).to.eql([
+        { user_id, count: 2 },
+      ]);
+    });
   });
 
   describe('query', () => {
