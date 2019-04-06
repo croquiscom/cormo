@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { IColumnPropertyInternal, IModelSchemaInternal } from '../model';
 import * as types from '../types';
 import { AdapterBase } from './base';

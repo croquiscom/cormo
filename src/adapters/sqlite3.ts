@@ -11,9 +11,9 @@ export interface IAdapterSettingsSQLite3 {
   database: string;
 }
 
-import * as _ from 'lodash';
-import * as stream from 'stream';
-import * as util from 'util';
+import _ from 'lodash';
+import stream from 'stream';
+import util from 'util';
 import { Connection } from '../connection';
 import { IColumnPropertyInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';

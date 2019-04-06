@@ -1,5 +1,5 @@
-import * as _ from 'lodash';
-import * as stream from 'stream';
+import _ from 'lodash';
+import stream from 'stream';
 
 import { AdapterBase } from './adapters/base';
 import { Connection } from './connection';

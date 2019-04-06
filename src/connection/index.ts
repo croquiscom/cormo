@@ -3,7 +3,7 @@
 let redis: any;
 
 import { EventEmitter } from 'events';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { inspect } from 'util';
 
 // tslint:disable-next-line:no-var-requires variable-name

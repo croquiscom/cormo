@@ -5,6 +5,7 @@
     "declaration": true,
     "experimentalDecorators": true,
     "strict": true,
-    "stripInternal": true
+    "stripInternal": true,
+    "esModuleInterop": true
   }
 }

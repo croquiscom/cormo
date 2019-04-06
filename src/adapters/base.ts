@@ -1,4 +1,4 @@
-import * as stream from 'stream';
+import stream from 'stream';
 import { Connection } from '../connection';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
