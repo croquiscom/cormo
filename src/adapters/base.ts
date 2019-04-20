@@ -11,9 +11,11 @@ export interface ISchemas {
 }
 
 export interface IAdapterFindOptions {
+  lean: boolean;
   orders: any[];
   near?: any;
   select?: string[];
+  select_raw?: string[];
   conditions_of_group: any[];
   group_fields?: any;
   group_by?: any;
@@ -230,7 +232,7 @@ abstract class AdapterBase {
    * @see Query::stream
    * @internal
    */
-  public abstract stream(model: any, conditions: any, options: any): stream.Readable;
+  public abstract stream(model: any, conditions: any, options: IAdapterFindOptions): stream.Readable;
 
   /**
    * Counts records

@@ -574,7 +574,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: any) {
+  public stream(model: any, conditions: any, options: IAdapterFindOptions) {
     let fields: any;
     let orders: any;
     let client_options: any;

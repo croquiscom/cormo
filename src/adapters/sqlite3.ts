@@ -346,7 +346,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: any): stream.Readable {
+  public stream(model: any, conditions: any, options: IAdapterFindOptions): stream.Readable {
     let sql;
     let params;
     try {

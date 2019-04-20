@@ -368,7 +368,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: any): stream.Readable {
+  public stream(model: any, conditions: any, options: IAdapterFindOptions): stream.Readable {
     if (!QueryStream) {
       console.log('Install pg-query-stream module to use stream');
       process.exit(1);

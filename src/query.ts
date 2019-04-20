@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import stream from 'stream';
 
-import { AdapterBase } from './adapters/base';
+import { AdapterBase, IAdapterFindOptions } from './adapters/base';
 import { Connection } from './connection';
 import { BaseModel, ModelColumnNamesWithId } from './model';
 import { Transaction } from './transaction';
@@ -9,12 +9,10 @@ import { RecordID } from './types';
 
 interface IQueryOptions {
   lean: boolean;
-  orders: any[];
+  orders?: string;
   near?: any;
   select_columns?: string[];
   select_single: boolean;
-  select?: string[];
-  select_raw?: string[];
   conditions_of_group: any[];
   group_fields?: any;
   group_by?: string[];
@@ -39,7 +37,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
   select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQuerySingle<M, Pick<M, K>>;
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingle<M, Pick<M, K>>;
   selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M, M[K]>;
-  order(orders: string): IQuerySingle<M, T>;
+  order(orders?: string): IQuerySingle<M, T>;
   group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
     IQuerySingle<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F):
@@ -55,7 +53,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
   include(column: string, select?: string): IQuerySingle<M, T>;
   transaction(transaction?: Transaction): IQuerySingle<M, T>;
 
-  exec(options?: any): PromiseLike<T>;
+  exec(options?: { skip_log?: boolean }): PromiseLike<T>;
   stream(): stream.Readable;
   explain(): PromiseLike<any>;
   count(): PromiseLike<number>;
@@ -73,7 +71,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
   select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<M, Pick<M, K>>;
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<M, Pick<M, K>>;
   selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M, M[K]>;
-  order(orders: string): IQueryArray<M, T>;
+  order(orders?: string): IQueryArray<M, T>;
   group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
     IQueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F):
@@ -89,7 +87,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
   include(column: string, select?: string): IQueryArray<M, T>;
   transaction(transaction?: Transaction): IQueryArray<M, T>;
 
-  exec(options?: any): PromiseLike<T[]>;
+  exec(options?: { skip_log?: boolean }): PromiseLike<T[]>;
   stream(): stream.Readable;
   explain(): PromiseLike<any>;
   count(): PromiseLike<number>;
@@ -132,7 +130,6 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
     this._options = {
       conditions_of_group: [],
       lean: model.lean_query,
-      orders: [],
       select_single: false,
     };
   }
@@ -234,27 +231,11 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
   /**
    * Specifies orders of result
    */
-  public order(orders: string): this {
+  public order(orders?: string): this {
     if (!this._current_if) {
       return this;
     }
-    if (typeof orders === 'string') {
-      const avaliable_columns = ['id'];
-      avaliable_columns.push(...Object.keys(this._model._schema));
-      if (this._options.group_fields) {
-        avaliable_columns.push(...Object.keys(this._options.group_fields));
-      }
-      orders.split(/\s+/).forEach((order) => {
-        let asc = true;
-        if (order[0] === '-') {
-          asc = false;
-          order = order.slice(1);
-        }
-        if (avaliable_columns.indexOf(order) >= 0) {
-          this._options.orders.push(asc ? order : '-' + order);
-        }
-      });
-    }
+    this._options.orders = orders;
     return this;
   }
 
@@ -387,7 +368,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
    * @see AdapterBase::findById
    * @see AdapterBase::find
    */
-  public async exec(options?: any) {
+  public async exec(options?: { skip_log?: boolean }) {
     await this._model._checkReady();
     if (this._options.cache && this._options.cache.key) {
       try {
@@ -417,7 +398,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       callback();
     };
     this._model._checkReady().then(() => {
-      this._adapter.stream(this._name, this._conditions, this._options)
+      this._adapter.stream(this._name, this._conditions, this._getAdapterFindOptions())
         .on('error', (error) => {
           transformer.emit('error', error);
         }).pipe(transformer);
@@ -520,17 +501,17 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
     return await this._adapter.delete(this._name, this._conditions, { transaction: this._options.transaction });
   }
 
-  private async _exec(options: any) {
+  private async _exec(find_options: IAdapterFindOptions, options?: { skip_log?: boolean }) {
     if (this._find_single_id && this._conditions.length === 0) {
       if (!(options && options.skip_log)) {
-        this._connection.log(this._name, 'find by id', { id: this._id, options: this._options });
+        this._connection.log(this._name, 'find by id', { id: this._id, options: find_options });
       }
       if (!this._id) {
         throw new Error('not found');
       }
       let record;
       try {
-        record = await this._adapter.findById(this._name, this._id, this._options);
+        record = await this._adapter.findById(this._name, this._id, find_options);
       } catch (error) {
         throw new Error('not found');
       }
@@ -553,9 +534,9 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       }
     }
     if (!(options && options.skip_log)) {
-      this._connection.log(this._name, 'find', { conditions: this._conditions, options: this._options });
+      this._connection.log(this._name, 'find', { conditions: this._conditions, options: find_options });
     }
-    let records = await this._adapter.find(this._name, this._conditions, this._options);
+    let records = await this._adapter.find(this._name, this._conditions, find_options);
     if (expected_count != null) {
       if (records.length !== expected_count) {
         throw new Error('not found');
@@ -584,14 +565,12 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
     }
   }
 
-  private async _execAndInclude(options?: any) {
-    this._options.select = undefined;
-    this._options.select_raw = undefined;
+  private _getAdapterFindOptions(): IAdapterFindOptions {
+    const select: string[] = [];
+    const select_raw: string[] = [];
     if (this._options.select_columns) {
       const schema_columns = Object.keys(this._model._schema);
       const intermediate_paths = this._model._intermediate_paths;
-      const select: string[] = [];
-      const select_raw: string[] = [];
       this._options.select_columns.forEach((column) => {
         if (schema_columns.indexOf(column) >= 0) {
           select.push(column);
@@ -607,18 +586,52 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
           });
         }
       });
-      if (select_raw.length > 0) {
-        this._options.select = select;
-        this._options.select_raw = select_raw;
-      }
     }
+
+    let group_by: string[] | undefined;
     if (this._options.group_by) {
       const schema_columns = Object.keys(this._model._schema);
-      this._options.group_by = this._options.group_by.filter((column) => {
+      group_by = this._options.group_by.filter((column) => {
         return schema_columns.indexOf(column) >= 0;
       });
     }
-    const records = await this._exec(options);
+
+    const orders: string[] = [];
+    if (typeof this._options.orders === 'string') {
+      const avaliable_columns = ['id'];
+      avaliable_columns.push(...Object.keys(this._model._schema));
+      if (this._options.group_fields) {
+        avaliable_columns.push(...Object.keys(this._options.group_fields));
+      }
+      this._options.orders.split(/\s+/).forEach((order) => {
+        let asc = true;
+        if (order[0] === '-') {
+          asc = false;
+          order = order.slice(1);
+        }
+        if (avaliable_columns.indexOf(order) >= 0) {
+          orders.push(asc ? order : '-' + order);
+        }
+      });
+    }
+
+    return {
+      conditions_of_group: this._options.conditions_of_group,
+      explain: this._options.explain,
+      group_by,
+      group_fields: this._options.group_fields,
+      lean: this._options.lean,
+      limit: this._options.limit,
+      near: this._options.near,
+      orders,
+      skip: this._options.skip,
+      transaction: this._options.transaction,
+      ...(select_raw.length > 0 && { select, select_raw }),
+    };
+  }
+
+  private async _execAndInclude(options?: { skip_log?: boolean }) {
+    const records = await this._exec(this._getAdapterFindOptions(), options);
     if (this._options.select_single) {
       if (Array.isArray(records)) {
         return _.map(records, this._options.select_columns![0]);

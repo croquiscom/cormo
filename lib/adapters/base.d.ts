@@ -11,9 +11,11 @@ export interface ISchemas {
     };
 }
 export interface IAdapterFindOptions {
+    lean: boolean;
     orders: any[];
     near?: any;
     select?: string[];
+    select_raw?: string[];
     conditions_of_group: any[];
     group_fields?: any;
     group_by?: any;

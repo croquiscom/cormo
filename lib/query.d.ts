@@ -5,12 +5,10 @@ import { Transaction } from './transaction';
 import { RecordID } from './types';
 interface IQueryOptions {
     lean: boolean;
-    orders: any[];
+    orders?: string;
     near?: any;
     select_columns?: string[];
     select_single: boolean;
-    select?: string[];
-    select_raw?: string[];
     conditions_of_group: any[];
     group_fields?: any;
     group_by?: string[];
@@ -34,7 +32,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
     select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQuerySingle<M, Pick<M, K>>;
     select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingle<M, Pick<M, K>>;
     selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M, M[K]>;
-    order(orders: string): IQuerySingle<M, T>;
+    order(orders?: string): IQuerySingle<M, T>;
     group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): IQuerySingle<M, {
         [field in keyof F]: number;
     } & Pick<M, G>>;
@@ -51,7 +49,9 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
     cache(options: IQueryOptions['cache']): IQuerySingle<M, T>;
     include(column: string, select?: string): IQuerySingle<M, T>;
     transaction(transaction?: Transaction): IQuerySingle<M, T>;
-    exec(options?: any): PromiseLike<T>;
+    exec(options?: {
+        skip_log?: boolean;
+    }): PromiseLike<T>;
     stream(): stream.Readable;
     explain(): PromiseLike<any>;
     count(): PromiseLike<number>;
@@ -68,7 +68,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
     select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<M, Pick<M, K>>;
     select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<M, Pick<M, K>>;
     selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M, M[K]>;
-    order(orders: string): IQueryArray<M, T>;
+    order(orders?: string): IQueryArray<M, T>;
     group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): IQueryArray<M, {
         [field in keyof F]: number;
     } & Pick<M, G>>;
@@ -85,7 +85,9 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
     cache(options: IQueryOptions['cache']): IQueryArray<M, T>;
     include(column: string, select?: string): IQueryArray<M, T>;
     transaction(transaction?: Transaction): IQueryArray<M, T>;
-    exec(options?: any): PromiseLike<T[]>;
+    exec(options?: {
+        skip_log?: boolean;
+    }): PromiseLike<T[]>;
     stream(): stream.Readable;
     explain(): PromiseLike<any>;
     count(): PromiseLike<number>;
@@ -140,7 +142,7 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
     /**
      * Specifies orders of result
      */
-    order(orders: string): this;
+    order(orders?: string): this;
     /**
      * Groups result records
      */
@@ -195,7 +197,9 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
      * @see AdapterBase::findById
      * @see AdapterBase::find
      */
-    exec(options?: any): Promise<any>;
+    exec(options?: {
+        skip_log?: boolean;
+    }): Promise<any>;
     /**
      * Executes the query and returns a readable stream
      * @see AdapterBase::findById
@@ -231,6 +235,7 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
      */
     delete(options?: any): Promise<number>;
     private _exec;
+    private _getAdapterFindOptions;
     private _execAndInclude;
     private _validateAndBuildSaveData;
     private _doIntegrityActions;

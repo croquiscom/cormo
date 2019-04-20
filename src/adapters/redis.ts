@@ -191,7 +191,7 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: any): stream.Readable {
+  public stream(model: any, conditions: any, options: IAdapterFindOptions): stream.Readable {
     throw new Error('not implemented');
   }
 
