@@ -8,15 +8,20 @@ export enum IsolationLevel {
 }
 
 class Transaction {
+  /** @internal */
   public _adapter_connection: any;
+  /** @internal */
   private _connection: Connection;
+  /** @internal */
   private _status: 'initial' | 'started' | 'committed' | 'rollbacked';
 
+  /** @internal */
   constructor(connection: Connection) {
     this._connection = connection;
     this._status = 'initial';
   }
 
+  /** @internal */
   public async setup(isolation_level?: IsolationLevel) {
     if (this._status !== 'initial') {
       throw new Error('can not start used transaction again');
@@ -44,6 +49,7 @@ class Transaction {
     this._status = 'rollbacked';
   }
 
+  /** @internal */
   public checkFinished() {
     if (this._status === 'committed' || this._status === 'rollbacked') {
       throw new Error('transaction finished');

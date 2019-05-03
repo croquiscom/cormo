@@ -32,7 +32,7 @@ export * from './decorators';
 import * as types from './types';
 export { types };
 
-export { IsolationLevel } from './transaction';
+export { IsolationLevel, Transaction } from './transaction';
 
 export * from './logger';
 
