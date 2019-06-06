@@ -168,12 +168,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     } else {
       this._adapter = adapter(this);
     }
-    this._promise_connection = this._adapter.connect(settings).then(() => {
-      this.connected = true;
-    }).catch((error: Error) => {
-      (this._adapter as any) = undefined;
-      console.log('fail to connect', error);
-    });
+    this._promise_connection = this._connect(settings);
     this.setLogger(settings.logger);
   }
 
@@ -680,6 +675,23 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         });
       }
       return client;
+    }
+  }
+
+  private async _connect(settings: IConnectionSettings) {
+    if (!this._adapter) {
+      return;
+    }
+    try {
+      await this._adapter.connect(settings);
+      this.connected = true;
+    } catch (error) {
+      // try again with delay
+      await new Promise((resolve) => {
+        setTimeout(() => resolve(), 5000);
+      });
+      console.log('try again to connect', error.toString());
+      await this._connect(settings);
     }
   }
 

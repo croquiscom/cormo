@@ -193,6 +193,7 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
     transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T>;
     _checkSchemaApplied(): Promise<void>;
     _connectRedisCache(): any;
+    private _connect;
     private _initializeModels;
     private _checkArchive;
     private _getModelNamesByAssociationOrder;
