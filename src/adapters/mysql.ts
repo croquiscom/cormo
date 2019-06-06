@@ -16,6 +16,7 @@ export interface IAdapterSettingsMySQL {
   charset?: string;
   collation?: string;
   pool_size?: number;
+  query_timeout?: number;
 }
 
 import _ from 'lodash';
@@ -140,11 +141,15 @@ export class MySQLAdapter extends SQLAdapterBase {
   /** @internal */
   private _settings?: IAdapterSettingsMySQL;
 
+  /** @internal */
+  private _query_timeout: number;
+
   // Creates a MySQL adapter
   /** @internal */
   constructor(connection: Connection) {
     super();
     this._connection = connection;
+    this._query_timeout = 60000;
   }
 
   /** @internal */
@@ -511,6 +516,9 @@ export class MySQLAdapter extends SQLAdapterBase {
     let client: any;
     this._database = settings.database;
     this._settings = settings;
+    if (settings.query_timeout) {
+      this._query_timeout = settings.query_timeout;
+    }
     try {
       client = await _tryCreateConnection({
         charset: settings.charset,
@@ -594,9 +602,9 @@ export class MySQLAdapter extends SQLAdapterBase {
     this._connection._logger.logQuery(text, values);
     if (transaction && transaction._adapter_connection) {
       transaction.checkFinished();
-      return await transaction._adapter_connection.queryAsync(text, values);
+      return await transaction._adapter_connection.queryAsync({ sql: text, values, timeout: this._query_timeout });
     } else {
-      return await this._client.queryAsync(text, values);
+      return await this._client.queryAsync({ sql: text, values, timeout: this._query_timeout });
     }
   }
 

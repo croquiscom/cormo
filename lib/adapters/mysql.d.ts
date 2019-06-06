@@ -7,6 +7,7 @@ export interface IAdapterSettingsMySQL {
     charset?: string;
     collation?: string;
     pool_size?: number;
+    query_timeout?: number;
 }
 import { Connection } from '../connection';
 import { Transaction } from '../transaction';
