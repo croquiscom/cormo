@@ -3,7 +3,7 @@
 import * as util from 'util';
 import * as cormo from '../../src';
 
-const connection = new cormo.MySQLConnection({
+export const connection = new cormo.MySQLConnection({
   database: 'cormo_test',
   password: 'cormo_test',
   port: 21860,
@@ -30,7 +30,7 @@ class Name {
 
 @cormo.Model({ connection })
 @cormo.Index({ 'name.first': 1, 'age': 1 })
-class User extends cormo.BaseModel {
+export class User extends cormo.BaseModel {
   public id!: number;
 
   @cormo.ObjectColumn(Name)
@@ -107,10 +107,12 @@ async function run() {
   await User.drop();
 }
 
-run().then(() => {
-  console.log('Done');
-  process.exit(0);
-}).catch((error) => {
-  console.log((error.cause || error).toString());
-  process.exit(0);
-});
+if (require.main === module) {
+  run().then(() => {
+    console.log('Done');
+    process.exit(0);
+  }).catch((error) => {
+    console.log((error.cause || error).toString());
+    process.exit(0);
+  });
+}
