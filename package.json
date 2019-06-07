@@ -41,11 +41,11 @@
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/inflected": "^1.1.29",
-    "@types/lodash": "^4.14.123",
-    "@types/mocha": "^5.2.6",
-    "@types/mongodb": "^3.1.26",
+    "@types/lodash": "^4.14.134",
+    "@types/mocha": "^5.2.7",
+    "@types/mongodb": "^3.1.28",
     "@types/node": "^8.10.44",
-    "@types/sinon": "^7.0.11",
+    "@types/sinon": "^7.0.12",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "coffee-coverage": "^3.0.1",
@@ -53,16 +53,16 @@
     "crojsdoc": "^0.9.3",
     "microtime": "^3.0.0",
     "mocha": "^6.1.4",
-    "mongodb": "^3.2.3",
+    "mongodb": "^3.2.7",
     "mysql": "^2.17.1",
-    "pg": "^7.10.0",
+    "pg": "^7.11.0",
     "pg-query-stream": "^2.0.0",
     "redis": "^2.7.1",
     "rimraf": "^2.6.3",
     "sinon": "^7.3.2",
-    "sqlite3": "^4.0.6",
-    "ts-node": "^8.1.0",
-    "tslint": "^5.16.0",
-    "typescript": "^3.4.5"
+    "sqlite3": "^4.0.8",
+    "ts-node": "^8.2.0",
+    "tslint": "^5.17.0",
+    "typescript": "^3.5.1"
   }
 }

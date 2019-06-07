@@ -32,14 +32,16 @@ try {
 
 type ManipulateCommand = string | { [key: string]: any };
 
+interface IRedisCacheSettings {
+  client?: object;
+  host?: string;
+  port?: number;
+  database?: number;
+}
+
 interface IConnectionSettings {
   is_default?: boolean;
-  redis_cache?: {
-    client?: object,
-    host?: string,
-    port?: number,
-    database?: number,
-  };
+  redis_cache?: IRedisCacheSettings;
   logger?: 'console' | 'color-console' | ILogger;
 }
 
@@ -129,9 +131,29 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /** @internal */
   public _logger!: ILogger;
 
+  /** @internal */
+  public _schema_changed: boolean = false;
+
+  /** @internal */
+  public _promise_connection: Promise<void>;
+
+  /** @internal */
   private _promise_schema_applied?: Promise<void>;
 
+  /** @internal */
   private _pending_associations: IAssociation[];
+
+  /** @internal */
+  private _redis_cache_settings: IRedisCacheSettings;
+
+  /** @internal */
+  private _redis_cache_client: any;
+
+  /** @internal */
+  private _connected: boolean = false;
+
+  /** @internal */
+  private _applying_schemas: boolean = false;
 
   [name: string]: any;
 
@@ -159,10 +181,8 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     }
     const redis_cache = settings.redis_cache || {};
     this._redis_cache_settings = redis_cache;
-    this.connected = false;
     this.models = {};
     this._pending_associations = [];
-    this._schema_changed = false;
     if (typeof adapter === 'string') {
       this._adapter = require(__dirname + '/../adapters/' + adapter).createAdapter(this);
     } else {
@@ -684,7 +704,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     }
     try {
       await this._adapter.connect(settings);
-      this.connected = true;
+      this._connected = true;
     } catch (error) {
       // try again with delay
       await new Promise((resolve) => {

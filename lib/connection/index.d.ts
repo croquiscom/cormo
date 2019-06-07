@@ -13,14 +13,15 @@ import * as types from '../types';
 declare type ManipulateCommand = string | {
     [key: string]: any;
 };
+interface IRedisCacheSettings {
+    client?: object;
+    host?: string;
+    port?: number;
+    database?: number;
+}
 interface IConnectionSettings {
     is_default?: boolean;
-    redis_cache?: {
-        client?: object;
-        host?: string;
-        port?: number;
-        database?: number;
-    };
+    redis_cache?: IRedisCacheSettings;
     logger?: 'console' | 'color-console' | ILogger;
 }
 declare type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
@@ -98,8 +99,6 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
     models: {
         [name: string]: typeof BaseModel;
     };
-    private _promise_schema_applied?;
-    private _pending_associations;
     [name: string]: any;
     /**
      * Creates a connection

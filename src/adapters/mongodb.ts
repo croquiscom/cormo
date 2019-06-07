@@ -169,7 +169,7 @@ function _buildWhere(schema: IModelSchemaInternal, conditions: any, conjunction 
         return memo + Object.keys(sub).length;
       }, 0);
       subs.unshift({});
-      const obj = _.extend.apply(_, subs);
+      const obj: any = _.extend.apply(_, subs);
       subs.shift();
       const keys = Object.keys(obj);
       const after_count = keys.length;
