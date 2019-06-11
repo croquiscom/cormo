@@ -646,6 +646,21 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
+  protected _buildGroupExpr(group_expr: any) {
+    const op = Object.keys(group_expr)[0];
+    if (op === '$any') {
+      const sub_expr = group_expr[op];
+      if (sub_expr.substr(0, 1) === '$') {
+        return `ANY_VALUE(${sub_expr.substr(1)})`;
+      } else {
+        throw new Error(`unknown expression '${JSON.stringify(op)}'`);
+      }
+    } else {
+      return super._buildGroupExpr(group_expr);
+    }
+  }
+
+  /** @internal */
   private async _getTables(): Promise<any> {
     let tables = await this._client.queryAsync('SHOW TABLES');
     tables = tables.map((table: any) => {

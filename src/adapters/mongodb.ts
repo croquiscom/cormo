@@ -181,6 +181,15 @@ function _buildWhere(schema: IModelSchemaInternal, conditions: any, conjunction 
   }
 }
 
+function _buildGroupExpr(group_expr: any) {
+  const op = Object.keys(group_expr)[0];
+  if (op === '$any') {
+    return { $first: group_expr[op] };
+  } else {
+    return group_expr;
+  }
+}
+
 function _buildGroupFields(group_by: any, group_fields: any) {
   const group: any = {};
   if (group_by) {
@@ -196,7 +205,7 @@ function _buildGroupFields(group_by: any, group_fields: any) {
   // tslint:disable-next-line:forin
   for (const field in group_fields) {
     const expr = group_fields[field];
-    group[field] = expr;
+    group[field] = _buildGroupExpr(expr);
   }
   return group;
 }

@@ -184,4 +184,17 @@ export default function(models: {
     expect(records[1]).to.eql({ customer: 'Daniel Smith', average_price: 10 });
     expect(records[2]).to.eql({ customer: 'John Doe', average_price: 12.25 });
   });
+
+  it('any', async () => {
+    const records: Array<{ customer: string, count: number, date: any }> = await models.Order.group('customer', {
+      count: { $sum: 1 },
+      date: { $any: '$date' },
+    });
+    expect(records).to.have.length(3);
+    records.sort((a, b) => a.customer < b.customer ? -1 : 1);
+    records.forEach((r) => r.date = new Date(r.date));
+    expect(records[0]).to.eql({ customer: 'Bill Smith', count: 2, date: new Date('2012/02/03') });
+    expect(records[1]).to.eql({ customer: 'Daniel Smith', count: 3, date: new Date('2012/01/19') });
+    expect(records[2]).to.eql({ customer: 'John Doe', count: 4, date: new Date('2012/01/01') });
+  });
 }

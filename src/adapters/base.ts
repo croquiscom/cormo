@@ -330,6 +330,8 @@ abstract class AdapterBase {
       const op = Object.keys(expr)[0];
       if (op === '$sum' || op === '$max' || op === '$min' || op === '$avg') {
         instance[field] = Number(data[field]);
+      } else if (op === '$any') {
+        instance[field] = data[field];
       }
     }
     return instance;
