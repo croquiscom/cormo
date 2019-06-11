@@ -328,7 +328,7 @@ abstract class AdapterBase {
     for (const field in group_fields) {
       const expr = group_fields[field];
       const op = Object.keys(expr)[0];
-      if (op === '$sum' || op === '$max' || op === '$min') {
+      if (op === '$sum' || op === '$max' || op === '$min' || op === '$avg') {
         instance[field] = Number(data[field]);
       }
     }

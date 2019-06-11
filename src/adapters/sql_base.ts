@@ -247,6 +247,13 @@ abstract class SQLAdapterBase extends AdapterBase {
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
       }
+    } else if (op === '$avg') {
+      const sub_expr = group_expr[op];
+      if (sub_expr.substr(0, 1) === '$') {
+        return `AVG(${sub_expr.substr(1)})`;
+      } else {
+        throw new Error(`unknown expression '${JSON.stringify(op)}'`);
+      }
     } else {
       throw new Error(`unknown expression '${JSON.stringify(op)}'`);
     }

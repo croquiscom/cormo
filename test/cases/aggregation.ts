@@ -173,4 +173,15 @@ export default function(models: {
       .count();
     expect(count).to.eql(2);
   });
+
+  it('avg', async () => {
+    const records = await models.Order.group('customer', {
+      average_price: { $avg: '$price' },
+    });
+    expect(records).to.have.length(3);
+    records.sort((a, b) => a.customer < b.customer ? -1 : 1);
+    expect(records[0]).to.eql({ customer: 'Bill Smith', average_price: 38 });
+    expect(records[1]).to.eql({ customer: 'Daniel Smith', average_price: 10 });
+    expect(records[2]).to.eql({ customer: 'John Doe', average_price: 12.25 });
+  });
 }
