@@ -627,18 +627,19 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model: any, conditions: any, options: any) {
+  private _buildSqlForFind(model_name: string, conditions: any, options: any) {
+    const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {
-      select = this._buildGroupFields(options.group_by, options.group_fields);
+      select = this._buildGroupFields(model_class, options.group_by, options.group_fields);
     } else {
-      select = this._buildSelect(this._connection.models[model], options.select);
+      select = this._buildSelect(model_class, options.select);
     }
-    const table_name = this._connection.models[model].table_name;
+    const table_name = model_class.table_name;
     const params: any[] = [];
     let sql = `SELECT ${select} FROM "${table_name}"`;
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+      sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
     }
     if (options.group_by) {
       sql += ' GROUP BY ' + options.group_by.join(',');
@@ -647,7 +648,6 @@ export class SQLite3Adapter extends SQLAdapterBase {
       sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
     }
     if (options && options.orders.length > 0) {
-      const model_class = this._connection.models[model];
       const schema = model_class._schema;
       const orders = options.orders.map((order: any) => {
         let column;

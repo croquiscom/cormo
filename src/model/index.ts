@@ -254,7 +254,7 @@ class BaseModel {
     this._schema[path] = property;
     if (property.unique) {
       this._indexes.push({
-        columns: _.zipObject([property._dbname_us], [1]),
+        columns: _.zipObject<1 | -1>([property._dbname_us], [1]),
         options: {
           name: property._dbname_us,
           required: property.required,

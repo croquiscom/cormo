@@ -175,6 +175,12 @@ export default function(db: any, db_config: any) {
     expect(await User2.where({ age: 28 }).order('id')).to.eql([
       { id: user2.id, name: 'Bill Smith', age: 28 },
     ]);
+
+    // group
+    expect(await User2.group(['name'], { max_age: { $max: '$age' } }).order('name')).to.eql([
+      { name: 'Bill Smith', max_age: 28 },
+      { name: 'Jone Doe', max_age: 36 },
+    ]);
   });
 
   it('default value', async () => {

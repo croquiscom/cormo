@@ -22,7 +22,7 @@ class CormoTypesObjectId { }
 import _ from 'lodash';
 import stream from 'stream';
 import { Connection } from '../connection';
-import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
+import { BaseModel, IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
@@ -181,16 +181,22 @@ function _buildWhere(schema: IModelSchemaInternal, conditions: any, conjunction 
   }
 }
 
-function _buildGroupExpr(group_expr: any) {
-  const op = Object.keys(group_expr)[0];
+function _buildGroupExpr(schema: IModelSchemaInternal, group_expr: any) {
+  let op = Object.keys(group_expr)[0];
+  const sub_expr = group_expr[op];
   if (op === '$any') {
-    return { $first: group_expr[op] };
+    op = '$first';
+  }
+  if (typeof sub_expr === 'string' && sub_expr.substr(0, 1) === '$') {
+    let column = sub_expr.substr(1);
+    column = schema[column] && schema[column]._dbname_us || column;
+    return { [op]: `$${column}` };
   } else {
-    return group_expr;
+    return { [op]: sub_expr };
   }
 }
 
-function _buildGroupFields(group_by: any, group_fields: any) {
+function _buildGroupFields(model_class: typeof BaseModel, group_by: any, group_fields: any) {
   const group: any = {};
   if (group_by) {
     if (group_by.length === 1) {
@@ -205,7 +211,7 @@ function _buildGroupFields(group_by: any, group_fields: any) {
   // tslint:disable-next-line:forin
   for (const field in group_fields) {
     const expr = group_fields[field];
-    group[field] = _buildGroupExpr(expr);
+    group[field] = _buildGroupExpr(model_class._schema, expr);
   }
   return group;
 }
@@ -516,18 +522,19 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
+  public async find(model_name: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     let fields: any;
     let orders: any;
     let client_options: any;
-    [conditions, fields, orders, client_options] = this._buildConditionsForFind(model, conditions, options);
+    [conditions, fields, orders, client_options] = this._buildConditionsForFind(model_name, conditions, options);
     // console.log(JSON.stringify(conditions));
     if (options.group_by || options.group_fields) {
+      const model_class = this._connection.models[model_name];
       const pipeline: any[] = [];
       if (conditions) {
         pipeline.push({ $match: conditions });
       }
-      pipeline.push({ $group: _buildGroupFields(options.group_by, options.group_fields) });
+      pipeline.push({ $group: _buildGroupFields(model_class, options.group_by, options.group_fields) });
       if (orders) {
         pipeline.push({ $sort: orders });
       }
@@ -538,12 +545,12 @@ export class MongoDBAdapter extends AdapterBase {
         pipeline.push({ $limit: options.limit });
       }
       if (options.explain) {
-        const cursor = await this._collection(model).aggregate(pipeline, { explain: true });
+        const cursor = await this._collection(model_name).aggregate(pipeline, { explain: true });
         return await cursor.toArray();
       }
       let result: any;
       try {
-        const cursor = await this._collection(model).aggregate(pipeline);
+        const cursor = await this._collection(model_name).aggregate(pipeline);
         result = await cursor.toArray();
       } catch (error) {
         throw MongoDBAdapter.wrapError('unknown error', error);
@@ -558,17 +565,17 @@ export class MongoDBAdapter extends AdapterBase {
             }
           }
         }
-        return this._convertToGroupInstance(model, record, options.group_by, options.group_fields);
+        return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields);
       });
     } else {
       if (options.explain) {
         client_options.explain = true;
-        const cursor = await this._collection(model).find(conditions, client_options);
+        const cursor = await this._collection(model_name).find(conditions, client_options);
         return await cursor.toArray();
       }
       let result: any;
       try {
-        const cursor = await this._collection(model).find(conditions, client_options);
+        const cursor = await this._collection(model_name).find(conditions, client_options);
         if (!cursor) {
           throw new Error('no cursor');
         }
@@ -577,7 +584,7 @@ export class MongoDBAdapter extends AdapterBase {
         throw MongoDBAdapter.wrapError('unknown error', error);
       }
       return result.map((record: any) => {
-        return this._convertToModelInstance(model, record, options);
+        return this._convertToModelInstance(model_name, record, options);
       });
     }
   }
@@ -614,22 +621,23 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
-    conditions = _buildWhere(this._connection.models[model]._schema, conditions);
+  public async count(model_name: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
+    const model_class = this._connection.models[model_name];
+    conditions = _buildWhere(model_class._schema, conditions);
     // console.log(JSON.stringify(conditions))
     if (options.group_by || options.group_fields) {
       const pipeline = [];
       if (conditions) {
         pipeline.push({ $match: conditions });
       }
-      pipeline.push({ $group: _buildGroupFields(options.group_by, options.group_fields) });
+      pipeline.push({ $group: _buildGroupFields(model_class, options.group_by, options.group_fields) });
       if (options.conditions_of_group.length > 0) {
         pipeline.push({ $match: _buildWhere(options.group_fields, options.conditions_of_group) });
       }
       pipeline.push({ $group: { _id: null, count: { $sum: 1 } } });
       let result: any;
       try {
-        const cursor = await this._collection(model).aggregate(pipeline);
+        const cursor = await this._collection(model_name).aggregate(pipeline);
         result = await cursor.toArray();
         if (!result || result.length !== 1) {
           throw new Error('invalid result');
@@ -640,7 +648,7 @@ export class MongoDBAdapter extends AdapterBase {
       return result[0].count;
     } else {
       try {
-        const count = await this._collection(model).countDocuments(conditions);
+        const count = await this._collection(model_name).countDocuments(conditions);
         return count;
       } catch (error) {
         throw MongoDBAdapter.wrapError('unknown error', error);

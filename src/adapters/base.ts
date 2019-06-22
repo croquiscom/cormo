@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import stream from 'stream';
 import { Connection } from '../connection';
 import { IIndexProperty } from '../model';
@@ -314,14 +315,14 @@ abstract class AdapterBase {
   }
 
   /** @internal */
-  protected _convertToGroupInstance(model: any, data: any, group_by: any, group_fields: any) {
+  protected _convertToGroupInstance(model_name: string, data: any, group_by: any, group_fields: any) {
     const instance: any = {};
     if (group_by) {
-      const schema = this._connection.models[model]._schema;
+      const schema = this._connection.models[model_name]._schema;
       for (const field of group_by) {
-        const property = schema[field];
+        const property = _.find(schema, (item) => item._dbname_us === field);
         if (property) {
-          instance[field] = this.valueToModel(data[field], property);
+          util.setPropertyOfPath(instance, property._parts, this.valueToModel(data[field], property));
         }
       }
     }

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { IColumnPropertyInternal, IModelSchemaInternal } from '../model';
+import { BaseModel, IColumnPropertyInternal, IModelSchemaInternal } from '../model';
 import * as types from '../types';
 import { AdapterBase } from './base';
 
@@ -73,7 +73,9 @@ abstract class SQLAdapterBase extends AdapterBase {
   }
 
   /** @internal */
-  protected _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: any, params: any): any {
+  protected _buildWhereSingle(
+    schema: IModelSchemaInternal, property: IColumnPropertyInternal, key: any, value: any, params: any,
+  ): any {
     let property_type_class;
     if (key === 'id') {
       property_type_class = this.key_type;
@@ -86,7 +88,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     let column: any;
     if (property && !property_type_class) {
       // group field
-      column = this._buildGroupExpr(property);
+      column = this._buildGroupExpr(schema, property);
     } else {
       column = this._escape_ch + (property ? property._dbname_us : key.replace(/\./g, '_')) + this._escape_ch;
     }
@@ -108,7 +110,8 @@ abstract class SQLAdapterBase extends AdapterBase {
           if (value[sub_key] === null) {
             return `NOT ${column} IS NULL`;
           } else {
-            return `(NOT (${this._buildWhereSingle(property, key, value[sub_key], params)}) OR ${column} IS NULL)`;
+            const sub_expr = this._buildWhereSingle(schema, property, key, value[sub_key], params);
+            return `(NOT (${sub_expr}) OR ${column} IS NULL)`;
           }
           break;
         case '$in': {
@@ -202,11 +205,11 @@ abstract class SQLAdapterBase extends AdapterBase {
               return this._buildWhere(schema, conditions[key], params, 'OR');
           }
         } else {
-          return this._buildWhereSingle(schema[key], key, conditions[key], params);
+          return this._buildWhereSingle(schema, schema[key], key, conditions[key], params);
         }
       } else {
         subs = keys.map((key) => {
-          return this._buildWhereSingle(schema[key], key, conditions[key], params);
+          return this._buildWhereSingle(schema, schema[key], key, conditions[key], params);
         });
       }
     } else {
@@ -222,42 +225,52 @@ abstract class SQLAdapterBase extends AdapterBase {
   }
 
   /** @internal */
-  protected _buildGroupExpr(group_expr: any) {
+  protected _buildGroupExpr(schema: IModelSchemaInternal, group_expr: any) {
     const op = Object.keys(group_expr)[0];
     if (op === '$sum') {
       const sub_expr = group_expr[op];
       if (sub_expr === 1) {
         return 'COUNT(*)';
       } else if (sub_expr.substr(0, 1) === '$') {
-        return `SUM(${sub_expr.substr(1)})`;
+        let column = sub_expr.substr(1);
+        column = schema[column] && schema[column]._dbname_us || column;
+        return `SUM(${column})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
       }
     } else if (op === '$min') {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
-        return `MIN(${sub_expr.substr(1)})`;
+        let column = sub_expr.substr(1);
+        column = schema[column] && schema[column]._dbname_us || column;
+        return `MIN(${column})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
       }
     } else if (op === '$max') {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
-        return `MAX(${sub_expr.substr(1)})`;
+        let column = sub_expr.substr(1);
+        column = schema[column] && schema[column]._dbname_us || column;
+        return `MAX(${column})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
       }
     } else if (op === '$avg') {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
-        return `AVG(${sub_expr.substr(1)})`;
+        let column = sub_expr.substr(1);
+        column = schema[column] && schema[column]._dbname_us || column;
+        return `AVG(${column})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
       }
     } else if (op === '$any') {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
-        return `${sub_expr.substr(1)}`;
+        let column = sub_expr.substr(1);
+        column = schema[column] && schema[column]._dbname_us || column;
+        return `${column}`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
       }
@@ -267,7 +280,7 @@ abstract class SQLAdapterBase extends AdapterBase {
   }
 
   /** @internal */
-  protected _buildGroupFields(group_by: any, group_fields: any) {
+  protected _buildGroupFields(model_class: typeof BaseModel, group_by: any, group_fields: any) {
     const selects: any[] = [];
     if (group_by) {
       [].push.apply(selects, group_by);
@@ -275,7 +288,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     // tslint:disable-next-line:forin
     for (const field in group_fields) {
       const expr = group_fields[field];
-      selects.push(`${this._buildGroupExpr(expr)} as ${field}`);
+      selects.push(`${this._buildGroupExpr(model_class._schema, expr)} as ${field}`);
     }
     return selects.join(',');
   }

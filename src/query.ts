@@ -590,10 +590,9 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
 
     let group_by: string[] | undefined;
     if (this._options.group_by) {
-      const schema_columns = Object.keys(this._model._schema);
-      group_by = this._options.group_by.filter((column) => {
-        return schema_columns.indexOf(column) >= 0;
-      });
+      group_by = this._options.group_by.map((column) => {
+        return this._model._schema[column]._dbname_us;
+      }).filter((column) => column != null);
     }
 
     const orders: string[] = [];

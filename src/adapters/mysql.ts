@@ -23,7 +23,7 @@ import _ from 'lodash';
 import stream from 'stream';
 import util from 'util';
 import { Connection } from '../connection';
-import { IColumnPropertyInternal, IIndexProperty } from '../model';
+import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
@@ -646,17 +646,19 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  protected _buildGroupExpr(group_expr: any) {
+  protected _buildGroupExpr(schema: IModelSchemaInternal, group_expr: any) {
     const op = Object.keys(group_expr)[0];
     if (op === '$any') {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
-        return `ANY_VALUE(${sub_expr.substr(1)})`;
+        let column = sub_expr.substr(1);
+        column = schema[column] && schema[column]._dbname_us || column;
+        return `ANY_VALUE(${column})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
       }
     } else {
-      return super._buildGroupExpr(group_expr);
+      return super._buildGroupExpr(schema, group_expr);
     }
   }
 
@@ -778,12 +780,13 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model: any, conditions: any, options: any): [string, any[]] {
+  private _buildSqlForFind(model_name: string, conditions: any, options: any): [string, any[]] {
+    const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {
-      select = this._buildGroupFields(options.group_by, options.group_fields);
+      select = this._buildGroupFields(model_class, options.group_by, options.group_fields);
     } else {
-      select = this._buildSelect(this._connection.models[model], options.select);
+      select = this._buildSelect(model_class, options.select);
     }
     let order_by;
     if (options.near != null && Object.keys(options.near)[0]) {
@@ -793,10 +796,10 @@ export class MySQLAdapter extends SQLAdapterBase {
       select += `,GLENGTH(LINESTRING(\`${field}\`,POINT(${location[0]},${location[1]}))) AS \`${field}_distance\``;
     }
     const params: any[] = [];
-    const table_name = this._connection.models[model].table_name;
+    const table_name = model_class.table_name;
     let sql = `SELECT ${select} FROM \`${table_name}\``;
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+      sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
     }
     if (options.group_by) {
       sql += ' GROUP BY ' + options.group_by.join(',');
@@ -805,7 +808,6 @@ export class MySQLAdapter extends SQLAdapterBase {
       sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
     }
     if ((options && options.orders.length > 0) || order_by) {
-      const model_class = this._connection.models[model];
       const schema = model_class._schema;
       const orders = options.orders.map((order: any) => {
         let column;
