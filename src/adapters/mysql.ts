@@ -620,6 +620,23 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
   }
 
+  public getRunningQueries(): string[] {
+    const queries = [] as string[];
+    for (const conn of this._client._allConnections) {
+      if (conn && conn._protocol && conn._protocol._queue && conn._protocol._queue.length > 0) {
+        const query = conn._protocol._queue[0];
+        queries.push(query.sql);
+      }
+    }
+    return queries;
+  }
+
+  public getPoolStatus(): { used: number, queued: number } {
+    const used = this._client._allConnections.length - this._client._freeConnections.length;
+    const queued = this._client._connectionQueue.length;
+    return { used, queued };
+  }
+
   /** @internal */
   protected valueToModel(value: any, property: any) {
     if (property.type_class === types.Object || property.array) {

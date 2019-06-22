@@ -21,5 +21,10 @@ export declare class MySQLAdapter extends SQLAdapterBase {
      * Remove all unused connections from pool.
      */
     emptyFreeConnections(): void;
+    getRunningQueries(): string[];
+    getPoolStatus(): {
+        used: number;
+        queued: number;
+    };
 }
 export declare function createAdapter(connection: Connection): MySQLAdapter;
