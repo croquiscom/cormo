@@ -8,6 +8,16 @@ export interface IAdapterSettingsMySQL {
     collation?: string;
     pool_size?: number;
     query_timeout?: number;
+    replication?: {
+        use_master_for_read?: boolean;
+        read_replicas: Array<{
+            host?: string;
+            port?: number;
+            user?: string;
+            password?: string;
+            pool_size?: number;
+        }>;
+    };
 }
 import { Connection } from '../connection';
 import { Transaction } from '../transaction';

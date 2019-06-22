@@ -7,6 +7,13 @@ export const connection = new cormo.MySQLConnection({
   database: 'cormo_test',
   password: 'cormo_test',
   port: 21860,
+  replication: {
+    read_replicas: [{
+      password: 'cormo_test',
+      port: 21860,
+      user: 'cormo_test',
+    }],
+  },
   user: 'cormo_test',
 });
 

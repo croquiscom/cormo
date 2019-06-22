@@ -2,6 +2,7 @@
 
 import { expect } from 'chai';
 import * as cormo from '../..';
+import _g = require('../support/common');
 
 export default function(models: {
   connection: cormo.Connection<cormo.MySQLAdapter> | null,
@@ -189,6 +190,103 @@ export default function(models: {
       expect(rows).to.have.length(2);
       expect(rows[0]).to.eql({ id: users[0].id, name: users[0].name, age: users[0].age });
       expect(rows[1]).to.eql({ id: users[2].id, name: users[2].name, age: users[2].age });
+    });
+  });
+
+  describe('replication', () => {
+    afterEach(async () => {
+      const c = new cormo.MySQLConnection(_g.db_configs.mysql);
+      await models.connection!.adapter.query('DROP TABLE users');
+    });
+
+    it('basic', async () => {
+      const c = new cormo.MySQLConnection({
+        ..._g.db_configs.mysql,
+        replication: {
+          read_replicas: [{ ..._g.db_configs.mysql }],
+        },
+      });
+      @cormo.Model({ connection: c })
+      class User extends cormo.BaseModel {
+        @cormo.Column(String)
+        public name?: string;
+
+        @cormo.Column(Number)
+        public age?: number;
+      }
+      const data = [
+        { name: 'John Doe', age: 27 },
+        { name: 'Bill Smith', age: 45 },
+        { name: 'Alice Jackson', age: 27 },
+        { name: 'Gina Baker', age: 32 },
+        { name: 'Daniel Smith', age: 8 },
+      ];
+      const users = await User.createBulk(data);
+      expect((c.adapter as any)._read_clients[0]._allConnections.length).to.eql(0);
+      expect(await c.adapter.query('SELECT * FROM users WHERE age=?', [27])).to.eql([
+        { id: users[0].id, name: users[0].name, age: users[0].age },
+        { id: users[2].id, name: users[2].name, age: users[2].age },
+      ]);
+      expect((c.adapter as any)._read_clients[0]._allConnections.length).to.eql(1); // query uses read client
+    });
+
+    it('round robin', async () => {
+      const c = new cormo.MySQLConnection({
+        ..._g.db_configs.mysql,
+        replication: {
+          read_replicas: [
+            { ..._g.db_configs.mysql },
+            { ..._g.db_configs.mysql },
+          ],
+          use_master_for_read: true,
+        },
+      });
+      @cormo.Model({ connection: c })
+      class User extends cormo.BaseModel {
+        @cormo.Column(String)
+        public name?: string;
+
+        @cormo.Column(Number)
+        public age?: number;
+      }
+      const data = [
+        { name: 'John Doe', age: 27 },
+        { name: 'Bill Smith', age: 45 },
+        { name: 'Alice Jackson', age: 27 },
+        { name: 'Gina Baker', age: 32 },
+        { name: 'Daniel Smith', age: 8 },
+      ];
+      const users = await User.createBulk(data);
+      expect((c.adapter as any)._read_clients[0]._allConnections.length).to.eql(1);
+      expect((c.adapter as any)._read_clients[1]._allConnections.length).to.eql(0);
+      expect((c.adapter as any)._read_clients[2]._allConnections.length).to.eql(0);
+
+      // first query uses master
+      expect(await c.adapter.query('SELECT * FROM users WHERE age=?', [27])).to.eql([
+        { id: users[0].id, name: users[0].name, age: users[0].age },
+        { id: users[2].id, name: users[2].name, age: users[2].age },
+      ]);
+      expect((c.adapter as any)._read_clients[0]._allConnections.length).to.eql(1);
+      expect((c.adapter as any)._read_clients[1]._allConnections.length).to.eql(0);
+      expect((c.adapter as any)._read_clients[2]._allConnections.length).to.eql(0);
+
+      // second query uses slave1
+      expect(await c.adapter.query('SELECT * FROM users WHERE age=?', [27])).to.eql([
+        { id: users[0].id, name: users[0].name, age: users[0].age },
+        { id: users[2].id, name: users[2].name, age: users[2].age },
+      ]);
+      expect((c.adapter as any)._read_clients[0]._allConnections.length).to.eql(1);
+      expect((c.adapter as any)._read_clients[1]._allConnections.length).to.eql(1);
+      expect((c.adapter as any)._read_clients[2]._allConnections.length).to.eql(0);
+
+      // third query uses slave2
+      expect(await c.adapter.query('SELECT * FROM users WHERE age=?', [27])).to.eql([
+        { id: users[0].id, name: users[0].name, age: users[0].age },
+        { id: users[2].id, name: users[2].name, age: users[2].age },
+      ]);
+      expect((c.adapter as any)._read_clients[0]._allConnections.length).to.eql(1);
+      expect((c.adapter as any)._read_clients[1]._allConnections.length).to.eql(1);
+      expect((c.adapter as any)._read_clients[2]._allConnections.length).to.eql(1);
     });
   });
 }

@@ -17,6 +17,10 @@ export interface IAdapterSettingsMySQL {
   collation?: string;
   pool_size?: number;
   query_timeout?: number;
+  replication?: {
+    use_master_for_read?: boolean;
+    read_replicas: Array<{ host?: string, port?: number, user?: string, password?: string, pool_size?: number }>;
+  };
 }
 
 import _ from 'lodash';
@@ -134,6 +138,12 @@ export class MySQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   private _client: any;
+
+  /** @internal */
+  private _read_clients: any[] = [];
+
+  /** @internal */
+  private _read_client_index = -1;
 
   /** @internal */
   private _database?: string;
@@ -550,8 +560,32 @@ export class MySQLAdapter extends SQLAdapterBase {
       port: settings.port,
       user: settings.user,
     });
+    this._client._node_id = 'MASTER';
     this._client.queryAsync = util.promisify(this._client.query);
     this._client.getConnectionAsync = util.promisify(this._client.getConnection);
+
+    if (settings.replication) {
+      this._read_clients = [];
+      if (settings.replication.use_master_for_read) {
+        this._read_clients.push(this._client);
+      }
+      for (let i = 0; i < settings.replication.read_replicas.length; i++) {
+        const replica = settings.replication.read_replicas[i];
+        const read_client = mysql.createPool({
+          charset: settings.charset,
+          connectionLimit: replica.pool_size || 10,
+          database: settings.database,
+          host: replica.host,
+          password: replica.password,
+          port: replica.port,
+          user: replica.user,
+        });
+        read_client._node_id = `SLAVE${i + 1}`;
+        read_client.queryAsync = util.promisify(read_client.query);
+        read_client.getConnectionAsync = util.promisify(read_client.getConnection);
+        this._read_clients.push(read_client);
+      }
+    }
   }
 
   /** @internal */
@@ -599,12 +633,21 @@ export class MySQLAdapter extends SQLAdapterBase {
    * Exposes mysql module's query method
    */
   public async query(text: string, values?: any[], transaction?: Transaction) {
-    this._connection._logger.logQuery(text, values);
     if (transaction && transaction._adapter_connection) {
+      this._connection._logger.logQuery(text, values);
       transaction.checkFinished();
       return await transaction._adapter_connection.queryAsync({ sql: text, values, timeout: this._query_timeout });
     } else {
-      return await this._client.queryAsync({ sql: text, values, timeout: this._query_timeout });
+      let client = this._client;
+      if (this._read_clients.length > 0 && text.substring(0, 6).toUpperCase() === 'SELECT') {
+        this._read_client_index++;
+        if (this._read_client_index >= this._read_clients.length || this._read_client_index < 0) {
+          this._read_client_index = 0;
+        }
+        client = this._read_clients[this._read_client_index];
+      }
+      this._connection._logger.logQuery(`[${client._node_id}] ${text}`, values);
+      return await client.queryAsync({ sql: text, values, timeout: this._query_timeout });
     }
   }
 
