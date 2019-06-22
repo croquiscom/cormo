@@ -1,5 +1,6 @@
 import stream from 'stream';
 import { Connection } from '../connection';
+import { IIndexProperty } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
@@ -117,7 +118,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async createIndex(model: string, index: {}) {
+  public async createIndex(model: string, index: IIndexProperty) {
     return;
   }
 

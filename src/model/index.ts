@@ -64,6 +64,12 @@ export interface IColumnPropertyInternal extends IColumnProperty {
   primary_key: boolean;
 }
 
+/** @internal */
+export interface IIndexProperty {
+  columns: { [column: string]: 1 | -1 };
+  options: { name?: string, required?: boolean, unique?: boolean };
+}
+
 export interface IColumnNestedProperty {
   [subcolumn: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;
 }
@@ -113,7 +119,8 @@ class BaseModel {
 
   public static _object_column_classes: Array<{ column: string, klass: any }>;
 
-  public static _indexes: any[];
+  /** @internal */
+  public static _indexes: IIndexProperty[];
 
   public static _integrities: any[];
 
@@ -263,9 +270,6 @@ class BaseModel {
    */
   public static index(columns: { [column: string]: 1 | -1 }, options: { name?: string, unique?: boolean } = {}) {
     this._checkConnection();
-    if (!options.name) {
-      options.name = Object.keys(columns).join('_');
-    }
     this._indexes.push({ columns, options });
     this._connection._schema_changed = true;
   }
@@ -770,6 +774,18 @@ class BaseModel {
     } else {
       if (property.required) {
         throw new Error(`'${column}' is required`);
+      }
+    }
+  }
+
+  /** @internal */
+  public static _completeSchema() {
+    for (const index of this._indexes) {
+      if (!index.options.name) {
+        const column_names = Object.keys(index.columns).map((column_name) => {
+          return this._schema[column_name]._dbname_us;
+        });
+        index.options.name = column_names.join('_');
       }
     }
   }

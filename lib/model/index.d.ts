@@ -67,7 +67,6 @@ declare class BaseModel {
         column: string;
         klass: any;
     }>;
-    static _indexes: any[];
     static _integrities: any[];
     static _associations: {
         [column: string]: any;

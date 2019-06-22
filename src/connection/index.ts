@@ -285,7 +285,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           const modelClass = this.models[model];
           for (const index of modelClass._indexes) {
             if (!(current.indexes && current.indexes[modelClass.table_name]
-              && current.indexes[modelClass.table_name][index.options.name])) {
+              && current.indexes[modelClass.table_name][index.options.name!])) {
               if (options.verbose) {
                 console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
               }
@@ -372,7 +372,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       const modelClass = this.models[model];
       for (const index of modelClass._indexes) {
         if (!(current.indexes && current.indexes[modelClass.table_name]
-          && current.indexes[modelClass.table_name][index.options.name])) {
+          && current.indexes[modelClass.table_name][index.options.name!])) {
           return true;
         }
       }
@@ -723,6 +723,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         modelClass.initialize();
         modelClass._initialize_called = true;
       }
+      modelClass._completeSchema();
     }
   }
 

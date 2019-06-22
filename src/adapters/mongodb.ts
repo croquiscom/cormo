@@ -22,7 +22,7 @@ class CormoTypesObjectId { }
 import _ from 'lodash';
 import stream from 'stream';
 import { Connection } from '../connection';
-import { IColumnPropertyInternal, IModelSchemaInternal } from '../model';
+import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
@@ -298,7 +298,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async createIndex(model: any, index: any) {
+  public async createIndex(model: any, index: IIndexProperty) {
     const collection = this._collection(model);
     const options = {
       name: index.options.name,

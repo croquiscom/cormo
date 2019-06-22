@@ -15,7 +15,7 @@ import _ from 'lodash';
 import stream from 'stream';
 import util from 'util';
 import { Connection } from '../connection';
-import { IColumnPropertyInternal } from '../model';
+import { IColumnPropertyInternal, IIndexProperty } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
@@ -157,7 +157,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createIndex(model: string, index: any) {
+  public async createIndex(model: string, index: IIndexProperty) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const columns = [];

@@ -111,6 +111,7 @@ export default function(db: any, db_config: any) {
 
   it('column name', async () => {
     @cormo.Model({ name: 'users' })
+    @cormo.Index({ n: 1 })
     class User1 extends cormo.BaseModel {
       @cormo.Column(String)
       public n!: string;
@@ -125,6 +126,7 @@ export default function(db: any, db_config: any) {
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     @cormo.Model({ name: 'users' })
+    @cormo.Index({ name: 1 })
     class User2 extends cormo.BaseModel {
       @cormo.Column({ type: String, name: 'n' })
       public name!: string;
