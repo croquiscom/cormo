@@ -783,7 +783,7 @@ class BaseModel {
     for (const index of this._indexes) {
       if (!index.options.name) {
         const column_names = Object.keys(index.columns).map((column_name) => {
-          return this._schema[column_name]._dbname_us;
+          return this._schema[column_name] && this._schema[column_name]._dbname_us || column_name;
         });
         index.options.name = column_names.join('_');
       }

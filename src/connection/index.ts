@@ -281,15 +281,15 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         }
 
         // tslint:disable-next-line:forin
-        for (const model in this.models) {
-          const modelClass = this.models[model];
+        for (const model_name in this.models) {
+          const modelClass = this.models[model_name];
           for (const index of modelClass._indexes) {
             if (!(current.indexes && current.indexes[modelClass.table_name]
               && current.indexes[modelClass.table_name][index.options.name!])) {
               if (options.verbose) {
                 console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
               }
-              await this._adapter.createIndex(model, index);
+              await this._adapter.createIndex(model_name, index);
             }
           }
         }

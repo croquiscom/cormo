@@ -119,7 +119,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async createIndex(model: string, index: IIndexProperty) {
+  public async createIndex(model_name: string, index: IIndexProperty) {
     return;
   }
 

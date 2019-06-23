@@ -47,6 +47,34 @@ export default function(db: any, db_config: any) {
     }
   });
 
+  it('index on foreign key', async () => {
+    @cormo.Model()
+    class User extends cormo.BaseModel {
+      @cormo.Column(String)
+      public name?: string | null;
+
+      @cormo.Column(Number)
+      public age?: number | null;
+    }
+
+    @cormo.Model()
+    @cormo.Index({ user_id: 1 })
+    class Post extends cormo.BaseModel {
+      @cormo.Column(String)
+      public title?: string | null;
+
+      @cormo.Column(String)
+      public body?: string | null;
+
+      @cormo.BelongsTo()
+      public user?: () => User | null;
+
+      public user_id?: number | null;
+    }
+
+    await connection.applySchemas();
+  });
+
   it('applySchemas successes if an index already exist', async () => {
     class User extends cormo.BaseModel { }
     User.index({ name: 1, age: 1 });
@@ -181,6 +209,19 @@ export default function(db: any, db_config: any) {
       { name: 'Bill Smith', max_age: 28 },
       { name: 'Jone Doe', max_age: 36 },
     ]);
+  });
+
+  it('column name alias for indexed column', async () => {
+    @cormo.Model()
+    @cormo.Index({ name: 1 })
+    class User extends cormo.BaseModel {
+      @cormo.Column({ type: String, name: 'n' })
+      public name!: string;
+
+      @cormo.Column({ type: Number, name: 'a' })
+      public age!: number;
+    }
+    await connection.applySchemas();
   });
 
   it('default value', async () => {

@@ -304,8 +304,8 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async createIndex(model: any, index: IIndexProperty) {
-    const collection = this._collection(model);
+  public async createIndex(model_name: string, index: IIndexProperty) {
+    const collection = this._collection(model_name);
     const options = {
       name: index.options.name,
       sparse: false,

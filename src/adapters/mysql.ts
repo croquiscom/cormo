@@ -219,14 +219,15 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createIndex(model: string, index: IIndexProperty) {
-    const model_class = this._connection.models[model];
+  public async createIndex(model_name: string, index: IIndexProperty) {
+    const model_class = this._connection.models[model_name];
+    const schema = model_class._schema;
     const table_name = model_class.table_name;
     const columns = [];
     // tslint:disable-next-line:forin
     for (const column in index.columns) {
       const order = index.columns[column];
-      columns.push(`\`${column.replace(/\./g, '_')}\` ${(order === -1 ? 'DESC' : 'ASC')}`);
+      columns.push(`\`${schema[column] && schema[column]._dbname_us || column}\` ${(order === -1 ? 'DESC' : 'ASC')}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
     const sql = `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${table_name}\` (${columns.join(',')})`;
