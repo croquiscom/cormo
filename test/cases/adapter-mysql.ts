@@ -14,6 +14,7 @@ export default function(models: {
       }
       Reference.index({ group: 1 });
       Reference.column('group', 'integer');
+
       const data = [
         { group: 1 },
         { group: 1 },
@@ -21,11 +22,16 @@ export default function(models: {
         { group: 3 },
       ];
       const records = await Reference.createBulk(data);
+
       const record = await Reference.find(records[0].id).select('group');
       expect(record.id).to.eql(records[0].id);
       expect(record.group).to.eql(records[0].group);
+
       const count = await Reference.count({ group: 1 });
       expect(count).to.eql(2);
+
+      const count_per_group = await Reference.where().group('group', { count: { $sum: 1 } }).order('group');
+      expect(count_per_group).to.eql([{ group: 1, count: 2 }, { group: 2, count: 1 }, { group: 3, count: 1 }]);
     });
 
     it('#5 invalid json value', async () => {

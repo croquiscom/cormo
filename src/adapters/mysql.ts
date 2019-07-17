@@ -477,7 +477,8 @@ export class MySQLAdapter extends SQLAdapterBase {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
     if (options.group_by) {
-      sql += ' GROUP BY ' + options.group_by.join(',');
+      const escape_ch = this._escape_ch;
+      sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
       if (options.conditions_of_group.length > 0) {
         sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
       }
@@ -841,7 +842,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model_name: string, conditions: any, options: any): [string, any[]] {
+  private _buildSqlForFind(model_name: string, conditions: any, options: IAdapterFindOptions): [string, any[]] {
     const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {
@@ -863,7 +864,8 @@ export class MySQLAdapter extends SQLAdapterBase {
       sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
     }
     if (options.group_by) {
-      sql += ' GROUP BY ' + options.group_by.join(',');
+      const escape_ch = this._escape_ch;
+      sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
     }
     if (options.conditions_of_group.length > 0) {
       sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);

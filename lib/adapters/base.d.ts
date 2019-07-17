@@ -18,7 +18,7 @@ export interface IAdapterFindOptions {
     select_raw?: string[];
     conditions_of_group: any[];
     group_fields?: any;
-    group_by?: any;
+    group_by?: string[];
     limit?: number;
     skip?: number;
     explain?: boolean;
@@ -27,7 +27,7 @@ export interface IAdapterFindOptions {
 export interface IAdapterCountOptions {
     conditions_of_group: any[];
     group_fields?: any;
-    group_by?: any;
+    group_by?: string[];
     transaction?: Transaction;
 }
 /**

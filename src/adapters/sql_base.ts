@@ -280,10 +280,13 @@ abstract class SQLAdapterBase extends AdapterBase {
   }
 
   /** @internal */
-  protected _buildGroupFields(model_class: typeof BaseModel, group_by: any, group_fields: any) {
-    const selects: any[] = [];
+  protected _buildGroupFields(model_class: typeof BaseModel, group_by: string[] | undefined, group_fields: any) {
+    const selects: string[] = [];
     if (group_by) {
-      [].push.apply(selects, group_by);
+      const escape_ch = this._escape_ch;
+      for (const column of group_by) {
+        selects.push(`${escape_ch}${column}${escape_ch}`);
+      }
     }
     // tslint:disable-next-line:forin
     for (const field in group_fields) {
