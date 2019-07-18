@@ -27,7 +27,7 @@ export interface IAdapterSettingsPostgreSQL {
 import _ from 'lodash';
 import stream from 'stream';
 import { Connection } from '../connection';
-import { IColumnPropertyInternal } from '../model';
+import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
@@ -180,14 +180,15 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createIndex(model: string, index: any) {
-    const model_class = this._connection.models[model];
+  public async createIndex(model_name: string, index: IIndexProperty) {
+    const model_class = this._connection.models[model_name];
+    const schema = model_class._schema;
     const table_name = model_class.table_name;
     const columns = [];
     // tslint:disable-next-line:forin
     for (const column in index.columns) {
       const order = index.columns[column];
-      columns.push(`&quot;${column.replace(/\./g, '_')}&quot; ${(order === -1 ? 'DESC' : 'ASC')}`);
+      columns.push(`&quot;${schema[column] &amp;&amp; schema[column]._dbname_us || column}&quot; ${(order === -1 ? 'DESC' : 'ASC')}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
     const sql = `CREATE ${unique}INDEX &quot;${index.options.name}&quot; ON &quot;${table_name}&quot; (${columns.join(',')})`;
@@ -408,7 +409,8 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
     if (options.group_by) {
-      sql += ' GROUP BY ' + options.group_by.join(',');
+      const escape_ch = this._escape_ch;
+      sql += ' GROUP BY ' + options.group_by.map((column) =&gt; `${escape_ch}${column}${escape_ch}`).join(',');
       if (options.conditions_of_group.length &gt; 0) {
         sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
       }
@@ -561,6 +563,23 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
+  protected _buildGroupExpr(schema: IModelSchemaInternal, group_expr: any) {
+    const op = Object.keys(group_expr)[0];
+    if (op === '$any') {
+      const sub_expr = group_expr[op];
+      if (sub_expr.substr(0, 1) === '$') {
+        let column = sub_expr.substr(1);
+        column = schema[column] &amp;&amp; schema[column]._dbname_us || column;
+        return `(ARRAY_AGG(${column}))[1]`;
+      } else {
+        throw new Error(`unknown expression '${JSON.stringify(op)}'`);
+      }
+    } else {
+      return super._buildGroupExpr(schema, group_expr);
+    }
+  }
+
+  /** @internal */
   private async _getTables(): Promise&lt;any&gt; {
     const query = `SELECT table_name FROM INFORMATION_SCHEMA.TABLES
       WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name != 'spatial_ref_sys'`;
@@ -688,12 +707,13 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model: any, conditions: any, options: any): [string, any[]] {
+  private _buildSqlForFind(model_name: string, conditions: any, options: IAdapterFindOptions): [string, any[]] {
+    const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {
-      select = this._buildGroupFields(options.group_by, options.group_fields);
+      select = this._buildGroupFields(model_class, options.group_by, options.group_fields);
     } else {
-      select = this._buildSelect(this._connection.models[model], options.select);
+      select = this._buildSelect(model_class, options.select);
     }
     let order_by;
     if (options.near != null &amp;&amp; Object.keys(options.near)[0]) {
@@ -703,19 +723,19 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
       select += `,ST_Distance(&quot;${field}&quot;,ST_Point(${location[0]},${location[1]})) AS &quot;${field}_distance&quot;`;
     }
     const params: any[] = [];
-    const table_name = this._connection.models[model].table_name;
+    const table_name = model_class.table_name;
     let sql = `SELECT ${select} FROM &quot;${table_name}&quot;`;
     if (conditions.length &gt; 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+      sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
     }
     if (options.group_by) {
-      sql += ' GROUP BY ' + options.group_by.join(',');
+      const escape_ch = this._escape_ch;
+      sql += ' GROUP BY ' + options.group_by.map((column) =&gt; `${escape_ch}${column}${escape_ch}`).join(',');
     }
     if (options.conditions_of_group.length &gt; 0) {
       sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
     }
     if ((options &amp;&amp; options.orders.length &gt; 0) || order_by) {
-      const model_class = this._connection.models[model];
       const schema = model_class._schema;
       const orders = options.orders.map((order: any) =&gt; {
         let column;

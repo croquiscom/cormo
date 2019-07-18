@@ -18,13 +18,18 @@ export interface IAdapterSettingsMySQL {
   charset?: string;
   collation?: string;
   pool_size?: number;
+  query_timeout?: number;
+  replication?: {
+    use_master_for_read?: boolean;
+    read_replicas: Array&lt;{ host?: string, port?: number, user?: string, password?: string, pool_size?: number }&gt;;
+  };
 }
 
 import _ from 'lodash';
 import stream from 'stream';
 import util from 'util';
 import { Connection } from '../connection';
-import { IColumnPropertyInternal } from '../model';
+import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
@@ -137,16 +142,26 @@ export class MySQLAdapter extends SQLAdapterBase {
   private _client: any;
 
   /** @internal */
+  private _read_clients: any[] = [];
+
+  /** @internal */
+  private _read_client_index = -1;
+
+  /** @internal */
   private _database?: string;
 
   /** @internal */
   private _settings?: IAdapterSettingsMySQL;
+
+  /** @internal */
+  private _query_timeout: number;
 
   // Creates a MySQL adapter
   /** @internal */
   constructor(connection: Connection) {
     super();
     this._connection = connection;
+    this._query_timeout = 60000;
   }
 
   /** @internal */
@@ -206,14 +221,15 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createIndex(model: string, index: any) {
-    const model_class = this._connection.models[model];
+  public async createIndex(model_name: string, index: IIndexProperty) {
+    const model_class = this._connection.models[model_name];
+    const schema = model_class._schema;
     const table_name = model_class.table_name;
     const columns = [];
     // tslint:disable-next-line:forin
     for (const column in index.columns) {
       const order = index.columns[column];
-      columns.push(`\`${column.replace(/\./g, '_')}\` ${(order === -1 ? 'DESC' : 'ASC')}`);
+      columns.push(`\`${schema[column] &amp;&amp; schema[column]._dbname_us || column}\` ${(order === -1 ? 'DESC' : 'ASC')}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
     const sql = `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${table_name}\` (${columns.join(',')})`;
@@ -463,7 +479,8 @@ export class MySQLAdapter extends SQLAdapterBase {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
     if (options.group_by) {
-      sql += ' GROUP BY ' + options.group_by.join(',');
+      const escape_ch = this._escape_ch;
+      sql += ' GROUP BY ' + options.group_by.map((column) =&gt; `${escape_ch}${column}${escape_ch}`).join(',');
       if (options.conditions_of_group.length &gt; 0) {
         sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
       }
@@ -513,6 +530,9 @@ export class MySQLAdapter extends SQLAdapterBase {
     let client: any;
     this._database = settings.database;
     this._settings = settings;
+    if (settings.query_timeout) {
+      this._query_timeout = settings.query_timeout;
+    }
     try {
       client = await _tryCreateConnection({
         charset: settings.charset,
@@ -544,8 +564,32 @@ export class MySQLAdapter extends SQLAdapterBase {
       port: settings.port,
       user: settings.user,
     });
+    this._client._node_id = 'MASTER';
     this._client.queryAsync = util.promisify(this._client.query);
     this._client.getConnectionAsync = util.promisify(this._client.getConnection);
+
+    if (settings.replication) {
+      this._read_clients = [];
+      if (settings.replication.use_master_for_read) {
+        this._read_clients.push(this._client);
+      }
+      for (let i = 0; i &lt; settings.replication.read_replicas.length; i++) {
+        const replica = settings.replication.read_replicas[i];
+        const read_client = mysql.createPool({
+          charset: settings.charset,
+          connectionLimit: replica.pool_size || 10,
+          database: settings.database,
+          host: replica.host,
+          password: replica.password,
+          port: replica.port,
+          user: replica.user,
+        });
+        read_client._node_id = `SLAVE${i + 1}`;
+        read_client.queryAsync = util.promisify(read_client.query);
+        read_client.getConnectionAsync = util.promisify(read_client.getConnection);
+        this._read_clients.push(read_client);
+      }
+    }
   }
 
   /** @internal */
@@ -593,12 +637,21 @@ export class MySQLAdapter extends SQLAdapterBase {
    * Exposes mysql module's query method
    */
   public async query(text: string, values?: any[], transaction?: Transaction) {
-    this._connection._logger.logQuery(text, values);
     if (transaction &amp;&amp; transaction._adapter_connection) {
+      this._connection._logger.logQuery(text, values);
       transaction.checkFinished();
-      return await transaction._adapter_connection.queryAsync(text, values);
+      return await transaction._adapter_connection.queryAsync({ sql: text, values, timeout: this._query_timeout });
     } else {
-      return await this._client.queryAsync(text, values);
+      let client = this._client;
+      if (this._read_clients.length &gt; 0 &amp;&amp; text.substring(0, 6).toUpperCase() === 'SELECT') {
+        this._read_client_index++;
+        if (this._read_client_index &gt;= this._read_clients.length || this._read_client_index &lt; 0) {
+          this._read_client_index = 0;
+        }
+        client = this._read_clients[this._read_client_index];
+      }
+      this._connection._logger.logQuery(`[${client._node_id}] ${text}`, values);
+      return await client.queryAsync({ sql: text, values, timeout: this._query_timeout });
     }
   }
 
@@ -612,6 +665,23 @@ export class MySQLAdapter extends SQLAdapterBase {
     while (this._client._freeConnections.length &gt; 0) {
       this._client._purgeConnection(this._client._freeConnections[0]);
     }
+  }
+
+  public getRunningQueries(): string[] {
+    const queries = [] as string[];
+    for (const conn of this._client._allConnections) {
+      if (conn &amp;&amp; conn._protocol &amp;&amp; conn._protocol._queue &amp;&amp; conn._protocol._queue.length &gt; 0) {
+        const query = conn._protocol._queue[0];
+        queries.push(query.sql);
+      }
+    }
+    return queries;
+  }
+
+  public getPoolStatus(): { used: number, queued: number } {
+    const used = this._client._allConnections.length - this._client._freeConnections.length;
+    const queued = this._client._connectionQueue.length;
+    return { used, queued };
   }
 
   /** @internal */
@@ -637,6 +707,23 @@ export class MySQLAdapter extends SQLAdapterBase {
       return null;
     }
     return Number(data.id);
+  }
+
+  /** @internal */
+  protected _buildGroupExpr(schema: IModelSchemaInternal, group_expr: any) {
+    const op = Object.keys(group_expr)[0];
+    if (op === '$any') {
+      const sub_expr = group_expr[op];
+      if (sub_expr.substr(0, 1) === '$') {
+        let column = sub_expr.substr(1);
+        column = schema[column] &amp;&amp; schema[column]._dbname_us || column;
+        return `ANY_VALUE(${column})`;
+      } else {
+        throw new Error(`unknown expression '${JSON.stringify(op)}'`);
+      }
+    } else {
+      return super._buildGroupExpr(schema, group_expr);
+    }
   }
 
   /** @internal */
@@ -757,12 +844,13 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model: any, conditions: any, options: any): [string, any[]] {
+  private _buildSqlForFind(model_name: string, conditions: any, options: IAdapterFindOptions): [string, any[]] {
+    const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {
-      select = this._buildGroupFields(options.group_by, options.group_fields);
+      select = this._buildGroupFields(model_class, options.group_by, options.group_fields);
     } else {
-      select = this._buildSelect(this._connection.models[model], options.select);
+      select = this._buildSelect(model_class, options.select);
     }
     let order_by;
     if (options.near != null &amp;&amp; Object.keys(options.near)[0]) {
@@ -772,19 +860,19 @@ export class MySQLAdapter extends SQLAdapterBase {
       select += `,GLENGTH(LINESTRING(\`${field}\`,POINT(${location[0]},${location[1]}))) AS \`${field}_distance\``;
     }
     const params: any[] = [];
-    const table_name = this._connection.models[model].table_name;
+    const table_name = model_class.table_name;
     let sql = `SELECT ${select} FROM \`${table_name}\``;
     if (conditions.length &gt; 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+      sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
     }
     if (options.group_by) {
-      sql += ' GROUP BY ' + options.group_by.join(',');
+      const escape_ch = this._escape_ch;
+      sql += ' GROUP BY ' + options.group_by.map((column) =&gt; `${escape_ch}${column}${escape_ch}`).join(',');
     }
     if (options.conditions_of_group.length &gt; 0) {
       sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
     }
     if ((options &amp;&amp; options.orders.length &gt; 0) || order_by) {
-      const model_class = this._connection.models[model];
       const schema = model_class._schema;
       const orders = options.orders.map((order: any) =&gt; {
         let column;

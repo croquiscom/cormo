@@ -592,10 +592,9 @@ class Query&lt;M extends BaseModel, T = M&gt; implements IQuerySingle&lt;M, T&gt
 
     let group_by: string[] | undefined;
     if (this._options.group_by) {
-      const schema_columns = Object.keys(this._model._schema);
-      group_by = this._options.group_by.filter((column) =&gt; {
-        return schema_columns.indexOf(column) &gt;= 0;
-      });
+      group_by = this._options.group_by.map((column) =&gt; {
+        return this._model._schema[column]._dbname_us;
+      }).filter((column) =&gt; column != null);
     }
 
     const orders: string[] = [];

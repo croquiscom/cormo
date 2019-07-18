@@ -7,28 +7,10 @@
  * @namespace cormo
  */
 
-export type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber
-  | ICormoTypesBoolean | ICormoTypesDate
-  | ICormoTypesObject | ICormoTypesInteger
-  | ICormoTypesGeoPoint | ICormoTypesRecordID | ICormoTypesText;
-
-export type ColumnTypeInternalConstructor = ICormoTypesStringConstructor | ICormoTypesNumberConstructor
-  | ICormoTypesBooleanConstructor | ICormoTypesDateConstructor
-  | ICormoTypesObjectConstructor | ICormoTypesIntegerConstructor
-  | ICormoTypesGeoPointConstructor | ICormoTypesRecordIDConstructor | ICormoTypesTextConstructor;
-
-type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor
-  | BooleanConstructor | DateConstructor | ObjectConstructor;
-
-type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date'
-  | 'object' | 'integer' | 'geopoint' | 'recordid' | 'text';
-
-export type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor
-  | ColumnTypeNativeConstructor | ColumnTypeString;
-
 /**
  * Represents a string, used in model schemas.
- * @memberOf types
+ * @namespace types
+ * @class String
  */
 export interface ICormoTypesString {
   _type: 'string';
@@ -49,7 +31,8 @@ const CormoTypesString: ICormoTypesStringConstructor = function(this: ICormoType
 
 /**
  * Represents a double-precision floating-point, used in model schemas.
- * @memberOf types
+ * @namespace types
+ * @class Number
  */
 export interface ICormoTypesNumber {
   _type: 'number';
@@ -68,7 +51,8 @@ const CormoTypesNumber: ICormoTypesNumberConstructor = function(this: ICormoType
 
 /**
  * Represents a boolean, used in model schemas.
- * @memberOf types
+ * @namespace types
+ * @class Boolean
  */
 export interface ICormoTypesBoolean {
   _type: 'boolean';
@@ -88,7 +72,8 @@ const CormoTypesBoolean: ICormoTypesBooleanConstructor = function(this: ICormoTy
 
 /**
  * Represents a 32bit integer, used in model schemas.
- * @memberOf types
+ * @namespace types
+ * @class Integer
  */
 export interface ICormoTypesInteger {
   _type: 'integer';
@@ -110,7 +95,8 @@ const CormoTypesInteger: ICormoTypesIntegerConstructor = function(this: ICormoTy
  * Represents a two-dimensional point, used in model schemas.
  *
  * This type is supported only in MongoDB and MySQL.
- * @memberOf types
+ * @namespace types
+ * @class GeoPoint
  */
 export interface ICormoTypesGeoPoint {
   _type: 'geopoint';
@@ -130,7 +116,8 @@ const CormoTypesGeoPoint: ICormoTypesGeoPointConstructor = function(this: ICormo
 
 /**
  * Represents a date, used in model schemas.
- * @memberOf types
+ * @namespace types
+ * @class Date
  */
 export interface ICormoTypesDate {
   _type: 'date';
@@ -153,7 +140,8 @@ const CormoTypesDate: ICormoTypesDateConstructor = function(this: ICormoTypesDat
  *
  * A value of this type will be converted to a JSON string
  * if the adapter does not support a general object.
- * @memberOf types
+ * @namespace types
+ * @class Object
  */
 export interface ICormoTypesObject {
   _type: 'object';
@@ -173,7 +161,8 @@ const CormoTypesObject: ICormoTypesObjectConstructor = function(this: ICormoType
 
 /**
  * Represents a record id, used in model schemas.
- * @memberOf types
+ * @namespace types
+ * @class RecordID
  */
 export interface ICormoTypesRecordID {
   _type: 'recordid';
@@ -193,7 +182,8 @@ const CormoTypesRecordID: ICormoTypesRecordIDConstructor = function(this: ICormo
 
 /**
  * Represents a text, used in model schemas.
- * @memberOf types
+ * @namespace types
+ * @class Text
  */
 export interface ICormoTypesText {
   _type: 'text';
@@ -210,6 +200,25 @@ const CormoTypesText: ICormoTypesTextConstructor = function(this: ICormoTypesTex
     return new (CormoTypesText as any)();
   }
 } as ICormoTypesTextConstructor;
+
+export type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber
+  | ICormoTypesBoolean | ICormoTypesDate
+  | ICormoTypesObject | ICormoTypesInteger
+  | ICormoTypesGeoPoint | ICormoTypesRecordID | ICormoTypesText;
+
+export type ColumnTypeInternalConstructor = ICormoTypesStringConstructor | ICormoTypesNumberConstructor
+  | ICormoTypesBooleanConstructor | ICormoTypesDateConstructor
+  | ICormoTypesObjectConstructor | ICormoTypesIntegerConstructor
+  | ICormoTypesGeoPointConstructor | ICormoTypesRecordIDConstructor | ICormoTypesTextConstructor;
+
+type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor
+  | BooleanConstructor | DateConstructor | ObjectConstructor;
+
+type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date'
+  | 'object' | 'integer' | 'geopoint' | 'recordid' | 'text';
+
+export type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor
+  | ColumnTypeNativeConstructor | ColumnTypeString;
 
 /**
  * Converts JavaScript built-in class to CORMO type
