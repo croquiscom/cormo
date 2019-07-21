@@ -1,68 +1,10 @@
 {
-  "name": "cormo",
-  "description": "ORM framework for Node.js",
-  "version": "0.12.2",
-  "keywords": [
-    "orm",
-    "mongodb",
-    "mysql",
-    "sqlite3",
-    "postgresql"
-  ],
-  "homepage": "https://croquiscom.github.com/cormo",
-  "bugs": {
-    "url": "https://github.com/croquiscom/cormo/issues"
-  },
-  "author": "Sangmin Yoon <sangmin.yoon@croquis.com>",
-  "license": "MIT",
-  "bin": {
-    "cormo": "./bin/cormo"
-  },
+  "name": "root",
+  "private": true,
   "scripts": {
-    "prepublishOnly": "npm run lint && npm run build",
-    "build": "rimraf lib && tsc -p src/tsconfig.build.json",
-    "lint": "tslint -p tsconfig.json",
-    "doc": "node node_modules/.bin/crojsdoc",
-    "test": "NODE_ENV=test mocha --require coffeescript/register --require ts-node/register --timeout 5000 --exit 'test/*.{js,ts,coffee}'"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/croquiscom/cormo.git"
-  },
-  "main": "./lib",
-  "types": "./lib/index.d.ts",
-  "dependencies": {
-    "chalk": "^2.4.2",
-    "commander": "^2.20.0",
-    "inflected": "^2.0.4",
-    "lodash": "^4.17.14",
-    "toposort-class": "^1.0.1"
+    "postinstall": "lerna bootstrap"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/inflected": "^1.1.29",
-    "@types/lodash": "^4.14.136",
-    "@types/mocha": "^5.2.7",
-    "@types/mongodb": "^3.1.28",
-    "@types/node": "^8.10.44",
-    "@types/sinon": "^7.0.13",
-    "benchmark": "^2.1.4",
-    "chai": "^4.2.0",
-    "coffee-coverage": "^3.0.1",
-    "coffeescript": "^2.4.1",
-    "crojsdoc": "^0.9.4",
-    "microtime": "^3.0.0",
-    "mocha": "^6.1.4",
-    "mongodb": "^3.2.7",
-    "mysql": "^2.17.1",
-    "pg": "^7.11.0",
-    "pg-query-stream": "^2.0.0",
-    "redis": "^2.7.1",
-    "rimraf": "^2.6.3",
-    "sinon": "^7.3.2",
-    "sqlite3": "^4.0.9",
-    "ts-node": "^8.3.0",
-    "tslint": "^5.18.0",
-    "typescript": "^3.5.3"
+    "lerna": "^3.16.1"
   }
 }
