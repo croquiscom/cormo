@@ -7,15 +7,26 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
+      "name": "Test: cormo",
+      "cwd": "${workspaceRoot}/packages/cormo",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "-r",
-        "ts-node/register"
+        "run-script",
+        "test:debug"
       ],
-      "args": [
-        "${relativeFile}"
+      "port": 30000
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Test: graphql",
+      "cwd": "${workspaceRoot}/packages/graphql",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "test:debug"
       ],
-      "sourceMaps": true
+      "port": 30000
     }
   ]
 }
