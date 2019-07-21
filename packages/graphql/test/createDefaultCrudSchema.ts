@@ -9,14 +9,15 @@ describe('createDefaultCrudSchema', () => {
     const connection = new cormo.Connection('mysql', _g.db_configs.mysql);
     @Model({ connection, description: 'A user model' })
     class User extends cormo.BaseModel {
-      @Column({ type: String })
+      @Column({ type: String, required: true, description: 'name of user' })
       public name?: string;
 
-      @Column({ type: Number })
+      @Column({ type: cormo.types.Integer, description: 'age of user' })
       public age?: number;
     }
 
     const schema = createDefaultCrudSchema(User, {
+      id_description: 'primary key',
       item_list_description: 'A list of users',
       list_type_description: 'A list of users and metadata',
     });
@@ -30,7 +31,14 @@ describe('createDefaultCrudSchema', () => {
 
 """A user model"""
 type User {
+  """primary key"""
   id: ID
+
+  """name of user"""
+  name: String!
+
+  """age of user"""
+  age: Int
 }
 
 """A list of users and metadata"""

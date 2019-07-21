@@ -1,11 +1,13 @@
+import { CrJson, CrTimestamp } from '@croquiscom/graphql-scalar-types';
 import * as cormo from 'cormo';
 import {
-  GraphQLFieldConfigArgumentMap, GraphQLID, GraphQLList,
-  GraphQLNonNull, GraphQLObjectType, GraphQLSchema,
+  GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLFloat, GraphQLID, GraphQLInt,
+  GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString,
 } from 'graphql';
 import _ from 'lodash';
 
 interface IOptions {
+  id_description?: string;
   list_type_description?: string;
   item_list_description?: string;
 }
@@ -13,13 +15,40 @@ interface IOptions {
 export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, options: IOptions = {}): GraphQLSchema {
   const camel_name = model_class.name;
   const snake_name = _.snakeCase(camel_name);
+  const fields: GraphQLFieldConfigMap<any, any> = {};
+  for (const [column, property] of Object.entries(model_class._schema)) {
+    let graphql_type;
+    if (property.record_id) {
+      graphql_type = GraphQLID;
+    } else if (property.type_class === cormo.types.Number) {
+      graphql_type = GraphQLFloat;
+    } else if (property.type_class === cormo.types.Integer) {
+      graphql_type = GraphQLInt;
+    } else if (property.type_class === cormo.types.String) {
+      graphql_type = GraphQLString;
+    } else if (property.type_class === cormo.types.Text) {
+      graphql_type = GraphQLString;
+    } else if (property.type_class === cormo.types.Date) {
+      graphql_type = CrTimestamp;
+    } else if (property.type_class === cormo.types.Object) {
+      graphql_type = CrJson;
+    }
+    if (graphql_type) {
+      if (property.required) {
+        graphql_type = new GraphQLNonNull(graphql_type);
+      }
+      const description = column === 'id'
+        ? options.id_description
+        : (property as any)._graphql && (property as any)._graphql.description;
+      fields[column] = {
+        description,
+        type: graphql_type,
+      };
+    }
+  }
   const single_type = new GraphQLObjectType({
     description: (model_class as any)._graphql && (model_class as any)._graphql.description,
-    fields: {
-      id: {
-        type: GraphQLID,
-      },
-    },
+    fields,
     name: camel_name,
   });
   const list_type = new GraphQLObjectType({
