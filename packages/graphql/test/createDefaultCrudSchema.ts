@@ -55,9 +55,15 @@ describe('createDefaultCrudSchema', () => {
   age: Int
 }
 
+input DeleteUserInput {
+  """primary key"""
+  id: ID!
+}
+
 type Mutation {
-  createUser(input: CreateUserInput): User
-  updateUser(input: UpdateUserInput): User
+  createUser(input: CreateUserInput): User!
+  updateUser(input: UpdateUserInput): User!
+  deleteUser(input: DeleteUserInput): Boolean!
 }
 
 type Query {
@@ -320,13 +326,43 @@ type UserList {
       const variables = { input: { id: '1', name: 'Sample' } };
       const result = await graphql(schema, query, null, null, variables);
       expect(result).to.eql({
-        data: {
-          updateUser: null,
-        },
+        data: null,
         errors: [{
           locations: [{ column: 38, line: 1 }],
           message: 'not found',
           path: ['updateUser'],
+        }],
+      });
+    });
+  });
+
+  describe('delete', () => {
+    it('delete one', async () => {
+      const id_to_record_map = await connection.manipulate([
+        { create_user: { id: 'user', name: 'Test', age: 15 } },
+      ]);
+      const id = id_to_record_map.user.id;
+      const query = 'mutation($input: DeleteUserInput!) { deleteUser(input: $input) }';
+      const variables = { input: { id: String(id) } };
+      const result = await graphql(schema, query, null, null, variables);
+      expect(result).to.eql({
+        data: {
+          deleteUser: true,
+        },
+      });
+      expect(await UserModel.where()).to.eql([]);
+    });
+
+    it('record not found', async () => {
+      const query = 'mutation($input: DeleteUserInput!) { deleteUser(input: $input) }';
+      const variables = { input: { id: '1' } };
+      const result = await graphql(schema, query, null, null, variables);
+      expect(result).to.eql({
+        data: null,
+        errors: [{
+          locations: [{ column: 38, line: 1 }],
+          message: 'not found',
+          path: ['deleteUser'],
         }],
       });
     });

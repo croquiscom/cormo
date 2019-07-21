@@ -89,7 +89,7 @@ function createListType(model_class, options, single_type) {
         name: model_class.name + 'List',
     });
 }
-function createInputType(model_class, options) {
+function createCreateInputType(model_class, options) {
     const fields = {};
     for (const [column, property] of Object.entries(model_class._schema)) {
         if (column === 'id') {
@@ -111,7 +111,7 @@ function createInputType(model_class, options) {
         name: `Create${model_class.name}Input`,
     });
 }
-function updateInputType(model_class, options) {
+function createUpdateInputType(model_class, options) {
     const fields = {};
     for (const [column, property] of Object.entries(model_class._schema)) {
         const graphql_type = getGraphQlType(property);
@@ -128,6 +128,17 @@ function updateInputType(model_class, options) {
     return new graphql_1.GraphQLInputObjectType({
         fields,
         name: `Update${model_class.name}Input`,
+    });
+}
+function createDeleteInputType(model_class, options) {
+    const fields = {};
+    fields.id = {
+        description: options.id_description,
+        type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLID),
+    };
+    return new graphql_1.GraphQLInputObjectType({
+        fields,
+        name: `Delete${model_class.name}Input`,
     });
 }
 function createDefaultCrudSchema(model_class, options = {}) {
@@ -149,8 +160,9 @@ function createDefaultCrudSchema(model_class, options = {}) {
             };
         }
     }
-    const create_input_type = createInputType(model_class, options);
-    const update_input_type = updateInputType(model_class, options);
+    const create_input_type = createCreateInputType(model_class, options);
+    const update_input_type = createUpdateInputType(model_class, options);
+    const delete_input_type = createDeleteInputType(model_class, options);
     return new graphql_1.GraphQLSchema({
         mutation: new graphql_1.GraphQLObjectType({
             fields: {
@@ -163,7 +175,7 @@ function createDefaultCrudSchema(model_class, options = {}) {
                     async resolve(source, args, context, info) {
                         return await model_class.create(args.input);
                     },
-                    type: single_type,
+                    type: new graphql_1.GraphQLNonNull(single_type),
                 },
                 [`update${camel_name}`]: {
                     args: {
@@ -175,7 +187,22 @@ function createDefaultCrudSchema(model_class, options = {}) {
                         await model_class.find(args.input.id).update(args.input);
                         return await model_class.find(args.input.id);
                     },
-                    type: single_type,
+                    type: new graphql_1.GraphQLNonNull(single_type),
+                },
+                [`delete${camel_name}`]: {
+                    args: {
+                        input: {
+                            type: delete_input_type,
+                        },
+                    },
+                    async resolve(source, args, context, info) {
+                        const delete_count = await model_class.find(args.input.id).delete();
+                        if (delete_count === 0) {
+                            throw new Error('not found');
+                        }
+                        return true;
+                    },
+                    type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLBoolean),
                 },
             },
             name: 'Mutation',

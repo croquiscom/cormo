@@ -1,9 +1,9 @@
 import { CrJson, CrTimestamp, getFieldList } from '@croquiscom/crary-graphql';
 import * as cormo from 'cormo';
 import {
-  GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLFloat, GraphQLID, GraphQLInputFieldConfigMap,
-  GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull,
-  GraphQLObjectType, GraphQLScalarType, GraphQLSchema, GraphQLString,
+  GraphQLBoolean, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLFloat, GraphQLID,
+  GraphQLInputFieldConfigMap, GraphQLInputObjectType, GraphQLInt, GraphQLList,
+  GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLSchema, GraphQLString,
 } from 'graphql';
 import _ from 'lodash';
 
@@ -131,6 +131,18 @@ function createUpdateInputType(model_class: typeof cormo.BaseModel, options: IOp
   });
 }
 
+function createDeleteInputType(model_class: typeof cormo.BaseModel, options: IOptions) {
+  const fields: GraphQLInputFieldConfigMap = {};
+  fields.id = {
+    description: options.id_description,
+    type: new GraphQLNonNull(GraphQLID),
+  };
+  return new GraphQLInputObjectType({
+    fields,
+    name: `Delete${model_class.name}Input`,
+  });
+}
+
 export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, options: IOptions = {}): GraphQLSchema {
   const camel_name = model_class.name;
   const snake_name = _.snakeCase(camel_name);
@@ -153,6 +165,7 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
   }
   const create_input_type = createCreateInputType(model_class, options);
   const update_input_type = createUpdateInputType(model_class, options);
+  const delete_input_type = createDeleteInputType(model_class, options);
   return new GraphQLSchema({
     mutation: new GraphQLObjectType({
       fields: {
@@ -165,7 +178,7 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
           async resolve(source, args, context, info) {
             return await model_class.create(args.input);
           },
-          type: single_type,
+          type: new GraphQLNonNull(single_type),
         },
         [`update${camel_name}`]: {
           args: {
@@ -177,7 +190,22 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
             await model_class.find(args.input.id).update(args.input);
             return await model_class.find(args.input.id);
           },
-          type: single_type,
+          type: new GraphQLNonNull(single_type),
+        },
+        [`delete${camel_name}`]: {
+          args: {
+            input: {
+              type: delete_input_type,
+            },
+          },
+          async resolve(source, args, context, info) {
+            const delete_count = await model_class.find(args.input.id).delete();
+            if (delete_count === 0) {
+              throw new Error('not found');
+            }
+            return true;
+          },
+          type: new GraphQLNonNull(GraphQLBoolean),
         },
       },
       name: 'Mutation',
