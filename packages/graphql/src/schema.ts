@@ -11,6 +11,8 @@ interface IOptions {
   id_description?: string;
   list_type_description?: string;
   item_list_description?: string;
+  created_at_column?: string;
+  updated_at_column?: string;
 }
 
 function getGraphQlType(property: typeof cormo.BaseModel['_schema']['path']) {
@@ -94,6 +96,12 @@ function createCreateInputType(model_class: typeof cormo.BaseModel, options: IOp
     if (column === 'id') {
       continue;
     }
+    if (column === options.created_at_column) {
+      continue;
+    }
+    if (column === options.updated_at_column) {
+      continue;
+    }
     const graphql_type = getGraphQlType(property);
     if (graphql_type) {
       const description = column === 'id'
@@ -114,6 +122,12 @@ function createCreateInputType(model_class: typeof cormo.BaseModel, options: IOp
 function createUpdateInputType(model_class: typeof cormo.BaseModel, options: IOptions) {
   const fields: GraphQLInputFieldConfigMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
+    if (column === options.created_at_column) {
+      continue;
+    }
+    if (column === options.updated_at_column) {
+      continue;
+    }
     const graphql_type = getGraphQlType(property);
     if (graphql_type) {
       const description = column === 'id'
@@ -176,7 +190,15 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
             },
           },
           async resolve(source, args, context, info) {
-            return await model_class.create(args.input);
+            const data = args.input;
+            const date = Date.now();
+            if (options.created_at_column) {
+              data[options.created_at_column] = date;
+            }
+            if (options.updated_at_column) {
+              data[options.updated_at_column] = date;
+            }
+            return await model_class.create(data);
           },
           type: new GraphQLNonNull(single_type),
         },
@@ -187,7 +209,12 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
             },
           },
           async resolve(source, args, context, info) {
-            await model_class.find(args.input.id).update(args.input);
+            const data = args.input;
+            const date = Date.now();
+            if (options.updated_at_column) {
+              data[options.updated_at_column] = date;
+            }
+            await model_class.find(args.input.id).update(data);
             return await model_class.find(args.input.id);
           },
           type: new GraphQLNonNull(single_type),

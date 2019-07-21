@@ -95,6 +95,12 @@ function createCreateInputType(model_class, options) {
         if (column === 'id') {
             continue;
         }
+        if (column === options.created_at_column) {
+            continue;
+        }
+        if (column === options.updated_at_column) {
+            continue;
+        }
         const graphql_type = getGraphQlType(property);
         if (graphql_type) {
             const description = column === 'id'
@@ -114,6 +120,12 @@ function createCreateInputType(model_class, options) {
 function createUpdateInputType(model_class, options) {
     const fields = {};
     for (const [column, property] of Object.entries(model_class._schema)) {
+        if (column === options.created_at_column) {
+            continue;
+        }
+        if (column === options.updated_at_column) {
+            continue;
+        }
         const graphql_type = getGraphQlType(property);
         if (graphql_type) {
             const description = column === 'id'
@@ -173,7 +185,15 @@ function createDefaultCrudSchema(model_class, options = {}) {
                         },
                     },
                     async resolve(source, args, context, info) {
-                        return await model_class.create(args.input);
+                        const data = args.input;
+                        const date = Date.now();
+                        if (options.created_at_column) {
+                            data[options.created_at_column] = date;
+                        }
+                        if (options.updated_at_column) {
+                            data[options.updated_at_column] = date;
+                        }
+                        return await model_class.create(data);
                     },
                     type: new graphql_1.GraphQLNonNull(single_type),
                 },
@@ -184,7 +204,12 @@ function createDefaultCrudSchema(model_class, options = {}) {
                         },
                     },
                     async resolve(source, args, context, info) {
-                        await model_class.find(args.input.id).update(args.input);
+                        const data = args.input;
+                        const date = Date.now();
+                        if (options.updated_at_column) {
+                            data[options.updated_at_column] = date;
+                        }
+                        await model_class.find(args.input.id).update(data);
                         return await model_class.find(args.input.id);
                     },
                     type: new graphql_1.GraphQLNonNull(single_type),
