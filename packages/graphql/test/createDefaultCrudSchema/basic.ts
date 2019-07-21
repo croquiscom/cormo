@@ -3,15 +3,15 @@
 import { expect } from 'chai';
 import * as cormo from 'cormo';
 import { graphql, GraphQLSchema, printSchema } from 'graphql';
-import { Column, createDefaultCrudSchema, Model } from '..';
-import _g = require('./support/common');
+import { Column, createDefaultCrudSchema, Model } from '../..';
+import _g = require('../common');
 
 class UserRef extends cormo.BaseModel {
   public name!: string;
   public age?: number | null;
 }
 
-describe('createDefaultCrudSchema', () => {
+describe('createDefaultCrudSchema (basic)', () => {
   let connection: cormo.Connection;
   // tslint:disable-next-line:variable-name
   let UserModel: typeof UserRef;
