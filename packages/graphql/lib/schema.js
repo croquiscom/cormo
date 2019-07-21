@@ -64,6 +64,21 @@ function createDefaultCrudSchema(model_class, options = {}) {
         fields: {
             item_list: {
                 description: options.item_list_description,
+                async resolve(source, args, context, info) {
+                    args = source.__args;
+                    const query = model_class.query();
+                    for (const [field, value] of Object.entries(args)) {
+                        if (value) {
+                            if (field.endsWith('_list')) {
+                                query.where({ [field.replace('_list', '')]: value });
+                            }
+                            else {
+                                query.where({ [field]: value });
+                            }
+                        }
+                    }
+                    return await query.select(crary_graphql_1.getFieldList(info));
+                },
                 type: new graphql_1.GraphQLNonNull(new graphql_1.GraphQLList(new graphql_1.GraphQLNonNull(single_type))),
             },
         },
@@ -108,6 +123,9 @@ function createDefaultCrudSchema(model_class, options = {}) {
                 [snake_name + '_list']: {
                     args: list_query_args,
                     description: `List query for ${camel_name}`,
+                    async resolve(source, args, context, info) {
+                        return { __args: args };
+                    },
                     type: new graphql_1.GraphQLNonNull(list_type),
                 },
             },

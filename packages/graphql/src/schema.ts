@@ -56,6 +56,20 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
     fields: {
       item_list: {
         description: options.item_list_description,
+        async resolve(source, args, context, info) {
+          args = source.__args;
+          const query = model_class.query();
+          for (const [field, value] of Object.entries(args)) {
+            if (value) {
+              if (field.endsWith('_list')) {
+                query.where({ [field.replace('_list', '')]: value });
+              } else {
+                query.where({ [field]: value });
+              }
+            }
+          }
+          return await query.select(getFieldList(info) as any);
+        },
         type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(single_type))),
       },
     },
@@ -101,6 +115,9 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
         [snake_name + '_list']: {
           args: list_query_args,
           description: `List query for ${camel_name}`,
+          async resolve(source, args, context, info) {
+            return { __args: args };
+          },
           type: new GraphQLNonNull(list_type),
         },
       },
