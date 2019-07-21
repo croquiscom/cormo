@@ -1,8 +1,9 @@
 import { CrJson, CrTimestamp, getFieldList } from '@croquiscom/crary-graphql';
 import * as cormo from 'cormo';
 import {
-  GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLFloat, GraphQLID, GraphQLInt,
-  GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString,
+  GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLFloat, GraphQLID, GraphQLInputFieldConfigMap,
+  GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull,
+  GraphQLObjectType, GraphQLOutputType, GraphQLSchema, GraphQLString, GraphQLScalarType,
 } from 'graphql';
 import _ from 'lodash';
 
@@ -12,31 +13,34 @@ interface IOptions {
   item_list_description?: string;
 }
 
-export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, options: IOptions = {}): GraphQLSchema {
-  const camel_name = model_class.name;
-  const snake_name = _.snakeCase(camel_name);
+function getGraphQlType(property: typeof cormo.BaseModel['_schema']['path']) {
+  let graphql_type: GraphQLScalarType | undefined;
+  if (property.record_id) {
+    graphql_type = GraphQLID;
+  } else if (property.type_class === cormo.types.Number) {
+    graphql_type = GraphQLFloat;
+  } else if (property.type_class === cormo.types.Integer) {
+    graphql_type = GraphQLInt;
+  } else if (property.type_class === cormo.types.String) {
+    graphql_type = GraphQLString;
+  } else if (property.type_class === cormo.types.Text) {
+    graphql_type = GraphQLString;
+  } else if (property.type_class === cormo.types.Date) {
+    graphql_type = CrTimestamp;
+  } else if (property.type_class === cormo.types.Object) {
+    graphql_type = CrJson;
+  }
+  if (graphql_type && property.required) {
+    return new GraphQLNonNull(graphql_type);
+  }
+  return graphql_type;
+}
+
+function createSingleType(model_class: typeof cormo.BaseModel, options: IOptions): GraphQLObjectType {
   const fields: GraphQLFieldConfigMap<any, any> = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
-    let graphql_type;
-    if (property.record_id) {
-      graphql_type = GraphQLID;
-    } else if (property.type_class === cormo.types.Number) {
-      graphql_type = GraphQLFloat;
-    } else if (property.type_class === cormo.types.Integer) {
-      graphql_type = GraphQLInt;
-    } else if (property.type_class === cormo.types.String) {
-      graphql_type = GraphQLString;
-    } else if (property.type_class === cormo.types.Text) {
-      graphql_type = GraphQLString;
-    } else if (property.type_class === cormo.types.Date) {
-      graphql_type = CrTimestamp;
-    } else if (property.type_class === cormo.types.Object) {
-      graphql_type = CrJson;
-    }
+    const graphql_type = getGraphQlType(property);
     if (graphql_type) {
-      if (property.required) {
-        graphql_type = new GraphQLNonNull(graphql_type);
-      }
       const description = column === 'id'
         ? options.id_description
         : (property as any)._graphql && (property as any)._graphql.description;
@@ -46,12 +50,19 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
       };
     }
   }
-  const single_type = new GraphQLObjectType({
+  return new GraphQLObjectType({
     description: (model_class as any)._graphql && (model_class as any)._graphql.description,
     fields,
-    name: camel_name,
+    name: model_class.name,
   });
-  const list_type = new GraphQLObjectType({
+}
+
+function createListType(
+  model_class: typeof cormo.BaseModel,
+  options: IOptions,
+  single_type: GraphQLObjectType,
+): GraphQLObjectType {
+  return new GraphQLObjectType({
     description: options.list_type_description,
     fields: {
       item_list: {
@@ -73,8 +84,36 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
         type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(single_type))),
       },
     },
-    name: camel_name + 'List',
+    name: model_class.name + 'List',
   });
+}
+
+function createCreateInputType(model_class: typeof cormo.BaseModel, options: IOptions) {
+  const fields: GraphQLInputFieldConfigMap = {};
+  for (const [column, property] of Object.entries(model_class._schema)) {
+    if (column === 'id') {
+      continue;
+    }
+    const graphql_type = getGraphQlType(property);
+    if (graphql_type) {
+      const description = (property as any)._graphql && (property as any)._graphql.description;
+      fields[column] = {
+        description,
+        type: graphql_type,
+      };
+    }
+  }
+  return new GraphQLInputObjectType({
+    fields,
+    name: `Create${model_class.name}Input`,
+  });
+}
+
+export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, options: IOptions = {}): GraphQLSchema {
+  const camel_name = model_class.name;
+  const snake_name = _.snakeCase(camel_name);
+  const single_type = createSingleType(model_class, options);
+  const list_type = createListType(model_class, options, single_type);
   const single_query_args: GraphQLFieldConfigArgumentMap = {
     id: {
       type: GraphQLID,
@@ -90,7 +129,24 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
       };
     }
   }
+  const create_input_type = createCreateInputType(model_class, options);
   return new GraphQLSchema({
+    mutation: new GraphQLObjectType({
+      fields: {
+        [`create${camel_name}`]: {
+          args: {
+            input: {
+              type: create_input_type,
+            },
+          },
+          async resolve(source, args, context, info) {
+            return await model_class.create(args.input);
+          },
+          type: single_type,
+        },
+      },
+      name: 'Mutation',
+    }),
     query: new GraphQLObjectType({
       fields: {
         [snake_name]: {

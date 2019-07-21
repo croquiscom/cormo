@@ -47,7 +47,19 @@ describe('createDefaultCrudSchema', () => {
   });
 
   it('schema', () => {
-    expect(printSchema(schema)).to.eql(`type Query {
+    expect(printSchema(schema)).to.eql(`input CreateUserInput {
+  """name of user"""
+  name: String!
+
+  """age of user"""
+  age: Int
+}
+
+type Mutation {
+  createUser(input: CreateUserInput): User
+}
+
+type Query {
   """Single query for User"""
   user(id: ID): User
 
@@ -219,6 +231,23 @@ type UserList {
           },
         },
       });
+    });
+  });
+
+  describe('create', () => {
+    it('create one', async () => {
+      const query = 'mutation($input: CreateUserInput!) { createUser(input: $input) { id name age } }';
+      const variables = { input: { name: 'Test', age: 15 } };
+      const result = await graphql(schema, query, null, null, variables);
+      const id = result.data!.createUser.id;
+      expect(result).to.eql({
+        data: {
+          createUser: { id, name: 'Test', age: 15 },
+        },
+      });
+      expect(await UserModel.where()).to.eql([
+        { id: Number(id), name: 'Test', age: 15 },
+      ]);
     });
   });
 });

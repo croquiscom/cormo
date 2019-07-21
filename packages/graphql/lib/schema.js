@@ -14,37 +14,39 @@ const crary_graphql_1 = require("@croquiscom/crary-graphql");
 const cormo = __importStar(require("cormo"));
 const graphql_1 = require("graphql");
 const lodash_1 = __importDefault(require("lodash"));
-function createDefaultCrudSchema(model_class, options = {}) {
-    const camel_name = model_class.name;
-    const snake_name = lodash_1.default.snakeCase(camel_name);
+function getGraphQlType(property) {
+    let graphql_type;
+    if (property.record_id) {
+        graphql_type = graphql_1.GraphQLID;
+    }
+    else if (property.type_class === cormo.types.Number) {
+        graphql_type = graphql_1.GraphQLFloat;
+    }
+    else if (property.type_class === cormo.types.Integer) {
+        graphql_type = graphql_1.GraphQLInt;
+    }
+    else if (property.type_class === cormo.types.String) {
+        graphql_type = graphql_1.GraphQLString;
+    }
+    else if (property.type_class === cormo.types.Text) {
+        graphql_type = graphql_1.GraphQLString;
+    }
+    else if (property.type_class === cormo.types.Date) {
+        graphql_type = crary_graphql_1.CrTimestamp;
+    }
+    else if (property.type_class === cormo.types.Object) {
+        graphql_type = crary_graphql_1.CrJson;
+    }
+    if (graphql_type && property.required) {
+        return new graphql_1.GraphQLNonNull(graphql_type);
+    }
+    return graphql_type;
+}
+function createSingleType(model_class, options) {
     const fields = {};
     for (const [column, property] of Object.entries(model_class._schema)) {
-        let graphql_type;
-        if (property.record_id) {
-            graphql_type = graphql_1.GraphQLID;
-        }
-        else if (property.type_class === cormo.types.Number) {
-            graphql_type = graphql_1.GraphQLFloat;
-        }
-        else if (property.type_class === cormo.types.Integer) {
-            graphql_type = graphql_1.GraphQLInt;
-        }
-        else if (property.type_class === cormo.types.String) {
-            graphql_type = graphql_1.GraphQLString;
-        }
-        else if (property.type_class === cormo.types.Text) {
-            graphql_type = graphql_1.GraphQLString;
-        }
-        else if (property.type_class === cormo.types.Date) {
-            graphql_type = crary_graphql_1.CrTimestamp;
-        }
-        else if (property.type_class === cormo.types.Object) {
-            graphql_type = crary_graphql_1.CrJson;
-        }
+        const graphql_type = getGraphQlType(property);
         if (graphql_type) {
-            if (property.required) {
-                graphql_type = new graphql_1.GraphQLNonNull(graphql_type);
-            }
             const description = column === 'id'
                 ? options.id_description
                 : property._graphql && property._graphql.description;
@@ -54,12 +56,14 @@ function createDefaultCrudSchema(model_class, options = {}) {
             };
         }
     }
-    const single_type = new graphql_1.GraphQLObjectType({
+    return new graphql_1.GraphQLObjectType({
         description: model_class._graphql && model_class._graphql.description,
         fields,
-        name: camel_name,
+        name: model_class.name,
     });
-    const list_type = new graphql_1.GraphQLObjectType({
+}
+function createListType(model_class, options, single_type) {
+    return new graphql_1.GraphQLObjectType({
         description: options.list_type_description,
         fields: {
             item_list: {
@@ -82,8 +86,34 @@ function createDefaultCrudSchema(model_class, options = {}) {
                 type: new graphql_1.GraphQLNonNull(new graphql_1.GraphQLList(new graphql_1.GraphQLNonNull(single_type))),
             },
         },
-        name: camel_name + 'List',
+        name: model_class.name + 'List',
     });
+}
+function createInputType(model_class, options) {
+    const fields = {};
+    for (const [column, property] of Object.entries(model_class._schema)) {
+        if (column === 'id') {
+            continue;
+        }
+        const graphql_type = getGraphQlType(property);
+        if (graphql_type) {
+            const description = property._graphql && property._graphql.description;
+            fields[column] = {
+                description,
+                type: graphql_type,
+            };
+        }
+    }
+    return new graphql_1.GraphQLInputObjectType({
+        fields,
+        name: `Create${model_class.name}Input`,
+    });
+}
+function createDefaultCrudSchema(model_class, options = {}) {
+    const camel_name = model_class.name;
+    const snake_name = lodash_1.default.snakeCase(camel_name);
+    const single_type = createSingleType(model_class, options);
+    const list_type = createListType(model_class, options, single_type);
     const single_query_args = {
         id: {
             type: graphql_1.GraphQLID,
@@ -98,7 +128,24 @@ function createDefaultCrudSchema(model_class, options = {}) {
             };
         }
     }
+    const create_input_type = createInputType(model_class, options);
     return new graphql_1.GraphQLSchema({
+        mutation: new graphql_1.GraphQLObjectType({
+            fields: {
+                [`create${camel_name}`]: {
+                    args: {
+                        input: {
+                            type: create_input_type,
+                        },
+                    },
+                    async resolve(source, args, context, info) {
+                        return await model_class.create(args.input);
+                    },
+                    type: single_type,
+                },
+            },
+            name: 'Mutation',
+        }),
         query: new graphql_1.GraphQLObjectType({
             fields: {
                 [snake_name]: {
