@@ -450,4 +450,4 @@ console.log places
 
 # License
 
-MIT licenses. See [LICENSE](https://github.com/croquiscom/cormo/blob/master/LICENSE) for more details.
+MIT licenses. See [LICENSE](https://github.com/croquiscom/cormo/blob/master/packages/cormo/LICENSE) for more details.
