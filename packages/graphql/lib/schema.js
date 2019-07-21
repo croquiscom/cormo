@@ -10,7 +10,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const graphql_scalar_types_1 = require("@croquiscom/graphql-scalar-types");
+const crary_graphql_1 = require("@croquiscom/crary-graphql");
 const cormo = __importStar(require("cormo"));
 const graphql_1 = require("graphql");
 const lodash_1 = __importDefault(require("lodash"));
@@ -36,10 +36,10 @@ function createDefaultCrudSchema(model_class, options = {}) {
             graphql_type = graphql_1.GraphQLString;
         }
         else if (property.type_class === cormo.types.Date) {
-            graphql_type = graphql_scalar_types_1.CrTimestamp;
+            graphql_type = crary_graphql_1.CrTimestamp;
         }
         else if (property.type_class === cormo.types.Object) {
-            graphql_type = graphql_scalar_types_1.CrJson;
+            graphql_type = crary_graphql_1.CrJson;
         }
         if (graphql_type) {
             if (property.required) {
@@ -89,6 +89,20 @@ function createDefaultCrudSchema(model_class, options = {}) {
                 [snake_name]: {
                     args: single_query_args,
                     description: `Single query for ${camel_name}`,
+                    async resolve(source, args, context, info) {
+                        const query = model_class.query().one();
+                        let has_query = false;
+                        for (const [field, value] of Object.entries(args)) {
+                            if (value) {
+                                has_query = true;
+                                query.where({ [field]: value });
+                            }
+                        }
+                        if (!has_query) {
+                            return null;
+                        }
+                        return await query.select(crary_graphql_1.getFieldList(info));
+                    },
                     type: single_type,
                 },
                 [snake_name + '_list']: {

@@ -1,4 +1,4 @@
-import { CrJson, CrTimestamp } from '@croquiscom/graphql-scalar-types';
+import { CrJson, CrTimestamp, getFieldList } from '@croquiscom/crary-graphql';
 import * as cormo from 'cormo';
 import {
   GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLFloat, GraphQLID, GraphQLInt,
@@ -82,6 +82,20 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
         [snake_name]: {
           args: single_query_args,
           description: `Single query for ${camel_name}`,
+          async resolve(source, args, context, info) {
+            const query = model_class.query().one();
+            let has_query = false;
+            for (const [field, value] of Object.entries(args)) {
+              if (value) {
+                has_query = true;
+                query.where({ [field]: value });
+              }
+            }
+            if (!has_query) {
+              return null;
+            }
+            return await query.select(getFieldList(info) as any);
+          },
           type: single_type,
         },
         [snake_name + '_list']: {
