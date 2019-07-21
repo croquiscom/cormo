@@ -57,6 +57,7 @@ describe('createDefaultCrudSchema', () => {
 
 type Mutation {
   createUser(input: CreateUserInput): User
+  updateUser(input: UpdateUserInput): User
 }
 
 type Query {
@@ -67,10 +68,21 @@ type Query {
   user_list(id_list: [ID!]): UserList!
 }
 
+input UpdateUserInput {
+  """primary key"""
+  id: ID!
+
+  """name of user"""
+  name: String!
+
+  """age of user"""
+  age: Int
+}
+
 """A user model"""
 type User {
   """primary key"""
-  id: ID
+  id: ID!
 
   """name of user"""
   name: String!
@@ -248,6 +260,75 @@ type UserList {
       expect(await UserModel.where()).to.eql([
         { id: Number(id), name: 'Test', age: 15 },
       ]);
+    });
+
+    it('optional field', async () => {
+      const query = 'mutation($input: CreateUserInput!) { createUser(input: $input) { id name age } }';
+      const variables = { input: { name: 'Test', age: null } };
+      const result = await graphql(schema, query, null, null, variables);
+      const id = result.data!.createUser.id;
+      expect(result).to.eql({
+        data: {
+          createUser: { id, name: 'Test', age: null },
+        },
+      });
+      expect(await UserModel.where()).to.eql([
+        { id: Number(id), name: 'Test', age: null },
+      ]);
+    });
+  });
+
+  describe('update', () => {
+    it('update one', async () => {
+      const id_to_record_map = await connection.manipulate([
+        { create_user: { id: 'user', name: 'Test', age: 15 } },
+      ]);
+      const id = id_to_record_map.user.id;
+      const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
+      const variables = { input: { id: String(id), name: 'Sample', age: 30 } };
+      const result = await graphql(schema, query, null, null, variables);
+      expect(result).to.eql({
+        data: {
+          updateUser: { id: String(id), name: 'Sample', age: 30 },
+        },
+      });
+      expect(await UserModel.where()).to.eql([
+        { id, name: 'Sample', age: 30 },
+      ]);
+    });
+
+    it('omit optional field', async () => {
+      const id_to_record_map = await connection.manipulate([
+        { create_user: { id: 'user', name: 'Test', age: 15 } },
+      ]);
+      const id = id_to_record_map.user.id;
+      const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
+      const variables = { input: { id: String(id), name: 'Sample' } };
+      const result = await graphql(schema, query, null, null, variables);
+      expect(result).to.eql({
+        data: {
+          updateUser: { id: String(id), name: 'Sample', age: 15 },
+        },
+      });
+      expect(await UserModel.where()).to.eql([
+        { id, name: 'Sample', age: 15 },
+      ]);
+    });
+
+    it('record not found', async () => {
+      const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
+      const variables = { input: { id: '1', name: 'Sample' } };
+      const result = await graphql(schema, query, null, null, variables);
+      expect(result).to.eql({
+        data: {
+          updateUser: null,
+        },
+        errors: [{
+          locations: [{ column: 38, line: 1 }],
+          message: 'not found',
+          path: ['updateUser'],
+        }],
+      });
     });
   });
 });

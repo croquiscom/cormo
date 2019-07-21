@@ -3,7 +3,7 @@ import * as cormo from 'cormo';
 import {
   GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLFloat, GraphQLID, GraphQLInputFieldConfigMap,
   GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLNonNull,
-  GraphQLObjectType, GraphQLOutputType, GraphQLSchema, GraphQLString, GraphQLScalarType,
+  GraphQLObjectType, GraphQLScalarType, GraphQLSchema, GraphQLString,
 } from 'graphql';
 import _ from 'lodash';
 
@@ -16,7 +16,7 @@ interface IOptions {
 function getGraphQlType(property: typeof cormo.BaseModel['_schema']['path']) {
   let graphql_type: GraphQLScalarType | undefined;
   if (property.record_id) {
-    graphql_type = GraphQLID;
+    return new GraphQLNonNull(GraphQLID);
   } else if (property.type_class === cormo.types.Number) {
     graphql_type = GraphQLFloat;
   } else if (property.type_class === cormo.types.Integer) {
@@ -96,7 +96,9 @@ function createCreateInputType(model_class: typeof cormo.BaseModel, options: IOp
     }
     const graphql_type = getGraphQlType(property);
     if (graphql_type) {
-      const description = (property as any)._graphql && (property as any)._graphql.description;
+      const description = column === 'id'
+        ? options.id_description
+        : (property as any)._graphql && (property as any)._graphql.description;
       fields[column] = {
         description,
         type: graphql_type,
@@ -106,6 +108,26 @@ function createCreateInputType(model_class: typeof cormo.BaseModel, options: IOp
   return new GraphQLInputObjectType({
     fields,
     name: `Create${model_class.name}Input`,
+  });
+}
+
+function createUpdateInputType(model_class: typeof cormo.BaseModel, options: IOptions) {
+  const fields: GraphQLInputFieldConfigMap = {};
+  for (const [column, property] of Object.entries(model_class._schema)) {
+    const graphql_type = getGraphQlType(property);
+    if (graphql_type) {
+      const description = column === 'id'
+        ? options.id_description
+        : (property as any)._graphql && (property as any)._graphql.description;
+      fields[column] = {
+        description,
+        type: graphql_type,
+      };
+    }
+  }
+  return new GraphQLInputObjectType({
+    fields,
+    name: `Update${model_class.name}Input`,
   });
 }
 
@@ -130,6 +152,7 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
     }
   }
   const create_input_type = createCreateInputType(model_class, options);
+  const update_input_type = createUpdateInputType(model_class, options);
   return new GraphQLSchema({
     mutation: new GraphQLObjectType({
       fields: {
@@ -141,6 +164,18 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
           },
           async resolve(source, args, context, info) {
             return await model_class.create(args.input);
+          },
+          type: single_type,
+        },
+        [`update${camel_name}`]: {
+          args: {
+            input: {
+              type: update_input_type,
+            },
+          },
+          async resolve(source, args, context, info) {
+            await model_class.find(args.input.id).update(args.input);
+            return await model_class.find(args.input.id);
           },
           type: single_type,
         },

@@ -17,7 +17,7 @@ const lodash_1 = __importDefault(require("lodash"));
 function getGraphQlType(property) {
     let graphql_type;
     if (property.record_id) {
-        graphql_type = graphql_1.GraphQLID;
+        return new graphql_1.GraphQLNonNull(graphql_1.GraphQLID);
     }
     else if (property.type_class === cormo.types.Number) {
         graphql_type = graphql_1.GraphQLFloat;
@@ -97,7 +97,9 @@ function createInputType(model_class, options) {
         }
         const graphql_type = getGraphQlType(property);
         if (graphql_type) {
-            const description = property._graphql && property._graphql.description;
+            const description = column === 'id'
+                ? options.id_description
+                : property._graphql && property._graphql.description;
             fields[column] = {
                 description,
                 type: graphql_type,
@@ -107,6 +109,25 @@ function createInputType(model_class, options) {
     return new graphql_1.GraphQLInputObjectType({
         fields,
         name: `Create${model_class.name}Input`,
+    });
+}
+function updateInputType(model_class, options) {
+    const fields = {};
+    for (const [column, property] of Object.entries(model_class._schema)) {
+        const graphql_type = getGraphQlType(property);
+        if (graphql_type) {
+            const description = column === 'id'
+                ? options.id_description
+                : property._graphql && property._graphql.description;
+            fields[column] = {
+                description,
+                type: graphql_type,
+            };
+        }
+    }
+    return new graphql_1.GraphQLInputObjectType({
+        fields,
+        name: `Update${model_class.name}Input`,
     });
 }
 function createDefaultCrudSchema(model_class, options = {}) {
@@ -129,6 +150,7 @@ function createDefaultCrudSchema(model_class, options = {}) {
         }
     }
     const create_input_type = createInputType(model_class, options);
+    const update_input_type = updateInputType(model_class, options);
     return new graphql_1.GraphQLSchema({
         mutation: new graphql_1.GraphQLObjectType({
             fields: {
@@ -140,6 +162,18 @@ function createDefaultCrudSchema(model_class, options = {}) {
                     },
                     async resolve(source, args, context, info) {
                         return await model_class.create(args.input);
+                    },
+                    type: single_type,
+                },
+                [`update${camel_name}`]: {
+                    args: {
+                        input: {
+                            type: update_input_type,
+                        },
+                    },
+                    async resolve(source, args, context, info) {
+                        await model_class.find(args.input.id).update(args.input);
+                        return await model_class.find(args.input.id);
                     },
                     type: single_type,
                 },
