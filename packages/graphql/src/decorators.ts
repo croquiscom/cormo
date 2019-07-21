@@ -4,6 +4,9 @@ export function Model(options: { connection?: cormo.Connection, name?: string, d
   const c = cormo.Model({ connection: options.connection, name: options.name });
   return (ctor: typeof cormo.BaseModel) => {
     c(ctor);
+    (ctor as any)._graphql = {
+      description: options.description,
+    };
   };
 }
 

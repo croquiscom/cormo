@@ -12,6 +12,9 @@ function Model(options = {}) {
     const c = cormo.Model({ connection: options.connection, name: options.name });
     return (ctor) => {
         c(ctor);
+        ctor._graphql = {
+            description: options.description,
+        };
     };
 }
 exports.Model = Model;

@@ -5,10 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const graphql_1 = require("graphql");
 const lodash_1 = __importDefault(require("lodash"));
-function createDefaultCrudSchema(model_class) {
+function createDefaultCrudSchema(model_class, options = {}) {
     const camel_name = model_class.name;
     const snake_name = lodash_1.default.snakeCase(camel_name);
     const single_type = new graphql_1.GraphQLObjectType({
+        description: model_class._graphql && model_class._graphql.description,
         fields: {
             id: {
                 type: graphql_1.GraphQLID,
@@ -17,8 +18,10 @@ function createDefaultCrudSchema(model_class) {
         name: camel_name,
     });
     const list_type = new graphql_1.GraphQLObjectType({
+        description: options.list_type_description,
         fields: {
             item_list: {
+                description: options.item_list_description,
                 type: new graphql_1.GraphQLNonNull(new graphql_1.GraphQLList(new graphql_1.GraphQLNonNull(single_type))),
             },
         },

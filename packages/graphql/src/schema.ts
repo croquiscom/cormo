@@ -5,10 +5,16 @@ import {
 } from 'graphql';
 import _ from 'lodash';
 
-export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel): GraphQLSchema {
+interface IOptions {
+  list_type_description?: string;
+  item_list_description?: string;
+}
+
+export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, options: IOptions = {}): GraphQLSchema {
   const camel_name = model_class.name;
   const snake_name = _.snakeCase(camel_name);
   const single_type = new GraphQLObjectType({
+    description: (model_class as any)._graphql && (model_class as any)._graphql.description,
     fields: {
       id: {
         type: GraphQLID,
@@ -17,8 +23,10 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel): Gr
     name: camel_name,
   });
   const list_type = new GraphQLObjectType({
+    description: options.list_type_description,
     fields: {
       item_list: {
+        description: options.item_list_description,
         type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(single_type))),
       },
     },
