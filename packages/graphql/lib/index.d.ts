@@ -1,1 +1,2 @@
-export declare const hello = "world";
+export * from './decorators';
+export * from './schema';

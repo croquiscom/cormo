@@ -9,7 +9,7 @@
     "build": "rimraf lib && tsc -p src/tsconfig.build.json",
     "lint": "tslint -p tsconfig.json",
     "test:type": "tsc --noEmit",
-    "test:unit": "mocha --require ts-node/register/transpile-only ./test/*/*.ts",
+    "test:unit": "mocha --require ts-node/register/transpile-only ./test/*.ts",
     "test": "npm run test:type && npm run lint && npm run test:unit --"
   },
   "repository": {
@@ -23,15 +23,19 @@
   },
   "homepage": "https://github.com/croquiscom/cormo",
   "dependencies": {
+    "@croquiscom/graphql-scalar-types": "^0.2.2",
     "cormo": "^0.12.2",
-    "graphql": "^14.4.2"
+    "graphql": "^14.4.2",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/graphql": "^14.2.2",
+    "@types/lodash": "^4.14.136",
     "@types/mocha": "^5.2.7",
     "chai": "^4.2.0",
     "mocha": "^6.2.0",
+    "mysql": "^2.17.1",
     "rimraf": "^2.6.3",
     "ts-node": "^8.3.0",
     "tslint": "^5.18.0",
