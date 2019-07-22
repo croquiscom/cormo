@@ -1,9 +1,10 @@
 import { CrJson, CrTimestamp, getFieldList } from '@croquiscom/crary-graphql';
 import * as cormo from 'cormo';
 import {
-  GraphQLBoolean, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLFloat, GraphQLID,
-  GraphQLInputFieldConfigMap, GraphQLInputObjectType, GraphQLInt, GraphQLList,
-  GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLSchema, GraphQLString, GraphQLEnumType, GraphQLEnumValueConfigMap,
+  GraphQLBoolean, GraphQLEnumType, GraphQLEnumValueConfigMap, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap,
+  GraphQLFloat, GraphQLID, GraphQLInputFieldConfigMap, GraphQLInputObjectType,
+  GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
+  GraphQLSchema, GraphQLString,
 } from 'graphql';
 import _ from 'lodash';
 
