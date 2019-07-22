@@ -36,7 +36,7 @@
     "chalk": "^2.4.2",
     "commander": "^2.20.0",
     "inflected": "^2.0.4",
-    "lodash": "^4.17.14",
+    "lodash": "^4.17.15",
     "toposort-class": "^1.0.1"
   },
   "devDependencies": {
@@ -53,7 +53,7 @@
     "coffeescript": "^2.4.1",
     "crojsdoc": "^0.9.4",
     "microtime": "^3.0.0",
-    "mocha": "^6.1.4",
+    "mocha": "^6.2.0",
     "mongodb": "^3.2.7",
     "mysql": "^2.17.1",
     "pg": "^7.11.0",
