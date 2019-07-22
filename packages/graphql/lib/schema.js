@@ -154,6 +154,7 @@ function createDeleteInputType(model_class, options) {
     });
 }
 function createDefaultCrudSchema(model_class, options = {}) {
+    model_class._connection.applyAssociations();
     const camel_name = model_class.name;
     const snake_name = lodash_1.default.snakeCase(camel_name);
     const single_type = createSingleType(model_class, options);

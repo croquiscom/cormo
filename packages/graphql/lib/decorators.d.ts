@@ -24,21 +24,21 @@ interface IObjectColumnOptions {
 }
 export declare function ObjectColumn(options: IObjectColumnOptions): PropertyDecorator;
 interface IHasManyBasicOptions {
-    type: typeof cormo.BaseModel;
+    type?: string;
     foreign_key?: string;
     integrity?: 'ignore' | 'nullify' | 'restrict' | 'delete';
     description?: string;
 }
 export declare function HasMany(options: IHasManyBasicOptions): (target: cormo.BaseModel, propertyKey: string) => void;
 interface IHasOneBasicOptions {
-    type: typeof cormo.BaseModel;
+    type?: string;
     foreign_key?: string;
     integrity?: 'ignore' | 'nullify' | 'restrict' | 'delete';
     description?: string;
 }
 export declare function HasOne(options: IHasOneBasicOptions): (target: cormo.BaseModel, propertyKey: string) => void;
 interface IBelongsToBasicOptions {
-    type: typeof cormo.BaseModel;
+    type?: string;
     required?: boolean;
     foreign_key?: string;
     description?: string;

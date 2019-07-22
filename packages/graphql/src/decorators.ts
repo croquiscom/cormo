@@ -60,18 +60,17 @@ export function ObjectColumn(options: IObjectColumnOptions): PropertyDecorator {
 }
 
 interface IHasManyBasicOptions {
-  type: typeof cormo.BaseModel;
+  type?: string;
   foreign_key?: string;
   integrity?: 'ignore' | 'nullify' | 'restrict' | 'delete';
   description?: string;
 }
 
 export function HasMany(options: IHasManyBasicOptions) {
-  const cormo_type = options.type;
   const c_options = {
     foreign_key: options.foreign_key,
     integrity: options.integrity,
-    type: cormo_type.name,
+    type: options.type,
   };
   const c = cormo.HasMany(c_options);
   return (target: cormo.BaseModel, propertyKey: string) => {
@@ -80,18 +79,17 @@ export function HasMany(options: IHasManyBasicOptions) {
 }
 
 interface IHasOneBasicOptions {
-  type: typeof cormo.BaseModel;
+  type?: string;
   foreign_key?: string;
   integrity?: 'ignore' | 'nullify' | 'restrict' | 'delete';
   description?: string;
 }
 
 export function HasOne(options: IHasOneBasicOptions) {
-  const cormo_type = options.type;
   const c_options = {
     foreign_key: options.foreign_key,
     integrity: options.integrity,
-    type: cormo_type.name,
+    type: options.type,
   };
   const c = cormo.HasOne(c_options);
   return (target: cormo.BaseModel, propertyKey: string) => {
@@ -100,7 +98,7 @@ export function HasOne(options: IHasOneBasicOptions) {
 }
 
 interface IBelongsToBasicOptions {
-  type: typeof cormo.BaseModel;
+  type?: string;
   required?: boolean;
   foreign_key?: string;
   description?: string;
@@ -110,6 +108,7 @@ export function BelongsTo(options: IBelongsToBasicOptions) {
   const c_options = {
     foreign_key: options.foreign_key,
     required: options.required,
+    type: options.type,
   };
   const c = cormo.BelongsTo(c_options);
   return (target: cormo.BaseModel, propertyKey: string) => {

@@ -158,6 +158,8 @@ function createDeleteInputType(model_class: typeof cormo.BaseModel, options: IOp
 }
 
 export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, options: IOptions = {}): GraphQLSchema {
+  model_class._connection.applyAssociations();
+
   const camel_name = model_class.name;
   const snake_name = _.snakeCase(camel_name);
   const single_type = createSingleType(model_class, options);

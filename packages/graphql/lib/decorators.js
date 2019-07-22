@@ -49,11 +49,10 @@ function ObjectColumn(options) {
 }
 exports.ObjectColumn = ObjectColumn;
 function HasMany(options) {
-    const cormo_type = options.type;
     const c_options = {
         foreign_key: options.foreign_key,
         integrity: options.integrity,
-        type: cormo_type.name,
+        type: options.type,
     };
     const c = cormo.HasMany(c_options);
     return (target, propertyKey) => {
@@ -62,11 +61,10 @@ function HasMany(options) {
 }
 exports.HasMany = HasMany;
 function HasOne(options) {
-    const cormo_type = options.type;
     const c_options = {
         foreign_key: options.foreign_key,
         integrity: options.integrity,
-        type: cormo_type.name,
+        type: options.type,
     };
     const c = cormo.HasOne(c_options);
     return (target, propertyKey) => {
@@ -78,6 +76,7 @@ function BelongsTo(options) {
     const c_options = {
         foreign_key: options.foreign_key,
         required: options.required,
+        type: options.type,
     };
     const c = cormo.BelongsTo(c_options);
     return (target, propertyKey) => {
