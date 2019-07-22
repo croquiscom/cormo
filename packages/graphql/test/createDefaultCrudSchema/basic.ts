@@ -71,7 +71,7 @@ type Query {
   user(id: ID): User
 
   """List query for User"""
-  user_list(id_list: [ID!], name: String, name_istartswith: String, name_icontains: String, age: Int, age_gte: Int, age_gt: Int, age_lte: Int, age_lt: Int, limit_count: Int, skip_count: Int): UserList!
+  user_list(id_list: [ID!], name: String, name_istartswith: String, name_icontains: String, age: Int, age_gte: Int, age_gt: Int, age_lte: Int, age_lt: Int, order: UserOrderType, limit_count: Int, skip_count: Int): UserList!
 }
 
 input UpdateUserInput {
@@ -101,6 +101,15 @@ type User {
 type UserList {
   """A list of users"""
   item_list: [User!]!
+}
+
+enum UserOrderType {
+  ID_ASC
+  ID_DESC
+  NAME_ASC
+  NAME_DESC
+  AGE_ASC
+  AGE_DESC
 }
 `);
   });
@@ -449,6 +458,134 @@ type UserList {
               item_list: [
                 { id: String(id_to_record_map.user2.id) },
                 { id: String(id_to_record_map.user3.id) },
+              ],
+            },
+          },
+        });
+      });
+    });
+
+    describe('order', () => {
+      it('id ascending', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe', age: 18 } },
+        ]);
+        const query = '{ user_list(order: ID_ASC) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user1.id) },
+                { id: String(id_to_record_map.user2.id) },
+                { id: String(id_to_record_map.user3.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('id descending', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe', age: 18 } },
+        ]);
+        const query = '{ user_list(order: ID_DESC) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user3.id) },
+                { id: String(id_to_record_map.user2.id) },
+                { id: String(id_to_record_map.user1.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('string ascending', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe', age: 18 } },
+        ]);
+        const query = '{ user_list(order: NAME_ASC) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user3.id) },
+                { id: String(id_to_record_map.user2.id) },
+                { id: String(id_to_record_map.user1.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('string descending', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe', age: 18 } },
+        ]);
+        const query = '{ user_list(order: NAME_DESC) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user1.id) },
+                { id: String(id_to_record_map.user2.id) },
+                { id: String(id_to_record_map.user3.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('integer ascending', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe', age: 18 } },
+        ]);
+        const query = '{ user_list(order: AGE_ASC) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user1.id) },
+                { id: String(id_to_record_map.user3.id) },
+                { id: String(id_to_record_map.user2.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('integer descending', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe', age: 18 } },
+        ]);
+        const query = '{ user_list(order: AGE_DESC) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user2.id) },
+                { id: String(id_to_record_map.user3.id) },
+                { id: String(id_to_record_map.user1.id) },
               ],
             },
           },

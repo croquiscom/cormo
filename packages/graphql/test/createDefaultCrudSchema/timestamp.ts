@@ -89,7 +89,7 @@ type Query {
   user(id: ID): User
 
   """List query for User"""
-  user_list(id_list: [ID!], name: String, name_istartswith: String, name_icontains: String, age: Int, age_gte: Int, age_gt: Int, age_lte: Int, age_lt: Int, limit_count: Int, skip_count: Int): UserList!
+  user_list(id_list: [ID!], name: String, name_istartswith: String, name_icontains: String, age: Int, age_gte: Int, age_gt: Int, age_lte: Int, age_lt: Int, order: UserOrderType, limit_count: Int, skip_count: Int): UserList!
 }
 
 input UpdateUserInput {
@@ -125,6 +125,15 @@ type User {
 type UserList {
   """A list of users"""
   item_list: [User!]!
+}
+
+enum UserOrderType {
+  ID_ASC
+  ID_DESC
+  NAME_ASC
+  NAME_DESC
+  AGE_ASC
+  AGE_DESC
 }
 `);
   });

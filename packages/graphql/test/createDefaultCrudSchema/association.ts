@@ -92,12 +92,21 @@ type PostList {
   item_list: [Post!]!
 }
 
+enum PostOrderType {
+  ID_ASC
+  ID_DESC
+  BODY_ASC
+  BODY_DESC
+  USER_ID_ASC
+  USER_ID_DESC
+}
+
 type Query {
   """Single query for Post"""
   post(id: ID): Post
 
   """List query for Post"""
-  post_list(id_list: [ID!], body: String, body_istartswith: String, body_icontains: String, user_id: ID, limit_count: Int, skip_count: Int): PostList!
+  post_list(id_list: [ID!], body: String, body_istartswith: String, body_icontains: String, user_id: ID, order: PostOrderType, limit_count: Int, skip_count: Int): PostList!
 }
 
 input UpdatePostInput {

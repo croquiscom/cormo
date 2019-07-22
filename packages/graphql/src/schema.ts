@@ -3,7 +3,7 @@ import * as cormo from 'cormo';
 import {
   GraphQLBoolean, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLFloat, GraphQLID,
   GraphQLInputFieldConfigMap, GraphQLInputObjectType, GraphQLInt, GraphQLList,
-  GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLSchema, GraphQLString,
+  GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLSchema, GraphQLString, GraphQLEnumType, GraphQLEnumValueConfigMap,
 } from 'graphql';
 import _ from 'lodash';
 
@@ -88,6 +88,8 @@ function createListType(
                 query.where({ [field.replace(/_lte$/, '')]: { $lte: value } });
               } else if (field.endsWith('_lt')) {
                 query.where({ [field.replace(/_lt$/, '')]: { $lt: value } });
+              } else if (field === 'order') {
+                query.order(value);
               } else if (field === 'limit_count') {
                 query.limit(value);
               } else if (field === 'skip_count') {
@@ -173,10 +175,27 @@ function createDeleteInputType(model_class: typeof cormo.BaseModel, options: IOp
   });
 }
 
+function createOrderType(model_class: typeof cormo.BaseModel, options: IOptions) {
+  const values: GraphQLEnumValueConfigMap = {};
+  for (const [column, property] of Object.entries(model_class._schema)) {
+    if (column === 'id' || property.type_class === cormo.types.String || property.type_class === cormo.types.Integer) {
+      values[column.toUpperCase() + '_ASC'] = {
+        value: column,
+      };
+      values[column.toUpperCase() + '_DESC'] = {
+        value: '-' + column,
+      };
+    }
+  }
+  return new GraphQLEnumType({
+    name: `${model_class.name}OrderType`,
+    values,
+  });
+}
+
 function buildListQueryArgs(model_class: typeof cormo.BaseModel, options: IOptions) {
   const list_query_args: GraphQLFieldConfigArgumentMap = {
   };
-  // tslint:disable-next-line: forin
   for (const [column, property] of Object.entries(model_class._schema)) {
     if (column === 'id') {
       list_query_args[column + '_list'] = {
@@ -214,6 +233,9 @@ function buildListQueryArgs(model_class: typeof cormo.BaseModel, options: IOptio
       };
     }
   }
+  list_query_args.order = {
+    type: createOrderType(model_class, options),
+  };
   list_query_args.limit_count = {
     type: GraphQLInt,
   };
