@@ -5,3 +5,4 @@ CORMO is an ORM framework for Node.js.
 # Projects
 
 - [Core](packages/cormo)
+- [GraphQL extension](packages/graphql)
