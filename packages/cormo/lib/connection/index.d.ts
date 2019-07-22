@@ -163,6 +163,10 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
      * Fetches associated records
      */
     fetchAssociated(records: any, column: any, select?: any, options?: any): Promise<void>;
+    /**
+     * Applies pending associations
+     */
+    applyAssociations(): void;
     getTransaction(options?: {
         isolation_level?: IsolationLevel;
     }): Promise<Transaction>;
@@ -203,10 +207,6 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
     private _manipulateDropAllModels;
     private _manipulateFind;
     private _manipulateConvertIds;
-    /**
-     * Applies pending associations
-     */
-    private _applyAssociations;
     /**
      * Adds a has-many association
      */

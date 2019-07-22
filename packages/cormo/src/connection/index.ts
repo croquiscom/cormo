@@ -237,7 +237,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     if (!this._schema_changed) {
       return;
     }
-    this._applyAssociations();
+    this.applyAssociations();
     if (this._applying_schemas) {
       return this._promise_schema_applied;
     }
@@ -336,7 +336,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     if (!this._schema_changed) {
       return false;
     }
-    this._applyAssociations();
+    this.applyAssociations();
     this._checkArchive();
 
     await this._promise_connection;
@@ -563,6 +563,43 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     } else {
       throw new Error(`unknown column '${column}'`);
     }
+  }
+
+  /**
+   * Applies pending associations
+   */
+  public applyAssociations() {
+    this._initializeModels();
+    for (const item of this._pending_associations) {
+      const this_model = item.this_model;
+      const options = item.options;
+      let target_model: typeof BaseModel;
+      if (typeof item.target_model_or_column === 'string') {
+        let models;
+        if (options && options.connection) {
+          models = options.connection.models;
+        } else {
+          models = this.models;
+        }
+        let target_model_name: string;
+        if (options && options.type) {
+          target_model_name = options.type;
+          options.as = item.target_model_or_column;
+        } else if (item.type === 'belongsTo' || item.type === 'hasOne') {
+          target_model_name = inflector.camelize(item.target_model_or_column);
+        } else {
+          target_model_name = inflector.classify(item.target_model_or_column);
+        }
+        if (!models[target_model_name]) {
+          throw new Error(`model ${target_model_name} does not exist`);
+        }
+        target_model = models[target_model_name];
+      } else {
+        target_model = item.target_model_or_column;
+      }
+      this['_' + item.type](this_model, target_model, options);
+    }
+    this._pending_associations = [];
   }
 
   public async getTransaction(options?: { isolation_level?: IsolationLevel }): Promise<Transaction> {
@@ -841,42 +878,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         }
       }
     }
-  }
-
-  /**
-   * Applies pending associations
-   */
-  private _applyAssociations() {
-    for (const item of this._pending_associations) {
-      const this_model = item.this_model;
-      const options = item.options;
-      let target_model: typeof BaseModel;
-      if (typeof item.target_model_or_column === 'string') {
-        let models;
-        if (options && options.connection) {
-          models = options.connection.models;
-        } else {
-          models = this.models;
-        }
-        let target_model_name: string;
-        if (options && options.type) {
-          target_model_name = options.type;
-          options.as = item.target_model_or_column;
-        } else if (item.type === 'belongsTo' || item.type === 'hasOne') {
-          target_model_name = inflector.camelize(item.target_model_or_column);
-        } else {
-          target_model_name = inflector.classify(item.target_model_or_column);
-        }
-        if (!models[target_model_name]) {
-          throw new Error(`model ${target_model_name} does not exist`);
-        }
-        target_model = models[target_model_name];
-      } else {
-        target_model = item.target_model_or_column;
-      }
-      this['_' + item.type](this_model, target_model, options);
-    }
-    this._pending_associations = [];
   }
 
   /**

@@ -109,7 +109,7 @@ class Connection extends events_1.EventEmitter {
         if (!this._schema_changed) {
             return;
         }
-        this._applyAssociations();
+        this.applyAssociations();
         if (this._applying_schemas) {
             return this._promise_schema_applied;
         }
@@ -206,7 +206,7 @@ class Connection extends events_1.EventEmitter {
         if (!this._schema_changed) {
             return false;
         }
-        this._applyAssociations();
+        this.applyAssociations();
         this._checkArchive();
         await this._promise_connection;
         const current = await this._adapter.getSchemas();
@@ -434,6 +434,46 @@ class Connection extends events_1.EventEmitter {
         else {
             throw new Error(`unknown column '${column}'`);
         }
+    }
+    /**
+     * Applies pending associations
+     */
+    applyAssociations() {
+        this._initializeModels();
+        for (const item of this._pending_associations) {
+            const this_model = item.this_model;
+            const options = item.options;
+            let target_model;
+            if (typeof item.target_model_or_column === 'string') {
+                let models;
+                if (options && options.connection) {
+                    models = options.connection.models;
+                }
+                else {
+                    models = this.models;
+                }
+                let target_model_name;
+                if (options && options.type) {
+                    target_model_name = options.type;
+                    options.as = item.target_model_or_column;
+                }
+                else if (item.type === 'belongsTo' || item.type === 'hasOne') {
+                    target_model_name = inflector.camelize(item.target_model_or_column);
+                }
+                else {
+                    target_model_name = inflector.classify(item.target_model_or_column);
+                }
+                if (!models[target_model_name]) {
+                    throw new Error(`model ${target_model_name} does not exist`);
+                }
+                target_model = models[target_model_name];
+            }
+            else {
+                target_model = item.target_model_or_column;
+            }
+            this['_' + item.type](this_model, target_model, options);
+        }
+        this._pending_associations = [];
     }
     async getTransaction(options) {
         const transaction = new transaction_1.Transaction(this);
@@ -675,45 +715,6 @@ class Connection extends events_1.EventEmitter {
                 }
             }
         }
-    }
-    /**
-     * Applies pending associations
-     */
-    _applyAssociations() {
-        for (const item of this._pending_associations) {
-            const this_model = item.this_model;
-            const options = item.options;
-            let target_model;
-            if (typeof item.target_model_or_column === 'string') {
-                let models;
-                if (options && options.connection) {
-                    models = options.connection.models;
-                }
-                else {
-                    models = this.models;
-                }
-                let target_model_name;
-                if (options && options.type) {
-                    target_model_name = options.type;
-                    options.as = item.target_model_or_column;
-                }
-                else if (item.type === 'belongsTo' || item.type === 'hasOne') {
-                    target_model_name = inflector.camelize(item.target_model_or_column);
-                }
-                else {
-                    target_model_name = inflector.classify(item.target_model_or_column);
-                }
-                if (!models[target_model_name]) {
-                    throw new Error(`model ${target_model_name} does not exist`);
-                }
-                target_model = models[target_model_name];
-            }
-            else {
-                target_model = item.target_model_or_column;
-            }
-            this['_' + item.type](this_model, target_model, options);
-        }
-        this._pending_associations = [];
     }
     /**
      * Adds a has-many association
