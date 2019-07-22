@@ -75,7 +75,19 @@ function createListType(
           for (const [field, value] of Object.entries(args)) {
             if (value) {
               if (field.endsWith('_list')) {
-                query.where({ [field.replace('_list', '')]: value });
+                query.where({ [field.replace(/_list$/, '')]: value });
+              } else if (field.endsWith('_istartswith')) {
+                query.where({ [field.replace(/_istartswith$/, '')]: { $startswith: value } });
+              } else if (field.endsWith('_icontains')) {
+                query.where({ [field.replace(/_icontains$/, '')]: { $contains: value } });
+              } else if (field.endsWith('_gte')) {
+                query.where({ [field.replace(/_gte$/, '')]: { $gte: value } });
+              } else if (field.endsWith('_gt')) {
+                query.where({ [field.replace(/_gt$/, '')]: { $gt: value } });
+              } else if (field.endsWith('_lte')) {
+                query.where({ [field.replace(/_lte$/, '')]: { $lte: value } });
+              } else if (field.endsWith('_lt')) {
+                query.where({ [field.replace(/_lt$/, '')]: { $lt: value } });
               } else {
                 query.where({ [field]: value });
               }
@@ -176,6 +188,36 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
     if (column === 'id') {
       list_query_args[column + '_list'] = {
         type: new GraphQLList(new GraphQLNonNull(GraphQLID)),
+      };
+    } else if (property.record_id) {
+      list_query_args[column] = {
+        type: GraphQLID,
+      };
+    } else if (property.type_class === cormo.types.String || property.type_class === cormo.types.Text) {
+      list_query_args[column] = {
+        type: GraphQLString,
+      };
+      list_query_args[column + '_istartswith'] = {
+        type: GraphQLString,
+      };
+      list_query_args[column + '_icontains'] = {
+        type: GraphQLString,
+      };
+    } else if (property.type_class === cormo.types.Integer) {
+      list_query_args[column] = {
+        type: GraphQLInt,
+      };
+      list_query_args[column + '_gte'] = {
+        type: GraphQLInt,
+      };
+      list_query_args[column + '_gt'] = {
+        type: GraphQLInt,
+      };
+      list_query_args[column + '_lte'] = {
+        type: GraphQLInt,
+      };
+      list_query_args[column + '_lt'] = {
+        type: GraphQLInt,
       };
     }
   }

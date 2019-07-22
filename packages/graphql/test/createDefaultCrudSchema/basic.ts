@@ -1,4 +1,4 @@
-// tslint:disable:max-classes-per-file
+// tslint:disable:max-classes-per-file max-line-length
 
 import { expect } from 'chai';
 import * as cormo from 'cormo';
@@ -71,7 +71,7 @@ type Query {
   user(id: ID): User
 
   """List query for User"""
-  user_list(id_list: [ID!]): UserList!
+  user_list(id_list: [ID!], name: String, name_istartswith: String, name_icontains: String, age: Int, age_gte: Int, age_gt: Int, age_lte: Int, age_lt: Int): UserList!
 }
 
 input UpdateUserInput {
@@ -248,6 +248,166 @@ type UserList {
             ],
           },
         },
+      });
+    });
+
+    describe('generated arguments', () => {
+      it('string match', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Test Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
+        ]);
+        const query = '{ user_list(name: "Test") { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user1.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('string istartswith', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'test Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
+        ]);
+        const query = '{ user_list(name_istartswith: "Te") { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user1.id) },
+                { id: String(id_to_record_map.user2.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('string icontains', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe', age: 18 } },
+        ]);
+        const query = '{ user_list(name_icontains: "s") { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user1.id) },
+                { id: String(id_to_record_map.user2.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('number match', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Test Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
+        ]);
+        const query = '{ user_list(age: 30) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user2.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('number gte', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Test Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
+        ]);
+        const query = '{ user_list(age_gte: 18) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user2.id) },
+                { id: String(id_to_record_map.user3.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('number gt', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Test Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
+        ]);
+        const query = '{ user_list(age_gt: 15) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user2.id) },
+                { id: String(id_to_record_map.user3.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('number lte', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Test Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
+        ]);
+        const query = '{ user_list(age_lte: 18) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user1.id) },
+                { id: String(id_to_record_map.user3.id) },
+              ],
+            },
+          },
+        });
+      });
+
+      it('number lt', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Test Sample', age: 30 } },
+          { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
+        ]);
+        const query = '{ user_list(age_lt: 30) { item_list { id } } }';
+        const result = await graphql(schema, query);
+        expect(result).to.eql({
+          data: {
+            user_list: {
+              item_list: [
+                { id: String(id_to_record_map.user1.id) },
+                { id: String(id_to_record_map.user3.id) },
+              ],
+            },
+          },
+        });
       });
     });
   });

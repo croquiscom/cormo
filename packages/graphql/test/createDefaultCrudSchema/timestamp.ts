@@ -1,4 +1,4 @@
-// tslint:disable:max-classes-per-file
+// tslint:disable:max-classes-per-file max-line-length
 
 import { expect } from 'chai';
 import * as cormo from 'cormo';
@@ -89,7 +89,7 @@ type Query {
   user(id: ID): User
 
   """List query for User"""
-  user_list(id_list: [ID!]): UserList!
+  user_list(id_list: [ID!], name: String, name_istartswith: String, name_icontains: String, age: Int, age_gte: Int, age_gt: Int, age_lte: Int, age_lt: Int): UserList!
 }
 
 input UpdateUserInput {

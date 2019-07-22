@@ -1,9 +1,9 @@
-// tslint:disable:max-classes-per-file
+// tslint:disable:max-classes-per-file max-line-length
 
 import { expect } from 'chai';
 import * as cormo from 'cormo';
-import { GraphQLSchema, printSchema } from 'graphql';
-import { BelongsTo, Column, createDefaultCrudSchema, HasMany, Model } from '../..';
+import { graphql, GraphQLSchema, printSchema } from 'graphql';
+import { BelongsTo, Column, createDefaultCrudSchema, Model } from '../..';
 import _g = require('../common');
 
 class UserRef extends cormo.BaseModel {
@@ -97,7 +97,7 @@ type Query {
   post(id: ID): Post
 
   """List query for Post"""
-  post_list(id_list: [ID!]): PostList!
+  post_list(id_list: [ID!], body: String, body_istartswith: String, body_icontains: String, user_id: ID): PostList!
 }
 
 input UpdatePostInput {
@@ -106,5 +106,32 @@ input UpdatePostInput {
   user_id: ID!
 }
 `);
+  });
+
+  describe('list query', () => {
+    describe('generated arguments', () => {
+      it('record id match', async () => {
+        const id_to_record_map = await connection.manipulate([
+          { create_user: { id: 'user1', name: 'Test', age: 15 } },
+          { create_user: { id: 'user2', name: 'Test Sample', age: 30 } },
+          { create_post: { id: 'post1', user_id: 'user1', body: 'AA' } },
+          { create_post: { id: 'post2', user_id: 'user2', body: 'BB' } },
+          { create_post: { id: 'post3', user_id: 'user1', body: 'CC' } },
+        ]);
+        const query = 'query($user_id: ID) { post_list(user_id: $user_id) { item_list { id } } }';
+        const variables = { user_id: String(id_to_record_map.user1.id) };
+        const result = await graphql(schema, query, null, null, variables);
+        expect(result).to.eql({
+          data: {
+            post_list: {
+              item_list: [
+                { id: String(id_to_record_map.post1.id) },
+                { id: String(id_to_record_map.post3.id) },
+              ],
+            },
+          },
+        });
+      });
+    });
   });
 });
