@@ -88,6 +88,10 @@ function createListType(
                 query.where({ [field.replace(/_lte$/, '')]: { $lte: value } });
               } else if (field.endsWith('_lt')) {
                 query.where({ [field.replace(/_lt$/, '')]: { $lt: value } });
+              } else if (field === 'limit_count') {
+                query.limit(value);
+              } else if (field === 'skip_count') {
+                query.skip(value);
               } else {
                 query.where({ [field]: value });
               }
@@ -169,18 +173,7 @@ function createDeleteInputType(model_class: typeof cormo.BaseModel, options: IOp
   });
 }
 
-export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, options: IOptions = {}): GraphQLSchema {
-  model_class._connection.applyAssociations();
-
-  const camel_name = model_class.name;
-  const snake_name = _.snakeCase(camel_name);
-  const single_type = createSingleType(model_class, options);
-  const list_type = createListType(model_class, options, single_type);
-  const single_query_args: GraphQLFieldConfigArgumentMap = {
-    id: {
-      type: GraphQLID,
-    },
-  };
+function buildListQueryArgs(model_class: typeof cormo.BaseModel, options: IOptions) {
   const list_query_args: GraphQLFieldConfigArgumentMap = {
   };
   // tslint:disable-next-line: forin
@@ -221,6 +214,28 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
       };
     }
   }
+  list_query_args.limit_count = {
+    type: GraphQLInt,
+  };
+  list_query_args.skip_count = {
+    type: GraphQLInt,
+  };
+  return list_query_args;
+}
+
+export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, options: IOptions = {}): GraphQLSchema {
+  model_class._connection.applyAssociations();
+
+  const camel_name = model_class.name;
+  const snake_name = _.snakeCase(camel_name);
+  const single_type = createSingleType(model_class, options);
+  const list_type = createListType(model_class, options, single_type);
+  const single_query_args: GraphQLFieldConfigArgumentMap = {
+    id: {
+      type: GraphQLID,
+    },
+  };
+  const list_query_args = buildListQueryArgs(model_class, options);
   const create_input_type = createCreateInputType(model_class, options);
   const update_input_type = createUpdateInputType(model_class, options);
   const delete_input_type = createDeleteInputType(model_class, options);

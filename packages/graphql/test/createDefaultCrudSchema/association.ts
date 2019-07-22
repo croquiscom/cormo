@@ -97,7 +97,7 @@ type Query {
   post(id: ID): Post
 
   """List query for Post"""
-  post_list(id_list: [ID!], body: String, body_istartswith: String, body_icontains: String, user_id: ID): PostList!
+  post_list(id_list: [ID!], body: String, body_istartswith: String, body_icontains: String, user_id: ID, limit_count: Int, skip_count: Int): PostList!
 }
 
 input UpdatePostInput {

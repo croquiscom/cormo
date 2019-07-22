@@ -94,6 +94,12 @@ function createListType(model_class, options, single_type) {
                             else if (field.endsWith('_lt')) {
                                 query.where({ [field.replace(/_lt$/, '')]: { $lt: value } });
                             }
+                            else if (field === 'limit_count') {
+                                query.limit(value);
+                            }
+                            else if (field === 'skip_count') {
+                                query.skip(value);
+                            }
                             else {
                                 query.where({ [field]: value });
                             }
@@ -171,17 +177,7 @@ function createDeleteInputType(model_class, options) {
         name: `Delete${model_class.name}Input`,
     });
 }
-function createDefaultCrudSchema(model_class, options = {}) {
-    model_class._connection.applyAssociations();
-    const camel_name = model_class.name;
-    const snake_name = lodash_1.default.snakeCase(camel_name);
-    const single_type = createSingleType(model_class, options);
-    const list_type = createListType(model_class, options, single_type);
-    const single_query_args = {
-        id: {
-            type: graphql_1.GraphQLID,
-        },
-    };
+function buildListQueryArgs(model_class, options) {
     const list_query_args = {};
     // tslint:disable-next-line: forin
     for (const [column, property] of Object.entries(model_class._schema)) {
@@ -224,6 +220,26 @@ function createDefaultCrudSchema(model_class, options = {}) {
             };
         }
     }
+    list_query_args.limit_count = {
+        type: graphql_1.GraphQLInt,
+    };
+    list_query_args.skip_count = {
+        type: graphql_1.GraphQLInt,
+    };
+    return list_query_args;
+}
+function createDefaultCrudSchema(model_class, options = {}) {
+    model_class._connection.applyAssociations();
+    const camel_name = model_class.name;
+    const snake_name = lodash_1.default.snakeCase(camel_name);
+    const single_type = createSingleType(model_class, options);
+    const list_type = createListType(model_class, options, single_type);
+    const single_query_args = {
+        id: {
+            type: graphql_1.GraphQLID,
+        },
+    };
+    const list_query_args = buildListQueryArgs(model_class, options);
     const create_input_type = createCreateInputType(model_class, options);
     const update_input_type = createUpdateInputType(model_class, options);
     const delete_input_type = createDeleteInputType(model_class, options);
