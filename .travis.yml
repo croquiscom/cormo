@@ -8,10 +8,13 @@ node_js:
 sudo: false
 
 addons:
-  postgresql: "10.10"
+  postgresql: 9.6
   apt:
+    sources:
+      - sourceline: 'deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main'
+        key_url: 'https://www.postgresql.org/media/keys/ACCC4CF8.asc'
     packages:
-      - postgresql-10-postgis-2.4
+      - postgresql-9.6-postgis-2.4
 
 services:
   - mysql
