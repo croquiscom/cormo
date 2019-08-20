@@ -1,3 +1,5 @@
+dist: bionic
+
 language: node_js
 node_js:
   - 12
@@ -5,29 +7,10 @@ node_js:
 
 sudo: false
 
-addons:
-  postgresql: 9.6
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - mysql-5.7-trusty
-    packages:
-      - g++-4.8
-      - postgresql-9.6-postgis-2.3
-      - mysql-server
-      - mysql-client
-
 services:
   - mysql
+  - postgresql
   - mongodb
   - redis-server
-
-before_install:
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
-
-before_script:
-  - mysql -u travis -e "drop table if exists travis.test"
-  - psql -U postgres -c 'create database travis_ci_test;'
-  - psql -U postgres -c 'create extension postgis;' travis_ci_test
 
 script: lerna run test
