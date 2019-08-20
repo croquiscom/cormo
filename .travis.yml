@@ -1,3 +1,5 @@
+dist: bionic
+
 language: node_js
 node_js:
   - 12
@@ -9,21 +11,15 @@ addons:
   postgresql: 9.6
   apt:
     sources:
-      - ubuntu-toolchain-r-test
-      - mysql-5.7-trusty
+      - sourceline: 'deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main'
+        key_url: 'https://www.postgresql.org/media/keys/ACCC4CF8.asc'
     packages:
-      - g++-4.8
-      - postgresql-9.6-postgis-2.3
-      - mysql-server
-      - mysql-client
+      - postgresql-9.6-postgis-2.4
 
 services:
   - mysql
   - mongodb
   - redis-server
-
-before_install:
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
 
 before_script:
   - mysql -u travis -e "drop table if exists travis.test"
