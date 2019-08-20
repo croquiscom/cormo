@@ -45,7 +45,7 @@
     "@types/lodash": "^4.14.137",
     "@types/mocha": "^5.2.7",
     "@types/mongodb": "^3.2.3",
-    "@types/node": "^8.10.51",
+    "@types/node": "^10.14.15",
     "@types/sinon": "^7.0.13",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
