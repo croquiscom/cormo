@@ -23,12 +23,14 @@ export interface IAdapterFindOptions {
     skip?: number;
     explain?: boolean;
     transaction?: Transaction;
+    node?: 'master' | 'read';
 }
 export interface IAdapterCountOptions {
     conditions_of_group: any[];
     group_fields?: any;
     group_by?: string[];
     transaction?: Transaction;
+    node?: 'master' | 'read';
 }
 /**
  * Base class for adapters

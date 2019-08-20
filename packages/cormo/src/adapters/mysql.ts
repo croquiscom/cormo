@@ -281,7 +281,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
     let result;
     try {
-      result = await this.query(sql, values, options.transaction);
+      result = await this.query(sql, values, { transaction: options.transaction });
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -307,7 +307,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES ${places.join(',')}`;
     let result;
     try {
-      result = await this.query(sql, values, options.transaction);
+      result = await this.query(sql, values, { transaction: options.transaction });
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -327,7 +327,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     values.push(data.id);
     const sql = `UPDATE \`${table_name}\` SET ${fields} WHERE id=?`;
     try {
-      await this.query(sql, values, options.transaction);
+      await this.query(sql, values, { transaction: options.transaction });
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -351,7 +351,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = await this.query(sql, values, options.transaction);
+      result = await this.query(sql, values, { transaction: options.transaction });
     } catch (error) {
       throw _processSaveError(error);
     }
@@ -398,18 +398,18 @@ export class MySQLAdapter extends SQLAdapterBase {
   /** @internal */
   public async findById(
     model: string, id: any,
-    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+    options: { select?: string[], explain?: boolean, transaction?: Transaction, node?: 'master' | 'read' },
   ): Promise<any> {
     id = this._convertValueType(id, this.key_type);
     const select = this._buildSelect(this._connection.models[model], options.select);
     const table_name = this._connection.models[model].table_name;
     const sql = `SELECT ${select} FROM \`${table_name}\` WHERE id=? LIMIT 1`;
     if (options.explain) {
-      return await this.query(`EXPLAIN ${sql}`, id, options.transaction);
+      return await this.query(`EXPLAIN ${sql}`, id, { transaction: options.transaction, node: options.node });
     }
     let result;
     try {
-      result = await this.query(sql, id, options.transaction);
+      result = await this.query(sql, id, { transaction: options.transaction, node: options.node });
     } catch (error) {
       throw MySQLAdapter.wrapError('unknown error', error);
     }
@@ -426,11 +426,11 @@ export class MySQLAdapter extends SQLAdapterBase {
   public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
-      return await this.query(`EXPLAIN ${sql}`, params, options.transaction);
+      return await this.query(`EXPLAIN ${sql}`, params, { transaction: options.transaction, node: options.node });
     }
     let result;
     try {
-      result = await this.query(sql, params, options.transaction);
+      result = await this.query(sql, params, { transaction: options.transaction, node: options.node });
     } catch (error) {
       throw MySQLAdapter.wrapError('unknown error', error);
     }
@@ -486,7 +486,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = await this.query(sql, params, options.transaction);
+      result = await this.query(sql, params, { transaction: options.transaction, node: options.node });
     } catch (error) {
       throw MySQLAdapter.wrapError('unknown error', error);
     }
@@ -506,7 +506,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = await this.query(sql, params, options.transaction);
+      result = await this.query(sql, params, { transaction: options.transaction });
     } catch (error) {
       if (error && (error.code === 'ER_ROW_IS_REFERENCED_' || error.code === 'ER_ROW_IS_REFERENCED_2')) {
         throw new Error('rejected');
@@ -634,14 +634,16 @@ export class MySQLAdapter extends SQLAdapterBase {
   /**
    * Exposes mysql module's query method
    */
-  public async query(text: string, values?: any[], transaction?: Transaction) {
+  public async query(text: string, values?: any[], options?: { transaction?: Transaction, node?: 'master' | 'read' }) {
+    const transaction = options && options.transaction;
     if (transaction && transaction._adapter_connection) {
       this._connection._logger.logQuery(text, values);
       transaction.checkFinished();
       return await transaction._adapter_connection.queryAsync({ sql: text, values, timeout: this._query_timeout });
     } else {
       let client = this._client;
-      if (this._read_clients.length > 0 && text.substring(0, 6).toUpperCase() === 'SELECT') {
+      if (options && options.node === 'read' && this._read_clients.length > 0
+        && text.substring(0, 6).toUpperCase() === 'SELECT') {
         this._read_client_index++;
         if (this._read_client_index >= this._read_clients.length || this._read_client_index < 0) {
           this._read_client_index = 0;

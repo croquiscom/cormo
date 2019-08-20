@@ -26,7 +26,10 @@ export declare class MySQLAdapter extends SQLAdapterBase {
     /**
      * Exposes mysql module's query method
      */
-    query(text: string, values?: any[], transaction?: Transaction): Promise<any>;
+    query(text: string, values?: any[], options?: {
+        transaction?: Transaction;
+        node?: 'master' | 'read';
+    }): Promise<any>;
     /**
      * Remove all unused connections from pool.
      */

@@ -252,7 +252,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
         let result;
         try {
-            result = await this.query(sql, values, options.transaction);
+            result = await this.query(sql, values, { transaction: options.transaction });
         }
         catch (error) {
             throw _processSaveError(error);
@@ -279,7 +279,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES ${places.join(',')}`;
         let result;
         try {
-            result = await this.query(sql, values, options.transaction);
+            result = await this.query(sql, values, { transaction: options.transaction });
         }
         catch (error) {
             throw _processSaveError(error);
@@ -300,7 +300,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         values.push(data.id);
         const sql = `UPDATE \`${table_name}\` SET ${fields} WHERE id=?`;
         try {
-            await this.query(sql, values, options.transaction);
+            await this.query(sql, values, { transaction: options.transaction });
         }
         catch (error) {
             throw _processSaveError(error);
@@ -322,7 +322,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         let result;
         try {
-            result = await this.query(sql, values, options.transaction);
+            result = await this.query(sql, values, { transaction: options.transaction });
         }
         catch (error) {
             throw _processSaveError(error);
@@ -374,11 +374,11 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const table_name = this._connection.models[model].table_name;
         const sql = `SELECT ${select} FROM \`${table_name}\` WHERE id=? LIMIT 1`;
         if (options.explain) {
-            return await this.query(`EXPLAIN ${sql}`, id, options.transaction);
+            return await this.query(`EXPLAIN ${sql}`, id, { transaction: options.transaction, node: options.node });
         }
         let result;
         try {
-            result = await this.query(sql, id, options.transaction);
+            result = await this.query(sql, id, { transaction: options.transaction, node: options.node });
         }
         catch (error) {
             throw MySQLAdapter.wrapError('unknown error', error);
@@ -397,11 +397,11 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     async find(model, conditions, options) {
         const [sql, params] = this._buildSqlForFind(model, conditions, options);
         if (options.explain) {
-            return await this.query(`EXPLAIN ${sql}`, params, options.transaction);
+            return await this.query(`EXPLAIN ${sql}`, params, { transaction: options.transaction, node: options.node });
         }
         let result;
         try {
-            result = await this.query(sql, params, options.transaction);
+            result = await this.query(sql, params, { transaction: options.transaction, node: options.node });
         }
         catch (error) {
             throw MySQLAdapter.wrapError('unknown error', error);
@@ -458,7 +458,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         let result;
         try {
-            result = await this.query(sql, params, options.transaction);
+            result = await this.query(sql, params, { transaction: options.transaction, node: options.node });
         }
         catch (error) {
             throw MySQLAdapter.wrapError('unknown error', error);
@@ -478,7 +478,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         let result;
         try {
-            result = await this.query(sql, params, options.transaction);
+            result = await this.query(sql, params, { transaction: options.transaction });
         }
         catch (error) {
             if (error && (error.code === 'ER_ROW_IS_REFERENCED_' || error.code === 'ER_ROW_IS_REFERENCED_2')) {
@@ -601,7 +601,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     /**
      * Exposes mysql module's query method
      */
-    async query(text, values, transaction) {
+    async query(text, values, options) {
+        const transaction = options && options.transaction;
         if (transaction && transaction._adapter_connection) {
             this._connection._logger.logQuery(text, values);
             transaction.checkFinished();
@@ -609,7 +610,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         else {
             let client = this._client;
-            if (this._read_clients.length > 0 && text.substring(0, 6).toUpperCase() === 'SELECT') {
+            if (options && options.node === 'read' && this._read_clients.length > 0
+                && text.substring(0, 6).toUpperCase() === 'SELECT') {
                 this._read_client_index++;
                 if (this._read_client_index >= this._read_clients.length || this._read_client_index < 0) {
                     this._read_client_index = 0;

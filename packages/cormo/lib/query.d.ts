@@ -22,6 +22,7 @@ interface IQueryOptions {
         refresh?: boolean;
     };
     transaction?: Transaction;
+    node?: 'master' | 'read';
 }
 export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
     find(id: RecordID): IQuerySingle<M, T>;
@@ -49,6 +50,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
     cache(options: IQueryOptions['cache']): IQuerySingle<M, T>;
     include(column: string, select?: string): IQuerySingle<M, T>;
     transaction(transaction?: Transaction): IQuerySingle<M, T>;
+    using(node: 'master' | 'read'): IQuerySingle<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T>;
@@ -85,6 +87,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
     cache(options: IQueryOptions['cache']): IQueryArray<M, T>;
     include(column: string, select?: string): IQueryArray<M, T>;
     transaction(transaction?: Transaction): IQueryArray<M, T>;
+    using(node: 'master' | 'read'): IQueryArray<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T[]>;
@@ -192,6 +195,7 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
      */
     include(column: string, select?: string): this;
     transaction(transaction?: Transaction): this;
+    using(node: 'master' | 'read'): this;
     /**
      * Executes the query
      * @see AdapterBase::findById

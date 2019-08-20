@@ -25,6 +25,7 @@ export interface IAdapterFindOptions {
   skip?: number;
   explain?: boolean;
   transaction?: Transaction;
+  node?: 'master' | 'read';
 }
 
 export interface IAdapterCountOptions {
@@ -32,6 +33,7 @@ export interface IAdapterCountOptions {
   group_fields?: any;
   group_by?: string[];
   transaction?: Transaction;
+  node?: 'master' | 'read';
 }
 
 /**
@@ -219,7 +221,7 @@ abstract class AdapterBase {
    */
   public abstract async findById(
     model: string, id: any,
-    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+    options: { select?: string[], explain?: boolean, transaction?: Transaction, node?: 'master' | 'read' },
   ): Promise<any>;
 
   /**

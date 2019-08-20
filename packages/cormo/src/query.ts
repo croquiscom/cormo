@@ -26,6 +26,7 @@ interface IQueryOptions {
     refresh?: boolean,
   };
   transaction?: Transaction;
+  node?: 'master' | 'read';
 }
 
 export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
@@ -52,6 +53,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
   cache(options: IQueryOptions['cache']): IQuerySingle<M, T>;
   include(column: string, select?: string): IQuerySingle<M, T>;
   transaction(transaction?: Transaction): IQuerySingle<M, T>;
+  using(node: 'master' | 'read'): IQuerySingle<M, T>;
 
   exec(options?: { skip_log?: boolean }): PromiseLike<T>;
   stream(): stream.Readable;
@@ -86,6 +88,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
   cache(options: IQueryOptions['cache']): IQueryArray<M, T>;
   include(column: string, select?: string): IQueryArray<M, T>;
   transaction(transaction?: Transaction): IQueryArray<M, T>;
+  using(node: 'master' | 'read'): IQueryArray<M, T>;
 
   exec(options?: { skip_log?: boolean }): PromiseLike<T[]>;
   stream(): stream.Readable;
@@ -130,6 +133,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
     this._options = {
       conditions_of_group: [],
       lean: model.lean_query,
+      node: 'master',
       select_single: false,
     };
   }
@@ -360,6 +364,11 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
 
   public transaction(transaction?: Transaction): this {
     this._options.transaction = transaction;
+    return this;
+  }
+
+  public using(node: 'master' | 'read'): this {
+    this._options.node = node;
     return this;
   }
 
@@ -622,6 +631,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       lean: this._options.lean,
       limit: this._options.limit,
       near: this._options.near,
+      node: this._options.node,
       orders,
       skip: this._options.skip,
       transaction: this._options.transaction,

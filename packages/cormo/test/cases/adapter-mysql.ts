@@ -229,7 +229,12 @@ export default function(models: {
       ];
       const users = await User.createBulk(data);
       expect((c.adapter as any)._read_clients[0]._allConnections.length).to.eql(0);
-      expect(await c.adapter.query('SELECT * FROM users WHERE age=?', [27])).to.eql([
+      expect(await User.where({ age: 27 })).to.eql([
+        { id: users[0].id, name: users[0].name, age: users[0].age },
+        { id: users[2].id, name: users[2].name, age: users[2].age },
+      ]);
+      expect((c.adapter as any)._read_clients[0]._allConnections.length).to.eql(0); // query uses master client
+      expect(await User.where({ age: 27 }).using('read')).to.eql([
         { id: users[0].id, name: users[0].name, age: users[0].age },
         { id: users[2].id, name: users[2].name, age: users[2].age },
       ]);
@@ -268,7 +273,7 @@ export default function(models: {
       expect((c.adapter as any)._read_clients[2]._allConnections.length).to.eql(0);
 
       // first query uses master
-      expect(await c.adapter.query('SELECT * FROM users WHERE age=?', [27])).to.eql([
+      expect(await User.where({ age: 27 }).using('read')).to.eql([
         { id: users[0].id, name: users[0].name, age: users[0].age },
         { id: users[2].id, name: users[2].name, age: users[2].age },
       ]);
@@ -277,7 +282,7 @@ export default function(models: {
       expect((c.adapter as any)._read_clients[2]._allConnections.length).to.eql(0);
 
       // second query uses slave1
-      expect(await c.adapter.query('SELECT * FROM users WHERE age=?', [27])).to.eql([
+      expect(await User.where({ age: 27 }).using('read')).to.eql([
         { id: users[0].id, name: users[0].name, age: users[0].age },
         { id: users[2].id, name: users[2].name, age: users[2].age },
       ]);
@@ -286,7 +291,7 @@ export default function(models: {
       expect((c.adapter as any)._read_clients[2]._allConnections.length).to.eql(0);
 
       // third query uses slave2
-      expect(await c.adapter.query('SELECT * FROM users WHERE age=?', [27])).to.eql([
+      expect(await User.where({ age: 27 }).using('read')).to.eql([
         { id: users[0].id, name: users[0].name, age: users[0].age },
         { id: users[2].id, name: users[2].name, age: users[2].age },
       ]);
