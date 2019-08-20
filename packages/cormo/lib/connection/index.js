@@ -398,7 +398,7 @@ class Connection extends events_1.EventEmitter {
     async fetchAssociated(records, column, select, options) {
         if ((select != null) && typeof select === 'object') {
             options = select;
-            select = null;
+            select = undefined;
         }
         else if (options == null) {
             options = {};
@@ -409,14 +409,7 @@ class Connection extends events_1.EventEmitter {
             return;
         }
         let association;
-        if (options.target_model) {
-            association = {
-                foreign_key: options.foreign_key,
-                target_model: options.target_model,
-                type: options.type || 'belongsTo',
-            };
-        }
-        else if (options.model) {
+        if (options.model) {
             association = options.model._associations && options.model._associations[column];
         }
         else {
@@ -894,6 +887,9 @@ class Connection extends events_1.EventEmitter {
             });
             const ids = Object.keys(id_to_record_map);
             const query = target_model.where({ id: ids });
+            if (options.transaction) {
+                query.transaction(options.transaction);
+            }
             if (select) {
                 query.select(select);
             }
@@ -931,6 +927,9 @@ class Connection extends events_1.EventEmitter {
             const id = records[id_column];
             if (id) {
                 const query = target_model.find(id);
+                if (options.transaction) {
+                    query.transaction(options.transaction);
+                }
                 if (select) {
                     query.select(select);
                 }
@@ -982,6 +981,9 @@ class Connection extends events_1.EventEmitter {
                 return record.id;
             });
             const query = target_model.where(lodash_1.default.zipObject([foreign_key], [{ $in: ids }]));
+            if (options.transaction) {
+                query.transaction(options.transaction);
+            }
             if (select) {
                 query.select(select + ' ' + foreign_key);
             }
@@ -1010,6 +1012,9 @@ class Connection extends events_1.EventEmitter {
                 Object.defineProperty(records, column, { enumerable: true, value: [] });
             }
             const query = target_model.where(lodash_1.default.zipObject([foreign_key], [records.id]));
+            if (options.transaction) {
+                query.transaction(options.transaction);
+            }
             if (select) {
                 query.select(select + ' ' + foreign_key);
             }

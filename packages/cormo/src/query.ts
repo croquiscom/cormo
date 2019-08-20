@@ -110,7 +110,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
   private _current_if: boolean;
   private _options: IQueryOptions;
   private _conditions: any[];
-  private _includes: any[];
+  private _includes: Array<{ column: string, select?: string }>;
   private _id: any;
   private _find_single_id = false;
   private _preserve_order_ids?: any[];
@@ -350,7 +350,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
   /**
    * Returns associated objects also
    */
-  public include(column: any, select: any): this {
+  public include(column: string, select?: string): this {
     if (!this._current_if) {
       return this;
     }
@@ -646,6 +646,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       await this._connection.fetchAssociated(records, include.column, include.select, {
         lean: this._options.lean,
         model: this._model,
+        transaction: this._options.transaction,
       });
     }));
     return records;

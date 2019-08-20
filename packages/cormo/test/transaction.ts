@@ -4,6 +4,7 @@ import * as cormo from '..';
 import { UserExtraRef, UserRef } from './cases/transaction';
 import cases_bind from './cases/transaction_bind';
 import cases_block from './cases/transaction_block';
+import cases_etc from './cases/transaction_etc';
 import cases_full_control from './cases/transaction_full_control';
 import _g = require('./support/common');
 
@@ -67,6 +68,9 @@ _dbs.forEach((db) => {
     });
     describe('#bind', () => {
       cases_bind(models);
+    });
+    describe('#etc', () => {
+      cases_etc(models);
     });
   });
 });

@@ -190,7 +190,7 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
     /**
      * Returns associated objects also
      */
-    include(column: any, select: any): this;
+    include(column: string, select?: string): this;
     transaction(transaction?: Transaction): this;
     /**
      * Executes the query

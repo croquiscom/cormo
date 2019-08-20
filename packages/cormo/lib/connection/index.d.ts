@@ -162,7 +162,11 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
     /**
      * Fetches associated records
      */
-    fetchAssociated(records: any, column: any, select?: any, options?: any): Promise<void>;
+    fetchAssociated(records: any, column: string, select?: string, options?: {
+        lean?: boolean;
+        model?: typeof BaseModel;
+        transaction?: Transaction;
+    }): Promise<void>;
     /**
      * Applies pending associations
      */

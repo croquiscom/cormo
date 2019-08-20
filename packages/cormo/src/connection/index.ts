@@ -528,10 +528,13 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /**
    * Fetches associated records
    */
-  public async fetchAssociated(records: any, column: any, select?: any, options?: any) {
+  public async fetchAssociated(
+    records: any, column: string, select?: string,
+    options?: { lean?: boolean, model?: typeof BaseModel, transaction?: Transaction },
+  ) {
     if ((select != null) && typeof select === 'object') {
       options = select;
-      select = null;
+      select = undefined;
     } else if (options == null) {
       options = {};
     }
@@ -541,13 +544,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       return;
     }
     let association;
-    if (options.target_model) {
-      association = {
-        foreign_key: options.foreign_key,
-        target_model: options.target_model,
-        type: options.type || 'belongsTo',
-      };
-    } else if (options.model) {
+    if (options.model) {
       association = options.model._associations && options.model._associations[column];
     } else {
       association = record.constructor._associations && record.constructor._associations[column];
@@ -1049,7 +1046,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     });
   }
 
-  private async _fetchAssociatedBelongsTo(records: any, target_model: any, column: any, select: any, options: any) {
+  private async _fetchAssociatedBelongsTo(
+    records: any, target_model: any, column: string, select: string | undefined,
+    options: { lean?: boolean, transaction?: Transaction },
+  ) {
     const id_column = column + '_id';
     if (Array.isArray(records)) {
       const id_to_record_map: any = {};
@@ -1061,6 +1061,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       });
       const ids = Object.keys(id_to_record_map);
       const query = target_model.where({ id: ids });
+      if (options.transaction) {
+        query.transaction(options.transaction);
+      }
       if (select) {
         query.select(select);
       }
@@ -1094,6 +1097,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       const id = records[id_column];
       if (id) {
         const query = target_model.find(id);
+        if (options.transaction) {
+          query.transaction(options.transaction);
+        }
         if (select) {
           query.select(select);
         }
@@ -1129,8 +1135,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     }
   }
 
-  private async _fetchAssociatedHasMany(records: any, target_model: any, foreign_key: any,
-    column: any, select: any, options: any) {
+  private async _fetchAssociatedHasMany(
+    records: any, target_model: any, foreign_key: any, column: string, select: string | undefined,
+    options: { lean?: boolean, transaction?: Transaction },
+  ) {
     if (Array.isArray(records)) {
       const ids = records.map((record) => {
         if (options.lean) {
@@ -1141,6 +1149,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         return record.id;
       });
       const query = target_model.where(_.zipObject([foreign_key], [{ $in: ids }]));
+      if (options.transaction) {
+        query.transaction(options.transaction);
+      }
       if (select) {
         query.select(select + ' ' + foreign_key);
       }
@@ -1166,6 +1177,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         Object.defineProperty(records, column, { enumerable: true, value: [] });
       }
       const query = target_model.where(_.zipObject([foreign_key], [records.id]));
+      if (options.transaction) {
+        query.transaction(options.transaction);
+      }
       if (select) {
         query.select(select + ' ' + foreign_key);
       }

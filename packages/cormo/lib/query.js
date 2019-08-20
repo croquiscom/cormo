@@ -481,6 +481,7 @@ class Query {
             await this._connection.fetchAssociated(records, include.column, include.select, {
                 lean: this._options.lean,
                 model: this._model,
+                transaction: this._options.transaction,
             });
         }));
         return records;
