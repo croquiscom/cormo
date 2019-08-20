@@ -683,7 +683,7 @@ export class MongoDBAdapter extends AdapterBase {
       url = `mongodb://${settings.host || 'localhost'}:${settings.port || 27017}/${settings.database}`;
     }
     try {
-      const client = await mongodb.MongoClient.connect(url, { useNewUrlParser: true });
+      const client = await mongodb.MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
       this._client = client;
       this._db = client.db(settings.database);
     } catch (error) {
