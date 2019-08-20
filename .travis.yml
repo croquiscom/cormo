@@ -18,6 +18,7 @@ addons:
       - mysql-client
 
 services:
+  - mysql
   - mongodb
   - redis-server
 
