@@ -15,7 +15,6 @@ addons:
 
 services:
   - mysql
-  - postgresql
   - mongodb
   - redis-server
 
