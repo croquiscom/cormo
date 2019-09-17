@@ -174,6 +174,17 @@ export default function(models: {
         { title: 'First Post' },
       ]);
     });
+
+    it('getTransaction without waiting connection', async () => {
+      const c = new cormo.MySQLConnection(_g.db_configs.mysql);
+      const t = await c.getTransaction();
+      await t.rollback();
+    });
+
+    it('query without waiting connection', async () => {
+      const c = new cormo.MySQLConnection(_g.db_configs.mysql);
+      await c.adapter.query('SELECT 1');
+    });
   });
 
   describe('query', () => {
@@ -201,7 +212,6 @@ export default function(models: {
 
   describe('replication', () => {
     afterEach(async () => {
-      const c = new cormo.MySQLConnection(_g.db_configs.mysql);
       await models.connection!.adapter.query('DROP TABLE users');
     });
 

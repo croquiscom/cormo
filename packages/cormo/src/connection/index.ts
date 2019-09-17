@@ -600,6 +600,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   }
 
   public async getTransaction(options?: { isolation_level?: IsolationLevel }): Promise<Transaction> {
+    await this._promise_connection;
     const transaction = new Transaction(this);
     await transaction.setup(options && options.isolation_level);
     return transaction;

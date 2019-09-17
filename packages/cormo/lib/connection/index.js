@@ -469,6 +469,7 @@ class Connection extends events_1.EventEmitter {
         this._pending_associations = [];
     }
     async getTransaction(options) {
+        await this._promise_connection;
         const transaction = new transaction_1.Transaction(this);
         await transaction.setup(options && options.isolation_level);
         return transaction;

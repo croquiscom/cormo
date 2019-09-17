@@ -602,6 +602,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
      * Exposes mysql module's query method
      */
     async query(text, values, options) {
+        if (!this._client) {
+            await this._connection._promise_connection;
+        }
         const transaction = options && options.transaction;
         if (transaction && transaction._adapter_connection) {
             this._connection._logger.logQuery(text, values);
