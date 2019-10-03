@@ -84,7 +84,7 @@ async function _tryCreateConnection(config, count = 0) {
     count++;
     let client;
     try {
-        client = mysql.createConnection(Object.assign({}, config, { connectTimeout: 2000 }));
+        client = mysql.createConnection(Object.assign(Object.assign({}, config), { connectTimeout: 2000 }));
         client.connectAsync = util_1.default.promisify(client.connect);
         client.queryAsync = util_1.default.promisify(client.query);
         await client.connectAsync();

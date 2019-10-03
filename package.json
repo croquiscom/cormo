@@ -5,6 +5,6 @@
     "postinstall": "lerna bootstrap"
   },
   "devDependencies": {
-    "lerna": "^3.16.1"
+    "lerna": "^3.16.4"
   }
 }

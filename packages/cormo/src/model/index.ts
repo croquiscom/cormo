@@ -584,7 +584,7 @@ class BaseModel {
     id: types.RecordID | types.RecordID[],
     options?: { transaction?: Transaction },
   ): IQuerySingle<M> | IQueryArray<M> {
-    return this.query(options).find(id as types.RecordID);
+    return this.query<M>(options).find(id as types.RecordID);
   }
 
   /**
@@ -596,7 +596,7 @@ class BaseModel {
     ids: types.RecordID[],
     options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return this.query(options).findPreserve(ids);
+    return this.query<M>(options).findPreserve(ids);
   }
 
   /**
@@ -607,7 +607,7 @@ class BaseModel {
     condition?: object,
     options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return this.query(options).where(condition);
+    return this.query<M>(options).where(condition);
   }
 
   /**
@@ -628,7 +628,7 @@ class BaseModel {
     columns?: string | K[],
     options?: { transaction?: Transaction },
   ): IQueryArray<M, Pick<M, K>> {
-    return this.query(options).select<K>(columns as string);
+    return this.query<M>(options).select<K>(columns as string);
   }
 
   /**
@@ -639,7 +639,7 @@ class BaseModel {
     orders: string,
     options?: { transaction?: Transaction },
   ): IQueryArray<M> {
-    return this.query(options).order(orders);
+    return this.query<M>(options).order(orders);
   }
 
   /**
@@ -669,7 +669,7 @@ class BaseModel {
     fields?: object,
     options?: { transaction?: Transaction },
   ): IQueryArray<M, U> {
-    return this.query(options).group<U>(group_by, fields);
+    return this.query<M>(options).group<U>(group_by, fields);
   }
 
   /**

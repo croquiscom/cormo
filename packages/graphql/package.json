@@ -26,23 +26,23 @@
   "dependencies": {
     "@croquiscom/crary-graphql": "^0.3.2",
     "cormo": "^0.12.6",
-    "graphql": "^14.4.2",
+    "graphql": "^14.5.8",
     "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.0",
-    "@types/graphql": "^14.2.3",
-    "@types/lodash": "^4.14.137",
+    "@types/chai": "^4.2.3",
+    "@types/graphql": "^14.5.0",
+    "@types/lodash": "^4.14.141",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^10.14.15",
-    "@types/sinon": "^7.0.13",
+    "@types/node": "^12.7.9",
+    "@types/sinon": "^7.5.0",
     "chai": "^4.2.0",
-    "mocha": "^6.2.0",
+    "mocha": "^6.2.1",
     "mysql": "^2.17.1",
     "rimraf": "^3.0.0",
-    "sinon": "^7.4.1",
-    "ts-node": "^8.3.0",
-    "tslint": "^5.18.0",
-    "typescript": "^3.5.3"
+    "sinon": "^7.5.0",
+    "ts-node": "^8.4.1",
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.3"
   }
 }

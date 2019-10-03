@@ -829,7 +829,7 @@ class BaseModel {
         }
         if (options.validate !== false) {
             await this.validate();
-            return await this.save(Object.assign({}, options, { validate: false }));
+            return await this.save(Object.assign(Object.assign({}, options), { validate: false }));
         }
         this._runCallbacks('save', 'before');
         if (this._is_persisted) {
@@ -1023,6 +1023,7 @@ class BaseModel {
         }
     }
 }
+exports.BaseModel = BaseModel;
 /**
  * Tracks changes of a record if true
  */
@@ -1036,4 +1037,3 @@ BaseModel.archive = false;
  */
 BaseModel.lean_query = false;
 BaseModel._initialize_called = false;
-exports.BaseModel = BaseModel;
