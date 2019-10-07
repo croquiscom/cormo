@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/croquiscom/cormo",
   "dependencies": {
-    "@croquiscom/crary-graphql": "^0.3.2",
+    "@croquiscom/crary-graphql": "^0.3.3",
     "cormo": "^0.12.7",
     "graphql": "^14.5.8",
     "lodash": "^4.17.15"
