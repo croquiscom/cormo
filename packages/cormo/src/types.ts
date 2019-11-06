@@ -27,6 +27,7 @@ const CormoTypesString: ICormoTypesStringConstructor = function(this: ICormoType
     return new (CormoTypesString as any)(length);
   }
   this.length = length;
+  this.toString = () => this.length ? `string(${this.length})` : 'string';
 } as ICormoTypesStringConstructor;
 
 /**
@@ -47,6 +48,7 @@ const CormoTypesNumber: ICormoTypesNumberConstructor = function(this: ICormoType
   if (!(this instanceof CormoTypesNumber)) {
     return new (CormoTypesNumber as any)();
   }
+  this.toString = () => 'number';
 } as ICormoTypesNumberConstructor;
 
 /**
@@ -68,6 +70,7 @@ const CormoTypesBoolean: ICormoTypesBooleanConstructor = function(this: ICormoTy
   if (!(this instanceof CormoTypesBoolean)) {
     return new (CormoTypesBoolean as any)();
   }
+  this.toString = () => 'boolean';
 } as ICormoTypesBooleanConstructor;
 
 /**
@@ -89,6 +92,7 @@ const CormoTypesInteger: ICormoTypesIntegerConstructor = function(this: ICormoTy
   if (!(this instanceof CormoTypesInteger)) {
     return new (CormoTypesInteger as any)();
   }
+  this.toString = () => 'integer';
 } as ICormoTypesIntegerConstructor;
 
 /**
@@ -112,6 +116,7 @@ const CormoTypesGeoPoint: ICormoTypesGeoPointConstructor = function(this: ICormo
   if (!(this instanceof CormoTypesGeoPoint)) {
     return new (CormoTypesGeoPoint as any)();
   }
+  this.toString = () => 'geopoint';
 } as ICormoTypesGeoPointConstructor;
 
 /**
@@ -133,6 +138,7 @@ const CormoTypesDate: ICormoTypesDateConstructor = function(this: ICormoTypesDat
   if (!(this instanceof CormoTypesDate)) {
     return new (CormoTypesDate as any)();
   }
+  this.toString = () => 'date';
 } as ICormoTypesDateConstructor;
 
 /**
@@ -157,6 +163,7 @@ const CormoTypesObject: ICormoTypesObjectConstructor = function(this: ICormoType
   if (!(this instanceof CormoTypesObject)) {
     return new (CormoTypesObject as any)();
   }
+  this.toString = () => 'object';
 } as ICormoTypesObjectConstructor;
 
 /**
@@ -178,6 +185,7 @@ const CormoTypesRecordID: ICormoTypesRecordIDConstructor = function(this: ICormo
   if (!(this instanceof CormoTypesRecordID)) {
     return new (CormoTypesRecordID as any)();
   }
+  this.toString = () => 'recordid';
 } as ICormoTypesRecordIDConstructor;
 
 /**
@@ -199,6 +207,7 @@ const CormoTypesText: ICormoTypesTextConstructor = function(this: ICormoTypesTex
   if (!(this instanceof CormoTypesText)) {
     return new (CormoTypesText as any)();
   }
+  this.toString = () => 'text';
 } as ICormoTypesTextConstructor;
 
 export type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber

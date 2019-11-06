@@ -11,6 +11,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const lodash_1 = __importDefault(require("lodash"));
+const util_1 = require("util");
 const connection_1 = require("../connection");
 const query_1 = require("../query");
 const types = __importStar(require("../types"));
@@ -298,7 +299,7 @@ class BaseModel {
         this._checkConnection();
         this._connection.addAssociation({ type: 'belongsTo', this_model: this, target_model_or_column, options });
     }
-    static inspect(depth) {
+    static [util_1.inspect.custom](depth) {
         const schema = Object.keys(this._schema || {}).sort()
             .map((column) => `${column}: ${this._schema[column].type}`)
             .join(', ');

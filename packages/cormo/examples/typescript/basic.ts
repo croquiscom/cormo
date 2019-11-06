@@ -5,6 +5,7 @@ import * as cormo from '../../src';
 
 export const connection = new cormo.MySQLConnection({
   database: 'cormo_test',
+  logger: 'color-console',
   password: 'cormo_test',
   port: 21860,
   replication: {
@@ -17,8 +18,6 @@ export const connection = new cormo.MySQLConnection({
   user: 'cormo_test',
 });
 
-connection.setLogger('color-console');
-
 class Name {
   @cormo.Column({ type: String, required: true })
   public first!: string;
@@ -30,7 +29,7 @@ class Name {
     return `${this.first} ${this.last}`;
   }
 
-  public [util.inspect.custom]() {
+  public [util.inspect.custom]?() {
     return this.toString();
   }
 }

@@ -419,7 +419,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    */
   public log(model: string, type: string, data: object) { /**/ }
 
-  public inspect() {
+  public [inspect.custom]() {
     return inspect(this.models);
   }
 

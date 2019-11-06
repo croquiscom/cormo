@@ -282,7 +282,7 @@ class Connection extends events_1.EventEmitter {
      * Logs
      */
     log(model, type, data) { }
-    inspect() {
+    [util_1.inspect.custom]() {
         return util_1.inspect(this.models);
     }
     /**

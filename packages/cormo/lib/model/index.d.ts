@@ -1,3 +1,5 @@
+/// <reference types="node" />
+import { inspect } from 'util';
 import { AdapterBase } from '../adapters/base';
 import { Connection, IAssociationBelongsToOptions, IAssociationHasManyOptions, IAssociationHasOneOptions } from '../connection';
 import { IQueryArray, IQuerySingle } from '../query';
@@ -126,7 +128,7 @@ declare class BaseModel {
      * Adds a belongs-to association
      */
     static belongsTo(target_model_or_column: string | typeof BaseModel, options?: IAssociationBelongsToOptions): void;
-    static inspect(depth: number): string;
+    static [inspect.custom](depth: number): string;
     static _getKeyType(target_connection?: Connection<AdapterBase>): any;
     /**
      * Set nested object null if all children are null

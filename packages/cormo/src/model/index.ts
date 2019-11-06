@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { inspect } from 'util';
 
 import { AdapterBase } from '../adapters/base';
 import {
@@ -330,7 +331,7 @@ class BaseModel {
     this._connection.addAssociation({ type: 'belongsTo', this_model: this, target_model_or_column, options });
   }
 
-  public static inspect(depth: number) {
+  public static [inspect.custom](depth: number) {
     const schema = Object.keys(this._schema || {}).sort()
       .map((column) => `${column}: ${this._schema[column].type}`)
       .join(', ');

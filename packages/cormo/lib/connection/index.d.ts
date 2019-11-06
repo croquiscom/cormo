@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
+import { inspect } from 'util';
 import { AdapterBase } from '../adapters/base';
 import { createAdapter as createMongoDBAdapter, IAdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
 import { createAdapter as createMySQLAdapter, IAdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
@@ -142,7 +143,7 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
      * Logs
      */
     log(model: string, type: string, data: object): void;
-    inspect(): string;
+    [inspect.custom](): string;
     /**
      * Manipulate data
      */
