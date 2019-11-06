@@ -42,7 +42,7 @@ interface IRedisCacheSettings {
 interface IConnectionSettings {
   is_default?: boolean;
   redis_cache?: IRedisCacheSettings;
-  logger?: 'console' | 'color-console' | ILogger;
+  logger?: 'console' | 'color-console' | 'empty' | ILogger;
 }
 
 type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
@@ -195,12 +195,14 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /**
    * Set logger
    */
-  public setLogger(logger?: 'console' | 'color-console' | ILogger) {
+  public setLogger(logger?: 'console' | 'color-console' | 'empty' | ILogger) {
     if (logger) {
       if (logger === 'console') {
         this._logger = new ConsoleLogger();
       } else if (logger === 'color-console') {
         this._logger = new ColorConsoleLogger();
+      } else if (logger === 'empty') {
+        this._logger = new EmptyLogger();
       } else {
         this._logger = logger;
       }

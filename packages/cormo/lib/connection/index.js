@@ -75,6 +75,9 @@ class Connection extends events_1.EventEmitter {
             else if (logger === 'color-console') {
                 this._logger = new logger_1.ColorConsoleLogger();
             }
+            else if (logger === 'empty') {
+                this._logger = new logger_1.EmptyLogger();
+            }
             else {
                 this._logger = logger;
             }

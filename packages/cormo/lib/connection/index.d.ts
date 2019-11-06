@@ -22,7 +22,7 @@ interface IRedisCacheSettings {
 interface IConnectionSettings {
     is_default?: boolean;
     redis_cache?: IRedisCacheSettings;
-    logger?: 'console' | 'color-console' | ILogger;
+    logger?: 'console' | 'color-console' | 'empty' | ILogger;
 }
 declare type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
 export interface IAssociationHasManyOptions {
@@ -90,7 +90,7 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
      * @see Connection::constructor
      */
     _adapter: AdapterType;
-    get adapter(): AdapterType;
+    readonly adapter: AdapterType;
     /**
      * Model lists using this connection.
      * Maps from model name to model class
@@ -116,7 +116,7 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
     /**
      * Set logger
      */
-    setLogger(logger?: 'console' | 'color-console' | ILogger): void;
+    setLogger(logger?: 'console' | 'color-console' | 'empty' | ILogger): void;
     /**
      * Closes this connection.
      * A closed connection can be used no more.
