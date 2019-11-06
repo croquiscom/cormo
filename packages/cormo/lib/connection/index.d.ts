@@ -90,7 +90,7 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
      * @see Connection::constructor
      */
     _adapter: AdapterType;
-    readonly adapter: AdapterType;
+    get adapter(): AdapterType;
     /**
      * Model lists using this connection.
      * Maps from model name to model class

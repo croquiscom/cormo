@@ -53,7 +53,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
     using(node: 'master' | 'read'): IQuerySingle<M, T>;
     exec(options?: {
         skip_log?: boolean;
-    }): PromiseLike<T>;
+    }): PromiseLike<T | null>;
     stream(): stream.Readable;
     explain(): PromiseLike<any>;
     count(): PromiseLike<number>;
