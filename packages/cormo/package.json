@@ -54,7 +54,7 @@
     "crojsdoc": "^0.9.5",
     "microtime": "^3.0.0",
     "mocha": "^6.2.2",
-    "mongodb": "^3.3.3",
+    "mongodb": "^3.3.5",
     "mysql": "^2.17.1",
     "pg": "^7.12.1",
     "pg-query-stream": "^2.0.1",
