@@ -21,6 +21,8 @@ class SQLAdapterBase extends base_1.AdapterBase {
         /** @internal */
         this._contains_op = 'LIKE';
         /** @internal */
+        this._contains_escape_op = '';
+        /** @internal */
         this._regexp_op = 'REGEXP';
         /** @internal */
         this._false_value = 'FALSE';
@@ -166,21 +168,21 @@ class SQLAdapterBase extends base_1.AdapterBase {
                         return this._false_value;
                     }
                     values = values.map((v) => {
-                        params.push('%' + v + '%');
-                        return column + op + this._param_place_holder(params.length);
+                        params.push('%' + v.replace(/[%_]/g, (a) => `\\${a}`) + '%');
+                        return column + op + this._param_place_holder(params.length) + ' ' + this._contains_escape_op;
                     });
                     return `(${values.join(' OR ')})`;
                 }
                 case '$startswith':
                     op = ' ' + this._contains_op + ' ';
                     value = value[sub_key];
-                    params.push(value + '%');
-                    return column + op + this._param_place_holder(params.length);
+                    params.push(value.replace(/[%_]/g, (a) => `\\${a}`) + '%');
+                    return column + op + this._param_place_holder(params.length) + ' ' + this._contains_escape_op;
                 case '$endswith':
                     op = ' ' + this._contains_op + ' ';
                     value = value[sub_key];
-                    params.push('%' + value);
-                    return column + op + this._param_place_holder(params.length);
+                    params.push('%' + value.replace(/[%_]/g, (a) => `\\${a}`));
+                    return column + op + this._param_place_holder(params.length) + ' ' + this._contains_escape_op;
                 default:
                     throw new Error(`unknown operator '${sub_key}'`);
             }

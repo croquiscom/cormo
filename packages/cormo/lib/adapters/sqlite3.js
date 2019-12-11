@@ -79,6 +79,8 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         /** @internal */
         this.native_integrity = true;
         /** @internal */
+        this._contains_escape_op = " ESCAPE '\\'";
+        /** @internal */
         this._regexp_op = null;
         /** @internal */
         this._false_value = '0';

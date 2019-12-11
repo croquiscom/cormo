@@ -104,6 +104,16 @@ export default function(models: {
     _compareUser(users[1], { name: 'Daniel Smith', age: 8 });
   });
 
+  it('contains with SQL special character', async () => {
+    await models.User.createBulk([
+      { name: 'Bill S%_th', age: 45 },
+      { name: 'Daniel Smith', age: 8 },
+    ]);
+    const users = await models.User.where({ name: { $contains: 's%_' } });
+    expect(users).to.have.length(1);
+    _compareUser(users[0], { name: 'Bill S%_th', age: 45 });
+  });
+
   it('contains multiple', async () => {
     await _createUsers(models.User);
     const users = await models.User.where({ name: { $contains: ['baker', 'doe'] } });
@@ -120,6 +130,16 @@ export default function(models: {
     _compareUser(users[0], { name: 'Daniel Smith', age: 8 });
   });
 
+  it('startswith with SQL special character', async () => {
+    await models.User.createBulk([
+      { name: 'Bill Smith', age: 45 },
+      { name: '_ina Baker', age: 32 },
+    ]);
+    const users = await models.User.where({ name: { $startswith: '_i' } });
+    expect(users).to.have.length(1);
+    _compareUser(users[0], { name: '_ina Baker', age: 32 });
+  });
+
   it('endswith', async () => {
     await _createUsers(models.User);
     const users = await models.User.where({ name: { $endswith: 'h' } });
@@ -127,6 +147,16 @@ export default function(models: {
     users.sort((a, b) => a.name! < b.name! ? -1 : 1);
     _compareUser(users[0], { name: 'Bill Smith', age: 45 });
     _compareUser(users[1], { name: 'Daniel Smith', age: 8 });
+  });
+
+  it('endswith with SQL special character', async () => {
+    await models.User.createBulk([
+      { name: 'Bill Smith', age: 45 },
+      { name: 'Daniel Smit_', age: 8 },
+    ]);
+    const users = await models.User.where({ name: { $endswith: 't_' } });
+    expect(users).to.have.length(1);
+    _compareUser(users[0], { name: 'Daniel Smit_', age: 8 });
   });
 
   it('$in', async () => {

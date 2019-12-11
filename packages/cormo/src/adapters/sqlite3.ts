@@ -75,6 +75,9 @@ export class SQLite3Adapter extends SQLAdapterBase {
   public native_integrity = true;
 
   /** @internal */
+  protected _contains_escape_op = " ESCAPE '\\'";
+
+  /** @internal */
   protected _regexp_op = null;
 
   /** @internal */
