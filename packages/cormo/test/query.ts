@@ -2,6 +2,7 @@
 
 import * as cormo from '..';
 import cases, { UserRef } from './cases/query';
+import cases_misc from './cases/query_misc';
 import cases_not from './cases/query_not';
 import cases_null from './cases/query_null';
 import cases_stream from './cases/query_stream';
@@ -86,6 +87,9 @@ _dbs.forEach((db) => {
     });
     describe('#stream', () => {
       cases_stream(models);
+    });
+    describe('#misc', () => {
+      cases_misc(models);
     });
   });
 });
