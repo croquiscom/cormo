@@ -114,6 +114,7 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
     private _id;
     private _find_single_id;
     private _preserve_order_ids?;
+    private _used;
     /**
      * Creates a query instance
      */
@@ -245,5 +246,6 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
     private _doIntegrityActions;
     private _doArchiveAndIntegrity;
     private _addCondition;
+    private _setUsed;
 }
 export { Query };

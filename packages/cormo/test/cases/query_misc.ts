@@ -225,4 +225,17 @@ export default function(models: {
     const id = result && result[0] && result.id;
     expect(result).to.not.eql([{ id, name: 'Daniel Smith', age: 8 }]);
   });
+
+  it('cannot reuse query object', async () => {
+    await _createUsers(models.User);
+    const query = models.User.where({ age: 8 });
+    await query.count();
+    try {
+      await query.select(['name']);
+      throw new Error('must throw an error.');
+    } catch (error) {
+      expect(error).to.be.an.instanceof(Error);
+      expect(error.message).to.equal('Query object is already used');
+    }
+  });
 }

@@ -14,6 +14,7 @@ class Query {
      */
     constructor(model) {
         this._find_single_id = false;
+        this._used = false;
         this._model = model;
         this._name = model._name;
         this._connection = model._connection;
@@ -236,6 +237,7 @@ class Query {
      * @see AdapterBase::find
      */
     async exec(options) {
+        this._setUsed();
         await this._model._checkReady();
         if (this._options.cache && this._options.cache.key) {
             try {
@@ -260,6 +262,7 @@ class Query {
      * @see AdapterBase::find
      */
     stream() {
+        this._setUsed();
         const transformer = new stream_1.default.Transform({ objectMode: true });
         transformer._transform = function (chunk, encoding, callback) {
             this.push(chunk);
@@ -290,6 +293,7 @@ class Query {
      * @see AdapterBase::count
      */
     async count() {
+        this._setUsed();
         await this._model._checkReady();
         if (this._id || this._find_single_id) {
             this._conditions.push({ id: this._id });
@@ -302,6 +306,7 @@ class Query {
      * @see AdapterBase::update
      */
     async update(updates) {
+        this._setUsed();
         await this._model._checkReady();
         const errors = [];
         const data = {};
@@ -321,6 +326,7 @@ class Query {
      * @see AdapterBase::upsert
      */
     async upsert(updates) {
+        this._setUsed();
         await this._model._checkReady();
         const errors = [];
         const data = {};
@@ -340,6 +346,7 @@ class Query {
      * @see AdapterBase::delete
      */
     async delete(options) {
+        this._setUsed();
         await this._model._checkReady();
         if (this._id || this._find_single_id) {
             this._conditions.push({ id: this._id });
@@ -578,6 +585,12 @@ class Query {
         else {
             this._conditions.push(condition);
         }
+    }
+    _setUsed() {
+        if (this._used) {
+            throw new Error('Query object is already used');
+        }
+        this._used = true;
     }
 }
 exports.Query = Query;

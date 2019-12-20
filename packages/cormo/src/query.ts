@@ -117,6 +117,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
   private _id: any;
   private _find_single_id = false;
   private _preserve_order_ids?: any[];
+  private _used = false;
 
   /**
    * Creates a query instance
@@ -378,6 +379,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
    * @see AdapterBase::find
    */
   public async exec(options?: { skip_log?: boolean }) {
+    this._setUsed();
     await this._model._checkReady();
     if (this._options.cache && this._options.cache.key) {
       try {
@@ -401,6 +403,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
    * @see AdapterBase::find
    */
   public stream(): stream.Readable {
+    this._setUsed();
     const transformer = new stream.Transform({ objectMode: true });
     transformer._transform = function(chunk, encoding, callback) {
       this.push(chunk);
@@ -445,6 +448,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
    * @see AdapterBase::count
    */
   public async count(): Promise<number> {
+    this._setUsed();
     await this._model._checkReady();
     if (this._id || this._find_single_id) {
       this._conditions.push({ id: this._id });
@@ -458,6 +462,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
    * @see AdapterBase::update
    */
   public async update(updates: any): Promise<number> {
+    this._setUsed();
     await this._model._checkReady();
     const errors: any[] = [];
     const data = {};
@@ -478,6 +483,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
    * @see AdapterBase::upsert
    */
   public async upsert(updates: any): Promise<void> {
+    this._setUsed();
     await this._model._checkReady();
     const errors: any[] = [];
     const data = {};
@@ -498,6 +504,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
    * @see AdapterBase::delete
    */
   public async delete(options?: any): Promise<number> {
+    this._setUsed();
     await this._model._checkReady();
     if (this._id || this._find_single_id) {
       this._conditions.push({ id: this._id });
@@ -746,6 +753,13 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
     } else {
       this._conditions.push(condition);
     }
+  }
+
+  private _setUsed() {
+    if (this._used) {
+      throw new Error('Query object is already used');
+    }
+    this._used = true;
   }
 }
 
