@@ -238,4 +238,17 @@ export default function(models: {
       expect(error.message).to.equal('Query object is already used');
     }
   });
+
+  it('clone', async () => {
+    await _createUsers(models.User);
+    const query = models.User.where({ age: 27 }).select(['name']);
+    const cloned = query.clone();
+    expect(await query.where({ name: 'John Doe' }).select(['name', 'age']))
+      .to.eql([{ id: null, name: 'John Doe', age: 27 }]);
+    expect(await cloned.order('name'))
+      .to.eql([
+        { id: null, name: 'Alice Jackson' },
+        { id: null, name: 'John Doe' },
+      ]);
+  });
 }

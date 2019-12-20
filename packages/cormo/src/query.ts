@@ -30,6 +30,7 @@ interface IQueryOptions {
 }
 
 export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
+  clone(): IQuerySingle<M, T>;
   find(id: RecordID): IQuerySingle<M, T>;
   find(id: RecordID[]): IQueryArray<M, T>;
   findPreserve(id: RecordID[]): IQueryArray<M, T>;
@@ -65,6 +66,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
 }
 
 export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]> {
+  clone(): IQueryArray<M, T>;
   find(id: RecordID): IQuerySingle<M, T>;
   find(id: RecordID[]): IQueryArray<M, T>;
   findPreserve(id: RecordID[]): IQueryArray<M, T>;
@@ -137,6 +139,18 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       node: 'master',
       select_single: false,
     };
+  }
+
+  public clone(): Query<M, T> {
+    const cloned = new Query<M, T>(this._model);
+    cloned._ifs = _.cloneDeep(this._ifs);
+    cloned._current_if = this._current_if;
+    cloned._conditions = _.cloneDeep(this._conditions);
+    cloned._includes = _.cloneDeep(this._includes);
+    cloned._options = _.cloneDeep(this._options);
+    cloned._find_single_id = this._find_single_id;
+    cloned._used = false;
+    return cloned;
   }
 
   /**

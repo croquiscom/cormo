@@ -30,6 +30,17 @@ class Query {
             select_single: false,
         };
     }
+    clone() {
+        const cloned = new Query(this._model);
+        cloned._ifs = lodash_1.default.cloneDeep(this._ifs);
+        cloned._current_if = this._current_if;
+        cloned._conditions = lodash_1.default.cloneDeep(this._conditions);
+        cloned._includes = lodash_1.default.cloneDeep(this._includes);
+        cloned._options = lodash_1.default.cloneDeep(this._options);
+        cloned._find_single_id = this._find_single_id;
+        cloned._used = false;
+        return cloned;
+    }
     find(id) {
         if (!this._current_if) {
             return this;

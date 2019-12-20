@@ -25,6 +25,7 @@ interface IQueryOptions {
     node?: 'master' | 'read';
 }
 export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
+    clone(): IQuerySingle<M, T>;
     find(id: RecordID): IQuerySingle<M, T>;
     find(id: RecordID[]): IQueryArray<M, T>;
     findPreserve(id: RecordID[]): IQueryArray<M, T>;
@@ -62,6 +63,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
     delete(options?: any): PromiseLike<number>;
 }
 export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]> {
+    clone(): IQueryArray<M, T>;
     find(id: RecordID): IQuerySingle<M, T>;
     find(id: RecordID[]): IQueryArray<M, T>;
     findPreserve(id: RecordID[]): IQueryArray<M, T>;
@@ -119,6 +121,7 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
      * Creates a query instance
      */
     constructor(model: typeof BaseModel);
+    clone(): Query<M, T>;
     /**
      * Finds a record by id
      */
