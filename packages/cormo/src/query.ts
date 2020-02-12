@@ -29,7 +29,7 @@ interface IQueryOptions {
   node?: 'master' | 'read';
 }
 
-export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
+export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T | null> {
   clone(): IQuerySingle<M, T>;
   find(id: RecordID): IQuerySingle<M, T>;
   find(id: RecordID[]): IQueryArray<M, T>;
