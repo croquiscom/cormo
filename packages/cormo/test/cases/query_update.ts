@@ -110,7 +110,7 @@ export default function(models: {
     const count = await models.User.find(users[2].id).update({ age: { $inc: 4 } });
     expect(count).to.equal(1);
     const user = await models.User.find(users[2].id);
-    _compareUser(user, { name: 'Daniel Smith', age: 12 });
+    _compareUser(user!, { name: 'Daniel Smith', age: 12 });
   });
 
   it('$inc for non-integer column', async () => {

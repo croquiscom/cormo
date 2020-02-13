@@ -19,7 +19,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(count).to.equal(1);
-        type = await models.Type.find(type.id);
+        type = await models.Type.find(type.id) as Type;
         expect(type.number).to.equal(item[1]);
       } catch (error) {
         expect(error).to.exist;
@@ -38,7 +38,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(count).to.equal(1);
-        type = (await models.Type.find(type.id));
+        type = (await models.Type.find(type.id)) as Type;
         expect(type.int_c).to.equal(item[1]);
       } catch (error) {
         expect(error).to.exist;
@@ -64,7 +64,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(count).to.equal(1);
-        type = (await models.Type.find(type.id));
+        type = (await models.Type.find(type.id))!;
         expect(type.date).to.be.an.instanceof(Date);
         expect(type.date!.getTime()).to.equal(item[1]);
       } catch (error) {
@@ -84,7 +84,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(count).to.equal(1);
-        type = await models.Type.find(type.id);
+        type = await models.Type.find(type.id) as Type;
         expect(type.boolean).to.equal(item[1]);
       } catch (error) {
         expect(error).to.exist;
@@ -105,7 +105,7 @@ export default function(models: {
       let type = await models.Type.create();
       const count = await models.Type.find(type.id).update({ object: item[0] });
       expect(count).to.equal(1);
-      type = await models.Type.find(type.id);
+      type = await models.Type.find(type.id) as Type;
       if (typeof item[1] === 'object') {
         expect(type.object).to.eql(item[1]);
       } else {
@@ -128,7 +128,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(count).to.equal(1);
-        type = await models.Type.find(type.id);
+        type = await models.Type.find(type.id) as Type;
         expect(type.int_array).to.eql(item[1]);
       } catch (error) {
         expect(error).to.exist;

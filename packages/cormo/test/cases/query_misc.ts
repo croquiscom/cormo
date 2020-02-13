@@ -76,7 +76,7 @@ export default function(models: {
 
   it('id field of lean result can be modified', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
-    const record = await models.User.find(user.id).lean();
+    const record = await models.User.find(user.id).lean() as UserRef;
     (record as any).id = 'new id';
     expect(record.id).to.be.equal('new id');
   });
