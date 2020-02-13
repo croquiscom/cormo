@@ -33,7 +33,7 @@ export default function(db: any, db_config: any) {
     expect(user.name).to.eql({ first: 'John', last: 'Doe' });
     const record = await User.find(user.id);
     expect(record).to.have.keys('id', 'name');
-    expect(record.name).to.eql({ first: 'John', last: 'Doe' });
+    expect(record!.name).to.eql({ first: 'John', last: 'Doe' });
   });
 
   it('define a model using NestedProperty', async () => {
@@ -53,7 +53,7 @@ export default function(db: any, db_config: any) {
     expect(user.name).to.eql({ first: 'John', last: 'Doe' });
     const record = await User.find(user.id);
     expect(record).to.have.keys('id', 'name');
-    expect(record.name).to.eql({ first: 'John', last: 'Doe' });
+    expect(record!.name).to.eql({ first: 'John', last: 'Doe' });
   });
 
   it('get a record whose super column is null', async () => {
@@ -72,7 +72,7 @@ export default function(db: any, db_config: any) {
     const user = await User.create({});
     const record = await User.find(user.id);
     expect(record).to.have.keys('id', 'name');
-    expect(record.name).to.be.null;
+    expect(record!.name).to.be.null;
   });
 
   it('another style to define a model', async () => {
@@ -111,12 +111,12 @@ export default function(db: any, db_config: any) {
     const user1 = await User.create({ name: { first: 'John', middle: 'F.', last: 'Doe' } });
     const record1 = await User.find(user1.id);
     expect(record1).to.have.keys('id', 'name');
-    expect(record1.name).to.eql({ first: 'John', middle: 'F.', last: 'Doe' });
+    expect(record1!.name).to.eql({ first: 'John', middle: 'F.', last: 'Doe' });
     // missing non-required field
     const user2 = await User.create({ name: { first: 'John', last: 'Doe' } });
     const record2 = await User.find(user2.id);
     expect(record2).to.have.keys('id', 'name');
-    expect(record2.name).to.eql({ first: 'John', middle: null, last: 'Doe' });
+    expect(record2!.name).to.eql({ first: 'John', middle: null, last: 'Doe' });
     try {
       // missing required field
       await (User as any).create({ name: { first: 'John', middle: 'F.' } });
@@ -170,7 +170,7 @@ export default function(db: any, db_config: any) {
     expect(count).to.equal(1);
     const record = (await User.find(user.id));
     expect(record).to.have.keys('id', 'name');
-    expect(record.name).to.eql({ first: 'Bill', last: 'Doe' });
+    expect(record!.name).to.eql({ first: 'Bill', last: 'Doe' });
   });
 
   it('constraint on update', async () => {
@@ -241,7 +241,7 @@ export default function(db: any, db_config: any) {
     await user.save();
     const record = await User.find(user.id);
     expect(record).to.have.keys('id', 'name');
-    expect(record.name).to.eql({ first: 'Bill', last: null });
+    expect(record!.name).to.eql({ first: 'Bill', last: null });
   });
 
   it('get & set', () => {
@@ -326,7 +326,7 @@ export default function(db: any, db_config: any) {
     expect(count).to.equal(1);
     const record = await User.find(user.id);
     expect(record).to.have.keys('id', 'name');
-    expect(record.name).to.be.null;
+    expect(record!.name).to.be.null;
   });
 
   it('lean option', async () => {
@@ -463,6 +463,6 @@ export default function(db: any, db_config: any) {
     expect(order.orderer!.name).to.eql({ first: 'John', last: 'Doe' });
     const record = await Order.find(order.id);
     expect(record).to.have.keys('id', 'orderer', 'receiver');
-    expect(record.orderer!.name).to.eql({ first: 'John', last: 'Doe' });
+    expect(record!.orderer!.name).to.eql({ first: 'John', last: 'Doe' });
   });
 }

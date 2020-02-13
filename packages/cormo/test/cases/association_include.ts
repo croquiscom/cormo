@@ -77,7 +77,7 @@ export default function(models: {
 
   it('include an object that belongs to', async () => {
     const post = await models.Post.find(preset_posts[0].id).include('user');
-    _checkPost(models.Post, models.User, post, 'first post', preset_users[0].id, 'John Doe', 27);
+    _checkPost(models.Post, models.User, post!, 'first post', preset_users[0].id, 'John Doe', 27);
   });
 
   it('include objects that belong to with select', async () => {
@@ -98,7 +98,7 @@ export default function(models: {
 
   it('include an object that has many', async () => {
     const user = await models.User.find(preset_users[0].id).include('posts');
-    _checkUser(models.User, models.Post, user, 'John Doe',
+    _checkUser(models.User, models.Post, user!, 'John Doe',
       [preset_posts[0].id, preset_posts[1].id], ['first post', 'second post'], true);
   });
 
@@ -131,6 +131,6 @@ export default function(models: {
     _checkPost(models.Post, models.User, posts[1], 'second post', preset_users[0].id, 'John Doe', 27);
     _checkPost(models.Post, models.User, posts[2], 'another post', null);
     const post = await models.Post.find(preset_posts[2].id).include('user');
-    _checkPost(models.Post, models.User, post, 'another post', null);
+    _checkPost(models.Post, models.User, post!, 'another post', null);
   });
 }

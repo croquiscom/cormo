@@ -26,7 +26,7 @@ export default function(models: {
       }
       // MySQL non-strict mode accepts long string
       const result = await TypeOptionsString1.find(record.id);
-      expect(result.col).to.eql('01234');
+      expect(result!.col).to.eql('01234');
     } catch (error) {
       // MongoDB, Sqlite3 does not support String type with length, just skip
       expect(error.message).to.eql('this adapter does not support String type with length');
@@ -51,7 +51,7 @@ export default function(models: {
       }
       // MySQL non-strict mode accepts long string
       const result = await TypeOptionsString2.find(record.id);
-      expect(result.col).to.eql('01234');
+      expect(result!.col).to.eql('01234');
     } catch (error) {
       // MongoDB, Sqlite3 does not support String type with length, just skip
       expect(error.message).to.eql('this adapter does not support String type with length');
