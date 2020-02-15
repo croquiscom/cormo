@@ -70,7 +70,7 @@ if (process.env.TRAVIS === 'true') {
   };
 }
 
-async function deleteAllRecords(models: Array<typeof cormo.BaseModel>) {
+async function deleteAllRecords(models: typeof cormo.BaseModel[]) {
   await _g.connection!.applySchemas();
   for (const model of models) {
     if (!model) {

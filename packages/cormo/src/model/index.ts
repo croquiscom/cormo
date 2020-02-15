@@ -118,7 +118,7 @@ class BaseModel {
 
   public static _schema: IModelSchemaInternal;
 
-  public static _object_column_classes: Array<{ column: string, klass: any }>;
+  public static _object_column_classes: { column: string, klass: any }[];
 
   /** @internal */
   public static _indexes: IIndexProperty[];
@@ -523,7 +523,7 @@ class BaseModel {
    */
   public static async createBulk<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
-    data?: Array<ModelValueObject<M>>,
+    data?: ModelValueObject<M>[],
     options?: { transaction?: Transaction },
   ): Promise<M[]> {
     await this._checkReady();
@@ -794,10 +794,10 @@ class BaseModel {
   private static _validators: any[];
 
   private static _callbacks_map: {
-    [key in ModelCallbackName]?: Array<{
+    [key in ModelCallbackName]?: {
       type: ModelCallbackType,
       method: ModelCallbackMethod,
-    }>;
+    }[];
   };
 
   /**

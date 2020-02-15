@@ -19,7 +19,7 @@ export interface IAdapterSettingsMySQL {
   query_timeout?: number;
   replication?: {
     use_master_for_read?: boolean;
-    read_replicas: Array<{ host?: string, port?: number, user?: string, password?: string, pool_size?: number }>;
+    read_replicas: { host?: string, port?: number, user?: string, password?: string, pool_size?: number }[];
   };
 }
 

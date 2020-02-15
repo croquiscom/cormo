@@ -115,7 +115,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
   private _current_if: boolean;
   private _options: IQueryOptions;
   private _conditions: any[];
-  private _includes: Array<{ column: string, select?: string }>;
+  private _includes: { column: string, select?: string }[];
   private _id: any;
   private _find_single_id = false;
   private _preserve_order_ids?: any[];

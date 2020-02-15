@@ -186,7 +186,7 @@ export default function(models: {
   });
 
   it('any', async () => {
-    const records: Array<{ customer: string, count: number, date: any }> = await models.Order.group('customer', {
+    const records: { customer: string, count: number, date: any }[] = await models.Order.group('customer', {
       count: { $sum: 1 },
       date: { $any: '$date' },
     });

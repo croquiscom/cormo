@@ -19,7 +19,7 @@ export class PostRef extends cormo.BaseModel {
   public user_id!: number;
 }
 
-async function _createUsers(User: typeof UserRef, data?: Array<cormo.ModelValueObject<UserRef>>) {
+async function _createUsers(User: typeof UserRef, data?: cormo.ModelValueObject<UserRef>[]) {
   if (!data) {
     data = [
       { name: 'John Doe', age: 27, email: 'john.doe@example.com', facebook_id: '1' },

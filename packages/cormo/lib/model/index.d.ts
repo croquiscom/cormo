@@ -65,10 +65,10 @@ declare class BaseModel {
     static _adapter: AdapterBase;
     static _name: string;
     static _schema: IModelSchemaInternal;
-    static _object_column_classes: Array<{
+    static _object_column_classes: {
         column: string;
         klass: any;
-    }>;
+    }[];
     static _integrities: any[];
     static _associations: {
         [column: string]: any;
@@ -196,7 +196,7 @@ declare class BaseModel {
     /**
      * Creates multiple records and saves them to the database.
      */
-    static createBulk<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, data?: Array<ModelValueObject<M>>, options?: {
+    static createBulk<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, data?: ModelValueObject<M>[], options?: {
         transaction?: Transaction;
     }): Promise<M[]>;
     /**
