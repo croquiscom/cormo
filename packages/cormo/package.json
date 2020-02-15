@@ -44,7 +44,7 @@
     "@types/inflected": "^1.1.29",
     "@types/lodash": "^4.14.149",
     "@types/mocha": "^7.0.1",
-    "@types/mongodb": "^3.3.13",
+    "@types/mongodb": "^3.3.16",
     "@types/node": "^13.7.1",
     "@types/sinon": "^7.5.1",
     "benchmark": "^2.1.4",
