@@ -23,6 +23,7 @@ interface IRedisCacheSettings {
 interface IConnectionSettings {
     is_default?: boolean;
     redis_cache?: IRedisCacheSettings;
+    implicit_apply_schemas?: boolean;
     logger?: 'console' | 'color-console' | 'empty' | ILogger;
 }
 declare type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';

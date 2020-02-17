@@ -42,6 +42,7 @@ interface IRedisCacheSettings {
 interface IConnectionSettings {
   is_default?: boolean;
   redis_cache?: IRedisCacheSettings;
+  implicit_apply_schemas?: boolean;
   logger?: 'console' | 'color-console' | 'empty' | ILogger;
 }
 
@@ -155,6 +156,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /** @internal */
   private _applying_schemas: boolean = false;
 
+  /** @internal */
+  private _implicit_apply_schemas: boolean = false;
+
   [name: string]: any;
 
   /**
@@ -179,6 +183,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     if (settings.is_default !== false) {
       Connection.defaultConnection = this;
     }
+    this._implicit_apply_schemas = settings.implicit_apply_schemas ?? false;
     const redis_cache = settings.redis_cache || {};
     this._redis_cache_settings = redis_cache;
     this.models = {};
@@ -711,7 +716,11 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     if (!this._applying_schemas && !this._schema_changed) {
       return;
     }
-    return await this.applySchemas();
+    if (!this._implicit_apply_schemas) {
+      this.applyAssociations();
+      return;
+    }
+    await this.applySchemas();
   }
 
   public _connectRedisCache() {
