@@ -38,6 +38,7 @@ catch (error) {
  */
 class Connection extends events_1.EventEmitter {
     constructor(adapter, settings) {
+        var _a;
         super();
         /** @internal */
         this._schema_changed = false;
@@ -45,9 +46,12 @@ class Connection extends events_1.EventEmitter {
         this._connected = false;
         /** @internal */
         this._applying_schemas = false;
+        /** @internal */
+        this._implicit_apply_schemas = false;
         if (settings.is_default !== false) {
             Connection.defaultConnection = this;
         }
+        this._implicit_apply_schemas = (_a = settings.implicit_apply_schemas) !== null && _a !== void 0 ? _a : false;
         const redis_cache = settings.redis_cache || {};
         this._redis_cache_settings = redis_cache;
         this.models = {};
@@ -550,7 +554,11 @@ class Connection extends events_1.EventEmitter {
         if (!this._applying_schemas && !this._schema_changed) {
             return;
         }
-        return await this.applySchemas();
+        if (!this._implicit_apply_schemas) {
+            this.applyAssociations();
+            return;
+        }
+        await this.applySchemas();
     }
     _connectRedisCache() {
         if (this._redis_cache_client) {

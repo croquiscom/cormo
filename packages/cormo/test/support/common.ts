@@ -4,27 +4,35 @@ let db_configs: { [db: string]: any };
 if (process.env.TRAVIS === 'true') {
   db_configs = {
     mongodb: {
+      implicit_apply_schemas: true,
       database: 'travis',
     },
     mysql: {
+      implicit_apply_schemas: true,
       database: 'travis',
       user: 'travis',
     },
     postgresql: {
+      implicit_apply_schemas: true,
       database: 'travis_ci_test',
       user: 'postgres',
     },
     redis: {
+      implicit_apply_schemas: true,
       database: 1,
     },
     sqlite3: {
+      implicit_apply_schemas: true,
       database: __dirname + '/test.sqlite3',
     },
-    sqlite3_memory: {},
+    sqlite3_memory: {
+      implicit_apply_schemas: true,
+    },
   };
 } else {
   db_configs = {
     mongodb: {
+      implicit_apply_schemas: true,
       database: 'test',
       port: 21861,
       redis_cache: {
@@ -32,6 +40,7 @@ if (process.env.TRAVIS === 'true') {
       },
     },
     mysql: {
+      implicit_apply_schemas: true,
       database: 'cormo_test',
       password: 'cormo_test',
       port: 21860,
@@ -41,6 +50,7 @@ if (process.env.TRAVIS === 'true') {
       user: 'cormo_test',
     },
     postgresql: {
+      implicit_apply_schemas: true,
       database: 'cormo_test',
       password: 'cormo_test',
       port: 21862,
@@ -50,6 +60,7 @@ if (process.env.TRAVIS === 'true') {
       user: 'cormo_test',
     },
     redis: {
+      implicit_apply_schemas: true,
       database: 1,
       port: 21863,
       redis_cache: {
@@ -57,12 +68,14 @@ if (process.env.TRAVIS === 'true') {
       },
     },
     sqlite3: {
+      implicit_apply_schemas: true,
       database: __dirname + '/test.sqlite3',
       redis_cache: {
         port: 21863,
       },
     },
     sqlite3_memory: {
+      implicit_apply_schemas: true,
       redis_cache: {
         port: 21863,
       },
