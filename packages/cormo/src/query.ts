@@ -27,6 +27,7 @@ interface IQueryOptions {
   };
   transaction?: Transaction;
   node?: 'master' | 'read';
+  index_hint?: string;
 }
 
 export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T | null> {
@@ -55,6 +56,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T 
   include(column: string, select?: string): IQuerySingle<M, T>;
   transaction(transaction?: Transaction): IQuerySingle<M, T>;
   using(node: 'master' | 'read'): IQuerySingle<M, T>;
+  index_hint(hint: string): IQuerySingle<M, T>;
 
   exec(options?: { skip_log?: boolean }): PromiseLike<T | null>;
   stream(): stream.Readable;
@@ -91,6 +93,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
   include(column: string, select?: string): IQueryArray<M, T>;
   transaction(transaction?: Transaction): IQueryArray<M, T>;
   using(node: 'master' | 'read'): IQueryArray<M, T>;
+  index_hint(hint: string): IQuerySingle<M, T>;
 
   exec(options?: { skip_log?: boolean }): PromiseLike<T[]>;
   stream(): stream.Readable;
@@ -387,6 +390,11 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
     return this;
   }
 
+  public index_hint(hint: string): this {
+    this._options.index_hint = hint;
+    return this;
+  }
+
   /**
    * Executes the query
    * @see AdapterBase::findById
@@ -653,6 +661,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       limit: this._options.limit,
       near: this._options.near,
       node: this._options.node,
+      index_hint: this._options.index_hint,
       orders,
       skip: this._options.skip,
       transaction: this._options.transaction,

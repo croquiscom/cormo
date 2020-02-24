@@ -242,6 +242,10 @@ class Query {
         this._options.node = node;
         return this;
     }
+    index_hint(hint) {
+        this._options.index_hint = hint;
+        return this;
+    }
     /**
      * Executes the query
      * @see AdapterBase::findById
@@ -483,7 +487,7 @@ class Query {
                 }
             });
         }
-        return Object.assign({ conditions_of_group: this._options.conditions_of_group, explain: this._options.explain, group_by, group_fields: this._options.group_fields, lean: this._options.lean, limit: this._options.limit, near: this._options.near, node: this._options.node, orders, skip: this._options.skip, transaction: this._options.transaction }, (select_raw.length > 0 && { select, select_raw }));
+        return Object.assign({ conditions_of_group: this._options.conditions_of_group, explain: this._options.explain, group_by, group_fields: this._options.group_fields, lean: this._options.lean, limit: this._options.limit, near: this._options.near, node: this._options.node, index_hint: this._options.index_hint, orders, skip: this._options.skip, transaction: this._options.transaction }, (select_raw.length > 0 && { select, select_raw }));
     }
     async _execAndInclude(options) {
         const records = await this._exec(this._getAdapterFindOptions(), options);

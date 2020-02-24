@@ -4,6 +4,7 @@ import * as util from 'util';
 import * as cormo from '../../src';
 
 export const connection = new cormo.MySQLConnection({
+  implicit_apply_schemas: true,
   database: 'cormo_test',
   logger: 'color-console',
   password: 'cormo_test',

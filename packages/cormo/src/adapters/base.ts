@@ -26,6 +26,7 @@ export interface IAdapterFindOptions {
   explain?: boolean;
   transaction?: Transaction;
   node?: 'master' | 'read';
+  index_hint?: string;
 }
 
 export interface IAdapterCountOptions {
@@ -34,6 +35,7 @@ export interface IAdapterCountOptions {
   group_by?: string[];
   transaction?: Transaction;
   node?: 'master' | 'read';
+  index_hint?: string;
 }
 
 /**

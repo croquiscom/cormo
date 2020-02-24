@@ -23,6 +23,7 @@ interface IQueryOptions {
     };
     transaction?: Transaction;
     node?: 'master' | 'read';
+    index_hint?: string;
 }
 export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T | null> {
     clone(): IQuerySingle<M, T>;
@@ -52,6 +53,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T 
     include(column: string, select?: string): IQuerySingle<M, T>;
     transaction(transaction?: Transaction): IQuerySingle<M, T>;
     using(node: 'master' | 'read'): IQuerySingle<M, T>;
+    index_hint(hint: string): IQuerySingle<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T | null>;
@@ -90,6 +92,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
     include(column: string, select?: string): IQueryArray<M, T>;
     transaction(transaction?: Transaction): IQueryArray<M, T>;
     using(node: 'master' | 'read'): IQueryArray<M, T>;
+    index_hint(hint: string): IQuerySingle<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T[]>;
@@ -200,6 +203,7 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
     include(column: string, select?: string): this;
     transaction(transaction?: Transaction): this;
     using(node: 'master' | 'read'): this;
+    index_hint(hint: string): this;
     /**
      * Executes the query
      * @see AdapterBase::findById

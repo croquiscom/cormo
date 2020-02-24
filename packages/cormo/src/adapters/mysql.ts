@@ -473,6 +473,9 @@ export class MySQLAdapter extends SQLAdapterBase {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `SELECT COUNT(*) AS count FROM \`${table_name}\``;
+    if (options.index_hint) {
+      sql += ` ${options.index_hint}`;
+    }
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
     }
@@ -865,6 +868,9 @@ export class MySQLAdapter extends SQLAdapterBase {
     const params: any[] = [];
     const table_name = model_class.table_name;
     let sql = `SELECT ${select} FROM \`${table_name}\``;
+    if (options.index_hint) {
+      sql += ` ${options.index_hint}`;
+    }
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
     }
