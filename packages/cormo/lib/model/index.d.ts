@@ -17,6 +17,7 @@ export interface IColumnProperty {
     unique?: boolean;
     connection?: Connection;
     name?: string;
+    description?: string;
     default_value?: string | number | (() => string | number);
 }
 export interface IColumnPropertyInternal extends IColumnProperty {

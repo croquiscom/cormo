@@ -19,10 +19,10 @@ export const connection = new cormo.MySQLConnection({
 });
 
 class Name {
-  @cormo.Column({ type: String, required: true })
+  @cormo.Column({ type: String, required: true, description: 'First name' })
   public first!: string;
 
-  @cormo.Column({ type: String, required: true })
+  @cormo.Column({ type: String, required: true, description: 'Last name' })
   public last!: string;
 
   public toString() {

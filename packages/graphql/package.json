@@ -9,7 +9,7 @@
     "build": "rimraf lib && tsc -p src/tsconfig.build.json",
     "lint": "tslint -p tsconfig.json",
     "test:type": "tsc --noEmit",
-    "test:unit": "mocha --require ts-node/register/transpile-only ./test/*/*.ts",
+    "test:unit": "NODE_ENV=test TZ=Etc/UTC mocha --require ts-node/register/transpile-only ./test/*/*.ts",
     "test": "npm run test:type && npm run lint && npm run test:unit --",
     "test:debug": "npm run test:unit -- --inspect-brk=30000"
   },
