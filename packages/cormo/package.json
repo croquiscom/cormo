@@ -57,7 +57,7 @@
     "mongodb": "^3.5.3",
     "mysql": "^2.18.1",
     "pg": "^7.18.1",
-    "pg-query-stream": "^3.0.2",
+    "pg-query-stream": "^3.0.3",
     "redis": "^3.0.2",
     "rimraf": "^3.0.2",
     "sinon": "^8.1.1",
