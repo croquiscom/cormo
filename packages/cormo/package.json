@@ -23,8 +23,11 @@
     "build": "rimraf lib && tsc -p src/tsconfig.build.json",
     "lint": "tslint -p tsconfig.json",
     "doc": "node node_modules/.bin/crojsdoc",
-    "test": "NODE_ENV=test mocha --require coffeescript/register --require ts-node/register --timeout 5000 --exit 'test/*.{js,ts,coffee}'",
-    "test:debug": "npm run test -- --inspect-brk=30000"
+    "test:type": "tsc --noEmit",
+    "test:lint": "tslint -p .",
+    "test:unit": "NODE_ENV=test TZ=Etc/UTC mocha --timeout 5000 --require coffeescript/register --require ts-node/register/transpile-only --exit 'test/*.{js,ts,coffee}'",
+    "test": "npm run test:type && npm run test:lint && npm run test:unit --",
+    "test:debug": "npm run test:unit -- --inspect-brk=30000"
   },
   "repository": {
     "type": "git",
@@ -45,7 +48,7 @@
     "@types/lodash": "^4.14.149",
     "@types/mocha": "^7.0.1",
     "@types/mongodb": "^3.3.16",
-    "@types/node": "^13.7.1",
+    "@types/node": "^13.7.4",
     "@types/sinon": "^7.5.1",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
@@ -56,14 +59,14 @@
     "mocha": "^7.0.1",
     "mongodb": "^3.5.3",
     "mysql": "^2.18.1",
-    "pg": "^7.18.1",
-    "pg-query-stream": "^3.0.2",
+    "pg": "^7.18.2",
+    "pg-query-stream": "^3.0.3",
     "redis": "^3.0.2",
     "rimraf": "^3.0.2",
-    "sinon": "^8.1.1",
+    "sinon": "^9.0.0",
     "sqlite3": "^4.1.1",
     "ts-node": "^8.6.2",
     "tslint": "^6.0.0",
-    "typescript": "^3.7.5"
+    "typescript": "^3.8.2"
   }
 }

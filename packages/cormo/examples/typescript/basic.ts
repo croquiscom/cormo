@@ -77,7 +77,7 @@ async function getAll() {
 
 async function query() {
   const user = await User.where({ age: 5 }).select(['id', 'name']).one();
-  console.log(`name of age 5 is #${user.id} ${user.name}`);
+  console.log(`name of age 5 is #${user!.id} ${user!.name}`);
 }
 
 async function count() {

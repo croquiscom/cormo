@@ -34,7 +34,7 @@ export function Column(options: {
   const c = cormo.Column({
     _graphql: {
       description: options.description,
-    },
+    } as any,
     default_value: options.default_value,
     name: options.name,
     required: options.required,
