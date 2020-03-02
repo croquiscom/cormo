@@ -48,7 +48,7 @@
     "@types/mocha": "^7.0.1",
     "@types/mongodb": "^3.3.16",
     "@types/node": "^13.7.4",
-    "@types/sinon": "^7.5.1",
+    "@types/sinon": "^7.5.2",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "coffee-coverage": "^3.0.1",
