@@ -8,8 +8,8 @@ export class Order extends cormo.BaseModel {
 }
 
 export default function(models: {
-  Order: typeof Order,
-  connection: cormo.Connection | null,
+  Order: typeof Order;
+  connection: cormo.Connection | null;
 }) {
   it('sum all', async () => {
     const records = await models.Order.group(null, {
@@ -186,7 +186,7 @@ export default function(models: {
   });
 
   it('any', async () => {
-    const records: { customer: string, count: number, date: any }[] = await models.Order.group('customer', {
+    const records: Array<{ customer: string; count: number; date: any }> = await models.Order.group('customer', {
       count: { $sum: 1 },
       date: { $any: '$date' },
     });

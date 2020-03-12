@@ -1,5 +1,3 @@
-// tslint:disable:max-classes-per-file
-
 import * as cormo from '..';
 import { ComputerRef, PostRef, UserRef } from './cases/association';
 import cases_as from './cases/association_as';
@@ -38,10 +36,10 @@ _dbs.forEach((db) => {
           public age?: number | null;
 
           @cormo.HasMany()
-          public posts?: { build: (data: any) => PostRef } & ((reload?: boolean) => PostRef[]);
+          public posts?: { build: (data: any) => PostRef } & ((reload?: boolean) => Promise<PostRef[]>);
 
           @cormo.HasOne()
-          public computer?: () => Computer | null;
+          public computer?: () => Promise<Computer | null>;
         }
         models.User = User;
 
@@ -54,15 +52,15 @@ _dbs.forEach((db) => {
           public body?: string | null;
 
           @cormo.BelongsTo()
-          public user?: () => User | null;
+          public user?: () => Promise<User | null>;
 
           public user_id?: number | null;
 
           @cormo.HasMany({ type: 'Post', foreign_key: 'parent_post_id' })
-          public comments?: () => Post[];
+          public comments?: () => Promise<Post[]>;
 
           @cormo.BelongsTo({ type: 'Post' })
-          public parent_post?: () => Post | null;
+          public parent_post?: () => Promise<Post | null>
 
           public parent_post_id?: number | null;
         }
@@ -74,7 +72,7 @@ _dbs.forEach((db) => {
           public brand?: string | null;
 
           @cormo.BelongsTo()
-          public user?: () => User | null;
+          public user?: () => Promise<User | null>;
 
           public user_id?: number | null;
         }

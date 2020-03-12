@@ -456,7 +456,7 @@ class Query {
                     select_raw.push(column);
                     column += '.';
                     schema_columns.forEach((sc) => {
-                        if (sc.indexOf(column) === 0) {
+                        if (sc.startsWith(column)) {
                             select.push(sc);
                         }
                     });
@@ -478,7 +478,7 @@ class Query {
             }
             this._options.orders.split(/\s+/).forEach((order) => {
                 let asc = true;
-                if (order[0] === '-') {
+                if (order.startsWith('-')) {
                     asc = false;
                     order = order.slice(1);
                 }
@@ -516,7 +516,6 @@ class Query {
     _validateAndBuildSaveData(errors, data, updates, path, object) {
         const model = this._model;
         const schema = model._schema;
-        // tslint:disable-next-line:forin
         for (let column in object) {
             const property = schema[path + column];
             if (property) {
@@ -533,7 +532,7 @@ class Query {
                 column += '.';
                 const temp = {};
                 Object.keys(schema).forEach((sc) => {
-                    if (sc.indexOf(column) === 0) {
+                    if (sc.startsWith(column)) {
                         temp[sc.substr(column.length)] = null;
                     }
                 });
@@ -593,7 +592,7 @@ class Query {
     _addCondition(condition) {
         if (this._options.group_fields) {
             const keys = Object.keys(condition);
-            if (keys.length === 1 && this._options.group_fields.hasOwnProperty(keys[0])) {
+            if (keys.length === 1 && Object.prototype.hasOwnProperty.call(this._options.group_fields, keys[0])) {
                 this._options.conditions_of_group.push(condition);
             }
         }

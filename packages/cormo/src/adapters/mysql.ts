@@ -1,7 +1,6 @@
 let mysql: any;
 
 try {
-  // tslint:disable-next-line:no-var-requires
   mysql = require('mysql');
 } catch (error) {
   //
@@ -19,7 +18,7 @@ export interface IAdapterSettingsMySQL {
   query_timeout?: number;
   replication?: {
     use_master_for_read?: boolean;
-    read_replicas: { host?: string, port?: number, user?: string, password?: string, pool_size?: number }[];
+    read_replicas: Array<{ host?: string; port?: number; user?: string; password?: string; pool_size?: number }>;
   };
 }
 
@@ -30,7 +29,7 @@ import { Connection } from '../connection';
 import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: IColumnPropertyInternal, support_fractional_seconds: boolean) {
@@ -84,7 +83,7 @@ function _processSaveError(error: any) {
     const key = error.message.match(/Column '([^']*)'/);
     return new Error(`'${key && key[1]}' is required`);
   } else {
-    return MySQLAdapter.wrapError('unknown error', error);
+    return AdapterBase.wrapError('unknown error', error);
   }
 }
 
@@ -183,7 +182,6 @@ export class MySQLAdapter extends SQLAdapterBase {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sqls = [];
-    // tslint:disable-next-line:forin
     for (const column in model_class._schema) {
       const property = model_class._schema[column];
       if (property.primary_key) {
@@ -224,7 +222,6 @@ export class MySQLAdapter extends SQLAdapterBase {
     const schema = model_class._schema;
     const table_name = model_class.table_name;
     const columns = [];
-    // tslint:disable-next-line:forin
     for (const column in index.columns) {
       const order = index.columns[column];
       columns.push(`\`${schema[column] && schema[column]._dbname_us || column}\` ${(order === -1 ? 'DESC' : 'ASC')}`);
@@ -343,11 +340,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     const [fields] = this._buildPartialUpdateSet(model, data, values);
     let sql = `UPDATE \`${table_name}\` SET ${fields}`;
     if (conditions.length > 0) {
-      try {
-        sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
-      } catch (error) {
-        throw error;
-      }
+      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
     }
     let result;
     try {
@@ -365,7 +358,6 @@ export class MySQLAdapter extends SQLAdapterBase {
   public async upsert(model: string, data: any, conditions: any, options: any) {
     const table_name = this._connection.models[model].table_name;
     const insert_data: any = {};
-    // tslint:disable-next-line:forin
     for (const key in data) {
       const value = data[key];
       if (value && value.$inc != null) {
@@ -375,7 +367,6 @@ export class MySQLAdapter extends SQLAdapterBase {
       }
     }
     for (const condition of conditions) {
-      // tslint:disable-next-line:forin
       for (const key in condition) {
         const value = condition[key];
         insert_data[key] = value;
@@ -383,7 +374,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     const values: any = [];
     let fields;
-    let places;
+    let places = '';
     [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
     let sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
     [fields] = this._buildPartialUpdateSet(model, data, values);
@@ -398,7 +389,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   /** @internal */
   public async findById(
     model: string, id: any,
-    options: { select?: string[], explain?: boolean, transaction?: Transaction, node?: 'master' | 'read' },
+    options: { select?: string[]; explain?: boolean; transaction?: Transaction; node?: 'master' | 'read' },
   ): Promise<any> {
     id = this._convertValueType(id, this.key_type);
     const select = this._buildSelect(this._connection.models[model], options.select);
@@ -614,6 +605,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   /** @internal */
   public async releaseConnection(adapter_connection: any): Promise<void> {
     adapter_connection.release();
+    return Promise.resolve();
   }
 
   /** @internal */
@@ -637,7 +629,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   /**
    * Exposes mysql module's query method
    */
-  public async query(text: string, values?: any[], options?: { transaction?: Transaction, node?: 'master' | 'read' }) {
+  public async query(text: string, values?: any[], options?: { transaction?: Transaction; node?: 'master' | 'read' }) {
     if (!this._client) {
       await this._connection._promise_connection;
     }
@@ -684,7 +676,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     return queries;
   }
 
-  public getPoolStatus(): { used: number, queued: number } {
+  public getPoolStatus(): { used: number; queued: number } {
     const used = this._client._allConnections.length - this._client._freeConnections.length;
     const queued = this._client._connectionQueue.length;
     return { used, queued };
@@ -821,7 +813,6 @@ export class MySQLAdapter extends SQLAdapterBase {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
     const places: any[] = [];
-    // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
       if (property.primary_key) {
@@ -837,7 +828,6 @@ export class MySQLAdapter extends SQLAdapterBase {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
     const places: any[] = [];
-    // tslint:disable-next-line:forin
     for (const column in data) {
       const value = data[column];
       const property = _.find(schema, (item) => item._dbname_us === column);
@@ -917,19 +907,19 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       // check database existence
       return await client.queryAsync(`USE \`${this._database}\``);
-    } catch (error) {
-      if (error.code === 'ER_BAD_DB_ERROR') {
+    } catch (error1) {
+      if (error1.code === 'ER_BAD_DB_ERROR') {
         try {
           await client.queryAsync(`CREATE DATABASE \`${this._database}\``);
-        } catch (error) {
-          throw MySQLAdapter.wrapError('unknown error', error);
+        } catch (error2) {
+          throw MySQLAdapter.wrapError('unknown error', error2);
         }
         return (await this._createDatabase(client));
       } else {
-        const msg = error.code === 'ER_DBACCESS_DENIED_ERROR'
+        const msg = error1.code === 'ER_DBACCESS_DENIED_ERROR'
           ? `no access right to the database '${this._database}'`
           : 'unknown error';
-        throw MySQLAdapter.wrapError(msg, error);
+        throw MySQLAdapter.wrapError(msg, error1);
       }
     }
   }

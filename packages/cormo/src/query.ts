@@ -21,9 +21,9 @@ interface IQueryOptions {
   one?: boolean;
   explain?: boolean;
   cache?: {
-    key: string,
-    ttl: number,
-    refresh?: boolean,
+    key: string;
+    ttl: number;
+    refresh?: boolean;
   };
   transaction?: Transaction;
   node?: 'master' | 'read';
@@ -118,7 +118,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
   private _current_if: boolean;
   private _options: IQueryOptions;
   private _conditions: any[];
-  private _includes: { column: string, select?: string }[];
+  private _includes: Array<{ column: string; select?: string }>;
   private _id: any;
   private _find_single_id = false;
   private _preserve_order_ids?: any[];
@@ -618,7 +618,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
           select_raw.push(column);
           column += '.';
           schema_columns.forEach((sc) => {
-            if (sc.indexOf(column) === 0) {
+            if (sc.startsWith(column)) {
               select.push(sc);
             }
           });
@@ -642,7 +642,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
       }
       this._options.orders.split(/\s+/).forEach((order) => {
         let asc = true;
-        if (order[0] === '-') {
+        if (order.startsWith('-')) {
           asc = false;
           order = order.slice(1);
         }
@@ -695,7 +695,6 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
   private _validateAndBuildSaveData(errors: any, data: any, updates: any, path: any, object: any) {
     const model = this._model;
     const schema = model._schema;
-    // tslint:disable-next-line:forin
     for (let column in object) {
       const property = schema[path + column];
       if (property) {
@@ -710,7 +709,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
         column += '.';
         const temp: any = {};
         Object.keys(schema).forEach((sc) => {
-          if (sc.indexOf(column) === 0) {
+          if (sc.startsWith(column)) {
             temp[sc.substr(column.length)] = null;
           }
         });
@@ -770,7 +769,7 @@ class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArr
   private _addCondition(condition: any) {
     if (this._options.group_fields) {
       const keys = Object.keys(condition);
-      if (keys.length === 1 && this._options.group_fields.hasOwnProperty(keys[0])) {
+      if (keys.length === 1 && Object.prototype.hasOwnProperty.call(this._options.group_fields, keys[0])) {
         this._options.conditions_of_group.push(condition);
       }
     } else {

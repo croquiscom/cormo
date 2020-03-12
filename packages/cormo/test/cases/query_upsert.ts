@@ -1,5 +1,3 @@
-// tslint:disable:variable-name
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 
@@ -22,8 +20,8 @@ async function _createUserUniques(UserUnique: typeof UserRef, data?: UserRefVO[]
 }
 
 export default function(models: {
-  UserUnique: typeof UserRef,
-  connection: cormo.Connection | null,
+  UserUnique: typeof UserRef;
+  connection: cormo.Connection | null;
 }) {
   it('insert new', async () => {
     await _createUserUniques(models.UserUnique);

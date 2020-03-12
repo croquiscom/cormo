@@ -1,6 +1,3 @@
-// tslint:disable:max-classes-per-file
-// tslint:disable:variable-name
-
 /**
  * CORMO types
  * @module types
@@ -65,7 +62,6 @@ interface ICormoTypesBooleanConstructor {
   (): ICormoTypesBoolean;
 }
 
-// tslint:disable-next-line:variable-name
 const CormoTypesBoolean: ICormoTypesBooleanConstructor = function(this: ICormoTypesBoolean): void {
   if (!(this instanceof CormoTypesBoolean)) {
     return new (CormoTypesBoolean as any)();
@@ -87,7 +83,6 @@ interface ICormoTypesIntegerConstructor {
   (): ICormoTypesInteger;
 }
 
-// tslint:disable-next-line:variable-name
 const CormoTypesInteger: ICormoTypesIntegerConstructor = function(this: ICormoTypesInteger): void {
   if (!(this instanceof CormoTypesInteger)) {
     return new (CormoTypesInteger as any)();
@@ -111,7 +106,6 @@ interface ICormoTypesGeoPointConstructor {
   (): ICormoTypesGeoPoint;
 }
 
-// tslint:disable-next-line:variable-name
 const CormoTypesGeoPoint: ICormoTypesGeoPointConstructor = function(this: ICormoTypesGeoPoint): void {
   if (!(this instanceof CormoTypesGeoPoint)) {
     return new (CormoTypesGeoPoint as any)();
@@ -133,7 +127,6 @@ interface ICormoTypesDateConstructor {
   (): ICormoTypesDate;
 }
 
-// tslint:disable-next-line:variable-name
 const CormoTypesDate: ICormoTypesDateConstructor = function(this: ICormoTypesDate): void {
   if (!(this instanceof CormoTypesDate)) {
     return new (CormoTypesDate as any)();
@@ -158,7 +151,6 @@ interface ICormoTypesObjectConstructor {
   (): ICormoTypesObject;
 }
 
-// tslint:disable-next-line:variable-name
 const CormoTypesObject: ICormoTypesObjectConstructor = function(this: ICormoTypesObject): void {
   if (!(this instanceof CormoTypesObject)) {
     return new (CormoTypesObject as any)();
@@ -180,7 +172,6 @@ interface ICormoTypesRecordIDConstructor {
   (): ICormoTypesRecordID;
 }
 
-// tslint:disable-next-line:variable-name
 const CormoTypesRecordID: ICormoTypesRecordIDConstructor = function(this: ICormoTypesRecordID): void {
   if (!(this instanceof CormoTypesRecordID)) {
     return new (CormoTypesRecordID as any)();
@@ -202,7 +193,6 @@ interface ICormoTypesTextConstructor {
   (): ICormoTypesText;
 }
 
-// tslint:disable-next-line:variable-name
 const CormoTypesText: ICormoTypesTextConstructor = function(this: ICormoTypesText): void {
   if (!(this instanceof CormoTypesText)) {
     return new (CormoTypesText as any)();

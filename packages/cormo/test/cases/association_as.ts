@@ -8,9 +8,9 @@ function _compareComment(a: PostRef, b: PostRef) {
 }
 
 export default function(models: {
-  Computer: typeof ComputerRef,
-  Post: typeof PostRef,
-  User: typeof UserRef,
+  Computer: typeof ComputerRef;
+  Post: typeof PostRef;
+  User: typeof UserRef;
 }) {
   it('get sub objects', async () => {
     const post = await models.Post.create({ title: 'my post', body: 'This is a my post.' });

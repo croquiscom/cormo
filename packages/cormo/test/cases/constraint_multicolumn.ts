@@ -1,5 +1,3 @@
-// tslint:disable:no-unused-expression
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 
@@ -9,7 +7,7 @@ export class VersionRef extends cormo.BaseModel {
 }
 
 export default function(models: {
-  Version: typeof VersionRef,
+  Version: typeof VersionRef;
 }) {
   it('unique', async () => {
     await models.Version.create({ major: 1, minor: 1 });

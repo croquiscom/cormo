@@ -343,7 +343,7 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
         [snake_name + '_list']: {
           args: list_query_args,
           description: `List query for ${camel_name}`,
-          async resolve(source, args, context, info) {
+          resolve(source, args, context, info) {
             return { __args: args };
           },
           type: new GraphQLNonNull(list_type),

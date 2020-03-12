@@ -1,7 +1,6 @@
 let sqlite3: any;
 
 try {
-  // tslint:disable-next-line:no-var-requires
   sqlite3 = require('sqlite3');
 } catch (error) {
   //
@@ -18,7 +17,7 @@ import { Connection } from '../connection';
 import { IColumnPropertyInternal, IIndexProperty } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: IColumnPropertyInternal) {
@@ -61,7 +60,7 @@ function _processSaveError(error: any) {
   } else if (error.code === 'SQLITE_CONSTRAINT') {
     return new Error('duplicated');
   } else {
-    return SQLite3Adapter.wrapError('unknown error', error);
+    return AdapterBase.wrapError('unknown error', error);
   }
 }
 
@@ -116,7 +115,6 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sqls: any[] = [];
-    // tslint:disable-next-line:forin
     for (const column in model_class._schema) {
       const property = model_class._schema[column];
       if (property.primary_key) {
@@ -165,7 +163,6 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const schema = model_class._schema;
     const table_name = model_class.table_name;
     const columns = [];
-    // tslint:disable-next-line:forin
     for (const column in index.columns) {
       const order = index.columns[column];
       columns.push(`"${schema[column] && schema[column]._dbname_us || column}" ${(order === -1 ? 'DESC' : 'ASC')}`);
@@ -303,7 +300,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   /** @internal */
   public async findById(
     model: string, id: any,
-    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+    options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
     const table_name = this._connection.models[model].table_name;
@@ -459,6 +456,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   /** @internal */
   public async releaseConnection(adapter_connection: any): Promise<void> {
     adapter_connection.close();
+    return Promise.resolve();
   }
 
   /** @internal */
@@ -480,14 +478,14 @@ export class SQLite3Adapter extends SQLAdapterBase {
    * Exposes sqlite3 module's run method
    */
   public run(sql: string, ...params: any[]) {
-    return this._client.run.apply(this._client, arguments);
+    return this._client.run(sql, ...params);
   }
 
   /**
    * Exposes sqlite3 module's all method
    */
   public all(sql: string, ...params: any[]) {
-    return this._client.all.apply(this._client, arguments);
+    return this._client.all(sql, ...params);
   }
 
   /** @internal */
@@ -603,7 +601,6 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
     const places: any[] = [];
-    // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
       if (property.primary_key) {
@@ -619,7 +616,6 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
     const places: any[] = [];
-    // tslint:disable-next-line:forin
     for (const column in data) {
       const value = data[column];
       const property = _.find(schema, (item) => item._dbname_us === column);

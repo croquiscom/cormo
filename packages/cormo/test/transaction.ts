@@ -1,5 +1,3 @@
-// tslint:disable:max-classes-per-file
-
 import * as cormo from '..';
 import { UserExtraRef, UserRef } from './cases/transaction';
 import cases_bind from './cases/transaction_bind';

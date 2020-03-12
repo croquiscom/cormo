@@ -1,5 +1,3 @@
-// tslint:disable:max-classes-per-file no-unused-expression
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 
@@ -11,8 +9,8 @@ export default function(db: any, db_config: any) {
   });
 
   afterEach(async () => {
-    await connection!.dropAllModels();
-    connection!.close();
+    await connection.dropAllModels();
+    connection.close();
   });
 
   it('define a model, create an instance and fetch it', async () => {

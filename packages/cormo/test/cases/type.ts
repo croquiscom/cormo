@@ -1,5 +1,3 @@
-// tslint:disable:no-unused-expression
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 
@@ -16,8 +14,8 @@ export class Type extends cormo.BaseModel {
 }
 
 export default function(models: {
-  Type: typeof Type,
-  connection: cormo.Connection | null,
+  Type: typeof Type;
+  connection: cormo.Connection | null;
 }) {
   it('number', async () => {
     const data = [['30', 30], ['12.8', 12.8], ['8a', null], ['abc', null]];

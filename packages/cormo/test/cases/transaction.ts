@@ -1,5 +1,3 @@
-// tslint:disable:no-unused-expression variable-name max-classes-per-file
-
 import * as cormo from '../..';
 
 export class UserRef extends cormo.BaseModel {

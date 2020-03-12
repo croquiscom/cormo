@@ -69,7 +69,7 @@ export interface IColumnPropertyInternal extends IColumnProperty {
 /** @internal */
 export interface IIndexProperty {
   columns: { [column: string]: 1 | -1 };
-  options: { name?: string, required?: boolean, unique?: boolean };
+  options: { name?: string; required?: boolean; unique?: boolean };
 }
 
 export interface IColumnNestedProperty {
@@ -119,7 +119,7 @@ class BaseModel {
 
   public static _schema: IModelSchemaInternal;
 
-  public static _object_column_classes: { column: string, klass: any }[];
+  public static _object_column_classes: Array<{ column: string; klass: any }>;
 
   /** @internal */
   public static _indexes: IIndexProperty[];
@@ -140,10 +140,8 @@ class BaseModel {
    * Returns a new model class extending BaseModel
    */
   public static newModel(connection: Connection, name: string, schema: IModelSchema): typeof BaseModel {
-    // tslint:disable-next-line:variable-name max-classes-per-file
     const NewModel = class extends BaseModel { };
     NewModel.connection(connection, name);
-    // tslint:disable-next-line:forin
     for (const column_name in schema) {
       const property = schema[column_name];
       NewModel.column(column_name, property);
@@ -157,7 +155,7 @@ class BaseModel {
    * If this methods was not called explicitly, this model will use Connection.defaultConnection
    */
   public static connection(connection: Connection, name?: string) {
-    if (this.hasOwnProperty('_connection')) {
+    if (Object.prototype.hasOwnProperty.call(this, '_connection')) {
       throw new Error('Model::connection was called twice');
     }
     if (!name) {
@@ -181,7 +179,7 @@ class BaseModel {
   }
 
   public static _checkConnection() {
-    if (this.hasOwnProperty('_connection')) {
+    if (Object.prototype.hasOwnProperty.call(this, '_connection')) {
       return;
     }
     if (Connection.defaultConnection == null) {
@@ -205,14 +203,13 @@ class BaseModel {
     this._checkConnection();
     // nested path
     if (_.isPlainObject(type_or_property) && (!type_or_property.type || type_or_property.type.type)) {
-      // tslint:disable-next-line:forin
       for (const subcolumn in type_or_property) {
         const subproperty = type_or_property[subcolumn];
         this.column(path + '.' + subcolumn, subproperty);
       }
       return;
     }
-    if (this._schema.hasOwnProperty(path)) {
+    if (Object.prototype.hasOwnProperty.call(this._schema, path)) {
       // if using association, a column may be defined more than twice (by hasMany and belongsTo, for example)
       // overwrite some properties if given later
       if (type_or_property && type_or_property.required) {
@@ -270,7 +267,7 @@ class BaseModel {
   /**
    * Adds an index to this model
    */
-  public static index(columns: { [column: string]: 1 | -1 }, options: { name?: string, unique?: boolean } = {}) {
+  public static index(columns: { [column: string]: 1 | -1 }, options: { name?: string; unique?: boolean } = {}) {
     this._checkConnection();
     this._indexes.push({ columns, options });
     this._connection._schema_changed = true;
@@ -364,7 +361,6 @@ class BaseModel {
         [obj, last] = util.getLeafOfPath(instance, path);
       }
       let has_non_null = false;
-      // tslint:disable-next-line:forin
       for (const key in obj[last]) {
         const value = obj[last][key];
         if (value != null) {
@@ -513,7 +509,7 @@ class BaseModel {
   public static async create<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     data?: ModelValueObject<M>,
-    options?: { transaction?: Transaction, skip_log?: boolean },
+    options?: { transaction?: Transaction; skip_log?: boolean },
   ): Promise<M> {
     await this._checkReady();
     return await this.build<M>(data).save(options);
@@ -524,7 +520,7 @@ class BaseModel {
    */
   public static async createBulk<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
-    data?: ModelValueObject<M>[],
+    data?: Array<ModelValueObject<M>>,
     options?: { transaction?: Transaction },
   ): Promise<M[]> {
     await this._checkReady();
@@ -743,6 +739,7 @@ class BaseModel {
   ) {
     let obj: any;
     let last: any;
+    // eslint-disable-next-line prefer-const
     [obj, last] = util.getLeafOfPath(data, property._parts, false);
     const value = obj && obj[last];
     if (value != null) {
@@ -795,10 +792,10 @@ class BaseModel {
   private static _validators: any[];
 
   private static _callbacks_map: {
-    [key in ModelCallbackName]?: {
-      type: ModelCallbackType,
-      method: ModelCallbackMethod,
-    }[];
+    [key in ModelCallbackName]?: Array<{
+      type: ModelCallbackType;
+      method: ModelCallbackMethod;
+    }>;
   };
 
   /**
@@ -855,7 +852,6 @@ class BaseModel {
       case types.Integer:
         value = Number(value);
         // value>>0 checkes integer and 32bit
-        // tslint:disable-next-line:no-bitwise
         if (isNaN(value) || (value >> 0) !== value) {
           throw new Error(`'${column}' is not an integer`);
         }
@@ -905,7 +901,6 @@ class BaseModel {
         this._intermediates[path] = {};
         this._defineProperty(obj, last, path, false);
       }
-      // tslint:disable-next-line:forin
       for (const column in schema) {
         const property = schema[column];
         if (property.primary_key) {
@@ -931,9 +926,8 @@ class BaseModel {
 
     if (arguments.length === 4) {
       // if this has 4 arguments, this is called from adapter with database record data
-      const id = arguments[1];
-      const selected_columns = arguments[2];
-      const selected_columns_raw = arguments[3];
+      // eslint-disable-next-line prefer-rest-params
+      const [id, selected_columns, selected_columns_raw] = [arguments[1], arguments[2], arguments[3]];
       adapter.setValuesFromDB(this, data, schema, selected_columns);
       ctor._collapseNestedNulls(this, selected_columns_raw, ctor.dirty_tracking ? this._intermediates : undefined);
       Object.defineProperty(this, 'id', {
@@ -950,7 +944,6 @@ class BaseModel {
       });
       this._runCallbacks('find', 'after');
     } else {
-      // tslint:disable-next-line:forin
       for (const column in schema) {
         const property = schema[column];
         if (property.primary_key) {
@@ -992,7 +985,7 @@ class BaseModel {
    * Returns the current value of the column of the given path
    */
   public get(path: any) {
-    if (this._intermediates.hasOwnProperty(path)) {
+    if (Object.prototype.hasOwnProperty.call(this._intermediates, path)) {
       return this._intermediates[path];
     } else {
       return util.getPropertyOfPath(this._attributes, path);
@@ -1010,13 +1003,11 @@ class BaseModel {
    * Changes the value of the column of the given path
    */
   public set(path: any, value: any) {
-    if (this._intermediates.hasOwnProperty(path)) {
+    if (Object.prototype.hasOwnProperty.call(this._intermediates, path)) {
       const obj = this._intermediates[path];
-      // tslint:disable-next-line:forin
       for (const k in obj) {
         obj[k] = undefined;
       }
-      // tslint:disable-next-line:forin
       for (const k in value) {
         obj[k] = value[k];
       }
@@ -1026,7 +1017,7 @@ class BaseModel {
       if (prev_value === value) {
         return;
       }
-      if (!this._prev_attributes.hasOwnProperty(path)) {
+      if (!Object.prototype.hasOwnProperty.call(this._prev_attributes, path)) {
         this._prev_attributes[path] = prev_value;
       }
       let [obj, last] = util.getLeafOfPath(this, parts);
@@ -1044,7 +1035,6 @@ class BaseModel {
    * Resets all changes
    */
   public reset() {
-    // tslint:disable-next-line:forin
     for (const path in this._prev_attributes) {
       const value = this._prev_attributes[path];
       this.set(path, value);
@@ -1084,7 +1074,7 @@ class BaseModel {
    * Saves data to the database
    */
   public async save(
-    options: { transaction?: Transaction, skip_log?: boolean, validate?: boolean } = {},
+    options: { transaction?: Transaction; skip_log?: boolean; validate?: boolean } = {},
   ): Promise<this> {
     const ctor = this.constructor as typeof BaseModel;
     await ctor._checkReady();
@@ -1092,7 +1082,7 @@ class BaseModel {
       this._applyDefaultValues();
     }
     if (options.validate !== false) {
-      await this.validate();
+      this.validate();
       return await this.save({ ...options, validate: false });
     }
     this._runCallbacks('save', 'before');
@@ -1124,7 +1114,6 @@ class BaseModel {
     const errors: any[] = [];
     const ctor = this.constructor as typeof BaseModel;
     const schema = ctor._schema;
-    // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
       if (property.primary_key) {
@@ -1182,7 +1171,6 @@ class BaseModel {
     const data: any = {};
     const ctor = this.constructor as typeof BaseModel;
     const schema = ctor._schema;
-    // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
       if (property.primary_key) {
@@ -1196,7 +1184,7 @@ class BaseModel {
     return data;
   }
 
-  private async _create(options: { transaction?: Transaction, skip_log?: boolean }) {
+  private async _create(options: { transaction?: Transaction; skip_log?: boolean }) {
     const data = this._buildSaveData();
     const ctor = this.constructor as typeof BaseModel;
     if (!(options && options.skip_log)) {
@@ -1232,7 +1220,7 @@ class BaseModel {
     return this._prev_attributes = {};
   }
 
-  private async _update(options: { transaction?: Transaction, skip_log?: boolean }) {
+  private async _update(options: { transaction?: Transaction; skip_log?: boolean }) {
     const ctor = this.constructor as typeof BaseModel;
     if (ctor.dirty_tracking) {
       // update changed values only
@@ -1242,7 +1230,6 @@ class BaseModel {
       const data = {};
       const adapter = ctor._adapter;
       const schema = ctor._schema;
-      // tslint:disable-next-line:forin
       for (const path in this._prev_attributes) {
         ctor._buildSaveDataColumn(data, this._attributes, path, schema[path], true);
       }
@@ -1266,7 +1253,6 @@ class BaseModel {
     const ctor = this.constructor as typeof BaseModel;
     // apply default values
     const schema = ctor._schema;
-    // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
       if (property.primary_key) {

@@ -1,7 +1,4 @@
-// tslint:disable:no-unused-expression
-
 import { expect } from 'chai';
-import * as cormo from '../..';
 import { ComputerRef, PostRef, UserRef } from './association';
 
 function _comparePost(a: PostRef, b: PostRef) {
@@ -11,9 +8,9 @@ function _comparePost(a: PostRef, b: PostRef) {
 }
 
 export default function(models: {
-  Computer: typeof ComputerRef,
-  Post: typeof PostRef,
-  User: typeof UserRef,
+  Computer: typeof ComputerRef;
+  Post: typeof PostRef;
+  User: typeof UserRef;
 }) {
   it('collection_accessor.build on a new object', async () => {
     // create two new objects

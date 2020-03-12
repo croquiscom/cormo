@@ -1,14 +1,12 @@
-// tslint:disable:variable-name
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 
 import { UserExtraRef, UserRef, UserRefVO } from './transaction';
 
 export default function(models: {
-  User: typeof UserRef,
-  UserExtra: typeof UserExtraRef,
-  connection: cormo.Connection | null,
+  User: typeof UserRef;
+  UserExtra: typeof UserExtraRef;
+  connection: cormo.Connection | null;
 }) {
   it('transaction success', async () => {
     const [user1_id, user2_id] = await models.connection!.transaction<[number, number], UserRef>(
@@ -45,7 +43,7 @@ export default function(models: {
   it('can not run command with finished transaction', async () => {
     let TxUser: any;
     try {
-      await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (_TxUser) => {
+      await models.connection!.transaction<void, UserRef>({ models: [models.User] }, (_TxUser) => {
         TxUser = _TxUser;
         throw new Error('force fail');
       });
@@ -245,7 +243,7 @@ export default function(models: {
     it('Model::save', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
-          const user = await new TxUser();
+          const user = new TxUser();
           user.name = 'John Doe';
           user.age = 27;
           await user.save();

@@ -1,5 +1,3 @@
-// tslint:disable:no-unused-expression variable-name
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 
@@ -26,8 +24,8 @@ async function _createUsers(User: typeof UserRef, data?: UserRefVO[]) {
 }
 
 export default function(models: {
-  User: typeof UserRef,
-  connection: cormo.Connection | null,
+  User: typeof UserRef;
+  connection: cormo.Connection | null;
 }) {
   it('update all', async () => {
     await _createUsers(models.User);

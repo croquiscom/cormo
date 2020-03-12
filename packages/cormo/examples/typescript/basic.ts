@@ -1,5 +1,3 @@
-// tslint:disable:max-classes-per-file
-
 import * as util from 'util';
 import * as cormo from '../../src';
 
@@ -58,13 +56,13 @@ async function create2() {
 }
 
 async function save() {
-  const user = await new User({ name: { first: 'Alice', last: 'Jackson' } });
-  user.save();
+  const user = new User({ name: { first: 'Alice', last: 'Jackson' } });
+  await user.save();
   console.log(user.name);
 }
 
 async function build() {
-  const user = await User.build({ name: { first: 'Gina', last: 'Baker' } });
+  const user = User.build({ name: { first: 'Gina', last: 'Baker' } });
   await user.save();
   console.log(user.name);
 }
@@ -89,7 +87,6 @@ async function count() {
 async function transaction() {
   console.log('count before transaction =', await User.count());
   try {
-    // tslint:disable-next-line:variable-name
     await connection.transaction<void, User>({ models: [User] }, async (TxUser) => {
       const user = await TxUser.create({ name: { first: 'Daniel', last: 'Smith' }, age: 8 });
       console.log(user.name, user.age);

@@ -23,7 +23,7 @@ _dbs.forEach((db) => {
       await models.connection!.dropAllModels();
     });
 
-    after(async () => {
+    after(() => {
       models.connection!.close();
       models.connection = null;
       _g.connection = null;

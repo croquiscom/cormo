@@ -1,5 +1,3 @@
-// tslint:disable:max-classes-per-file max-line-length
-
 import { expect } from 'chai';
 import * as cormo from 'cormo';
 import { graphql, GraphQLSchema, printSchema } from 'graphql';
@@ -21,9 +19,7 @@ class PostRef extends cormo.BaseModel {
 
 describe('createDefaultCrudSchema (association)', () => {
   let connection: cormo.Connection;
-  // tslint:disable-next-line:variable-name
   let UserModel: typeof UserRef;
-  // tslint:disable-next-line:variable-name
   let PostModel: typeof PostRef;
   let schema: GraphQLSchema;
 
@@ -62,7 +58,7 @@ describe('createDefaultCrudSchema (association)', () => {
   after(async () => {
     await UserModel.drop();
     await PostModel.drop();
-    await connection.close();
+    connection.close();
   });
 
   it('schema', () => {

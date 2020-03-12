@@ -1,5 +1,4 @@
 "use strict";
-// tslint:disable:max-classes-per-file
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -15,7 +14,7 @@ let redis;
 const events_1 = require("events");
 const lodash_1 = __importDefault(require("lodash"));
 const util_1 = require("util");
-// tslint:disable-next-line:no-var-requires variable-name
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
 const mongodb_1 = require("../adapters/mongodb");
 const mysql_1 = require("../adapters/mysql");
@@ -128,14 +127,12 @@ class Connection extends events_1.EventEmitter {
         this._promise_schema_applied = this._promise_connection.then(async () => {
             try {
                 const current = await this._adapter.getSchemas();
-                // tslint:disable-next-line:forin
                 for (const model in this.models) {
                     const modelClass = this.models[model];
                     const currentTable = current.tables && current.tables[modelClass.table_name];
                     if (!currentTable || currentTable === 'NO SCHEMA') {
                         continue;
                     }
-                    // tslint:disable-next-line:forin
                     for (const column in modelClass._schema) {
                         const property = modelClass._schema[column];
                         if (!currentTable[property._dbname_us]) {
@@ -146,7 +143,6 @@ class Connection extends events_1.EventEmitter {
                         }
                     }
                 }
-                // tslint:disable-next-line:forin
                 for (const model in this.models) {
                     const modelClass = this.models[model];
                     if (!current.tables[modelClass.table_name]) {
@@ -156,7 +152,6 @@ class Connection extends events_1.EventEmitter {
                         await this._adapter.createTable(model);
                     }
                 }
-                // tslint:disable-next-line:forin
                 for (const model_name in this.models) {
                     const modelClass = this.models[model_name];
                     for (const index of modelClass._indexes) {
@@ -169,7 +164,6 @@ class Connection extends events_1.EventEmitter {
                         }
                     }
                 }
-                // tslint:disable-next-line:forin
                 for (const model in this.models) {
                     const modelClass = this.models[model];
                     for (const integrity of modelClass._integrities) {
@@ -217,14 +211,12 @@ class Connection extends events_1.EventEmitter {
         this._checkArchive();
         await this._promise_connection;
         const current = await this._adapter.getSchemas();
-        // tslint:disable-next-line:forin
         for (const model in this.models) {
             const modelClass = this.models[model];
             const currentTable = current.tables && current.tables[modelClass.table_name];
             if (!currentTable || currentTable === 'NO SCHEMA') {
                 continue;
             }
-            // tslint:disable-next-line:forin
             for (const column in modelClass._schema) {
                 const property = modelClass._schema[column];
                 if (!currentTable[property._dbname_us]) {
@@ -232,14 +224,12 @@ class Connection extends events_1.EventEmitter {
                 }
             }
         }
-        // tslint:disable-next-line:forin
         for (const model in this.models) {
             const modelClass = this.models[model];
             if (!current.tables[modelClass.table_name]) {
                 return true;
             }
         }
-        // tslint:disable-next-line:forin
         for (const model in this.models) {
             const modelClass = this.models[model];
             for (const index of modelClass._indexes) {
@@ -249,7 +239,6 @@ class Connection extends events_1.EventEmitter {
                 }
             }
         }
-        // tslint:disable-next-line:forin
         for (const model in this.models) {
             const modelClass = this.models[model];
             for (const integrity of modelClass._integrities) {
@@ -600,7 +589,6 @@ class Connection extends events_1.EventEmitter {
         }
     }
     _initializeModels() {
-        // tslint:disable-next-line:forin
         for (const model in this.models) {
             const modelClass = this.models[model];
             if (modelClass.initialize && !modelClass._initialize_called) {
@@ -611,11 +599,10 @@ class Connection extends events_1.EventEmitter {
         }
     }
     _checkArchive() {
-        // tslint:disable-next-line:forin
         for (const model in this.models) {
             const modelClass = this.models[model];
-            if (modelClass.archive && !modelClass._connection.models.hasOwnProperty('_Archive')) {
-                // tslint:disable-next-line:max-classes-per-file
+            if (modelClass.archive && !Object.prototype.hasOwnProperty.call(modelClass._connection.models, '_Archive')) {
+                // eslint-disable-next-line @typescript-eslint/class-name-casing
                 const _Archive = class extends model_1.BaseModel {
                 };
                 _Archive.connection(modelClass._connection);
@@ -627,11 +614,9 @@ class Connection extends events_1.EventEmitter {
     }
     _getModelNamesByAssociationOrder() {
         const t = new Toposort();
-        // tslint:disable-next-line:forin
         for (const model in this.models) {
             const modelClass = this.models[model];
             t.add(model, []);
-            // tslint:disable-next-line:forin
             for (const name in modelClass._associations) {
                 const association = modelClass._associations[name];
                 // ignore association with models of other connection
@@ -697,10 +682,9 @@ class Connection extends events_1.EventEmitter {
         if (!this.models[model]) {
             return;
         }
-        // tslint:disable-next-line:forin
         for (const column in this.models[model]._schema) {
             const property = this.models[model]._schema[column];
-            if (property.record_id && data.hasOwnProperty(column)) {
+            if (property.record_id && Object.prototype.hasOwnProperty.call(data, column)) {
                 if (property.array && Array.isArray(data[column])) {
                     data[column] = data[column].map((value) => {
                         const record = id_to_record_map[value];
@@ -750,7 +734,7 @@ class Connection extends events_1.EventEmitter {
             get() {
                 let getter;
                 // getter must be created per instance due to __scope
-                if (!this.hasOwnProperty(columnGetter)) {
+                if (!Object.prototype.hasOwnProperty.call(this, columnGetter)) {
                     getter = async (reload) => {
                         // this is getter.__scope in normal case (this_model_instance.target_model_name()),
                         // but use getter.__scope for safety
@@ -812,7 +796,7 @@ class Connection extends events_1.EventEmitter {
             get() {
                 let getter;
                 // getter must be created per instance due to __scope
-                if (!this.hasOwnProperty(columnGetter)) {
+                if (!Object.prototype.hasOwnProperty.call(this, columnGetter)) {
                     getter = async (reload) => {
                         // this is getter.__scope in normal case (this_model_instance.target_model_name()),
                         // but use getter.__scope for safety
@@ -865,7 +849,7 @@ class Connection extends events_1.EventEmitter {
             get() {
                 let getter;
                 // getter must be created per instance due to __scope
-                if (!this.hasOwnProperty(columnGetter)) {
+                if (!Object.prototype.hasOwnProperty.call(this, columnGetter)) {
                     getter = async (reload) => {
                         // this is getter.__scope in normal case (this_model_instance.target_model_name()),
                         // but use getter.__scope for safety
@@ -921,7 +905,7 @@ class Connection extends events_1.EventEmitter {
                     });
                 });
                 records.forEach((record) => {
-                    if (!record.hasOwnProperty(column)) {
+                    if (!Object.prototype.hasOwnProperty.call(record, column)) {
                         if (options.lean) {
                             record[column] = null;
                         }
@@ -961,7 +945,7 @@ class Connection extends events_1.EventEmitter {
                     if (error && error.message !== 'not found') {
                         throw error;
                     }
-                    if (!records.hasOwnProperty(column)) {
+                    if (!Object.prototype.hasOwnProperty.call(records, column)) {
                         if (options.lean) {
                             records[column] = null;
                         }
@@ -971,7 +955,7 @@ class Connection extends events_1.EventEmitter {
                     }
                 }
             }
-            else if (!records.hasOwnProperty(column)) {
+            else if (!Object.prototype.hasOwnProperty.call(records, column)) {
                 if (options.lean) {
                     records[column] = null;
                 }

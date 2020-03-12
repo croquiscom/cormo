@@ -86,7 +86,7 @@ abstract class AdapterBase {
 
   /** @internal */
   public async connect(settings: {}) {
-    return;
+    return Promise.resolve();
   }
 
   /**
@@ -96,7 +96,7 @@ abstract class AdapterBase {
    * @internal
    */
   public async getSchemas(): Promise<ISchemas> {
-    return { tables: {} };
+    return Promise.resolve({ tables: {} });
   }
 
   /**
@@ -106,7 +106,7 @@ abstract class AdapterBase {
    * @internal
    */
   public async createTable(model: string) {
-    return;
+    return Promise.resolve();
   }
 
   /** Adds a column to a table
@@ -115,7 +115,7 @@ abstract class AdapterBase {
    * @internal
    */
   public async addColumn(model: string, column_property: object) {
-    return;
+    return Promise.resolve();
   }
 
   /** Creates an index.
@@ -124,7 +124,7 @@ abstract class AdapterBase {
    * @internal
    */
   public async createIndex(model_name: string, index: IIndexProperty) {
-    return;
+    return Promise.resolve();
   }
 
   /** Creates a foreign key.
@@ -133,7 +133,7 @@ abstract class AdapterBase {
    * @internal
    */
   public async createForeignKey(model: string, column: string, type: string, references: {}) {
-    return;
+    return Promise.resolve();
   }
 
   /**
@@ -142,8 +142,8 @@ abstract class AdapterBase {
    * @see BaseModel.drop
    * @internal
    */
-  public async drop(model: string) {
-    throw new Error('not implemented');
+  public async drop(model: string): Promise<void> {
+    return Promise.reject(new Error('not implemented'));
   }
 
   /** @internal */
@@ -223,7 +223,7 @@ abstract class AdapterBase {
    */
   public abstract async findById(
     model: string, id: any,
-    options: { select?: string[], explain?: boolean, transaction?: Transaction, node?: 'master' | 'read' },
+    options: { select?: string[]; explain?: boolean; transaction?: Transaction; node?: 'master' | 'read' },
   ): Promise<any>;
 
   /**
@@ -330,7 +330,6 @@ abstract class AdapterBase {
         }
       }
     }
-    // tslint:disable-next-line:forin
     for (const field in group_fields) {
       const expr = group_fields[field];
       const op = Object.keys(expr)[0];

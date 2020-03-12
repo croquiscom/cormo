@@ -1,5 +1,3 @@
-// tslint:disable:no-unused-expression
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 
@@ -21,7 +19,7 @@ function _getInvalidID(id: number | string) {
 }
 
 export default function(models: {
-  User: typeof User,
+  User: typeof User;
 }) {
   it('create one', () => {
     const user = new models.User();

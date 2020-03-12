@@ -1,10 +1,8 @@
-// tslint:disable:variable-name
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 
 export default function(models: {
-  connection: cormo.Connection | null,
+  connection: cormo.Connection | null;
 }) {
   let User: typeof cormo.BaseModel;
   let Post: typeof cormo.BaseModel;

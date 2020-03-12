@@ -1,7 +1,6 @@
 let redis: any;
 
 try {
-  // tslint:disable-next-line:no-var-requires
   redis = require('redis');
 } catch (error) {
   //
@@ -151,13 +150,13 @@ export class RedisAdapter extends AdapterBase {
 
   /** @internal */
   public async upsert(model: string, data: any, conditions: any, options: any): Promise<void> {
-    throw new Error('not implemented');
+    return Promise.reject(new Error('not implemented'));
   }
 
   /** @internal */
   public async findById(
     model: string, id: any,
-    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+    options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
     let result;
     try {
@@ -197,7 +196,7 @@ export class RedisAdapter extends AdapterBase {
 
   /** @internal */
   public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
-    throw new Error('not implemented');
+    return Promise.reject(new Error('not implemented'));
   }
 
   /** @internal */

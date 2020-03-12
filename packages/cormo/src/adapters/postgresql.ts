@@ -1,16 +1,13 @@
 let pg: any;
-// tslint:disable-next-line:variable-name
 let QueryStream: any;
 
 try {
-  // tslint:disable-next-line:no-var-requires
   pg = require('pg');
 } catch (error) {
   //
 }
 
 try {
-  // tslint:disable-next-line:no-var-requires
   QueryStream = require('pg-query-stream');
 } catch (error) { /**/ }
 
@@ -28,7 +25,7 @@ import { Connection } from '../connection';
 import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: IColumnPropertyInternal) {
@@ -72,10 +69,10 @@ function _processSaveError(table_name: any, error: any) {
     return new Error('table does not exist');
   } else if (error.code === '23505') {
     let column = '';
-    let key = error.message.match(/unique constraint \"(.*)\"/);
+    let key = error.message.match(/unique constraint "(.*)"/);
     if (key != null) {
       column = key[1];
-      key = column.match(new RegExp(`${table_name}_([^']*)_key`));
+      key = new RegExp(`${table_name}_([^']*)_key`).exec(column);
       if (key != null) {
         column = key[1];
       }
@@ -83,7 +80,7 @@ function _processSaveError(table_name: any, error: any) {
     }
     return new Error('duplicated' + column);
   } else {
-    return PostgreSQLAdapter.wrapError('unknown error', error);
+    return AdapterBase.wrapError('unknown error', error);
   }
 }
 
@@ -144,7 +141,6 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sqls = [];
-    // tslint:disable-next-line:forin
     for (const column in model_class._schema) {
       const property = model_class._schema[column];
       if (property.primary_key) {
@@ -183,7 +179,6 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const schema = model_class._schema;
     const table_name = model_class.table_name;
     const columns = [];
-    // tslint:disable-next-line:forin
     for (const column in index.columns) {
       const order = index.columns[column];
       columns.push(`"${schema[column] && schema[column]._dbname_us || column}" ${(order === -1 ? 'DESC' : 'ASC')}`);
@@ -302,11 +297,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const [fields] = this._buildPartialUpdateSet(model, data, values);
     let sql = `UPDATE "${table_name}" SET ${fields}`;
     if (conditions.length > 0) {
-      try {
-        sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
-      } catch (error) {
-        throw error;
-      }
+      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
     }
     let result;
     try {
@@ -320,7 +311,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   /** @internal */
   public async findById(
     model: string, id: any,
-    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+    options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
     const table_name = this._connection.models[model].table_name;
@@ -490,6 +481,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   /** @internal */
   public async releaseConnection(adapter_connection: any): Promise<void> {
     adapter_connection.release();
+    return Promise.resolve();
   }
 
   /** @internal */
@@ -676,7 +668,6 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
     const places: any[] = [];
-    // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
       if (property.primary_key) {
@@ -692,7 +683,6 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const schema = this._connection.models[model]._schema;
     const fields: any[] = [];
     const places: any[] = [];
-    // tslint:disable-next-line:forin
     for (const column in data) {
       const value = data[column];
       const property = _.find(schema, (item) => item._dbname_us === column);

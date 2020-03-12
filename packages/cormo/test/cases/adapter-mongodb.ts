@@ -1,11 +1,9 @@
-// tslint:disable:max-classes-per-file
-
 import { expect } from 'chai';
 import { ObjectId } from 'mongodb';
 import * as cormo from '../..';
 
 export default function(models: {
-  connection: cormo.Connection<cormo.MongoDBAdapter> | null,
+  connection: cormo.Connection<cormo.MongoDBAdapter> | null;
 }) {
   describe('issues', () => {
     it('insert more than 1000', async () => {

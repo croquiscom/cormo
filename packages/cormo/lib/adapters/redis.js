@@ -145,7 +145,7 @@ class RedisAdapter extends base_1.AdapterBase {
     }
     /** @internal */
     async upsert(model, data, conditions, options) {
-        throw new Error('not implemented');
+        return Promise.reject(new Error('not implemented'));
     }
     /** @internal */
     async findById(model, id, options) {
@@ -186,7 +186,7 @@ class RedisAdapter extends base_1.AdapterBase {
     }
     /** @internal */
     async count(model, conditions, options) {
-        throw new Error('not implemented');
+        return Promise.reject(new Error('not implemented'));
     }
     /** @internal */
     async delete(model, conditions, options) {

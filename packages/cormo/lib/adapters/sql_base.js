@@ -36,7 +36,6 @@ class SQLAdapterBase extends base_1.AdapterBase {
             return;
         }
         const insert_data = {};
-        // tslint:disable-next-line:forin
         for (const key in data) {
             const value = data[key];
             if (value && value.$inc != null) {
@@ -47,7 +46,6 @@ class SQLAdapterBase extends base_1.AdapterBase {
             }
         }
         for (const condition of conditions) {
-            // tslint:disable-next-line:forin
             for (const key in condition) {
                 const value = condition[key];
                 insert_data[key] = value;
@@ -321,7 +319,6 @@ class SQLAdapterBase extends base_1.AdapterBase {
                 selects.push(`${escape_ch}${column}${escape_ch}`);
             }
         }
-        // tslint:disable-next-line:forin
         for (const field in group_fields) {
             const expr = group_fields[field];
             selects.push(`${this._buildGroupExpr(model_class._schema, expr)} as ${field}`);

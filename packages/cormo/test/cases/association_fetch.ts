@@ -1,5 +1,3 @@
-// tslint:disable:no-unused-expression variable-name
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 import { ComputerRef, PostRef, UserRef } from './association';
@@ -49,10 +47,10 @@ function _checkUser(
 }
 
 export default function(models: {
-  connection: cormo.Connection | null,
-  Computer: typeof ComputerRef,
-  Post: typeof PostRef,
-  User: typeof UserRef,
+  connection: cormo.Connection | null;
+  Computer: typeof ComputerRef;
+  Post: typeof PostRef;
+  User: typeof UserRef;
 }) {
   let preset_posts: PostRef[];
   let preset_users: UserRef[];

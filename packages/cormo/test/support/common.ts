@@ -83,7 +83,8 @@ if (process.env.TRAVIS === 'true') {
   };
 }
 
-async function deleteAllRecords(models: typeof cormo.BaseModel[]) {
+async function deleteAllRecords(models: Array<typeof cormo.BaseModel>) {
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   await _g.connection!.applySchemas();
   for (const model of models) {
     if (!model) {

@@ -346,7 +346,7 @@ function createDefaultCrudSchema(model_class, options = {}) {
                 [snake_name + '_list']: {
                     args: list_query_args,
                     description: `List query for ${camel_name}`,
-                    async resolve(source, args, context, info) {
+                    resolve(source, args, context, info) {
                         return { __args: args };
                     },
                     type: new graphql_1.GraphQLNonNull(list_type),

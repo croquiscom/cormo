@@ -19,7 +19,7 @@ class Command {
             return;
         }
         try {
-            // tslint:disable-next-line:variable-name
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const CommandClass = require(path_1.default.resolve(__dirname, '..', 'command', command));
             const runner = new CommandClass(argv);
             return runner.run();

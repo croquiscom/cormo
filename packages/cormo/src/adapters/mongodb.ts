@@ -1,9 +1,6 @@
-// tslint:disable:max-classes-per-file
-
 let mongodb: any;
 
 try {
-  // tslint:disable-next-line:no-var-requires
   mongodb = require('mongodb');
 } catch (error) {
   //
@@ -66,7 +63,7 @@ function _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: a
       case '$gt':
       case '$lt':
       case '$gte':
-      case '$lte':
+      case '$lte': {
         let sub_value = value[sub_key];
         if (is_objectid) {
           sub_value = _convertValueToObjectID(sub_value, key);
@@ -81,6 +78,7 @@ function _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: a
           key = '_id';
         }
         return _.zipObject([key], [value]);
+      }
       case '$contains':
         if (Array.isArray(value[sub_key])) {
           value = value[sub_key].map((v: any) => new RegExp(v, 'i'));
@@ -168,9 +166,7 @@ function _buildWhere(schema: IModelSchemaInternal, conditions: any, conjunction 
       const before_count = _.reduce(subs, (memo, sub) => {
         return memo + Object.keys(sub).length;
       }, 0);
-      subs.unshift({});
-      const obj: any = _.extend.apply(_, subs);
-      subs.shift();
+      const obj: any = _.extend({}, ...subs);
       const keys = Object.keys(obj);
       const after_count = keys.length;
       if (before_count === after_count && !_.some(keys, (key) => key.substr(0, 1) === '$')) {
@@ -208,7 +204,6 @@ function _buildGroupFields(model_class: typeof BaseModel, group_by: any, group_f
   } else {
     group._id = null;
   }
-  // tslint:disable-next-line:forin
   for (const field in group_fields) {
     const expr = group_fields[field];
     group[field] = _buildGroupExpr(model_class._schema, expr);
@@ -224,7 +219,7 @@ function _processSaveError(error: any) {
     }
     return new Error('duplicated ' + (key && key[1]));
   } else {
-    return MongoDBAdapter.wrapError('unknown error', error);
+    return AdapterBase.wrapError('unknown error', error);
   }
 }
 
@@ -291,7 +286,6 @@ export class MongoDBAdapter extends AdapterBase {
     await this._db.createCollection(_getMongoDBColName(model_class.table_name));
 
     const indexes: any[] = [];
-    // tslint:disable-next-line:forin
     for (const column in schema) {
       const property = schema[column];
       if (property.type_class === types.GeoPoint) {
@@ -391,8 +385,8 @@ export class MongoDBAdapter extends AdapterBase {
     let result: any;
     try {
       result = (await this._collection(model).insertMany(data, { safe: true }));
-    } catch (error) {
-      throw _processSaveError(error);
+    } catch (e) {
+      throw _processSaveError(e);
     }
     let error;
     const ids = result.ops.map((doc: any) => {
@@ -467,7 +461,6 @@ export class MongoDBAdapter extends AdapterBase {
       $set: {},
       $unset: {},
     };
-    // tslint:disable-next-line:forin
     for (const key in conditions) {
       const value = conditions[key];
       update_ops.$set[key] = value;
@@ -492,7 +485,7 @@ export class MongoDBAdapter extends AdapterBase {
   /** @internal */
   public async findById(
     model: string, id: any,
-    options: { select?: string[], explain?: boolean, transaction?: Transaction },
+    options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
     const fields = this._buildSelect(options.select);
     try {
@@ -763,7 +756,7 @@ export class MongoDBAdapter extends AdapterBase {
 
   /** @internal */
   private async _getSchema(table: any) {
-    return 'NO SCHEMA';
+    return Promise.resolve('NO SCHEMA');
   }
 
   /** @internal */
@@ -778,7 +771,6 @@ export class MongoDBAdapter extends AdapterBase {
 
   /** @internal */
   private _buildUpdateOps(schema: IModelSchemaInternal, update_ops: any, data: any, path: any, object: any): any {
-    // tslint:disable-next-line:forin
     for (const column in object) {
       const value = object[column];
       const property = _.find(schema, { _dbname_dot: path + column });

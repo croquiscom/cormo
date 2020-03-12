@@ -1,5 +1,3 @@
-// tslint:disable:no-unused-expression variable-name
-
 import { expect } from 'chai';
 import { ComputerRef, PostRef, UserRef } from './association';
 
@@ -48,9 +46,9 @@ function _checkUser(
 }
 
 export default function(models: {
-  Computer: typeof ComputerRef,
-  Post: typeof PostRef,
-  User: typeof UserRef,
+  Computer: typeof ComputerRef;
+  Post: typeof PostRef;
+  User: typeof UserRef;
 }) {
   let preset_posts: PostRef[];
   let preset_users: UserRef[];

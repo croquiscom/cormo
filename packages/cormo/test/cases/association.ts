@@ -1,5 +1,3 @@
-// tslint:disable:max-classes-per-file
-
 import * as cormo from '../..';
 
 export class UserRef extends cormo.BaseModel {
@@ -7,9 +5,9 @@ export class UserRef extends cormo.BaseModel {
 
   public age?: number | null;
 
-  public posts?: { build: (data: any) => PostRef } & ((reload?: boolean) => PostRef[]);
+  public posts?: { build: (data: any) => PostRef } & ((reload?: boolean) => Promise<PostRef[]>);
 
-  public computer?: () => ComputerRef | null;
+  public computer?: () => Promise<ComputerRef | null>;
 }
 
 export class PostRef extends cormo.BaseModel {
@@ -17,13 +15,13 @@ export class PostRef extends cormo.BaseModel {
 
   public body?: string | null;
 
-  public user?: () => UserRef | null;
+  public user?: () => Promise<UserRef | null>;
 
   public user_id?: number | null;
 
-  public comments?: () => PostRef[];
+  public comments?: () => Promise<PostRef[]>;
 
-  public parent_post?: () => PostRef | null;
+  public parent_post?: () => Promise<PostRef | null>;
 
   public parent_post_id?: number | null;
 }
@@ -31,7 +29,7 @@ export class PostRef extends cormo.BaseModel {
 export class ComputerRef extends cormo.BaseModel {
   public brand?: string | null;
 
-  public user?: () => UserRef | null;
+  public user?: () => Promise<UserRef | null>;
 
   public user_id?: number | null;
 }

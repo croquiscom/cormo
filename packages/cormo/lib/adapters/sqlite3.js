@@ -22,6 +22,7 @@ const lodash_1 = __importDefault(require("lodash"));
 const stream_1 = __importDefault(require("stream"));
 const util_1 = __importDefault(require("util"));
 const types = __importStar(require("../types"));
+const base_1 = require("./base");
 const sql_base_1 = require("./sql_base");
 function _typeToSQL(property) {
     if (property.array) {
@@ -64,7 +65,7 @@ function _processSaveError(error) {
         return new Error('duplicated');
     }
     else {
-        return SQLite3Adapter.wrapError('unknown error', error);
+        return base_1.AdapterBase.wrapError('unknown error', error);
     }
 }
 // Adapter for SQLite3
@@ -105,7 +106,6 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         const model_class = this._connection.models[model];
         const table_name = model_class.table_name;
         const column_sqls = [];
-        // tslint:disable-next-line:forin
         for (const column in model_class._schema) {
             const property = model_class._schema[column];
             if (property.primary_key) {
@@ -157,7 +157,6 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         const schema = model_class._schema;
         const table_name = model_class.table_name;
         const columns = [];
-        // tslint:disable-next-line:forin
         for (const column in index.columns) {
             const order = index.columns[column];
             columns.push(`"${schema[column] && schema[column]._dbname_us || column}" ${(order === -1 ? 'DESC' : 'ASC')}`);
@@ -453,6 +452,7 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
     /** @internal */
     async releaseConnection(adapter_connection) {
         adapter_connection.close();
+        return Promise.resolve();
     }
     /** @internal */
     async startTransaction(adapter_connection, isolation_level) {
@@ -470,13 +470,13 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
      * Exposes sqlite3 module's run method
      */
     run(sql, ...params) {
-        return this._client.run.apply(this._client, arguments);
+        return this._client.run(sql, ...params);
     }
     /**
      * Exposes sqlite3 module's all method
      */
     all(sql, ...params) {
-        return this._client.all.apply(this._client, arguments);
+        return this._client.all(sql, ...params);
     }
     /** @internal */
     valueToModel(value, property) {
@@ -589,7 +589,6 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         const schema = this._connection.models[model]._schema;
         const fields = [];
         const places = [];
-        // tslint:disable-next-line:forin
         for (const column in schema) {
             const property = schema[column];
             if (property.primary_key) {
@@ -604,7 +603,6 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         const schema = this._connection.models[model]._schema;
         const fields = [];
         const places = [];
-        // tslint:disable-next-line:forin
         for (const column in data) {
             const value = data[column];
             const property = lodash_1.default.find(schema, (item) => item._dbname_us === column);

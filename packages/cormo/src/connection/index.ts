@@ -1,12 +1,10 @@
-// tslint:disable:max-classes-per-file
-
 let redis: any;
 
 import { EventEmitter } from 'events';
 import _ from 'lodash';
 import { inspect } from 'util';
 
-// tslint:disable-next-line:no-var-requires variable-name
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
 
 import { AdapterBase } from '../adapters/base';
@@ -24,7 +22,6 @@ import * as types from '../types';
 import * as inflector from '../util/inflector';
 
 try {
-  // tslint:disable-next-line:no-var-requires
   redis = require('redis');
 } catch (error) {
   /**/
@@ -82,7 +79,7 @@ interface IAssociation {
 interface ITxModelClass<M extends BaseModel> {
   new(data?: object): M;
   create(data?: ModelValueObject<M>): Promise<M>;
-  createBulk(data?: ModelValueObject<M>[]): Promise<M[]>;
+  createBulk(data?: Array<ModelValueObject<M>>): Promise<M[]>;
   count(condition?: object): Promise<number>;
   update(updates: any, condition?: object): Promise<number>;
   delete(condition?: object): Promise<number>;
@@ -257,14 +254,12 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       try {
         const current = await this._adapter.getSchemas();
 
-        // tslint:disable-next-line:forin
         for (const model in this.models) {
           const modelClass = this.models[model];
           const currentTable = current.tables && current.tables[modelClass.table_name];
           if (!currentTable || currentTable === 'NO SCHEMA') {
             continue;
           }
-          // tslint:disable-next-line:forin
           for (const column in modelClass._schema) {
             const property = modelClass._schema[column];
             if (!currentTable[property._dbname_us]) {
@@ -276,7 +271,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           }
         }
 
-        // tslint:disable-next-line:forin
         for (const model in this.models) {
           const modelClass = this.models[model];
           if (!current.tables[modelClass.table_name]) {
@@ -287,7 +281,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           }
         }
 
-        // tslint:disable-next-line:forin
         for (const model_name in this.models) {
           const modelClass = this.models[model_name];
           for (const index of modelClass._indexes) {
@@ -301,7 +294,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           }
         }
 
-        // tslint:disable-next-line:forin
         for (const model in this.models) {
           const modelClass = this.models[model];
           for (const integrity of modelClass._integrities) {
@@ -350,14 +342,12 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
 
     const current = await this._adapter.getSchemas();
 
-    // tslint:disable-next-line:forin
     for (const model in this.models) {
       const modelClass = this.models[model];
       const currentTable = current.tables && current.tables[modelClass.table_name];
       if (!currentTable || currentTable === 'NO SCHEMA') {
         continue;
       }
-      // tslint:disable-next-line:forin
       for (const column in modelClass._schema) {
         const property = modelClass._schema[column];
         if (!currentTable[property._dbname_us]) {
@@ -366,7 +356,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       }
     }
 
-    // tslint:disable-next-line:forin
     for (const model in this.models) {
       const modelClass = this.models[model];
       if (!current.tables[modelClass.table_name]) {
@@ -374,7 +363,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       }
     }
 
-    // tslint:disable-next-line:forin
     for (const model in this.models) {
       const modelClass = this.models[model];
       for (const index of modelClass._indexes) {
@@ -385,7 +373,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       }
     }
 
-    // tslint:disable-next-line:forin
     for (const model in this.models) {
       const modelClass = this.models[model];
       for (const integrity of modelClass._integrities) {
@@ -537,7 +524,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    */
   public async fetchAssociated(
     records: any, column: string, select?: string,
-    options?: { lean?: boolean, model?: typeof BaseModel, transaction?: Transaction },
+    options?: { lean?: boolean; model?: typeof BaseModel; transaction?: Transaction },
   ) {
     if ((select != null) && typeof select === 'object') {
       options = select;
@@ -614,27 +601,27 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   }
 
   public async transaction<T, M1 extends BaseModel>(
-    options: { isolation_level?: IsolationLevel, models: [ITxModelClass<M1>] },
+    options: { isolation_level?: IsolationLevel; models: [ITxModelClass<M1>] },
     block: (m1: ITxModelClass<M1>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel>(
-    options: { isolation_level?: IsolationLevel, models: [ITxModelClass<M1>, ITxModelClass<M2>] },
+    options: { isolation_level?: IsolationLevel; models: [ITxModelClass<M1>, ITxModelClass<M2>] },
     block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel, M3 extends BaseModel>(
-    options: { isolation_level?: IsolationLevel, models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>] },
+    options: { isolation_level?: IsolationLevel; models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>] },
     block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>,
       m3: ITxModelClass<M3>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel, M3 extends BaseModel, M4 extends BaseModel>(
     options: {
-      isolation_level?: IsolationLevel,
-      models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>, ITxModelClass<M4>],
+      isolation_level?: IsolationLevel;
+      models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>, ITxModelClass<M4>];
     },
     block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>,
       m3: ITxModelClass<M3>, m4: ITxModelClass<M4>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel,
     M3 extends BaseModel, M4 extends BaseModel, M5 extends BaseModel>(
       options: {
-        isolation_level?: IsolationLevel,
-        models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>, ITxModelClass<M4>, ITxModelClass<M4>],
+        isolation_level?: IsolationLevel;
+        models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>, ITxModelClass<M4>, ITxModelClass<M4>];
       },
       block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>, m3: ITxModelClass<M3>,
         m4: ITxModelClass<M4>, m5: ITxModelClass<M5>, transaction: Transaction) => Promise<T>): Promise<T>;
@@ -643,9 +630,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     block: (transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T>(
-    options_or_block: { isolation_level?: IsolationLevel, models?: any[] } | ((...args: any[]) => Promise<T>),
+    options_or_block: { isolation_level?: IsolationLevel; models?: any[] } | ((...args: any[]) => Promise<T>),
     block?: (...args: any[]) => Promise<T>): Promise<T> {
-    let options: { isolation_level?: IsolationLevel, models?: any[] };
+    let options: { isolation_level?: IsolationLevel; models?: any[] };
     if (typeof options_or_block === 'function') {
       options = {};
       block = options_or_block;
@@ -657,7 +644,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     await transaction.setup(options && options.isolation_level);
     try {
       const args: any[] = (options.models || []).map((model) => {
-        // tslint:disable-next-line:only-arrow-functions
         const txModel = function(data?: object) {
           const instance = new model(data);
           instance._transaction = transaction;
@@ -762,7 +748,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   }
 
   private _initializeModels() {
-    // tslint:disable-next-line:forin
     for (const model in this.models) {
       const modelClass = this.models[model];
       if (modelClass.initialize && !modelClass._initialize_called) {
@@ -774,11 +759,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   }
 
   private _checkArchive() {
-    // tslint:disable-next-line:forin
     for (const model in this.models) {
       const modelClass = this.models[model];
-      if (modelClass.archive && !modelClass._connection.models.hasOwnProperty('_Archive')) {
-        // tslint:disable-next-line:max-classes-per-file
+      if (modelClass.archive && !Object.prototype.hasOwnProperty.call(modelClass._connection.models, '_Archive')) {
+        // eslint-disable-next-line @typescript-eslint/class-name-casing
         const _Archive = class extends BaseModel { };
         _Archive.connection(modelClass._connection);
         _Archive.archive = false;
@@ -790,11 +774,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
 
   private _getModelNamesByAssociationOrder(): string[] {
     const t = new Toposort();
-    // tslint:disable-next-line:forin
     for (const model in this.models) {
       const modelClass = this.models[model];
       t.add(model, []);
-      // tslint:disable-next-line:forin
       for (const name in modelClass._associations) {
         const association = modelClass._associations[name];
         // ignore association with models of other connection
@@ -861,15 +843,14 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     return await this.models[model].where(data).exec({ skip_log: true });
   }
 
-  private _manipulateConvertIds(id_to_record_map: { [id: string]: any; }, model: string, data: any) {
+  private _manipulateConvertIds(id_to_record_map: { [id: string]: any }, model: string, data: any) {
     model = inflector.camelize(model);
     if (!this.models[model]) {
       return;
     }
-    // tslint:disable-next-line:forin
     for (const column in this.models[model]._schema) {
       const property = this.models[model]._schema[column];
-      if (property.record_id && data.hasOwnProperty(column)) {
+      if (property.record_id && Object.prototype.hasOwnProperty.call(data, column)) {
         if (property.array && Array.isArray(data[column])) {
           data[column] = data[column].map((value: any) => {
             const record = id_to_record_map[value];
@@ -919,7 +900,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       get() {
         let getter: any;
         // getter must be created per instance due to __scope
-        if (!this.hasOwnProperty(columnGetter)) {
+        if (!Object.prototype.hasOwnProperty.call(this, columnGetter)) {
           getter = async (reload?: boolean) => {
             // this is getter.__scope in normal case (this_model_instance.target_model_name()),
             // but use getter.__scope for safety
@@ -982,7 +963,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       get() {
         let getter: any;
         // getter must be created per instance due to __scope
-        if (!this.hasOwnProperty(columnGetter)) {
+        if (!Object.prototype.hasOwnProperty.call(this, columnGetter)) {
           getter = async (reload: any) => {
             // this is getter.__scope in normal case (this_model_instance.target_model_name()),
             // but use getter.__scope for safety
@@ -1036,7 +1017,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       get() {
         let getter: any;
         // getter must be created per instance due to __scope
-        if (!this.hasOwnProperty(columnGetter)) {
+        if (!Object.prototype.hasOwnProperty.call(this, columnGetter)) {
           getter = async (reload: any) => {
             // this is getter.__scope in normal case (this_model_instance.target_model_name()),
             // but use getter.__scope for safety
@@ -1060,7 +1041,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
 
   private async _fetchAssociatedBelongsTo(
     records: any, target_model: any, column: string, select: string | undefined,
-    options: { lean?: boolean, transaction?: Transaction },
+    options: { lean?: boolean; transaction?: Transaction },
   ) {
     const id_column = column + '_id';
     if (Array.isArray(records)) {
@@ -1094,7 +1075,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           });
         });
         records.forEach((record) => {
-          if (!record.hasOwnProperty(column)) {
+          if (!Object.prototype.hasOwnProperty.call(record, column)) {
             if (options.lean) {
               record[column] = null;
             } else {
@@ -1129,7 +1110,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           if (error && error.message !== 'not found') {
             throw error;
           }
-          if (!records.hasOwnProperty(column)) {
+          if (!Object.prototype.hasOwnProperty.call(records, column)) {
             if (options.lean) {
               records[column] = null;
             } else {
@@ -1137,7 +1118,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
             }
           }
         }
-      } else if (!records.hasOwnProperty(column)) {
+      } else if (!Object.prototype.hasOwnProperty.call(records, column)) {
         if (options.lean) {
           records[column] = null;
         } else {
@@ -1149,7 +1130,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
 
   private async _fetchAssociatedHasMany(
     records: any, target_model: any, foreign_key: any, column: string, select: string | undefined,
-    options: { lean?: boolean, transaction?: Transaction },
+    options: { lean?: boolean; transaction?: Transaction },
   ) {
     if (Array.isArray(records)) {
       const ids = records.map((record) => {

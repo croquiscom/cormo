@@ -1,9 +1,9 @@
 // using ES6 features supported by Node.js(io.js)
 
-"use strict";
+'use strict';
 
-const cormo = require("../..");
-const co = require("co");
+const cormo = require('../..');
+const co = require('co');
 
 const connection = new cormo.Connection('mysql', {
   database: 'cormo_test',
@@ -17,7 +17,7 @@ class User extends cormo.BaseModel {
     this.column('name', { type: String, required: true });
     this.column('age', Number);
   }
-};
+}
 
 co(function* () {
   const user = yield User.create({ name: 'croquis', age: 3 });
@@ -26,6 +26,6 @@ co(function* () {
   const users = yield User.where();
   console.log(users);
 }).then(function () {
-  console.log("Done");
+  console.log('Done');
   process.exit(0);
 });

@@ -48,7 +48,7 @@ class AdapterBase {
     }
     /** @internal */
     async connect(settings) {
-        return;
+        return Promise.resolve();
     }
     /**
      * Returns current schemas.
@@ -57,7 +57,7 @@ class AdapterBase {
      * @internal
      */
     async getSchemas() {
-        return { tables: {} };
+        return Promise.resolve({ tables: {} });
     }
     /**
      * Creates a table.
@@ -66,7 +66,7 @@ class AdapterBase {
      * @internal
      */
     async createTable(model) {
-        return;
+        return Promise.resolve();
     }
     /** Adds a column to a table
      * @abstract
@@ -74,7 +74,7 @@ class AdapterBase {
      * @internal
      */
     async addColumn(model, column_property) {
-        return;
+        return Promise.resolve();
     }
     /** Creates an index.
      * @abstract
@@ -82,7 +82,7 @@ class AdapterBase {
      * @internal
      */
     async createIndex(model_name, index) {
-        return;
+        return Promise.resolve();
     }
     /** Creates a foreign key.
      * @abstract
@@ -90,7 +90,7 @@ class AdapterBase {
      * @internal
      */
     async createForeignKey(model, column, type, references) {
-        return;
+        return Promise.resolve();
     }
     /**
      * Drops a model from the database
@@ -99,7 +99,7 @@ class AdapterBase {
      * @internal
      */
     async drop(model) {
-        throw new Error('not implemented');
+        return Promise.reject(new Error('not implemented'));
     }
     /** @internal */
     idToDB(value) {
@@ -199,7 +199,6 @@ class AdapterBase {
                 }
             }
         }
-        // tslint:disable-next-line:forin
         for (const field in group_fields) {
             const expr = group_fields[field];
             const op = Object.keys(expr)[0];

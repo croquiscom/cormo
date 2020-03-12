@@ -1,5 +1,3 @@
-// tslint:disable:no-unused-expression variable-name max-classes-per-file
-
 import { expect } from 'chai';
 import * as cormo from '..';
 import _g = require('./support/common');

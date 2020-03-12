@@ -1,11 +1,9 @@
-// tslint:disable:max-classes-per-file
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 import _g = require('../support/common');
 
 export default function(models: {
-  connection: cormo.Connection<cormo.MySQLAdapter> | null,
+  connection: cormo.Connection<cormo.MySQLAdapter> | null;
 }) {
   describe('issues', () => {
     it('reserved words', async () => {
@@ -58,7 +56,7 @@ export default function(models: {
           FOREIGN KEY (user_id) REFERENCES users(id)
           );
       `);
-      const result = await models.connection!.adapter.query(`INSERT INTO users (name) VALUES ('John Doe')`);
+      const result = await models.connection!.adapter.query('INSERT INTO users (name) VALUES (\'John Doe\')');
       const user_id = result.insertId;
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('First Post', ${user_id})`);
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('Second Post', ${user_id})`);
@@ -100,7 +98,7 @@ export default function(models: {
           FOREIGN KEY (user_id) REFERENCES users(id)
           );
       `);
-      const result = await models.connection!.adapter.query(`INSERT INTO users (name) VALUES ('John Doe')`);
+      const result = await models.connection!.adapter.query('INSERT INTO users (name) VALUES (\'John Doe\')');
       const user_id = result.insertId;
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('First Post', ${user_id})`);
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('Second Post', ${user_id})`);
@@ -141,9 +139,9 @@ export default function(models: {
           FOREIGN KEY (user_id) REFERENCES users(id)
           );
       `);
-      const result1 = await models.connection!.adapter.query(`INSERT INTO users (name) VALUES ('John Doe')`);
+      const result1 = await models.connection!.adapter.query('INSERT INTO users (name) VALUES (\'John Doe\')');
       const user1_id = result1.insertId;
-      const result2 = await models.connection!.adapter.query(`INSERT INTO users (name) VALUES ('Bill Smith')`);
+      const result2 = await models.connection!.adapter.query('INSERT INTO users (name) VALUES (\'Bill Smith\')');
       const user2_id = result2.insertId;
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('First Post', ${user1_id})`);
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('Second Post', ${user2_id})`);

@@ -57,7 +57,7 @@ interface IAssociation {
 interface ITxModelClass<M extends BaseModel> {
     new (data?: object): M;
     create(data?: ModelValueObject<M>): Promise<M>;
-    createBulk(data?: ModelValueObject<M>[]): Promise<M[]>;
+    createBulk(data?: Array<ModelValueObject<M>>): Promise<M[]>;
     count(condition?: object): Promise<number>;
     update(updates: any, condition?: object): Promise<number>;
     delete(condition?: object): Promise<number>;

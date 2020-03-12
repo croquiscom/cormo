@@ -1,5 +1,3 @@
-// tslint:disable:max-classes-per-file variable-name no-unused-expression
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 
@@ -19,7 +17,7 @@ export class PostRef extends cormo.BaseModel {
   public user_id!: number;
 }
 
-async function _createUsers(User: typeof UserRef, data?: cormo.ModelValueObject<UserRef>[]) {
+async function _createUsers(User: typeof UserRef, data?: Array<cormo.ModelValueObject<UserRef>>) {
   if (!data) {
     data = [
       { name: 'John Doe', age: 27, email: 'john.doe@example.com', facebook_id: '1' },
@@ -32,8 +30,8 @@ async function _createUsers(User: typeof UserRef, data?: cormo.ModelValueObject<
 }
 
 export default function(models: {
-  Post: typeof PostRef,
-  User: typeof UserRef,
+  Post: typeof PostRef;
+  User: typeof UserRef;
 }) {
   it('unique', async () => {
     const users = await _createUsers(models.User);

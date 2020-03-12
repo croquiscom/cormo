@@ -1,13 +1,11 @@
-// tslint:disable:no-unused-expression
-
 import { expect } from 'chai';
 import * as cormo from '../..';
 
 import { Type } from './type';
 
 export default function(models: {
-  Type: typeof Type,
-  connection: cormo.Connection | null,
+  Type: typeof Type;
+  connection: cormo.Connection | null;
 }) {
   it('compare number', async () => {
     const data = [

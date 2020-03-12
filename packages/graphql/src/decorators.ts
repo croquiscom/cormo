@@ -1,6 +1,6 @@
 import * as cormo from 'cormo';
 
-export function Model(options: { connection?: cormo.Connection, name?: string, description?: string } = {}) {
+export function Model(options: { connection?: cormo.Connection; name?: string; description?: string } = {}) {
   const c = cormo.Model({ connection: options.connection, name: options.name });
   return (ctor: typeof cormo.BaseModel) => {
     c(ctor);
@@ -22,8 +22,8 @@ interface IColumnBasicOptions {
 export function Column(options: { enum: any } & IColumnBasicOptions
   | { type: cormo.types.ColumnType | cormo.types.ColumnType[] } & IColumnBasicOptions): PropertyDecorator;
 export function Column(options: {
-  enum?: any, type?: cormo.types.ColumnType
-  | cormo.types.ColumnType[],
+  enum?: any; type?: cormo.types.ColumnType
+  | cormo.types.ColumnType[];
 } & IColumnBasicOptions): PropertyDecorator {
   let cormo_type: cormo.types.ColumnType | cormo.types.ColumnType[];
   if (options.enum) {
@@ -116,7 +116,7 @@ export function BelongsTo(options: IBelongsToBasicOptions) {
   };
 }
 
-export function Index(columns: { [column: string]: 1 | -1 }, options?: { name?: string, unique?: boolean }) {
+export function Index(columns: { [column: string]: 1 | -1 }, options?: { name?: string; unique?: boolean }) {
   const c = cormo.Index(columns, options);
   return (ctor: typeof cormo.BaseModel) => {
     c(ctor);

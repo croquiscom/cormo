@@ -1,6 +1,8 @@
-var _g = require('./support/common');
+/* global describe, before, beforeEach, after */
 
-_dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
+const _g = require('./support/common');
+
+const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 _dbs.forEach(function (db) {
   if (!_g.db_configs[db]) {
     return;
@@ -9,7 +11,7 @@ _dbs.forEach(function (db) {
     before(async function () {
       _g.connection = new _g.Connection(db, _g.db_configs[db]);
 
-      var User = _g.connection.model('User', { name: String, age: Number });
+      const User = _g.connection.model('User', { name: String, age: Number });
 
       await _g.connection.dropAllModels();
     });

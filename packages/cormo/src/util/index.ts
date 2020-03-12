@@ -10,7 +10,6 @@
  * e.g.) (obj, 'a.b.c') -> [ obj.a.b, 'c' ]
  * @memberOf util
  */
-// tslint:disable-next-line:max-line-length
 export function getLeafOfPath(obj: object, path: string | string[], create_object = true): [object | undefined, string | undefined] {
   const parts = Array.isArray(path) ? path.slice(0) : path.split('.');
   const last = parts.pop();

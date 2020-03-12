@@ -1,5 +1,3 @@
-// tslint:disable:max-classes-per-file
-
 import * as cormo from '..';
 import { ComputerRef, PostRef, UserRef } from './cases/association';
 import cases_as from './cases/association_as';
@@ -31,7 +29,7 @@ if (_g.db_configs.mysql && _g.db_configs.mongodb) {
           public age?: number | null;
 
           @cormo.HasMany({ connection: mysql })
-          public posts?: { build: (data: any) => PostRef } & ((reload?: boolean) => PostRef[]);
+          public posts?: { build: (data: any) => PostRef } & ((reload?: boolean) => Promise<PostRef[]>);
         }
         models.User = User;
 
@@ -44,15 +42,15 @@ if (_g.db_configs.mysql && _g.db_configs.mongodb) {
           public body?: string | null;
 
           @cormo.BelongsTo({ connection: mongodb })
-          public user?: () => User | null;
+          public user?: () => Promise<User | null>;
 
           public user_id?: number | null;
 
           @cormo.HasMany({ type: 'Post', foreign_key: 'parent_post_id' })
-          public comments?: () => Post[];
+          public comments?: () => Promise<Post[]>;
 
           @cormo.BelongsTo({ type: 'Post' })
-          public parent_post?: () => Post | null;
+          public parent_post?: () => Promise<Post | null>;
 
           public parent_post_id?: number | null;
         }
@@ -73,8 +71,8 @@ if (_g.db_configs.mysql && _g.db_configs.mongodb) {
           await mongodb!.applySchemas();
         },
       } as any;
-      await mysql!.dropAllModels();
-      await mongodb!.dropAllModels();
+      await mysql.dropAllModels();
+      await mongodb.dropAllModels();
     });
 
     beforeEach(async () => {

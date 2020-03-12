@@ -1,5 +1,3 @@
-// tslint:disable:max-classes-per-file
-
 import * as cormo from '..';
 import cases, { PostRef, UserRef } from './cases/constraint';
 import cases_multicolumn, { VersionRef } from './cases/constraint_multicolumn';

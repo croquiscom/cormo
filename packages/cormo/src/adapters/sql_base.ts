@@ -24,7 +24,6 @@ abstract class SQLAdapterBase extends AdapterBase {
       return;
     }
     const insert_data: any = {};
-    // tslint:disable-next-line:forin
     for (const key in data) {
       const value = data[key];
       if (value && value.$inc != null) {
@@ -34,7 +33,6 @@ abstract class SQLAdapterBase extends AdapterBase {
       }
     }
     for (const condition of conditions) {
-      // tslint:disable-next-line:forin
       for (const key in condition) {
         const value = condition[key];
         insert_data[key] = value;
@@ -66,7 +64,6 @@ abstract class SQLAdapterBase extends AdapterBase {
       }
     } else if (property_type_class === types.Integer) {
       value = Number(value);
-      // tslint:disable-next-line:no-bitwise
       if (isNaN(value) || (value >> 0) !== value) {
         value = -2147483648;
       }
@@ -290,7 +287,6 @@ abstract class SQLAdapterBase extends AdapterBase {
         selects.push(`${escape_ch}${column}${escape_ch}`);
       }
     }
-    // tslint:disable-next-line:forin
     for (const field in group_fields) {
       const expr = group_fields[field];
       selects.push(`${this._buildGroupExpr(model_class._schema, expr)} as ${field}`);

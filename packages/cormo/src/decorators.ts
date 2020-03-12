@@ -11,7 +11,7 @@ import {
 } from './model';
 import * as types from './types';
 
-export function Model(options: { connection?: Connection, name?: string } = {}) {
+export function Model(options: { connection?: Connection; name?: string } = {}) {
   return (ctor: typeof BaseModel) => {
     ctor._initialize_called = true;
     if (options.name) {
@@ -99,7 +99,7 @@ export function BelongsTo(options?: IAssociationBelongsToOptions) {
   };
 }
 
-export function Index(columns: { [column: string]: 1 | -1 }, options?: { name?: string, unique?: boolean }) {
+export function Index(columns: { [column: string]: 1 | -1 }, options?: { name?: string; unique?: boolean }) {
   return (ctor: typeof BaseModel) => {
     if (ctor._initialize_called) {
       ctor.index(columns, options);

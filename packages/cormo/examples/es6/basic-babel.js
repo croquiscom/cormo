@@ -1,8 +1,8 @@
 // using full ES6 features
 // need Babel to run
 
-import { Connection, BaseModel } from "../..";
-import co from "co";
+import { Connection, BaseModel } from '../..';
+import co from 'co';
 
 const connection = new Connection('mysql', {
   database: 'cormo_test',
@@ -16,7 +16,7 @@ class User extends BaseModel {
     this.column('name', { type: String, required: true });
     this.column('age', Number);
   }
-};
+}
 
 co(function* () {
   const user = yield User.create({ name: 'croquis', age: 3 });
@@ -25,6 +25,6 @@ co(function* () {
   const users = yield User.where();
   console.log(users);
 }).then(() => {
-  console.log("Done");
+  console.log('Done');
   process.exit(0);
 });
