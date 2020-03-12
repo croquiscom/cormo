@@ -78,7 +78,6 @@ class SQLAdapterBase extends base_1.AdapterBase {
         }
         else if (property_type_class === types.Integer) {
             value = Number(value);
-            // tslint:disable-next-line:no-bitwise
             if (isNaN(value) || (value >> 0) !== value) {
                 value = -2147483648;
             }

@@ -19,8 +19,8 @@ export interface IAdapterSettingsPostgreSQL {
   database: string;
 }
 
-import _ from 'lodash';
 import stream from 'stream';
+import _ from 'lodash';
 import { Connection } from '../connection';
 import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';

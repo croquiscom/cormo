@@ -1,5 +1,5 @@
-import * as cormo from '..';
 import cases, { User as UserRef } from './cases/basic';
+import * as cormo from '..';
 import _g = require('./support/common');
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql', 'redis'];

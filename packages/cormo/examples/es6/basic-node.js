@@ -2,8 +2,8 @@
 
 'use strict';
 
-const cormo = require('../..');
 const co = require('co');
+const cormo = require('../..');
 
 const connection = new cormo.Connection('mysql', {
   database: 'cormo_test',

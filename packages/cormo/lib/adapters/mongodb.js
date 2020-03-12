@@ -1,5 +1,4 @@
 "use strict";
-// tslint:disable:max-classes-per-file
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -13,7 +12,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 let mongodb;
 try {
-    // tslint:disable-next-line:no-var-requires
     mongodb = require('mongodb');
 }
 catch (error) {
@@ -21,8 +19,8 @@ catch (error) {
 }
 class CormoTypesObjectId {
 }
-const lodash_1 = __importDefault(require("lodash"));
 const stream_1 = __importDefault(require("stream"));
+const lodash_1 = __importDefault(require("lodash"));
 const types = __importStar(require("../types"));
 const base_1 = require("./base");
 function _convertValueToObjectID(value, key) {

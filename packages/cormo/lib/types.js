@@ -1,6 +1,9 @@
 "use strict";
-// tslint:disable:max-classes-per-file
-// tslint:disable:variable-name
+/**
+ * CORMO types
+ * @module types
+ * @namespace cormo
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 const CormoTypesString = function (length) {
     if (!(this instanceof CormoTypesString)) {
@@ -17,7 +20,6 @@ const CormoTypesNumber = function () {
     this.toString = () => 'number';
 };
 exports.Number = CormoTypesNumber;
-// tslint:disable-next-line:variable-name
 const CormoTypesBoolean = function () {
     if (!(this instanceof CormoTypesBoolean)) {
         return new CormoTypesBoolean();
@@ -25,7 +27,6 @@ const CormoTypesBoolean = function () {
     this.toString = () => 'boolean';
 };
 exports.Boolean = CormoTypesBoolean;
-// tslint:disable-next-line:variable-name
 const CormoTypesInteger = function () {
     if (!(this instanceof CormoTypesInteger)) {
         return new CormoTypesInteger();
@@ -33,7 +34,6 @@ const CormoTypesInteger = function () {
     this.toString = () => 'integer';
 };
 exports.Integer = CormoTypesInteger;
-// tslint:disable-next-line:variable-name
 const CormoTypesGeoPoint = function () {
     if (!(this instanceof CormoTypesGeoPoint)) {
         return new CormoTypesGeoPoint();
@@ -41,7 +41,6 @@ const CormoTypesGeoPoint = function () {
     this.toString = () => 'geopoint';
 };
 exports.GeoPoint = CormoTypesGeoPoint;
-// tslint:disable-next-line:variable-name
 const CormoTypesDate = function () {
     if (!(this instanceof CormoTypesDate)) {
         return new CormoTypesDate();
@@ -49,7 +48,6 @@ const CormoTypesDate = function () {
     this.toString = () => 'date';
 };
 exports.Date = CormoTypesDate;
-// tslint:disable-next-line:variable-name
 const CormoTypesObject = function () {
     if (!(this instanceof CormoTypesObject)) {
         return new CormoTypesObject();
@@ -57,7 +55,6 @@ const CormoTypesObject = function () {
     this.toString = () => 'object';
 };
 exports.Object = CormoTypesObject;
-// tslint:disable-next-line:variable-name
 const CormoTypesRecordID = function () {
     if (!(this instanceof CormoTypesRecordID)) {
         return new CormoTypesRecordID();
@@ -65,7 +62,6 @@ const CormoTypesRecordID = function () {
     this.toString = () => 'recordid';
 };
 exports.RecordID = CormoTypesRecordID;
-// tslint:disable-next-line:variable-name
 const CormoTypesText = function () {
     if (!(this instanceof CormoTypesText)) {
         return new CormoTypesText();

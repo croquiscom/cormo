@@ -16,8 +16,8 @@ export interface IAdapterSettingsMongoDB {
 
 class CormoTypesObjectId { }
 
-import _ from 'lodash';
 import stream from 'stream';
+import _ from 'lodash';
 import { Connection } from '../connection';
 import { BaseModel, IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { Transaction } from '../transaction';

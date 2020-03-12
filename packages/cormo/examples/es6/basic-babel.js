@@ -1,8 +1,9 @@
 // using full ES6 features
 // need Babel to run
 
-import { Connection, BaseModel } from '../..';
+// eslint-disable-next-line import/no-unresolved
 import co from 'co';
+import { Connection, BaseModel } from '../..';
 
 const connection = new Connection('mysql', {
   database: 'cormo_test',

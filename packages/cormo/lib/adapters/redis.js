@@ -12,14 +12,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 let redis;
 try {
-    // tslint:disable-next-line:no-var-requires
     redis = require('redis');
 }
 catch (error) {
     //
 }
-const lodash_1 = __importDefault(require("lodash"));
 const util_1 = __importDefault(require("util"));
+const lodash_1 = __importDefault(require("lodash"));
 const types = __importStar(require("../types"));
 const inflector_1 = require("../util/inflector");
 const base_1 = require("./base");

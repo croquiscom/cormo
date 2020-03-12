@@ -1,8 +1,8 @@
-import * as cormo from '..';
 import { ComputerRef, PostRef, UserRef } from './cases/association';
 import cases_as from './cases/association_as';
 import cases_belongs_to from './cases/association_belongs_to';
 import cases_has_many from './cases/association_has_many';
+import * as cormo from '..';
 import _g = require('./support/common');
 
 if (_g.db_configs.mysql && _g.db_configs.mongodb) {

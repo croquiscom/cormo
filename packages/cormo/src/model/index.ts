@@ -1,5 +1,5 @@
-import _ from 'lodash';
 import { inspect } from 'util';
+import _ from 'lodash';
 
 import { AdapterBase } from '../adapters/base';
 import {

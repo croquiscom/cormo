@@ -12,9 +12,9 @@ export interface IAdapterSettingsRedis {
   database: string;
 }
 
-import _ from 'lodash';
 import stream from 'stream';
 import util from 'util';
+import _ from 'lodash';
 import { Connection } from '../connection';
 import { Transaction } from '../transaction';
 import * as types from '../types';

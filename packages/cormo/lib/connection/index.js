@@ -12,10 +12,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 let redis;
 const events_1 = require("events");
-const lodash_1 = __importDefault(require("lodash"));
 const util_1 = require("util");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Toposort = require('toposort-class');
+const lodash_1 = __importDefault(require("lodash"));
 const mongodb_1 = require("../adapters/mongodb");
 const mysql_1 = require("../adapters/mysql");
 const postgresql_1 = require("../adapters/postgresql");
@@ -25,8 +23,9 @@ const model_1 = require("../model");
 const transaction_1 = require("../transaction");
 const types = __importStar(require("../types"));
 const inflector = __importStar(require("../util/inflector"));
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Toposort = require('toposort-class');
 try {
-    // tslint:disable-next-line:no-var-requires
     redis = require('redis');
 }
 catch (error) {
@@ -484,7 +483,6 @@ class Connection extends events_1.EventEmitter {
         await transaction.setup(options && options.isolation_level);
         try {
             const args = (options.models || []).map((model) => {
-                // tslint:disable-next-line:only-arrow-functions
                 const txModel = function (data) {
                     const instance = new model(data);
                     instance._transaction = transaction;

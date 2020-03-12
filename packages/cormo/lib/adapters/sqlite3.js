@@ -12,15 +12,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 let sqlite3;
 try {
-    // tslint:disable-next-line:no-var-requires
     sqlite3 = require('sqlite3');
 }
 catch (error) {
     //
 }
-const lodash_1 = __importDefault(require("lodash"));
 const stream_1 = __importDefault(require("stream"));
 const util_1 = __importDefault(require("util"));
+const lodash_1 = __importDefault(require("lodash"));
 const types = __importStar(require("../types"));
 const base_1 = require("./base");
 const sql_base_1 = require("./sql_base");

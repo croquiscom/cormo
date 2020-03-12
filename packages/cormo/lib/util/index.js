@@ -11,7 +11,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * e.g.) (obj, 'a.b.c') -> [ obj.a.b, 'c' ]
  * @memberOf util
  */
-// tslint:disable-next-line:max-line-length
 function getLeafOfPath(obj, path, create_object = true) {
     const parts = Array.isArray(path) ? path.slice(0) : path.split('.');
     const last = parts.pop();

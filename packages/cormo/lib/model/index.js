@@ -10,8 +10,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const lodash_1 = __importDefault(require("lodash"));
 const util_1 = require("util");
+const lodash_1 = __importDefault(require("lodash"));
 const connection_1 = require("../connection");
 const query_1 = require("../query");
 const types = __importStar(require("../types"));
@@ -123,7 +123,6 @@ class BaseModel {
      * Returns a new model class extending BaseModel
      */
     static newModel(connection, name, schema) {
-        // tslint:disable-next-line:variable-name max-classes-per-file
         const NewModel = class extends BaseModel {
         };
         NewModel.connection(connection, name);
@@ -691,7 +690,6 @@ class BaseModel {
             case types.Integer:
                 value = Number(value);
                 // value>>0 checkes integer and 32bit
-                // tslint:disable-next-line:no-bitwise
                 if (isNaN(value) || (value >> 0) !== value) {
                     throw new Error(`'${column}' is not an integer`);
                 }

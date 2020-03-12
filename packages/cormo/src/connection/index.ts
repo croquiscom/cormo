@@ -1,18 +1,12 @@
 let redis: any;
 
 import { EventEmitter } from 'events';
-import _ from 'lodash';
 import { inspect } from 'util';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Toposort = require('toposort-class');
-
+import _ from 'lodash';
 import { AdapterBase } from '../adapters/base';
 import { createAdapter as createMongoDBAdapter, IAdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
 import { createAdapter as createMySQLAdapter, IAdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
-import {
-  createAdapter as createPostgreSQLAdapter, IAdapterSettingsPostgreSQL, PostgreSQLAdapter,
-} from '../adapters/postgresql';
+import { createAdapter as createPostgreSQLAdapter, IAdapterSettingsPostgreSQL, PostgreSQLAdapter } from '../adapters/postgresql';
 import { createAdapter as createSQLite3Adapter, IAdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
 import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logger';
 import { BaseModel, IColumnProperty, IModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
@@ -20,6 +14,9 @@ import { IQueryArray, IQuerySingle } from '../query';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Toposort = require('toposort-class');
 
 try {
   redis = require('redis');

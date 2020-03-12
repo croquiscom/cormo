@@ -11,22 +11,19 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 let pg;
-// tslint:disable-next-line:variable-name
 let QueryStream;
 try {
-    // tslint:disable-next-line:no-var-requires
     pg = require('pg');
 }
 catch (error) {
     //
 }
 try {
-    // tslint:disable-next-line:no-var-requires
     QueryStream = require('pg-query-stream');
 }
 catch (error) { /**/ }
-const lodash_1 = __importDefault(require("lodash"));
 const stream_1 = __importDefault(require("stream"));
+const lodash_1 = __importDefault(require("lodash"));
 const types = __importStar(require("../types"));
 const base_1 = require("./base");
 const sql_base_1 = require("./sql_base");

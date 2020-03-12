@@ -1,7 +1,7 @@
 /* global it */
 
-const _g = require('../support/common');
 const { expect } = require('chai');
+const _g = require('../support/common');
 
 async function _createUsers(User, data) {
   if (!data) {

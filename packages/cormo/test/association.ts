@@ -1,4 +1,3 @@
-import * as cormo from '..';
 import { ComputerRef, PostRef, UserRef } from './cases/association';
 import cases_as from './cases/association_as';
 import cases_belongs_to from './cases/association_belongs_to';
@@ -7,6 +6,7 @@ import cases_has_many from './cases/association_has_many';
 import cases_has_one from './cases/association_has_one';
 import cases_include from './cases/association_include';
 import cases_include_lean from './cases/association_include_lean';
+import * as cormo from '..';
 import _g = require('./support/common');
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
