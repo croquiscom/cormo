@@ -36,7 +36,7 @@
   "types": "./lib/index.d.ts",
   "dependencies": {
     "chalk": "^3.0.0",
-    "commander": "^4.1.1",
+    "commander": "^5.0.0",
     "inflected": "^2.0.4",
     "lodash": "^4.17.15",
     "toposort-class": "^1.0.1"
