@@ -26,7 +26,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(type.number).to.equal(item[1]);
-        type = await models.Type.find(type.id) as Type;
+        type = await models.Type.find(type.id);
         expect(type.number).to.equal(item[1]);
       } catch (error) {
         expect(error).to.exist;
@@ -44,7 +44,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(type.int_c).to.equal(item[1]);
-        type = await models.Type.find(type.id) as Type;
+        type = await models.Type.find(type.id);
         expect(type.int_c).to.equal(item[1]);
       } catch (error) {
         expect(error).to.exist;
@@ -69,7 +69,7 @@ export default function(models: {
         }
         expect(type.date).to.be.an.instanceof(Date);
         expect(type.date!.getTime()).to.equal(item[1]);
-        type = await models.Type.find(type.id) as Type;
+        type = await models.Type.find(type.id);
         expect(type.date).to.be.an.instanceof(Date);
         expect(type.date!.getTime()).to.equal(item[1]);
       } catch (error) {
@@ -95,7 +95,7 @@ export default function(models: {
         }
         expect(type.date).to.be.an.instanceof(Date);
         expect(type.date!.getTime()).to.equal(item[1]);
-        type = await models.Type.find(type.id) as Type;
+        type = await models.Type.find(type.id);
         expect(type.date).to.be.an.instanceof(Date);
         expect(type.date!.getTime()).to.equal(item[1]);
       } catch (error) {
@@ -114,7 +114,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(type.boolean).to.equal(item[1]);
-        type = await models.Type.find(type.id) as Type;
+        type = await models.Type.find(type.id);
         expect(type.boolean).to.equal(item[1]);
       } catch (error) {
         expect(error).to.exist;
@@ -138,7 +138,7 @@ export default function(models: {
       } else {
         expect(type.object).to.equal(item[1]);
       }
-      type = await models.Type.find(type.id) as Type;
+      type = await models.Type.find(type.id);
       if (typeof item[1] === 'object') {
         expect(type.object).to.eql(item[1]);
       } else {
@@ -156,7 +156,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(type.int_array).to.eql(item[1]);
-        type = await models.Type.find(type.id) as Type;
+        type = await models.Type.find(type.id);
         expect(type.int_array).to.eql(item[1]);
       } catch (error) {
         expect(error).to.exist;
@@ -170,7 +170,7 @@ export default function(models: {
     const type_ids = [types[0].id, null, types[1].id, types[2].id, null];
     let type = await models.Type.create({ recordid_array: type_ids });
     expect(type.recordid_array).to.eql(type_ids);
-    type = await models.Type.find(type.id) as Type;
+    type = await models.Type.find(type.id);
     expect(type.recordid_array).to.eql(type_ids);
   });
 
@@ -179,7 +179,7 @@ export default function(models: {
     const type_ids = [types[0].id, null, types[1].id, types[2].id, null];
     let type = await models.Type.create({ recordid_array: type_ids });
     expect(type.recordid_array).to.eql(type_ids);
-    type = await models.Type.find(type.id).lean() as Type;
+    type = await models.Type.find(type.id).lean();
     expect(type.recordid_array).to.eql(type_ids);
   });
 }

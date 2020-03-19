@@ -284,7 +284,7 @@ export default function(models: {
 
   it('one', async () => {
     await _createUsers(models.User);
-    let user = await models.User.where({ age: { $lt: 40 } }).one() as UserRef;
+    let user = (await models.User.where({ age: { $lt: 40 } }).one())!;
     expect(user).to.have.property('name');
     if (user.name === 'Alice Jackson') {
       _compareUser(user, { name: 'Alice Jackson', age: 27 });
@@ -295,7 +295,7 @@ export default function(models: {
     } else {
       _compareUser(user, { name: 'Daniel Smith', age: 8 });
     }
-    user = await models.User.where({ age: { $lt: 5 } }).one() as UserRef;
+    user = (await models.User.where({ age: { $lt: 5 } }).one())!;
     expect(user).to.not.exist;
   });
 
@@ -341,7 +341,7 @@ export default function(models: {
   it('select without id', async () => {
     const sources = await _createUsers(models.User);
 
-    const user = await models.User.find(sources[0].id).select(['name', 'age']) as UserRef;
+    const user = await models.User.find(sources[0].id).select(['name', 'age']);
     expect(user).to.have.keys('id', 'name', 'age');
     expect((user as any).id).to.be.null;
     expect(user.name).to.eql(sources[0].name);

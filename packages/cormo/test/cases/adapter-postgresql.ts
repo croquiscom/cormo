@@ -21,8 +21,8 @@ export default function(models: {
       const records = await Reference.createBulk(data);
 
       const record = await Reference.find(records[0].id).select('group');
-      expect(record!.id).to.eql(records[0].id);
-      expect(record!.group).to.eql(records[0].group);
+      expect(record.id).to.eql(records[0].id);
+      expect(record.group).to.eql(records[0].group);
 
       const count = await Reference.count({ group: 1 });
       expect(count).to.eql(2);

@@ -27,10 +27,10 @@ export default function(models: {
     const user_id = user.id;
     const post_id = post.id;
     const record = await models.Post.find(post_id).lean();
-    expect(record!.id).to.equal(post_id);
-    expect(record!.title).to.equal('first post');
-    expect(record!.body).to.equal('This is the 1st post.');
-    expect(record!.user_id).to.equal(user_id);
-    expect(record!.parent_post_id).to.not.exist;
+    expect(record.id).to.equal(post_id);
+    expect(record.title).to.equal('first post');
+    expect(record.body).to.equal('This is the 1st post.');
+    expect(record.user_id).to.equal(user_id);
+    expect(record.parent_post_id).to.not.exist;
   });
 }

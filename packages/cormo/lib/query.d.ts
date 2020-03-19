@@ -25,7 +25,7 @@ interface IQueryOptions {
     node?: 'master' | 'read';
     index_hint?: string;
 }
-export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T | null> {
+export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
     clone(): IQuerySingle<M, T>;
     find(id: RecordID): IQuerySingle<M, T>;
     find(id: RecordID[]): IQueryArray<M, T>;
@@ -43,7 +43,7 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T 
         [field in keyof F]: number;
     }>;
     group<U>(group_by: string | null, fields?: object): IQuerySingle<M, U>;
-    one(): IQuerySingle<M, T>;
+    one(): IQuerySingleNull<M, T>;
     limit(limit?: number): IQuerySingle<M, T>;
     skip(skip?: number): IQuerySingle<M, T>;
     lean(lean?: boolean): IQuerySingle<M, T>;
@@ -54,6 +54,45 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T 
     transaction(transaction?: Transaction): IQuerySingle<M, T>;
     using(node: 'master' | 'read'): IQuerySingle<M, T>;
     index_hint(hint: string): IQuerySingle<M, T>;
+    exec(options?: {
+        skip_log?: boolean;
+    }): PromiseLike<T>;
+    stream(): stream.Readable;
+    explain(): PromiseLike<any>;
+    count(): PromiseLike<number>;
+    update(updates: object): PromiseLike<number>;
+    upsert(updates: object): PromiseLike<void>;
+    delete(options?: any): PromiseLike<number>;
+}
+interface IQuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | null> {
+    clone(): IQuerySingleNull<M, T>;
+    find(id: RecordID): IQuerySingle<M, T>;
+    find(id: RecordID[]): IQueryArray<M, T>;
+    findPreserve(id: RecordID[]): IQueryArray<M, T>;
+    near(target: object): IQuerySingleNull<M, T>;
+    where(condition?: object): IQuerySingleNull<M, T>;
+    select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQuerySingleNull<M, Pick<M, K>>;
+    select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingleNull<M, Pick<M, K>>;
+    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingleNull<M, M[K]>;
+    order(orders?: string): IQuerySingleNull<M, T>;
+    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): IQuerySingleNull<M, {
+        [field in keyof F]: number;
+    } & Pick<M, G>>;
+    group<F>(group_by: null, fields?: F): IQuerySingleNull<M, {
+        [field in keyof F]: number;
+    }>;
+    group<U>(group_by: string | null, fields?: object): IQuerySingleNull<M, U>;
+    one(): IQuerySingleNull<M, T>;
+    limit(limit?: number): IQuerySingleNull<M, T>;
+    skip(skip?: number): IQuerySingleNull<M, T>;
+    lean(lean?: boolean): IQuerySingleNull<M, T>;
+    if(condition: boolean): IQuerySingleNull<M, T>;
+    endif(): IQuerySingleNull<M, T>;
+    cache(options: IQueryOptions['cache']): IQuerySingleNull<M, T>;
+    include(column: string, select?: string): IQuerySingleNull<M, T>;
+    transaction(transaction?: Transaction): IQuerySingleNull<M, T>;
+    using(node: 'master' | 'read'): IQuerySingleNull<M, T>;
+    index_hint(hint: string): IQuerySingleNull<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T | null>;
@@ -82,7 +121,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
         [field in keyof F]: number;
     }>;
     group<U>(group_by: string | null, fields?: object): IQueryArray<M, U>;
-    one(): IQuerySingle<M, T>;
+    one(): IQuerySingleNull<M, T>;
     limit(limit?: number): IQueryArray<M, T>;
     skip(skip?: number): IQueryArray<M, T>;
     lean(lean?: boolean): IQueryArray<M, T>;
@@ -92,7 +131,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
     include(column: string, select?: string): IQueryArray<M, T>;
     transaction(transaction?: Transaction): IQueryArray<M, T>;
     using(node: 'master' | 'read'): IQueryArray<M, T>;
-    index_hint(hint: string): IQuerySingle<M, T>;
+    index_hint(hint: string): IQueryArray<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T[]>;
