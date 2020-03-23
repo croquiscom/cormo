@@ -29,7 +29,7 @@ import { Connection } from '../connection';
 import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase, ISchemasTable } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: IColumnPropertyInternal, support_fractional_seconds: boolean) {
@@ -164,7 +164,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   /** @internal */
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: { [table_name: string]: any } = {};
+    const table_schemas: { [table_name: string]: ISchemasTable } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
     }
@@ -725,7 +725,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getTables(): Promise<any> {
+  private async _getTables(): Promise<string[]> {
     let tables = await this._client.queryAsync('SHOW TABLES');
     tables = tables.map((table: any) => {
       const key = Object.keys(table)[0];
@@ -735,9 +735,9 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getSchema(table: string): Promise<any> {
+  private async _getSchema(table: string): Promise<ISchemasTable> {
     const columns = await this._client.queryAsync(`SHOW COLUMNS FROM \`${table}\``);
-    const schema: any = {};
+    const schema: ISchemasTable = {};
     for (const column of columns) {
       const type = /^varchar\((\d*)\)/i.test(column.Type) ? new types.String(Number(RegExp.$1))
         : /^double/i.test(column.Type) ? new types.Number()

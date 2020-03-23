@@ -1,7 +1,15 @@
 import { Transaction } from '../transaction';
+import * as types from '../types';
+export interface ISchemasColumn {
+    required: boolean;
+    type: types.ColumnType | undefined;
+}
+export interface ISchemasTable {
+    [column_name: string]: ISchemasColumn;
+}
 export interface ISchemas {
     tables: {
-        [table_name: string]: any;
+        [table_name: string]: ISchemasTable | 'NO SCHEMA';
     };
     indexes?: {
         [table_name: string]: any;

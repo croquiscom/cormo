@@ -265,7 +265,7 @@ export class MongoDBAdapter extends AdapterBase {
   /** @internal */
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: any = {};
+    const table_schemas: { [table_name: string]: 'NO SCHEMA' } = {};
     const all_indexes: any = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
@@ -278,7 +278,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async createTable(model: any) {
+  public async createTable(model: string) {
     const collection = this._collection(model);
     const model_class = this._connection.models[model];
     const schema = model_class._schema;
@@ -748,14 +748,14 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private async _getTables() {
+  private async _getTables(): Promise<string[]> {
     const collections = await this._db.listCollections().toArray();
     const tables = collections.map((collection: any) => collection.name);
     return tables;
   }
 
   /** @internal */
-  private async _getSchema(table: any) {
+  private async _getSchema(table: string): Promise<'NO SCHEMA'> {
     return Promise.resolve('NO SCHEMA');
   }
 
