@@ -361,6 +361,12 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         const property = modelClass._schema[column];
         if (!currentTable[property._dbname_us]) {
           changes.push({ message: `Add column ${column} to ${modelClass.table_name}` });
+        } else if (column !== 'id') {
+          if (property.required && !currentTable[property._dbname_us].required) {
+            changes.push({ message: `Change ${modelClass.table_name}.${column} to required`, ignorable: true });
+          } else if (!property.required && currentTable[property._dbname_us].required) {
+            changes.push({ message: `Change ${modelClass.table_name}.${column} to optional`, ignorable: true });
+          }
         }
       }
       for (const column in currentTable) {

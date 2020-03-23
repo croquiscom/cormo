@@ -227,6 +227,14 @@ class Connection extends events_1.EventEmitter {
                 if (!currentTable[property._dbname_us]) {
                     changes.push({ message: `Add column ${column} to ${modelClass.table_name}` });
                 }
+                else if (column !== 'id') {
+                    if (property.required && !currentTable[property._dbname_us].required) {
+                        changes.push({ message: `Change ${modelClass.table_name}.${column} to required`, ignorable: true });
+                    }
+                    else if (!property.required && currentTable[property._dbname_us].required) {
+                        changes.push({ message: `Change ${modelClass.table_name}.${column} to optional`, ignorable: true });
+                    }
+                }
             }
             for (const column in currentTable) {
                 if (!lodash_1.default.find(modelClass._schema, { _dbname_us: column })) {

@@ -407,4 +407,25 @@ export default function(db: any, db_config: any) {
       expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
     }
   });
+
+  it('column requireness is changed', async () => {
+    class User extends cormo.BaseModel { }
+    User.column('name', { type: String, required: true });
+    User.column('address', String);
+
+    await connection.applySchemas();
+    User._schema.name.required = false;
+    User._schema.address.required = true;
+
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Change users.name to optional', ignorable: true },
+        { message: 'Change users.address to required', ignorable: true },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
+  });
 }
