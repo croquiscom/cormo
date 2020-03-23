@@ -50,6 +50,7 @@ export interface IAssociationBelongsToOptions {
 }
 export interface ISchemaChange {
     message: string;
+    ignorable?: boolean;
 }
 interface IAssociation {
     type: 'hasMany' | 'hasOne' | 'belongsTo';

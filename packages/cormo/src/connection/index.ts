@@ -68,6 +68,7 @@ export interface IAssociationBelongsToOptions {
 
 export interface ISchemaChange {
   message: string;
+  ignorable?: boolean; // ignored change while applying schema
 }
 
 interface IAssociation {
@@ -333,7 +334,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
 
   public async isApplyingSchemasNecessary(): Promise<boolean> {
     const changes = await this.getSchemaChanges();
-    return changes.length > 0;
+    return _.some(changes, (change) => change.ignorable !== true);
   }
 
   /**
@@ -368,6 +369,12 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       const modelClass = this.models[model];
       if (!current.tables[modelClass.table_name]) {
         changes.push({ message: `Add table ${modelClass.table_name}` });
+      }
+    }
+
+    for (const table_name in current.tables) {
+      if (!_.find(this.models, { table_name })) {
+        changes.push({ message: `Remove table ${table_name}`, ignorable: true });
       }
     }
 

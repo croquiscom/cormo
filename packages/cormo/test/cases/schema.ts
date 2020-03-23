@@ -354,4 +354,38 @@ export default function(db: any, db_config: any) {
       { id: users[1].id, name: 'unknown', age: -1, created_at: new Date(2018, 8, 21, 17, 13) },
     ]);
   });
+
+  it('table is removed', async () => {
+    class Person extends cormo.BaseModel { }
+    Person.column('name', String);
+
+    class User extends cormo.BaseModel { }
+    User.column('name', String);
+
+    await connection.applySchemas();
+    delete connection.models.Person;
+
+    User.column('address', String);
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Add column address to users' },
+        { message: 'Remove table people', ignorable: true },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Remove table people', ignorable: true },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
+
+    await connection.applySchemas();
+
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Remove table people', ignorable: true },
+    ]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+
+    connection.models.Person = Person;
+  });
 }

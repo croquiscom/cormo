@@ -203,7 +203,7 @@ class Connection extends events_1.EventEmitter {
     }
     async isApplyingSchemasNecessary() {
         const changes = await this.getSchemaChanges();
-        return changes.length > 0;
+        return lodash_1.default.some(changes, (change) => change.ignorable !== true);
     }
     /**
      * Returns changes of schama
@@ -233,6 +233,11 @@ class Connection extends events_1.EventEmitter {
             const modelClass = this.models[model];
             if (!current.tables[modelClass.table_name]) {
                 changes.push({ message: `Add table ${modelClass.table_name}` });
+            }
+        }
+        for (const table_name in current.tables) {
+            if (!lodash_1.default.find(this.models, { table_name })) {
+                changes.push({ message: `Remove table ${table_name}`, ignorable: true });
             }
         }
         for (const model_name in this.models) {
