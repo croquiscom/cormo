@@ -38,7 +38,8 @@
     "chalk": "^3.0.0",
     "inflected": "^2.0.4",
     "lodash": "^4.17.15",
-    "toposort-class": "^1.0.1"
+    "toposort-class": "^1.0.1",
+    "yargs": "^15.3.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
@@ -48,6 +49,7 @@
     "@types/mongodb": "^3.5.2",
     "@types/node": "^13.9.3",
     "@types/sinon": "^7.5.2",
+    "@types/yargs": "^15.0.4",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "coffee-coverage": "^3.0.1",

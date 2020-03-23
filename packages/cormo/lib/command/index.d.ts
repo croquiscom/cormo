@@ -6,6 +6,6 @@ declare class Command {
     /**
      * Runs a command
      */
-    static run(argv: string[]): any;
+    static run(argv: string[]): Promise<any>;
 }
 export { Command };
