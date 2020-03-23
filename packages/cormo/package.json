@@ -36,18 +36,17 @@
   "types": "./lib/index.d.ts",
   "dependencies": {
     "chalk": "^3.0.0",
-    "commander": "^4.1.1",
     "inflected": "^2.0.4",
     "lodash": "^4.17.15",
     "toposort-class": "^1.0.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.10",
+    "@types/chai": "^4.2.11",
     "@types/inflected": "^1.1.29",
     "@types/lodash": "^4.14.149",
     "@types/mocha": "^7.0.2",
     "@types/mongodb": "^3.5.2",
-    "@types/node": "^13.9.0",
+    "@types/node": "^13.9.3",
     "@types/sinon": "^7.5.2",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
@@ -55,7 +54,7 @@
     "coffeescript": "^2.5.1",
     "crojsdoc": "^0.9.5",
     "microtime": "^3.0.0",
-    "mocha": "^7.1.0",
+    "mocha": "^7.1.1",
     "mongodb": "^3.5.5",
     "mysql": "^2.18.1",
     "pg": "^7.18.2",
@@ -64,7 +63,7 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.1",
     "sqlite3": "^4.1.1",
-    "ts-node": "^8.6.2",
+    "ts-node": "^8.8.1",
     "typescript": "^3.8.3"
   }
 }
