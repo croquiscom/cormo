@@ -48,6 +48,10 @@ export interface IAssociationBelongsToOptions {
     foreign_key?: string;
     required?: boolean;
 }
+export interface ISchemaChange {
+    message: string;
+    ignorable?: boolean;
+}
 interface IAssociation {
     type: 'hasMany' | 'hasOne' | 'belongsTo';
     this_model: typeof BaseModel;
@@ -136,6 +140,11 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
         verbose?: boolean;
     }): Promise<void>;
     isApplyingSchemasNecessary(): Promise<boolean>;
+    /**
+     * Returns changes of schama
+     * @see AdapterBase::applySchema
+     */
+    getSchemaChanges(): Promise<ISchemaChange[]>;
     /**
      * Drops all model tables
      */

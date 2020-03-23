@@ -124,6 +124,7 @@ class Connection extends events_1.EventEmitter {
             console.log('Applying schemas');
         }
         this._promise_schema_applied = this._promise_connection.then(async () => {
+            var _a, _b;
             try {
                 const current = await this._adapter.getSchemas();
                 for (const model in this.models) {
@@ -154,8 +155,7 @@ class Connection extends events_1.EventEmitter {
                 for (const model_name in this.models) {
                     const modelClass = this.models[model_name];
                     for (const index of modelClass._indexes) {
-                        if (!(current.indexes && current.indexes[modelClass.table_name]
-                            && current.indexes[modelClass.table_name][index.options.name])) {
+                        if (!((_b = (_a = current.indexes) === null || _a === void 0 ? void 0 : _a[modelClass.table_name]) === null || _b === void 0 ? void 0 : _b[index.options.name])) {
                             if (options.verbose) {
                                 console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
                             }
@@ -202,13 +202,20 @@ class Connection extends events_1.EventEmitter {
         return this._promise_schema_applied;
     }
     async isApplyingSchemasNecessary() {
+        const changes = await this.getSchemaChanges();
+        return lodash_1.default.some(changes, (change) => change.ignorable !== true);
+    }
+    /**
+     * Returns changes of schama
+     * @see AdapterBase::applySchema
+     */
+    async getSchemaChanges() {
+        var _a, _b, _c;
         this._initializeModels();
-        if (!this._schema_changed) {
-            return false;
-        }
         this.applyAssociations();
         this._checkArchive();
         await this._promise_connection;
+        const changes = [];
         const current = await this._adapter.getSchemas();
         for (const model in this.models) {
             const modelClass = this.models[model];
@@ -219,22 +226,44 @@ class Connection extends events_1.EventEmitter {
             for (const column in modelClass._schema) {
                 const property = modelClass._schema[column];
                 if (!currentTable[property._dbname_us]) {
-                    return true;
+                    changes.push({ message: `Add column ${column} to ${modelClass.table_name}` });
+                }
+                else if (column !== 'id') {
+                    if (property.required && !currentTable[property._dbname_us].required) {
+                        changes.push({ message: `Change ${modelClass.table_name}.${column} to required`, ignorable: true });
+                    }
+                    else if (!property.required && currentTable[property._dbname_us].required) {
+                        changes.push({ message: `Change ${modelClass.table_name}.${column} to optional`, ignorable: true });
+                    }
+                }
+            }
+            for (const column in currentTable) {
+                if (!lodash_1.default.find(modelClass._schema, { _dbname_us: column })) {
+                    changes.push({ message: `Remove column ${column} from ${modelClass.table_name}`, ignorable: true });
                 }
             }
         }
         for (const model in this.models) {
             const modelClass = this.models[model];
             if (!current.tables[modelClass.table_name]) {
-                return true;
+                changes.push({ message: `Add table ${modelClass.table_name}` });
             }
         }
-        for (const model in this.models) {
-            const modelClass = this.models[model];
+        for (const table_name in current.tables) {
+            if (!lodash_1.default.find(this.models, { table_name })) {
+                changes.push({ message: `Remove table ${table_name}`, ignorable: true });
+            }
+        }
+        for (const model_name in this.models) {
+            const modelClass = this.models[model_name];
             for (const index of modelClass._indexes) {
-                if (!(current.indexes && current.indexes[modelClass.table_name]
-                    && current.indexes[modelClass.table_name][index.options.name])) {
-                    return true;
+                if (!((_b = (_a = current.indexes) === null || _a === void 0 ? void 0 : _a[modelClass.table_name]) === null || _b === void 0 ? void 0 : _b[index.options.name])) {
+                    changes.push({ message: `Add index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
+                }
+            }
+            for (const index in (_c = current.indexes) === null || _c === void 0 ? void 0 : _c[modelClass.table_name]) {
+                if (!lodash_1.default.find(modelClass._indexes, (item) => item.options.name === index)) {
+                    changes.push({ message: `Remove index on ${modelClass.table_name} ${index}`, ignorable: true });
                 }
             }
         }
@@ -255,12 +284,14 @@ class Connection extends events_1.EventEmitter {
                     const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.table_name]
                         && current.foreign_keys[modelClass.table_name][integrity.column];
                     if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name)) {
-                        return true;
+                        const table_name = modelClass.table_name;
+                        const parent_table_name = integrity.parent.table_name;
+                        changes.push({ message: `Add foreign key ${table_name}.${integrity.column} to ${parent_table_name}` });
                     }
                 }
             }
         }
-        return false;
+        return changes;
     }
     /**
      * Drops all model tables

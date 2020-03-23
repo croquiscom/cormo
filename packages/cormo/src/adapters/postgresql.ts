@@ -25,7 +25,7 @@ import { Connection } from '../connection';
 import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase, ISchemasTable, ISchemasIndex } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: IColumnPropertyInternal) {
@@ -123,7 +123,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   /** @internal */
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: { [table_name: string]: any } = {};
+    const table_schemas: { [table_name: string]: ISchemasTable } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
     }
@@ -570,7 +570,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getTables(): Promise<any> {
+  private async _getTables(): Promise<string[]> {
     const query = `SELECT table_name FROM INFORMATION_SCHEMA.TABLES
       WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name != 'spatial_ref_sys'`;
     const result = await this._pool.query(query);
@@ -579,10 +579,10 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getSchema(table: string): Promise<any> {
+  private async _getSchema(table: string): Promise<ISchemasTable> {
     const query = 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1';
     const result = await this._pool.query(query, [table]);
-    const schema: any = {};
+    const schema: ISchemasTable = {};
     for (const column of result.rows) {
       const type = column.data_type === 'character varying' ? new types.String(column.character_maximum_length)
         : column.data_type === 'double precision' ? new types.Number()
@@ -602,14 +602,17 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getIndexes(): Promise<any> {
+  private async _getIndexes(): Promise<{ [table_name: string]: ISchemasIndex }> {
     // see http://stackoverflow.com/a/2213199/3239514
     const query = `SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name
       FROM pg_class t, pg_class i, pg_index ix, pg_attribute a
       WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND a.attnum = ANY(ix.indkey)`;
     const result = await this._pool.query(query);
-    const indexes: any = {};
+    const indexes: { [table_name: string]: ISchemasIndex } = {};
     for (const row of result.rows) {
+      if (row.index_name === `${row.table_name}_pkey`) {
+        continue;
+      }
       const indexes_of_table = indexes[row.table_name] || (indexes[row.table_name] = {});
       (indexes_of_table[row.index_name] || (indexes_of_table[row.index_name] = {}))[row.column_name] = 1;
     }

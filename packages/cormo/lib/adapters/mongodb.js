@@ -757,6 +757,9 @@ class MongoDBAdapter extends base_1.AdapterBase {
         const rows = await this._db.collection(table).listIndexes().toArray();
         const indexes = {};
         for (const row of rows) {
+            if (row.name === '_id_') {
+                continue;
+            }
             indexes[row.name] = row.key;
         }
         return indexes;

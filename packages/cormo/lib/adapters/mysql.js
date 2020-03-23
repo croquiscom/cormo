@@ -725,6 +725,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const rows = await this._client.queryAsync(sql, [this._database]);
         const indexes = {};
         for (const row of rows) {
+            if (row.INDEX_NAME === 'id' || row.INDEX_NAME === 'PRIMARY') {
+                continue;
+            }
             const indexes_of_table = indexes[row.TABLE_NAME] || (indexes[row.TABLE_NAME] = {});
             (indexes_of_table[row.INDEX_NAME] || (indexes_of_table[row.INDEX_NAME] = {}))[row.COLUMN_NAME] = 1;
         }

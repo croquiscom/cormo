@@ -17,7 +17,7 @@ import { Connection } from '../connection';
 import { IColumnPropertyInternal, IIndexProperty } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase, ISchemasTable, ISchemasIndex } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: IColumnPropertyInternal) {
@@ -98,7 +98,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   /** @internal */
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
-    const table_schemas: { [table_name: string]: any } = {};
+    const table_schemas: { [table_name: string]: ISchemasTable } = {};
     const all_indexes: any = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
@@ -529,7 +529,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getTables() {
+  private async _getTables(): Promise<string[]> {
     const query = `SELECT name FROM sqlite_master
       WHERE type='table' and name!='sqlite_sequence'`;
     let tables = await this._client.allAsync(query);
@@ -538,9 +538,9 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getSchema(table: string): Promise<any> {
+  private async _getSchema(table: string): Promise<ISchemasTable> {
     const columns = (await this._client.allAsync(`PRAGMA table_info(\`${table}\`)`));
-    const schema: any = {};
+    const schema: ISchemasTable = {};
     for (const column of columns) {
       const type = /^varchar\((\d*)\)/i.test(column.type) ? new types.String(Number(RegExp.$1))
         : /^double/i.test(column.type) ? new types.Number()
@@ -557,9 +557,9 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getIndexes(table: string): Promise<any> {
+  private async _getIndexes(table: string): Promise<{ [table_name: string]: ISchemasIndex }> {
     const rows = await this._client.allAsync(`PRAGMA index_list(\`${table}\`)`);
-    const indexes: any = {};
+    const indexes: { [table_name: string]: ISchemasIndex } = {};
     for (const row of rows) {
       if (!indexes[row.name]) {
         indexes[row.name] = {};

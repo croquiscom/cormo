@@ -30,9 +30,13 @@ export default function(db: any, db_config: any) {
 
     // add unique index
     User.index({ age: 1 }, { unique: true });
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Add index on users age' },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     try {
@@ -78,15 +82,29 @@ export default function(db: any, db_config: any) {
     User.index({ name: 1, age: 1 });
     User.column('name', String);
     User.column('age', Number);
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Add table users' },
+      { message: 'Add index on users name,age' },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     User.column('address', String);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(db === 'mongodb' ? false : true);
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Add column address to users' },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
   });
 
@@ -94,15 +112,28 @@ export default function(db: any, db_config: any) {
     class User extends cormo.BaseModel { }
     User.column('name', String);
     User.column('age', Number);
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Add table users' },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     User.column('address', String);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(db === 'mongodb' ? false : true);
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Add column address to users' },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
 
     const user1 = await User.create({ name: 'John Doe', age: 27, address: 'Moon' });
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
     const user2 = await User.find(user1.id);
     expect(user2).to.have.keys('id', 'name', 'age', 'address');
@@ -125,9 +156,15 @@ export default function(db: any, db_config: any) {
       @cormo.Column(String)
       public name!: string;
     }
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Add table people' },
+      { message: 'Add table User' },
+      { message: 'Add table Guest' },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     const schema = await (connection._adapter as any).getSchemas();
@@ -145,10 +182,15 @@ export default function(db: any, db_config: any) {
       @cormo.Column(Number)
       public a!: number;
     }
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Add table users' },
+      { message: 'Add index on users n' },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     // must create table before define an alias Model
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     @cormo.Model({ name: 'users' })
@@ -160,9 +202,11 @@ export default function(db: any, db_config: any) {
       @cormo.Column({ type: Number, name: 'a' })
       public age!: number;
     }
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false); // no table to create
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     // create new records
@@ -309,5 +353,94 @@ export default function(db: any, db_config: any) {
       { id: users[0].id, name: 'Jone Doe', age: 27, created_at: new Date(2018, 7, 3, 5, 24) },
       { id: users[1].id, name: 'unknown', age: -1, created_at: new Date(2018, 8, 21, 17, 13) },
     ]);
+  });
+
+  it('table is removed', async () => {
+    class Person extends cormo.BaseModel { }
+    Person.column('name', String);
+
+    class User extends cormo.BaseModel { }
+    User.column('name', String);
+
+    await connection.applySchemas();
+    delete connection.models.Person;
+
+    User.column('address', String);
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Add column address to users' },
+        { message: 'Remove table people', ignorable: true },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Remove table people', ignorable: true },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
+
+    await connection.applySchemas();
+
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Remove table people', ignorable: true },
+    ]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+
+    connection.models.Person = Person;
+  });
+
+  it('column is removed', async () => {
+    class User extends cormo.BaseModel { }
+    User.column('name', String);
+    User.column('address', String);
+
+    await connection.applySchemas();
+    delete User._schema.address;
+
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Remove column address from users', ignorable: true },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
+  });
+
+  it('column requireness is changed', async () => {
+    class User extends cormo.BaseModel { }
+    User.column('name', { type: String, required: true });
+    User.column('address', String);
+
+    await connection.applySchemas();
+    User._schema.name.required = false;
+    User._schema.address.required = true;
+
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Change users.name to optional', ignorable: true },
+        { message: 'Change users.address to required', ignorable: true },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
+  });
+
+  it('index is removed', async () => {
+    class User extends cormo.BaseModel { }
+    User.column('name', String);
+    User.column('age', Number);
+    User.index({ age: 1 }, { unique: true });
+
+    await connection.applySchemas();
+    (User as any)._indexes.pop();
+
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Remove index on users age', ignorable: true },
+    ]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
   });
 }
