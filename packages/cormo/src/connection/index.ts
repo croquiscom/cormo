@@ -66,6 +66,10 @@ export interface IAssociationBelongsToOptions {
   required?: boolean;
 }
 
+export interface ISchemaChange {
+  message: string;
+}
+
 interface IAssociation {
   type: 'hasMany' | 'hasOne' | 'belongsTo';
   this_model: typeof BaseModel;
@@ -328,14 +332,21 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   }
 
   public async isApplyingSchemasNecessary(): Promise<boolean> {
+    const changes = await this.getSchemaChanges();
+    return changes.length > 0;
+  }
+
+  /**
+   * Returns changes of schama
+   * @see AdapterBase::applySchema
+   */
+  public async getSchemaChanges(): Promise<ISchemaChange[]> {
     this._initializeModels();
-    if (!this._schema_changed) {
-      return false;
-    }
     this.applyAssociations();
     this._checkArchive();
-
     await this._promise_connection;
+
+    const changes: ISchemaChange[] = [];
 
     const current = await this._adapter.getSchemas();
 
@@ -348,7 +359,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       for (const column in modelClass._schema) {
         const property = modelClass._schema[column];
         if (!currentTable[property._dbname_us]) {
-          return true;
+          changes.push({ message: `Adding column ${column} to ${modelClass.table_name}` });
         }
       }
     }
@@ -356,16 +367,16 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     for (const model in this.models) {
       const modelClass = this.models[model];
       if (!current.tables[modelClass.table_name]) {
-        return true;
+        changes.push({ message: `Creating table ${modelClass.table_name}` });
       }
     }
 
-    for (const model in this.models) {
-      const modelClass = this.models[model];
+    for (const model_name in this.models) {
+      const modelClass = this.models[model_name];
       for (const index of modelClass._indexes) {
         if (!(current.indexes && current.indexes[modelClass.table_name]
           && current.indexes[modelClass.table_name][index.options.name!])) {
-          return true;
+          changes.push({ message: `Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
         }
       }
     }
@@ -385,13 +396,15 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.table_name]
             && current.foreign_keys[modelClass.table_name][integrity.column];
           if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name)) {
-            return true;
+            const table_name = modelClass.table_name;
+            const parent_table_name = integrity.parent.table_name;
+            changes.push({ message: `Adding foreign key ${table_name}.${integrity.column} to ${parent_table_name}` });
           }
         }
       }
     }
 
-    return false;
+    return changes;
   }
 
   /**

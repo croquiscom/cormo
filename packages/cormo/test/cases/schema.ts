@@ -30,9 +30,13 @@ export default function(db: any, db_config: any) {
 
     // add unique index
     User.index({ age: 1 }, { unique: true });
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Creating index on users age' },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     try {
@@ -78,15 +82,29 @@ export default function(db: any, db_config: any) {
     User.index({ name: 1, age: 1 });
     User.column('name', String);
     User.column('age', Number);
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Creating table users' },
+      { message: 'Creating index on users name,age' },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     User.column('address', String);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(db === 'mongodb' ? false : true);
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Adding column address to users' },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
   });
 
@@ -94,15 +112,28 @@ export default function(db: any, db_config: any) {
     class User extends cormo.BaseModel { }
     User.column('name', String);
     User.column('age', Number);
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Creating table users' },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     User.column('address', String);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(db === 'mongodb' ? false : true);
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Adding column address to users' },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
 
     const user1 = await User.create({ name: 'John Doe', age: 27, address: 'Moon' });
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
     const user2 = await User.find(user1.id);
     expect(user2).to.have.keys('id', 'name', 'age', 'address');
@@ -125,9 +156,15 @@ export default function(db: any, db_config: any) {
       @cormo.Column(String)
       public name!: string;
     }
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Creating table people' },
+      { message: 'Creating table User' },
+      { message: 'Creating table Guest' },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     const schema = await (connection._adapter as any).getSchemas();
@@ -145,10 +182,15 @@ export default function(db: any, db_config: any) {
       @cormo.Column(Number)
       public a!: number;
     }
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Creating table users' },
+      { message: 'Creating index on users n' },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
     // must create table before define an alias Model
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     @cormo.Model({ name: 'users' })
@@ -160,9 +202,11 @@ export default function(db: any, db_config: any) {
       @cormo.Column({ type: Number, name: 'a' })
       public age!: number;
     }
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false); // no table to create
 
     await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     // create new records
