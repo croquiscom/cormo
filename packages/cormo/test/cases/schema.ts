@@ -388,4 +388,23 @@ export default function(db: any, db_config: any) {
 
     connection.models.Person = Person;
   });
+
+  it('column is removed', async () => {
+    class User extends cormo.BaseModel { }
+    User.column('name', String);
+    User.column('address', String);
+
+    await connection.applySchemas();
+    delete User._schema.address;
+
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Remove column address from users', ignorable: true },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
+  });
 }

@@ -228,6 +228,11 @@ class Connection extends events_1.EventEmitter {
                     changes.push({ message: `Add column ${column} to ${modelClass.table_name}` });
                 }
             }
+            for (const column in currentTable) {
+                if (!lodash_1.default.find(modelClass._schema, { _dbname_us: column })) {
+                    changes.push({ message: `Remove column ${column} from ${modelClass.table_name}`, ignorable: true });
+                }
+            }
         }
         for (const model in this.models) {
             const modelClass = this.models[model];

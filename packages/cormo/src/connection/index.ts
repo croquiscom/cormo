@@ -363,6 +363,11 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           changes.push({ message: `Add column ${column} to ${modelClass.table_name}` });
         }
       }
+      for (const column in currentTable) {
+        if (!_.find(modelClass._schema, { _dbname_us: column })) {
+          changes.push({ message: `Remove column ${column} from ${modelClass.table_name}`, ignorable: true });
+        }
+      }
     }
 
     for (const model in this.models) {
