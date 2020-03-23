@@ -43,7 +43,7 @@ class CommandCheckSchemas {
             catch (error1) {
                 if (error1.code === 'MODULE_NOT_FOUND') {
                     try {
-                        require(module_to_load);
+                        require(path_1.default.resolve(process.cwd(), 'node_modules', module_to_load));
                     }
                     catch (error2) {
                         console.log(error2.toString());
