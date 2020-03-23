@@ -29,7 +29,7 @@ import { Connection } from '../connection';
 import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase, ISchemasTable } from './base';
+import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase, ISchemasTable, ISchemasIndex } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: IColumnPropertyInternal, support_fractional_seconds: boolean) {
@@ -755,11 +755,14 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getIndexes(): Promise<{ [table_name: string]: any }> {
+  private async _getIndexes(): Promise<{ [table_name: string]: ISchemasIndex }> {
     const sql = 'SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX';
     const rows = await this._client.queryAsync(sql, [this._database]);
-    const indexes: any = {};
+    const indexes: { [table_name: string]: ISchemasIndex } = {};
     for (const row of rows) {
+      if (row.INDEX_NAME === 'id' || row.INDEX_NAME === 'PRIMARY') {
+        continue;
+      }
       const indexes_of_table = indexes[row.TABLE_NAME] || (indexes[row.TABLE_NAME] = {});
       (indexes_of_table[row.INDEX_NAME] || (indexes_of_table[row.INDEX_NAME] = {}))[row.COLUMN_NAME] = 1;
     }

@@ -588,6 +588,9 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const result = await this._pool.query(query);
         const indexes = {};
         for (const row of result.rows) {
+            if (row.index_name === `${row.table_name}_pkey`) {
+                continue;
+            }
             const indexes_of_table = indexes[row.table_name] || (indexes[row.table_name] = {});
             (indexes_of_table[row.index_name] || (indexes_of_table[row.index_name] = {}))[row.column_name] = 1;
         }

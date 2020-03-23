@@ -286,8 +286,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         for (const model_name in this.models) {
           const modelClass = this.models[model_name];
           for (const index of modelClass._indexes) {
-            if (!(current.indexes && current.indexes[modelClass.table_name]
-              && current.indexes[modelClass.table_name][index.options.name!])) {
+            if (!current.indexes?.[modelClass.table_name]?.[index.options.name!]) {
               if (options.verbose) {
                 console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
               }
@@ -392,9 +391,13 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     for (const model_name in this.models) {
       const modelClass = this.models[model_name];
       for (const index of modelClass._indexes) {
-        if (!(current.indexes && current.indexes[modelClass.table_name]
-          && current.indexes[modelClass.table_name][index.options.name!])) {
+        if (!current.indexes?.[modelClass.table_name]?.[index.options.name!]) {
           changes.push({ message: `Add index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
+        }
+      }
+      for (const index in current.indexes?.[modelClass.table_name]) {
+        if (!_.find(modelClass._indexes, (item) => item.options.name === index)) {
+          changes.push({ message: `Remove index on ${modelClass.table_name} ${index}`, ignorable: true });
         }
       }
     }

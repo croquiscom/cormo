@@ -428,4 +428,19 @@ export default function(db: any, db_config: any) {
       expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
     }
   });
+
+  it('index is removed', async () => {
+    class User extends cormo.BaseModel { }
+    User.column('name', String);
+    User.column('age', Number);
+    User.index({ age: 1 }, { unique: true });
+
+    await connection.applySchemas();
+    (User as any)._indexes.pop();
+
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Remove index on users age', ignorable: true },
+    ]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+  });
 }

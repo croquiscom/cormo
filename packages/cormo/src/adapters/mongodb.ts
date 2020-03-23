@@ -22,7 +22,7 @@ import { Connection } from '../connection';
 import { BaseModel, IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
-import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions, ISchemas } from './base';
+import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions, ISchemas, ISchemasIndex } from './base';
 
 function _convertValueToObjectID(value: any, key: any) {
   if (value == null) {
@@ -266,7 +266,7 @@ export class MongoDBAdapter extends AdapterBase {
   public async getSchemas(): Promise<ISchemas> {
     const tables = await this._getTables();
     const table_schemas: { [table_name: string]: 'NO SCHEMA' } = {};
-    const all_indexes: any = {};
+    const all_indexes: { [table_name: string]: ISchemasIndex } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
       all_indexes[table] = await this._getIndexes(table);
@@ -760,10 +760,13 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private async _getIndexes(table: any) {
+  private async _getIndexes(table: string): Promise<ISchemasIndex> {
     const rows = await this._db.collection(table).listIndexes().toArray();
     const indexes: any = {};
     for (const row of rows) {
+      if (row.name === '_id_') {
+        continue;
+      }
       indexes[row.name] = row.key;
     }
     return indexes;

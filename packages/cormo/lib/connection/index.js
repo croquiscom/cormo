@@ -124,6 +124,7 @@ class Connection extends events_1.EventEmitter {
             console.log('Applying schemas');
         }
         this._promise_schema_applied = this._promise_connection.then(async () => {
+            var _a, _b;
             try {
                 const current = await this._adapter.getSchemas();
                 for (const model in this.models) {
@@ -154,8 +155,7 @@ class Connection extends events_1.EventEmitter {
                 for (const model_name in this.models) {
                     const modelClass = this.models[model_name];
                     for (const index of modelClass._indexes) {
-                        if (!(current.indexes && current.indexes[modelClass.table_name]
-                            && current.indexes[modelClass.table_name][index.options.name])) {
+                        if (!((_b = (_a = current.indexes) === null || _a === void 0 ? void 0 : _a[modelClass.table_name]) === null || _b === void 0 ? void 0 : _b[index.options.name])) {
                             if (options.verbose) {
                                 console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
                             }
@@ -210,6 +210,7 @@ class Connection extends events_1.EventEmitter {
      * @see AdapterBase::applySchema
      */
     async getSchemaChanges() {
+        var _a, _b, _c;
         this._initializeModels();
         this.applyAssociations();
         this._checkArchive();
@@ -256,9 +257,13 @@ class Connection extends events_1.EventEmitter {
         for (const model_name in this.models) {
             const modelClass = this.models[model_name];
             for (const index of modelClass._indexes) {
-                if (!(current.indexes && current.indexes[modelClass.table_name]
-                    && current.indexes[modelClass.table_name][index.options.name])) {
+                if (!((_b = (_a = current.indexes) === null || _a === void 0 ? void 0 : _a[modelClass.table_name]) === null || _b === void 0 ? void 0 : _b[index.options.name])) {
                     changes.push({ message: `Add index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
+                }
+            }
+            for (const index in (_c = current.indexes) === null || _c === void 0 ? void 0 : _c[modelClass.table_name]) {
+                if (!lodash_1.default.find(modelClass._indexes, (item) => item.options.name === index)) {
+                    changes.push({ message: `Remove index on ${modelClass.table_name} ${index}`, ignorable: true });
                 }
             }
         }
