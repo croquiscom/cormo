@@ -31,7 +31,7 @@ export default function(db: any, db_config: any) {
     // add unique index
     User.index({ age: 1 }, { unique: true });
     expect(await connection.getSchemaChanges()).to.eql([
-      { message: 'Creating index on users age' },
+      { message: 'Add index on users age' },
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -83,8 +83,8 @@ export default function(db: any, db_config: any) {
     User.column('name', String);
     User.column('age', Number);
     expect(await connection.getSchemaChanges()).to.eql([
-      { message: 'Creating table users' },
-      { message: 'Creating index on users name,age' },
+      { message: 'Add table users' },
+      { message: 'Add index on users name,age' },
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -95,7 +95,7 @@ export default function(db: any, db_config: any) {
     User.column('address', String);
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
-        { message: 'Adding column address to users' },
+        { message: 'Add column address to users' },
       ]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
     } else {
@@ -113,7 +113,7 @@ export default function(db: any, db_config: any) {
     User.column('name', String);
     User.column('age', Number);
     expect(await connection.getSchemaChanges()).to.eql([
-      { message: 'Creating table users' },
+      { message: 'Add table users' },
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -124,7 +124,7 @@ export default function(db: any, db_config: any) {
     User.column('address', String);
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
-        { message: 'Adding column address to users' },
+        { message: 'Add column address to users' },
       ]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
     } else {
@@ -157,9 +157,9 @@ export default function(db: any, db_config: any) {
       public name!: string;
     }
     expect(await connection.getSchemaChanges()).to.eql([
-      { message: 'Creating table people' },
-      { message: 'Creating table User' },
-      { message: 'Creating table Guest' },
+      { message: 'Add table people' },
+      { message: 'Add table User' },
+      { message: 'Add table Guest' },
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -183,8 +183,8 @@ export default function(db: any, db_config: any) {
       public a!: number;
     }
     expect(await connection.getSchemaChanges()).to.eql([
-      { message: 'Creating table users' },
-      { message: 'Creating index on users n' },
+      { message: 'Add table users' },
+      { message: 'Add index on users n' },
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 

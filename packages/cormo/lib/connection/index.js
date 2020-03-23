@@ -225,14 +225,14 @@ class Connection extends events_1.EventEmitter {
             for (const column in modelClass._schema) {
                 const property = modelClass._schema[column];
                 if (!currentTable[property._dbname_us]) {
-                    changes.push({ message: `Adding column ${column} to ${modelClass.table_name}` });
+                    changes.push({ message: `Add column ${column} to ${modelClass.table_name}` });
                 }
             }
         }
         for (const model in this.models) {
             const modelClass = this.models[model];
             if (!current.tables[modelClass.table_name]) {
-                changes.push({ message: `Creating table ${modelClass.table_name}` });
+                changes.push({ message: `Add table ${modelClass.table_name}` });
             }
         }
         for (const model_name in this.models) {
@@ -240,7 +240,7 @@ class Connection extends events_1.EventEmitter {
             for (const index of modelClass._indexes) {
                 if (!(current.indexes && current.indexes[modelClass.table_name]
                     && current.indexes[modelClass.table_name][index.options.name])) {
-                    changes.push({ message: `Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
+                    changes.push({ message: `Add index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
                 }
             }
         }
@@ -263,7 +263,7 @@ class Connection extends events_1.EventEmitter {
                     if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name)) {
                         const table_name = modelClass.table_name;
                         const parent_table_name = integrity.parent.table_name;
-                        changes.push({ message: `Adding foreign key ${table_name}.${integrity.column} to ${parent_table_name}` });
+                        changes.push({ message: `Add foreign key ${table_name}.${integrity.column} to ${parent_table_name}` });
                     }
                 }
             }
