@@ -1,6 +1,6 @@
-import { ILogger } from './ILogger';
+import { Logger } from './Logger';
 
-export class ConsoleLogger implements ILogger {
+export class ConsoleLogger implements Logger {
   public logQuery(text: string, values?: any[]): void {
     console.log(text, values);
   }

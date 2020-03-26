@@ -4,11 +4,11 @@ import _ from 'lodash';
 import { AdapterBase } from '../adapters/base';
 import {
   Connection,
-  IAssociationBelongsToOptions,
-  IAssociationHasManyOptions,
-  IAssociationHasOneOptions,
+  AssociationBelongsToOptions,
+  AssociationHasManyOptions,
+  AssociationHasOneOptions,
 } from '../connection';
-import { IQueryArray, IQuerySingle, Query } from '../query';
+import { QueryArray, QuerySingle, Query } from '../query';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
@@ -44,7 +44,7 @@ function _pf_set(this: any, path: string, value: any) {
 
 function _pf_reset() { /**/ }
 
-export interface IColumnProperty {
+export interface ColumnProperty {
   type: types.ColumnType | types.ColumnType[];
   array?: boolean;
   required?: boolean;
@@ -55,7 +55,7 @@ export interface IColumnProperty {
   default_value?: string | number | (() => string | number);
 }
 
-export interface IColumnPropertyInternal extends IColumnProperty {
+export interface ColumnPropertyInternal extends ColumnProperty {
   type: types.ColumnTypeInternal;
   record_id?: boolean;
   type_class: types.ColumnTypeInternalConstructor;
@@ -67,21 +67,21 @@ export interface IColumnPropertyInternal extends IColumnProperty {
 }
 
 /** @internal */
-export interface IIndexProperty {
+export interface IndexProperty {
   columns: { [column: string]: 1 | -1 };
   options: { name?: string; required?: boolean; unique?: boolean };
 }
 
-export interface IColumnNestedProperty {
-  [subcolumn: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;
+export interface ColumnNestedProperty {
+  [subcolumn: string]: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty;
 }
 
-export interface IModelSchema {
-  [path: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;
+export interface ModelSchema {
+  [path: string]: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty;
 }
 
-export interface IModelSchemaInternal {
-  [path: string]: IColumnPropertyInternal;
+export interface ModelSchemaInternal {
+  [path: string]: ColumnPropertyInternal;
 }
 
 /**
@@ -117,12 +117,12 @@ class BaseModel {
 
   public static _name: string;
 
-  public static _schema: IModelSchemaInternal;
+  public static _schema: ModelSchemaInternal;
 
   public static _object_column_classes: Array<{ column: string; klass: any }>;
 
   /** @internal */
-  public static _indexes: IIndexProperty[];
+  public static _indexes: IndexProperty[];
 
   public static _integrities: any[];
 
@@ -139,7 +139,7 @@ class BaseModel {
   /**
    * Returns a new model class extending BaseModel
    */
-  public static newModel(connection: Connection, name: string, schema: IModelSchema): typeof BaseModel {
+  public static newModel(connection: Connection, name: string, schema: ModelSchema): typeof BaseModel {
     const NewModel = class extends BaseModel { };
     NewModel.connection(connection, name);
     for (const column_name in schema) {
@@ -197,7 +197,7 @@ class BaseModel {
    * Adds a column to this model
    */
   public static column(
-    path: string, type_or_property: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty,
+    path: string, type_or_property: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty,
   ): void;
   public static column(path: string, type_or_property: any) {
     this._checkConnection();
@@ -225,7 +225,7 @@ class BaseModel {
       type_or_property.array = true;
       type_or_property.type = type_or_property.type[0];
     }
-    const property = type_or_property as IColumnPropertyInternal;
+    const property = type_or_property as ColumnPropertyInternal;
     let type = types._toCORMOType(property.type);
     if (type.constructor === types.RecordID) {
       type = this._getKeyType(property.connection);
@@ -235,7 +235,7 @@ class BaseModel {
     if (type.constructor === types.GeoPoint && !this._adapter.support_geopoint) {
       throw new Error('this adapter does not support GeoPoint type');
     }
-    if (type.constructor === types.String && (type as types.ICormoTypesString).length
+    if (type.constructor === types.String && (type as types.CormoTypesString).length
       && !this._adapter.support_string_type_with_length) {
       throw new Error('this adapter does not support String type with length');
     }
@@ -308,7 +308,7 @@ class BaseModel {
   /**
    * Adds a has-many association
    */
-  public static hasMany(target_model_or_column: string | typeof BaseModel, options?: IAssociationHasManyOptions) {
+  public static hasMany(target_model_or_column: string | typeof BaseModel, options?: AssociationHasManyOptions) {
     this._checkConnection();
     this._connection.addAssociation({ type: 'hasMany', this_model: this, target_model_or_column, options });
   }
@@ -316,7 +316,7 @@ class BaseModel {
   /**
    * Adds a has-one association
    */
-  public static hasOne(target_model_or_column: string | typeof BaseModel, options?: IAssociationHasOneOptions) {
+  public static hasOne(target_model_or_column: string | typeof BaseModel, options?: AssociationHasOneOptions) {
     this._checkConnection();
     this._connection.addAssociation({ type: 'hasOne', this_model: this, target_model_or_column, options });
   }
@@ -324,7 +324,7 @@ class BaseModel {
   /**
    * Adds a belongs-to association
    */
-  public static belongsTo(target_model_or_column: string | typeof BaseModel, options?: IAssociationBelongsToOptions) {
+  public static belongsTo(target_model_or_column: string | typeof BaseModel, options?: AssociationBelongsToOptions) {
     this._checkConnection();
     this._connection.addAssociation({ type: 'belongsTo', this_model: this, target_model_or_column, options });
   }
@@ -559,7 +559,7 @@ class BaseModel {
   public static query<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     options?: { transaction?: Transaction },
-  ): IQueryArray<M> {
+  ): QueryArray<M> {
     return new Query<M>(this).transaction(options && options.transaction);
   }
 
@@ -571,17 +571,17 @@ class BaseModel {
     this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID,
     options?: { transaction?: Transaction },
-  ): IQuerySingle<M>;
+  ): QuerySingle<M>;
   public static find<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID[],
     options?: { transaction?: Transaction },
-  ): IQueryArray<M>;
+  ): QueryArray<M>;
   public static find<M extends BaseModel>(
     this: (new (data?: any) => M) & typeof BaseModel,
     id: types.RecordID | types.RecordID[],
     options?: { transaction?: Transaction },
-  ): IQuerySingle<M> | IQueryArray<M> {
+  ): QuerySingle<M> | QueryArray<M> {
     return this.query<M>(options).find(id as types.RecordID);
   }
 
@@ -593,7 +593,7 @@ class BaseModel {
     this: (new (data?: any) => M) & typeof BaseModel,
     ids: types.RecordID[],
     options?: { transaction?: Transaction },
-  ): IQueryArray<M> {
+  ): QueryArray<M> {
     return this.query<M>(options).findPreserve(ids);
   }
 
@@ -604,7 +604,7 @@ class BaseModel {
     this: (new (data?: any) => M) & typeof BaseModel,
     condition?: object,
     options?: { transaction?: Transaction },
-  ): IQueryArray<M> {
+  ): QueryArray<M> {
     return this.query<M>(options).where(condition);
   }
 
@@ -615,17 +615,17 @@ class BaseModel {
     this: (new (data?: any) => M) & typeof BaseModel,
     columns: K[],
     options?: { transaction?: Transaction },
-  ): IQueryArray<M, Pick<M, K>>;
+  ): QueryArray<M, Pick<M, K>>;
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
     this: (new (data?: any) => M) & typeof BaseModel,
     columns?: string,
     options?: { transaction?: Transaction },
-  ): IQueryArray<M, Pick<M, K>>;
+  ): QueryArray<M, Pick<M, K>>;
   public static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(
     this: (new (data?: any) => M) & typeof BaseModel,
     columns?: string | K[],
     options?: { transaction?: Transaction },
-  ): IQueryArray<M, Pick<M, K>> {
+  ): QueryArray<M, Pick<M, K>> {
     return this.query<M>(options).select<K>(columns as string);
   }
 
@@ -636,7 +636,7 @@ class BaseModel {
     this: (new (data?: any) => M) & typeof BaseModel,
     orders: string,
     options?: { transaction?: Transaction },
-  ): IQueryArray<M> {
+  ): QueryArray<M> {
     return this.query<M>(options).order(orders);
   }
 
@@ -648,25 +648,25 @@ class BaseModel {
     group_by: G | G[],
     fields?: F,
     options?: { transaction?: Transaction },
-  ): IQueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
+  ): QueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
   public static group<M extends BaseModel, F>(
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: null,
     fields?: F,
     options?: { transaction?: Transaction },
-  ): IQueryArray<M, { [field in keyof F]: number }>;
+  ): QueryArray<M, { [field in keyof F]: number }>;
   public static group<M extends BaseModel, U>(
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: string | null,
     fields?: object,
     options?: { transaction?: Transaction },
-  ): IQueryArray<M, U>;
+  ): QueryArray<M, U>;
   public static group<M extends BaseModel, U>(
     this: (new (data?: any) => M) & typeof BaseModel,
     group_by: string | null,
     fields?: object,
     options?: { transaction?: Transaction },
-  ): IQueryArray<M, U> {
+  ): QueryArray<M, U> {
     return this.query<M>(options).group<U>(group_by, fields);
   }
 
@@ -720,7 +720,7 @@ class BaseModel {
   }
 
   public static _buildSaveDataColumn(
-    data: any, model: any, column: string, property: IColumnPropertyInternal, allow_null: boolean = false,
+    data: any, model: any, column: string, property: ColumnPropertyInternal, allow_null: boolean = false,
   ) {
     const adapter = this._adapter;
     let value = util.getPropertyOfPath(model, property._parts);
@@ -735,7 +735,7 @@ class BaseModel {
   }
 
   public static _validateColumn(
-    data: any, column: string, property: IColumnPropertyInternal, for_update: boolean = false,
+    data: any, column: string, property: ColumnPropertyInternal, for_update: boolean = false,
   ) {
     let obj: any;
     let last: any;

@@ -1,6 +1,6 @@
-import { ILogger } from './ILogger';
+import { Logger } from './Logger';
 
-export class EmptyLogger implements ILogger {
+export class EmptyLogger implements Logger {
   public logQuery(text: string, values?: any[]): void {
     //
   }

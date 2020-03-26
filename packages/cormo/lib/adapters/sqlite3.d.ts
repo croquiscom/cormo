@@ -1,4 +1,4 @@
-export interface IAdapterSettingsSQLite3 {
+export interface AdapterSettingsSQLite3 {
     database: string;
 }
 import { Connection } from '../connection';

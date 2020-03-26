@@ -1,4 +1,4 @@
-export interface IAdapterSettingsMySQL {
+export interface AdapterSettingsMySQL {
     host?: string;
     port?: number;
     user?: string;

@@ -21,7 +21,7 @@ export { BaseModel, ModelValueObject, ModelValueObjectWithId } from './model';
  */
 export { Command } from './command';
 
-export { IQueryArray, IQuerySingle, Query } from './query';
+export { QueryArray, QuerySingle, Query } from './query';
 
 export * from './decorators';
 

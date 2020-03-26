@@ -8,7 +8,7 @@ import {
 } from 'graphql';
 import _ from 'lodash';
 
-interface IOptions {
+interface Options {
   id_description?: string;
   list_type_description?: string;
   item_list_description?: string;
@@ -39,7 +39,7 @@ function getGraphQlType(property: typeof cormo.BaseModel['_schema']['path']) {
   return graphql_type;
 }
 
-function createSingleType(model_class: typeof cormo.BaseModel, options: IOptions): GraphQLObjectType {
+function createSingleType(model_class: typeof cormo.BaseModel, options: Options): GraphQLObjectType {
   const fields: GraphQLFieldConfigMap<any, any> = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
     const graphql_type = getGraphQlType(property);
@@ -62,7 +62,7 @@ function createSingleType(model_class: typeof cormo.BaseModel, options: IOptions
 
 function createListType(
   model_class: typeof cormo.BaseModel,
-  options: IOptions,
+  options: Options,
   single_type: GraphQLObjectType,
 ): GraphQLObjectType {
   return new GraphQLObjectType({
@@ -109,7 +109,7 @@ function createListType(
   });
 }
 
-function createCreateInputType(model_class: typeof cormo.BaseModel, options: IOptions) {
+function createCreateInputType(model_class: typeof cormo.BaseModel, options: Options) {
   const fields: GraphQLInputFieldConfigMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
     if (column === 'id') {
@@ -138,7 +138,7 @@ function createCreateInputType(model_class: typeof cormo.BaseModel, options: IOp
   });
 }
 
-function createUpdateInputType(model_class: typeof cormo.BaseModel, options: IOptions) {
+function createUpdateInputType(model_class: typeof cormo.BaseModel, options: Options) {
   const fields: GraphQLInputFieldConfigMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
     if (column === options.created_at_column) {
@@ -164,7 +164,7 @@ function createUpdateInputType(model_class: typeof cormo.BaseModel, options: IOp
   });
 }
 
-function createDeleteInputType(model_class: typeof cormo.BaseModel, options: IOptions) {
+function createDeleteInputType(model_class: typeof cormo.BaseModel, options: Options) {
   const fields: GraphQLInputFieldConfigMap = {};
   fields.id = {
     description: options.id_description,
@@ -176,7 +176,7 @@ function createDeleteInputType(model_class: typeof cormo.BaseModel, options: IOp
   });
 }
 
-function createOrderType(model_class: typeof cormo.BaseModel, options: IOptions) {
+function createOrderType(model_class: typeof cormo.BaseModel, options: Options) {
   const values: GraphQLEnumValueConfigMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
     if (column === 'id' || property.type_class === cormo.types.String || property.type_class === cormo.types.Integer) {
@@ -194,7 +194,7 @@ function createOrderType(model_class: typeof cormo.BaseModel, options: IOptions)
   });
 }
 
-function buildListQueryArgs(model_class: typeof cormo.BaseModel, options: IOptions) {
+function buildListQueryArgs(model_class: typeof cormo.BaseModel, options: Options) {
   const list_query_args: GraphQLFieldConfigArgumentMap = {
   };
   for (const [column, property] of Object.entries(model_class._schema)) {
@@ -246,7 +246,7 @@ function buildListQueryArgs(model_class: typeof cormo.BaseModel, options: IOptio
   return list_query_args;
 }
 
-export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, options: IOptions = {}): GraphQLSchema {
+export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, options: Options = {}): GraphQLSchema {
   model_class._connection.applyAssociations();
 
   const camel_name = model_class.name;

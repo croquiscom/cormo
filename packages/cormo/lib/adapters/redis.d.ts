@@ -1,4 +1,4 @@
-export interface IAdapterSettingsRedis {
+export interface AdapterSettingsRedis {
     host?: string;
     port?: number;
     database: string;

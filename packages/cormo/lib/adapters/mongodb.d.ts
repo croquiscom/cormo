@@ -1,4 +1,4 @@
-export interface IAdapterSettingsMongoDB {
+export interface AdapterSettingsMongoDB {
     host?: string;
     port?: number;
     user?: string;

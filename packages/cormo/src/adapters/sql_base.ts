@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { BaseModel, IColumnPropertyInternal, IModelSchemaInternal } from '../model';
+import { BaseModel, ColumnPropertyInternal, ModelSchemaInternal } from '../model';
 import * as types from '../types';
 import { AdapterBase } from './base';
 
@@ -73,7 +73,7 @@ abstract class SQLAdapterBase extends AdapterBase {
 
   /** @internal */
   protected _buildWhereSingle(
-    schema: IModelSchemaInternal, property: IColumnPropertyInternal, key: any, value: any, params: any,
+    schema: ModelSchemaInternal, property: ColumnPropertyInternal, key: any, value: any, params: any,
   ): any {
     let property_type_class;
     if (key === 'id') {
@@ -182,7 +182,7 @@ abstract class SQLAdapterBase extends AdapterBase {
   }
 
   /** @internal */
-  protected _buildWhere(schema: IModelSchemaInternal, conditions: any, params: any, conjunction = 'AND'): any {
+  protected _buildWhere(schema: ModelSchemaInternal, conditions: any, params: any, conjunction = 'AND'): any {
     let subs: any[] = [];
     let keys: string[];
     if (Array.isArray(conditions)) {
@@ -224,7 +224,7 @@ abstract class SQLAdapterBase extends AdapterBase {
   }
 
   /** @internal */
-  protected _buildGroupExpr(schema: IModelSchemaInternal, group_expr: any) {
+  protected _buildGroupExpr(schema: ModelSchemaInternal, group_expr: any) {
     const op = Object.keys(group_expr)[0];
     if (op === '$sum') {
       const sub_expr = group_expr[op];

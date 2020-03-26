@@ -1,7 +1,7 @@
 import chalk from 'chalk';
-import { ILogger } from './ILogger';
+import { Logger } from './Logger';
 
-export class ColorConsoleLogger implements ILogger {
+export class ColorConsoleLogger implements Logger {
   public logQuery(text: string, values?: any[]): void {
     console.log('  ', chalk.blue.bold(text), values);
   }

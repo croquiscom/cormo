@@ -1,4 +1,4 @@
-export interface IAdapterSettingsPostgreSQL {
+export interface AdapterSettingsPostgreSQL {
     host?: string;
     port?: number;
     user?: string;

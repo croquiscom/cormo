@@ -9,86 +9,86 @@
  * @namespace types
  * @class String
  */
-export interface ICormoTypesString {
+export interface CormoTypesString {
   _type: 'string';
   length?: number;
 }
 
-interface ICormoTypesStringConstructor {
-  new(length?: number): ICormoTypesString;
-  (length?: number): ICormoTypesString;
+interface CormoTypesStringConstructor {
+  new(length?: number): CormoTypesString;
+  (length?: number): CormoTypesString;
 }
 
-const CormoTypesString: ICormoTypesStringConstructor = function(this: ICormoTypesString, length?: number): void {
+const CormoTypesString: CormoTypesStringConstructor = function(this: CormoTypesString, length?: number): void {
   if (!(this instanceof CormoTypesString)) {
     return new (CormoTypesString as any)(length);
   }
   this.length = length;
   this.toString = () => this.length ? `string(${this.length})` : 'string';
-} as ICormoTypesStringConstructor;
+} as CormoTypesStringConstructor;
 
 /**
  * Represents a double-precision floating-point, used in model schemas.
  * @namespace types
  * @class Number
  */
-export interface ICormoTypesNumber {
+export interface CormoTypesNumber {
   _type: 'number';
 }
 
-interface ICormoTypesNumberConstructor {
-  new(): ICormoTypesNumber;
-  (): ICormoTypesNumber;
+interface CormoTypesNumberConstructor {
+  new(): CormoTypesNumber;
+  (): CormoTypesNumber;
 }
 
-const CormoTypesNumber: ICormoTypesNumberConstructor = function(this: ICormoTypesNumber): void {
+const CormoTypesNumber: CormoTypesNumberConstructor = function(this: CormoTypesNumber): void {
   if (!(this instanceof CormoTypesNumber)) {
     return new (CormoTypesNumber as any)();
   }
   this.toString = () => 'number';
-} as ICormoTypesNumberConstructor;
+} as CormoTypesNumberConstructor;
 
 /**
  * Represents a boolean, used in model schemas.
  * @namespace types
  * @class Boolean
  */
-export interface ICormoTypesBoolean {
+export interface CormoTypesBoolean {
   _type: 'boolean';
 }
 
-interface ICormoTypesBooleanConstructor {
-  new(): ICormoTypesBoolean;
-  (): ICormoTypesBoolean;
+interface CormoTypesBooleanConstructor {
+  new(): CormoTypesBoolean;
+  (): CormoTypesBoolean;
 }
 
-const CormoTypesBoolean: ICormoTypesBooleanConstructor = function(this: ICormoTypesBoolean): void {
+const CormoTypesBoolean: CormoTypesBooleanConstructor = function(this: CormoTypesBoolean): void {
   if (!(this instanceof CormoTypesBoolean)) {
     return new (CormoTypesBoolean as any)();
   }
   this.toString = () => 'boolean';
-} as ICormoTypesBooleanConstructor;
+} as CormoTypesBooleanConstructor;
 
 /**
  * Represents a 32bit integer, used in model schemas.
  * @namespace types
  * @class Integer
  */
-export interface ICormoTypesInteger {
+export interface CormoTypesInteger {
   _type: 'integer';
 }
 
-interface ICormoTypesIntegerConstructor {
-  new(): ICormoTypesInteger;
-  (): ICormoTypesInteger;
+interface CormoTypesIntegerConstructor {
+  new(): CormoTypesInteger;
+  (): CormoTypesInteger;
 }
 
-const CormoTypesInteger: ICormoTypesIntegerConstructor = function(this: ICormoTypesInteger): void {
+const CormoTypesInteger: CormoTypesIntegerConstructor = function(this: CormoTypesInteger): void {
   if (!(this instanceof CormoTypesInteger)) {
     return new (CormoTypesInteger as any)();
   }
   this.toString = () => 'integer';
-} as ICormoTypesIntegerConstructor;
+} as CormoTypesIntegerConstructor;
 
 /**
  * Represents a two-dimensional point, used in model schemas.
@@ -97,42 +97,42 @@ const CormoTypesInteger: ICormoTypesIntegerConstructor = function(this: ICormoTy
  * @namespace types
  * @class GeoPoint
  */
-export interface ICormoTypesGeoPoint {
+export interface CormoTypesGeoPoint {
   _type: 'geopoint';
 }
 
-interface ICormoTypesGeoPointConstructor {
-  new(): ICormoTypesGeoPoint;
-  (): ICormoTypesGeoPoint;
+interface CormoTypesGeoPointConstructor {
+  new(): CormoTypesGeoPoint;
+  (): CormoTypesGeoPoint;
 }
 
-const CormoTypesGeoPoint: ICormoTypesGeoPointConstructor = function(this: ICormoTypesGeoPoint): void {
+const CormoTypesGeoPoint: CormoTypesGeoPointConstructor = function(this: CormoTypesGeoPoint): void {
   if (!(this instanceof CormoTypesGeoPoint)) {
     return new (CormoTypesGeoPoint as any)();
   }
   this.toString = () => 'geopoint';
-} as ICormoTypesGeoPointConstructor;
+} as CormoTypesGeoPointConstructor;
 
 /**
  * Represents a date, used in model schemas.
  * @namespace types
  * @class Date
  */
-export interface ICormoTypesDate {
+export interface CormoTypesDate {
   _type: 'date';
 }
 
-interface ICormoTypesDateConstructor {
-  new(): ICormoTypesDate;
-  (): ICormoTypesDate;
+interface CormoTypesDateConstructor {
+  new(): CormoTypesDate;
+  (): CormoTypesDate;
 }
 
-const CormoTypesDate: ICormoTypesDateConstructor = function(this: ICormoTypesDate): void {
+const CormoTypesDate: CormoTypesDateConstructor = function(this: CormoTypesDate): void {
   if (!(this instanceof CormoTypesDate)) {
     return new (CormoTypesDate as any)();
   }
   this.toString = () => 'date';
-} as ICormoTypesDateConstructor;
+} as CormoTypesDateConstructor;
 
 /**
  * Represents a general object, used in model schemas.
@@ -142,73 +142,73 @@ const CormoTypesDate: ICormoTypesDateConstructor = function(this: ICormoTypesDat
  * @namespace types
  * @class Object
  */
-export interface ICormoTypesObject {
+export interface CormoTypesObject {
   _type: 'object';
 }
 
-interface ICormoTypesObjectConstructor {
-  new(): ICormoTypesObject;
-  (): ICormoTypesObject;
+interface CormoTypesObjectConstructor {
+  new(): CormoTypesObject;
+  (): CormoTypesObject;
 }
 
-const CormoTypesObject: ICormoTypesObjectConstructor = function(this: ICormoTypesObject): void {
+const CormoTypesObject: CormoTypesObjectConstructor = function(this: CormoTypesObject): void {
   if (!(this instanceof CormoTypesObject)) {
     return new (CormoTypesObject as any)();
   }
   this.toString = () => 'object';
-} as ICormoTypesObjectConstructor;
+} as CormoTypesObjectConstructor;
 
 /**
  * Represents a record id, used in model schemas.
  * @namespace types
  * @class RecordID
  */
-export interface ICormoTypesRecordID {
+export interface CormoTypesRecordID {
   _type: 'recordid';
 }
 
-interface ICormoTypesRecordIDConstructor {
-  new(): ICormoTypesRecordID;
-  (): ICormoTypesRecordID;
+interface CormoTypesRecordIDConstructor {
+  new(): CormoTypesRecordID;
+  (): CormoTypesRecordID;
 }
 
-const CormoTypesRecordID: ICormoTypesRecordIDConstructor = function(this: ICormoTypesRecordID): void {
+const CormoTypesRecordID: CormoTypesRecordIDConstructor = function(this: CormoTypesRecordID): void {
   if (!(this instanceof CormoTypesRecordID)) {
     return new (CormoTypesRecordID as any)();
   }
   this.toString = () => 'recordid';
-} as ICormoTypesRecordIDConstructor;
+} as CormoTypesRecordIDConstructor;
 
 /**
  * Represents a text, used in model schemas.
  * @namespace types
  * @class Text
  */
-export interface ICormoTypesText {
+export interface CormoTypesText {
   _type: 'text';
 }
 
-interface ICormoTypesTextConstructor {
-  new(): ICormoTypesText;
-  (): ICormoTypesText;
+interface CormoTypesTextConstructor {
+  new(): CormoTypesText;
+  (): CormoTypesText;
 }
 
-const CormoTypesText: ICormoTypesTextConstructor = function(this: ICormoTypesText): void {
+const CormoTypesText: CormoTypesTextConstructor = function(this: CormoTypesText): void {
   if (!(this instanceof CormoTypesText)) {
     return new (CormoTypesText as any)();
   }
   this.toString = () => 'text';
-} as ICormoTypesTextConstructor;
+} as CormoTypesTextConstructor;
 
-export type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber
-  | ICormoTypesBoolean | ICormoTypesDate
-  | ICormoTypesObject | ICormoTypesInteger
-  | ICormoTypesGeoPoint | ICormoTypesRecordID | ICormoTypesText;
+export type ColumnTypeInternal = CormoTypesString | CormoTypesNumber
+  | CormoTypesBoolean | CormoTypesDate
+  | CormoTypesObject | CormoTypesInteger
+  | CormoTypesGeoPoint | CormoTypesRecordID | CormoTypesText;
 
-export type ColumnTypeInternalConstructor = ICormoTypesStringConstructor | ICormoTypesNumberConstructor
-  | ICormoTypesBooleanConstructor | ICormoTypesDateConstructor
-  | ICormoTypesObjectConstructor | ICormoTypesIntegerConstructor
-  | ICormoTypesGeoPointConstructor | ICormoTypesRecordIDConstructor | ICormoTypesTextConstructor;
+export type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor
+  | CormoTypesBooleanConstructor | CormoTypesDateConstructor
+  | CormoTypesObjectConstructor | CormoTypesIntegerConstructor
+  | CormoTypesGeoPointConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor;
 
 type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor
   | BooleanConstructor | DateConstructor | ObjectConstructor;

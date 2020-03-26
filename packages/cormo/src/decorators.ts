@@ -1,13 +1,13 @@
 import {
   Connection,
-  IAssociationBelongsToOptions,
-  IAssociationHasManyOptions,
-  IAssociationHasOneOptions,
+  AssociationBelongsToOptions,
+  AssociationHasManyOptions,
+  AssociationHasOneOptions,
 } from './connection';
 import {
   BaseModel,
-  IColumnNestedProperty,
-  IColumnProperty,
+  ColumnNestedProperty,
+  ColumnProperty,
 } from './model';
 import * as types from './types';
 
@@ -39,7 +39,7 @@ export function Model(options: { connection?: Connection; name?: string } = {}) 
 }
 
 export function Column(column_property: types.ColumnType | types.ColumnType[]
-  | IColumnProperty | IColumnNestedProperty): PropertyDecorator {
+  | ColumnProperty | ColumnNestedProperty): PropertyDecorator {
   return (target: object, propertyKey: string | symbol) => {
     const ctor = target.constructor as typeof BaseModel;
     if (!ctor._property_decorators) {
@@ -55,7 +55,7 @@ export function ObjectColumn(partial_model_class: any): PropertyDecorator {
     if (!ctor._property_decorators) {
       ctor._property_decorators = [];
     }
-    const column_property: IColumnNestedProperty = {};
+    const column_property: ColumnNestedProperty = {};
     for (const decorator of partial_model_class._property_decorators) {
       if (decorator.type === 'column') {
         column_property[decorator.propertyKey] = decorator.column_property;
@@ -69,7 +69,7 @@ export function ObjectColumn(partial_model_class: any): PropertyDecorator {
   };
 }
 
-export function HasMany(options?: IAssociationHasManyOptions) {
+export function HasMany(options?: AssociationHasManyOptions) {
   return (target: BaseModel, propertyKey: string) => {
     const ctor = target.constructor as typeof BaseModel;
     if (!ctor._property_decorators) {
@@ -79,7 +79,7 @@ export function HasMany(options?: IAssociationHasManyOptions) {
   };
 }
 
-export function HasOne(options?: IAssociationHasOneOptions) {
+export function HasOne(options?: AssociationHasOneOptions) {
   return (target: BaseModel, propertyKey: string) => {
     const ctor = target.constructor as typeof BaseModel;
     if (!ctor._property_decorators) {
@@ -89,7 +89,7 @@ export function HasOne(options?: IAssociationHasOneOptions) {
   };
 }
 
-export function BelongsTo(options?: IAssociationBelongsToOptions) {
+export function BelongsTo(options?: AssociationBelongsToOptions) {
   return (target: BaseModel, propertyKey: string) => {
     const ctor = target.constructor as typeof BaseModel;
     if (!ctor._property_decorators) {

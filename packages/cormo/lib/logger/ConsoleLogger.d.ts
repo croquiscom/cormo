@@ -1,4 +1,4 @@
-import { ILogger } from './ILogger';
-export declare class ConsoleLogger implements ILogger {
+import { Logger } from './Logger';
+export declare class ConsoleLogger implements Logger {
     logQuery(text: string, values?: any[]): void;
 }

@@ -6,7 +6,7 @@ try {
   //
 }
 
-export interface IAdapterSettingsMongoDB {
+export interface AdapterSettingsMongoDB {
   host?: string;
   port?: number;
   user?: string;
@@ -19,10 +19,10 @@ class CormoTypesObjectId { }
 import stream from 'stream';
 import _ from 'lodash';
 import { Connection } from '../connection';
-import { BaseModel, IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
+import { BaseModel, ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
-import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions, ISchemas, ISchemasIndex } from './base';
+import { AdapterBase, AdapterCountOptions, AdapterFindOptions, Schemas, SchemasIndex } from './base';
 
 function _convertValueToObjectID(value: any, key: any) {
   if (value == null) {
@@ -39,7 +39,7 @@ function _objectIdToString(oid: any) {
   return oid.toString();
 }
 
-function _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: any, not_op?: any): any {
+function _buildWhereSingle(property: ColumnPropertyInternal, key: any, value: any, not_op?: any): any {
   if (property == null) {
     throw new Error(`unknown column '${key}'`);
   }
@@ -130,7 +130,7 @@ function _buildWhereSingle(property: IColumnPropertyInternal, key: any, value: a
   return _.zipObject([!property.primary_key ? property._dbname_dot : key], [value]);
 }
 
-function _buildWhere(schema: IModelSchemaInternal, conditions: any, conjunction = '$and'): any {
+function _buildWhere(schema: ModelSchemaInternal, conditions: any, conjunction = '$and'): any {
   let subs: any;
   if (Array.isArray(conditions)) {
     subs = conditions.map((condition) => _buildWhere(schema, condition));
@@ -177,7 +177,7 @@ function _buildWhere(schema: IModelSchemaInternal, conditions: any, conjunction 
   }
 }
 
-function _buildGroupExpr(schema: IModelSchemaInternal, group_expr: any) {
+function _buildGroupExpr(schema: ModelSchemaInternal, group_expr: any) {
   let op = Object.keys(group_expr)[0];
   const sub_expr = group_expr[op];
   if (op === '$any') {
@@ -263,10 +263,10 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async getSchemas(): Promise<ISchemas> {
+  public async getSchemas(): Promise<Schemas> {
     const tables = await this._getTables();
     const table_schemas: { [table_name: string]: 'NO SCHEMA' } = {};
-    const all_indexes: { [table_name: string]: ISchemasIndex } = {};
+    const all_indexes: { [table_name: string]: SchemasIndex } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
       all_indexes[table] = await this._getIndexes(table);
@@ -298,7 +298,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async createIndex(model_name: string, index: IIndexProperty) {
+  public async createIndex(model_name: string, index: IndexProperty) {
     const collection = this._collection(model_name);
     const options = {
       name: index.options.name,
@@ -515,7 +515,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async find(model_name: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
+  public async find(model_name: string, conditions: any, options: AdapterFindOptions): Promise<any> {
     let fields: any;
     let orders: any;
     let client_options: any;
@@ -583,7 +583,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: IAdapterFindOptions) {
+  public stream(model: any, conditions: any, options: AdapterFindOptions) {
     let fields: any;
     let orders: any;
     let client_options: any;
@@ -614,7 +614,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async count(model_name: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
+  public async count(model_name: string, conditions: any, options: AdapterCountOptions): Promise<number> {
     const model_class = this._connection.models[model_name];
     conditions = _buildWhere(model_class._schema, conditions);
     // console.log(JSON.stringify(conditions))
@@ -666,7 +666,7 @@ export class MongoDBAdapter extends AdapterBase {
    * Connects to the database
    * @internal
    */
-  public async connect(settings: IAdapterSettingsMongoDB) {
+  public async connect(settings: AdapterSettingsMongoDB) {
     let url;
     if (settings.user || settings.password) {
       const host = settings.host || 'localhost';
@@ -760,7 +760,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private async _getIndexes(table: string): Promise<ISchemasIndex> {
+  private async _getIndexes(table: string): Promise<SchemasIndex> {
     const rows = await this._db.collection(table).listIndexes().toArray();
     const indexes: any = {};
     for (const row of rows) {
@@ -773,7 +773,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private _buildUpdateOps(schema: IModelSchemaInternal, update_ops: any, data: any, path: any, object: any): any {
+  private _buildUpdateOps(schema: ModelSchemaInternal, update_ops: any, data: any, path: any, object: any): any {
     for (const column in object) {
       const value = object[column];
       const property = _.find(schema, { _dbname_dot: path + column });
@@ -797,7 +797,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private _buildConditionsForFind(model: any, conditions: any, options: IAdapterFindOptions) {
+  private _buildConditionsForFind(model: any, conditions: any, options: AdapterFindOptions) {
     const fields = this._buildSelect(options.select);
     let orders: any;
     conditions = _buildWhere(this._connection.models[model]._schema, conditions);

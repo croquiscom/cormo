@@ -6,7 +6,7 @@ try {
   //
 }
 
-export interface IAdapterSettingsSQLite3 {
+export interface AdapterSettingsSQLite3 {
   database: string;
 }
 
@@ -14,13 +14,13 @@ import stream from 'stream';
 import util from 'util';
 import _ from 'lodash';
 import { Connection } from '../connection';
-import { IColumnPropertyInternal, IIndexProperty } from '../model';
+import { ColumnPropertyInternal, IndexProperty } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase, ISchemasTable, ISchemasIndex } from './base';
+import { AdapterCountOptions, AdapterFindOptions, Schemas, AdapterBase, SchemasTable, SchemasIndex } from './base';
 import { SQLAdapterBase } from './sql_base';
 
-function _typeToSQL(property: IColumnPropertyInternal) {
+function _typeToSQL(property: ColumnPropertyInternal) {
   if (property.array) {
     return 'TEXT';
   }
@@ -42,7 +42,7 @@ function _typeToSQL(property: IColumnPropertyInternal) {
   }
 }
 
-function _propertyToSQL(property: IColumnPropertyInternal) {
+function _propertyToSQL(property: ColumnPropertyInternal) {
   let type = _typeToSQL(property);
   if (type) {
     if (property.required) {
@@ -86,7 +86,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   private _client: any;
 
   /** @internal */
-  private _settings!: IAdapterSettingsSQLite3;
+  private _settings!: AdapterSettingsSQLite3;
 
   // Creates a SQLite3 adapter
   /** @internal */
@@ -96,9 +96,9 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async getSchemas(): Promise<ISchemas> {
+  public async getSchemas(): Promise<Schemas> {
     const tables = await this._getTables();
-    const table_schemas: { [table_name: string]: ISchemasTable } = {};
+    const table_schemas: { [table_name: string]: SchemasTable } = {};
     const all_indexes: any = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
@@ -158,7 +158,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createIndex(model_name: string, index: IIndexProperty) {
+  public async createIndex(model_name: string, index: IndexProperty) {
     const model_class = this._connection.models[model_name];
     const schema = model_class._schema;
     const table_name = model_class.table_name;
@@ -324,7 +324,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
+  public async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
       return await this._client.allAsync(`EXPLAIN QUERY PLAN ${sql}`, params);
@@ -347,7 +347,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: IAdapterFindOptions): stream.Readable {
+  public stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable {
     let sql;
     let params;
     try {
@@ -372,7 +372,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
+  public async count(model: string, conditions: any, options: AdapterCountOptions): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `SELECT COUNT(*) AS count FROM "${table_name}"`;
@@ -429,7 +429,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
    * Connects to the database
    * @internal
    */
-  public async connect(settings: IAdapterSettingsSQLite3) {
+  public async connect(settings: AdapterSettingsSQLite3) {
     try {
       this._settings = settings;
       this._client = await this._getClient();
@@ -538,9 +538,9 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getSchema(table: string): Promise<ISchemasTable> {
+  private async _getSchema(table: string): Promise<SchemasTable> {
     const columns = (await this._client.allAsync(`PRAGMA table_info(\`${table}\`)`));
-    const schema: ISchemasTable = {};
+    const schema: SchemasTable = {};
     for (const column of columns) {
       const type = /^varchar\((\d*)\)/i.test(column.type) ? new types.String(Number(RegExp.$1))
         : /^double/i.test(column.type) ? new types.Number()
@@ -557,9 +557,9 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getIndexes(table: string): Promise<{ [table_name: string]: ISchemasIndex }> {
+  private async _getIndexes(table: string): Promise<{ [table_name: string]: SchemasIndex }> {
     const rows = await this._client.allAsync(`PRAGMA index_list(\`${table}\`)`);
-    const indexes: { [table_name: string]: ISchemasIndex } = {};
+    const indexes: { [table_name: string]: SchemasIndex } = {};
     for (const row of rows) {
       if (!indexes[row.name]) {
         indexes[row.name] = {};
@@ -628,7 +628,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model_name: string, conditions: any, options: IAdapterFindOptions) {
+  private _buildSqlForFind(model_name: string, conditions: any, options: AdapterFindOptions) {
     const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {

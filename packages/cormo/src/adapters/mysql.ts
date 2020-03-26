@@ -6,7 +6,7 @@ try {
   //
 }
 
-export interface IAdapterSettingsMySQL {
+export interface AdapterSettingsMySQL {
   host?: string;
   port?: number;
   user?: string;
@@ -26,19 +26,19 @@ import stream from 'stream';
 import util from 'util';
 import _ from 'lodash';
 import { Connection } from '../connection';
-import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
+import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase, ISchemasTable, ISchemasIndex } from './base';
+import { AdapterCountOptions, AdapterFindOptions, Schemas, AdapterBase, SchemasTable, SchemasIndex } from './base';
 import { SQLAdapterBase } from './sql_base';
 
-function _typeToSQL(property: IColumnPropertyInternal, support_fractional_seconds: boolean) {
+function _typeToSQL(property: ColumnPropertyInternal, support_fractional_seconds: boolean) {
   if (property.array) {
     return 'TEXT';
   }
   switch (property.type_class) {
     case types.String:
-      return `VARCHAR(${(property.type as types.ICormoTypesString).length || 255})`;
+      return `VARCHAR(${(property.type as types.CormoTypesString).length || 255})`;
     case types.Number:
       return 'DOUBLE';
     case types.Boolean:
@@ -61,7 +61,7 @@ function _typeToSQL(property: IColumnPropertyInternal, support_fractional_second
   }
 }
 
-function _propertyToSQL(property: IColumnPropertyInternal, support_fractional_seconds: boolean) {
+function _propertyToSQL(property: ColumnPropertyInternal, support_fractional_seconds: boolean) {
   let type = _typeToSQL(property, support_fractional_seconds);
   if (type) {
     if (property.required) {
@@ -148,7 +148,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   private _database?: string;
 
   /** @internal */
-  private _settings?: IAdapterSettingsMySQL;
+  private _settings?: AdapterSettingsMySQL;
 
   /** @internal */
   private _query_timeout: number;
@@ -162,9 +162,9 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async getSchemas(): Promise<ISchemas> {
+  public async getSchemas(): Promise<Schemas> {
     const tables = await this._getTables();
-    const table_schemas: { [table_name: string]: ISchemasTable } = {};
+    const table_schemas: { [table_name: string]: SchemasTable } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
     }
@@ -217,7 +217,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createIndex(model_name: string, index: IIndexProperty) {
+  public async createIndex(model_name: string, index: IndexProperty) {
     const model_class = this._connection.models[model_name];
     const schema = model_class._schema;
     const table_name = model_class.table_name;
@@ -414,7 +414,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
+  public async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
       return await this.query(`EXPLAIN ${sql}`, params, { transaction: options.transaction, node: options.node });
@@ -437,7 +437,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: IAdapterFindOptions): stream.Readable {
+  public stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable {
     let sql;
     let params;
     try {
@@ -460,7 +460,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
+  public async count(model: string, conditions: any, options: AdapterCountOptions): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `SELECT COUNT(*) AS count FROM \`${table_name}\``;
@@ -517,7 +517,7 @@ export class MySQLAdapter extends SQLAdapterBase {
    * Connects to the database
    * @internal
    */
-  public async connect(settings: IAdapterSettingsMySQL) {
+  public async connect(settings: AdapterSettingsMySQL) {
     // connect
     let client: any;
     this._database = settings.database;
@@ -708,7 +708,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  protected _buildGroupExpr(schema: IModelSchemaInternal, group_expr: any) {
+  protected _buildGroupExpr(schema: ModelSchemaInternal, group_expr: any) {
     const op = Object.keys(group_expr)[0];
     if (op === '$any') {
       const sub_expr = group_expr[op];
@@ -735,9 +735,9 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getSchema(table: string): Promise<ISchemasTable> {
+  private async _getSchema(table: string): Promise<SchemasTable> {
     const columns = await this._client.queryAsync(`SHOW COLUMNS FROM \`${table}\``);
-    const schema: ISchemasTable = {};
+    const schema: SchemasTable = {};
     for (const column of columns) {
       const type = /^varchar\((\d*)\)/i.test(column.Type) ? new types.String(Number(RegExp.$1))
         : /^double/i.test(column.Type) ? new types.Number()
@@ -755,10 +755,10 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getIndexes(): Promise<{ [table_name: string]: ISchemasIndex }> {
+  private async _getIndexes(): Promise<{ [table_name: string]: SchemasIndex }> {
     const sql = 'SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = ? ORDER BY SEQ_IN_INDEX';
     const rows = await this._client.queryAsync(sql, [this._database]);
-    const indexes: { [table_name: string]: ISchemasIndex } = {};
+    const indexes: { [table_name: string]: SchemasIndex } = {};
     for (const row of rows) {
       if (row.INDEX_NAME === 'id' || row.INDEX_NAME === 'PRIMARY') {
         continue;
@@ -843,7 +843,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model_name: string, conditions: any, options: IAdapterFindOptions): [string, any[]] {
+  private _buildSqlForFind(model_name: string, conditions: any, options: AdapterFindOptions): [string, any[]] {
     const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {

@@ -6,7 +6,7 @@ try {
   //
 }
 
-export interface IAdapterSettingsRedis {
+export interface AdapterSettingsRedis {
   host?: string;
   port?: number;
   database: string;
@@ -19,7 +19,7 @@ import { Connection } from '../connection';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 import { tableize } from '../util/inflector';
-import { AdapterBase, IAdapterCountOptions, IAdapterFindOptions } from './base';
+import { AdapterBase, AdapterCountOptions, AdapterFindOptions } from './base';
 
 // Adapter for Redis
 // @namespace adapter
@@ -173,7 +173,7 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
+  public async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any> {
     const table = tableize(model);
     const keys = await this._getKeys(table, conditions);
     let records: any[] = await Promise.all(keys.map(async (key: any) => {
@@ -190,12 +190,12 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: IAdapterFindOptions): stream.Readable {
+  public stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable {
     throw new Error('not implemented');
   }
 
   /** @internal */
-  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
+  public async count(model: string, conditions: any, options: AdapterCountOptions): Promise<number> {
     return Promise.reject(new Error('not implemented'));
   }
 
@@ -223,7 +223,7 @@ export class RedisAdapter extends AdapterBase {
    * Connects to the database
    * @internal
    */
-  public async connect(settings: IAdapterSettingsRedis) {
+  public async connect(settings: AdapterSettingsRedis) {
     const methods = ['del', 'exists', 'hdel', 'hgetall', 'hmset', 'incr', 'keys', 'select'];
     this._client = redis.createClient(settings.port || 6379, settings.host || '127.0.0.1');
     for (const method of methods) {

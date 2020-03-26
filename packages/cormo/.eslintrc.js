@@ -14,7 +14,4 @@ module.exports = {
   ignorePatterns: [
     'lib/',
   ],
-  rules: {
-    '@typescript-eslint/interface-name-prefix': ['error', 'always'],
-  }
 };

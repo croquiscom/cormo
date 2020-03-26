@@ -3,7 +3,7 @@ import stream from 'stream';
 import { BaseModel, ModelColumnNamesWithId } from './model';
 import { Transaction } from './transaction';
 import { RecordID } from './types';
-interface IQueryOptions {
+interface QueryOptions {
     lean: boolean;
     orders?: string;
     near?: any;
@@ -25,35 +25,35 @@ interface IQueryOptions {
     node?: 'master' | 'read';
     index_hint?: string;
 }
-export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
-    clone(): IQuerySingle<M, T>;
-    find(id: RecordID): IQuerySingle<M, T>;
-    find(id: RecordID[]): IQueryArray<M, T>;
-    findPreserve(id: RecordID[]): IQueryArray<M, T>;
-    near(target: object): IQuerySingle<M, T>;
-    where(condition?: object): IQuerySingle<M, T>;
-    select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQuerySingle<M, Pick<M, K>>;
-    select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingle<M, Pick<M, K>>;
-    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M, M[K]>;
-    order(orders?: string): IQuerySingle<M, T>;
-    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): IQuerySingle<M, {
+export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
+    clone(): QuerySingle<M, T>;
+    find(id: RecordID): QuerySingle<M, T>;
+    find(id: RecordID[]): QueryArray<M, T>;
+    findPreserve(id: RecordID[]): QueryArray<M, T>;
+    near(target: object): QuerySingle<M, T>;
+    where(condition?: object): QuerySingle<M, T>;
+    select<K extends ModelColumnNamesWithId<M>>(columns: K[]): QuerySingle<M, Pick<M, K>>;
+    select<K extends ModelColumnNamesWithId<M>>(columns?: string): QuerySingle<M, Pick<M, K>>;
+    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QuerySingle<M, M[K]>;
+    order(orders?: string): QuerySingle<M, T>;
+    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): QuerySingle<M, {
         [field in keyof F]: number;
     } & Pick<M, G>>;
-    group<F>(group_by: null, fields?: F): IQuerySingle<M, {
+    group<F>(group_by: null, fields?: F): QuerySingle<M, {
         [field in keyof F]: number;
     }>;
-    group<U>(group_by: string | null, fields?: object): IQuerySingle<M, U>;
-    one(): IQuerySingleNull<M, T>;
-    limit(limit?: number): IQuerySingle<M, T>;
-    skip(skip?: number): IQuerySingle<M, T>;
-    lean(lean?: boolean): IQuerySingle<M, T>;
-    if(condition: boolean): IQuerySingle<M, T>;
-    endif(): IQuerySingle<M, T>;
-    cache(options: IQueryOptions['cache']): IQuerySingle<M, T>;
-    include(column: string, select?: string): IQuerySingle<M, T>;
-    transaction(transaction?: Transaction): IQuerySingle<M, T>;
-    using(node: 'master' | 'read'): IQuerySingle<M, T>;
-    index_hint(hint: string): IQuerySingle<M, T>;
+    group<U>(group_by: string | null, fields?: object): QuerySingle<M, U>;
+    one(): QuerySingleNull<M, T>;
+    limit(limit?: number): QuerySingle<M, T>;
+    skip(skip?: number): QuerySingle<M, T>;
+    lean(lean?: boolean): QuerySingle<M, T>;
+    if(condition: boolean): QuerySingle<M, T>;
+    endif(): QuerySingle<M, T>;
+    cache(options: QueryOptions['cache']): QuerySingle<M, T>;
+    include(column: string, select?: string): QuerySingle<M, T>;
+    transaction(transaction?: Transaction): QuerySingle<M, T>;
+    using(node: 'master' | 'read'): QuerySingle<M, T>;
+    index_hint(hint: string): QuerySingle<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T>;
@@ -64,35 +64,35 @@ export interface IQuerySingle<M extends BaseModel, T = M> extends PromiseLike<T>
     upsert(updates: object): PromiseLike<void>;
     delete(options?: any): PromiseLike<number>;
 }
-interface IQuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | null> {
-    clone(): IQuerySingleNull<M, T>;
-    find(id: RecordID): IQuerySingle<M, T>;
-    find(id: RecordID[]): IQueryArray<M, T>;
-    findPreserve(id: RecordID[]): IQueryArray<M, T>;
-    near(target: object): IQuerySingleNull<M, T>;
-    where(condition?: object): IQuerySingleNull<M, T>;
-    select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQuerySingleNull<M, Pick<M, K>>;
-    select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQuerySingleNull<M, Pick<M, K>>;
-    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingleNull<M, M[K]>;
-    order(orders?: string): IQuerySingleNull<M, T>;
-    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): IQuerySingleNull<M, {
+interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | null> {
+    clone(): QuerySingleNull<M, T>;
+    find(id: RecordID): QuerySingle<M, T>;
+    find(id: RecordID[]): QueryArray<M, T>;
+    findPreserve(id: RecordID[]): QueryArray<M, T>;
+    near(target: object): QuerySingleNull<M, T>;
+    where(condition?: object): QuerySingleNull<M, T>;
+    select<K extends ModelColumnNamesWithId<M>>(columns: K[]): QuerySingleNull<M, Pick<M, K>>;
+    select<K extends ModelColumnNamesWithId<M>>(columns?: string): QuerySingleNull<M, Pick<M, K>>;
+    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QuerySingleNull<M, M[K]>;
+    order(orders?: string): QuerySingleNull<M, T>;
+    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): QuerySingleNull<M, {
         [field in keyof F]: number;
     } & Pick<M, G>>;
-    group<F>(group_by: null, fields?: F): IQuerySingleNull<M, {
+    group<F>(group_by: null, fields?: F): QuerySingleNull<M, {
         [field in keyof F]: number;
     }>;
-    group<U>(group_by: string | null, fields?: object): IQuerySingleNull<M, U>;
-    one(): IQuerySingleNull<M, T>;
-    limit(limit?: number): IQuerySingleNull<M, T>;
-    skip(skip?: number): IQuerySingleNull<M, T>;
-    lean(lean?: boolean): IQuerySingleNull<M, T>;
-    if(condition: boolean): IQuerySingleNull<M, T>;
-    endif(): IQuerySingleNull<M, T>;
-    cache(options: IQueryOptions['cache']): IQuerySingleNull<M, T>;
-    include(column: string, select?: string): IQuerySingleNull<M, T>;
-    transaction(transaction?: Transaction): IQuerySingleNull<M, T>;
-    using(node: 'master' | 'read'): IQuerySingleNull<M, T>;
-    index_hint(hint: string): IQuerySingleNull<M, T>;
+    group<U>(group_by: string | null, fields?: object): QuerySingleNull<M, U>;
+    one(): QuerySingleNull<M, T>;
+    limit(limit?: number): QuerySingleNull<M, T>;
+    skip(skip?: number): QuerySingleNull<M, T>;
+    lean(lean?: boolean): QuerySingleNull<M, T>;
+    if(condition: boolean): QuerySingleNull<M, T>;
+    endif(): QuerySingleNull<M, T>;
+    cache(options: QueryOptions['cache']): QuerySingleNull<M, T>;
+    include(column: string, select?: string): QuerySingleNull<M, T>;
+    transaction(transaction?: Transaction): QuerySingleNull<M, T>;
+    using(node: 'master' | 'read'): QuerySingleNull<M, T>;
+    index_hint(hint: string): QuerySingleNull<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T | null>;
@@ -103,35 +103,35 @@ interface IQuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | n
     upsert(updates: object): PromiseLike<void>;
     delete(options?: any): PromiseLike<number>;
 }
-export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]> {
-    clone(): IQueryArray<M, T>;
-    find(id: RecordID): IQuerySingle<M, T>;
-    find(id: RecordID[]): IQueryArray<M, T>;
-    findPreserve(id: RecordID[]): IQueryArray<M, T>;
-    near(target: object): IQueryArray<M, T>;
-    where(condition?: object): IQueryArray<M, T>;
-    select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<M, Pick<M, K>>;
-    select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<M, Pick<M, K>>;
-    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M, M[K]>;
-    order(orders?: string): IQueryArray<M, T>;
-    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): IQueryArray<M, {
+export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]> {
+    clone(): QueryArray<M, T>;
+    find(id: RecordID): QuerySingle<M, T>;
+    find(id: RecordID[]): QueryArray<M, T>;
+    findPreserve(id: RecordID[]): QueryArray<M, T>;
+    near(target: object): QueryArray<M, T>;
+    where(condition?: object): QueryArray<M, T>;
+    select<K extends ModelColumnNamesWithId<M>>(columns: K[]): QueryArray<M, Pick<M, K>>;
+    select<K extends ModelColumnNamesWithId<M>>(columns?: string): QueryArray<M, Pick<M, K>>;
+    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QueryArray<M, M[K]>;
+    order(orders?: string): QueryArray<M, T>;
+    group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): QueryArray<M, {
         [field in keyof F]: number;
     } & Pick<M, G>>;
-    group<F>(group_by: null, fields?: F): IQueryArray<M, {
+    group<F>(group_by: null, fields?: F): QueryArray<M, {
         [field in keyof F]: number;
     }>;
-    group<U>(group_by: string | null, fields?: object): IQueryArray<M, U>;
-    one(): IQuerySingleNull<M, T>;
-    limit(limit?: number): IQueryArray<M, T>;
-    skip(skip?: number): IQueryArray<M, T>;
-    lean(lean?: boolean): IQueryArray<M, T>;
-    if(condition: boolean): IQueryArray<M, T>;
-    endif(): IQueryArray<M, T>;
-    cache(options: IQueryOptions['cache']): IQueryArray<M, T>;
-    include(column: string, select?: string): IQueryArray<M, T>;
-    transaction(transaction?: Transaction): IQueryArray<M, T>;
-    using(node: 'master' | 'read'): IQueryArray<M, T>;
-    index_hint(hint: string): IQueryArray<M, T>;
+    group<U>(group_by: string | null, fields?: object): QueryArray<M, U>;
+    one(): QuerySingleNull<M, T>;
+    limit(limit?: number): QueryArray<M, T>;
+    skip(skip?: number): QueryArray<M, T>;
+    lean(lean?: boolean): QueryArray<M, T>;
+    if(condition: boolean): QueryArray<M, T>;
+    endif(): QueryArray<M, T>;
+    cache(options: QueryOptions['cache']): QueryArray<M, T>;
+    include(column: string, select?: string): QueryArray<M, T>;
+    transaction(transaction?: Transaction): QueryArray<M, T>;
+    using(node: 'master' | 'read'): QueryArray<M, T>;
+    index_hint(hint: string): QueryArray<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T[]>;
@@ -145,7 +145,7 @@ export interface IQueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]
 /**
  * Collects conditions to query
  */
-declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, IQueryArray<M, T> {
+declare class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray<M, T> {
     private _model;
     private _name;
     private _connection;
@@ -167,12 +167,12 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
     /**
      * Finds a record by id
      */
-    find(id: RecordID): IQuerySingle<M, T>;
-    find(id: RecordID[]): IQueryArray<M, T>;
+    find(id: RecordID): QuerySingle<M, T>;
+    find(id: RecordID[]): QueryArray<M, T>;
     /**
      * Finds records by ids while preserving order.
      */
-    findPreserve(ids: RecordID[]): IQueryArray<M, T>;
+    findPreserve(ids: RecordID[]): QueryArray<M, T>;
     /**
      * Finds records near target
      */
@@ -184,10 +184,10 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
     /**
      * Selects columns for result
      */
-    select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQuerySingle<M, Pick<M, K>>;
-    select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): IQueryArray<M, Pick<M, K>>;
-    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQuerySingle<M, M[K]>;
-    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): IQueryArray<M, M[K]>;
+    select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): QuerySingle<M, Pick<M, K>>;
+    select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): QueryArray<M, Pick<M, K>>;
+    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QuerySingle<M, M[K]>;
+    selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QueryArray<M, M[K]>;
     /**
      * Specifies orders of result
      */
@@ -195,8 +195,8 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
     /**
      * Groups result records
      */
-    group<U>(group_by: string | string[] | null, fields?: object): IQuerySingle<M, U>;
-    group<U>(group_by: string | string[] | null, fields?: object): IQueryArray<M, U>;
+    group<U>(group_by: string | string[] | null, fields?: object): QuerySingle<M, U>;
+    group<U>(group_by: string | string[] | null, fields?: object): QueryArray<M, U>;
     /**
      * Returns only one record (or null if does not exists).
      *
@@ -235,7 +235,7 @@ declare class Query<M extends BaseModel, T = M> implements IQuerySingle<M, T>, I
      *
      * Redis is used to cache.
      */
-    cache(options: IQueryOptions['cache']): this;
+    cache(options: QueryOptions['cache']): this;
     /**
      * Returns associated objects also
      */

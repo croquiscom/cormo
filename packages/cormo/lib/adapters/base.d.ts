@@ -1,27 +1,27 @@
 import { Transaction } from '../transaction';
 import * as types from '../types';
-export interface ISchemasColumn {
+export interface SchemasColumn {
     required: boolean;
     type: types.ColumnType | undefined;
 }
-export interface ISchemasTable {
-    [column_name: string]: ISchemasColumn;
+export interface SchemasTable {
+    [column_name: string]: SchemasColumn;
 }
-export interface ISchemasIndex {
+export interface SchemasIndex {
     [index_name: string]: any;
 }
-export interface ISchemas {
+export interface Schemas {
     tables: {
-        [table_name: string]: ISchemasTable | 'NO SCHEMA';
+        [table_name: string]: SchemasTable | 'NO SCHEMA';
     };
     indexes?: {
-        [table_name: string]: ISchemasIndex;
+        [table_name: string]: SchemasIndex;
     };
     foreign_keys?: {
         [table_name: string]: any;
     };
 }
-export interface IAdapterFindOptions {
+export interface AdapterFindOptions {
     lean: boolean;
     orders: any[];
     near?: any;
@@ -37,7 +37,7 @@ export interface IAdapterFindOptions {
     node?: 'master' | 'read';
     index_hint?: string;
 }
-export interface IAdapterCountOptions {
+export interface AdapterCountOptions {
     conditions_of_group: any[];
     group_fields?: any;
     group_by?: string[];

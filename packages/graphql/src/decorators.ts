@@ -10,7 +10,7 @@ export function Model(options: { connection?: cormo.Connection; name?: string; d
   };
 }
 
-interface IColumnBasicOptions {
+interface ColumnBasicOptions {
   required?: boolean;
   graphql_required?: boolean;
   unique?: boolean;
@@ -19,12 +19,12 @@ interface IColumnBasicOptions {
   default_value?: string | number | (() => string | number);
 }
 
-export function Column(options: { enum: any } & IColumnBasicOptions
-  | { type: cormo.types.ColumnType | cormo.types.ColumnType[] } & IColumnBasicOptions): PropertyDecorator;
+export function Column(options: { enum: any } & ColumnBasicOptions
+  | { type: cormo.types.ColumnType | cormo.types.ColumnType[] } & ColumnBasicOptions): PropertyDecorator;
 export function Column(options: {
   enum?: any; type?: cormo.types.ColumnType
   | cormo.types.ColumnType[];
-} & IColumnBasicOptions): PropertyDecorator {
+} & ColumnBasicOptions): PropertyDecorator {
   let cormo_type: cormo.types.ColumnType | cormo.types.ColumnType[];
   if (options.enum) {
     cormo_type = cormo.types.Integer;
@@ -46,27 +46,27 @@ export function Column(options: {
   };
 }
 
-interface IObjectColumnOptions {
+interface ObjectColumnOptions {
   type: any;
   required?: boolean;
   description?: string;
 }
 
-export function ObjectColumn(options: IObjectColumnOptions): PropertyDecorator {
+export function ObjectColumn(options: ObjectColumnOptions): PropertyDecorator {
   const c = cormo.ObjectColumn(options.type);
   return (target: object, propertyKey: string | symbol) => {
     c(target, propertyKey);
   };
 }
 
-interface IHasManyBasicOptions {
+interface HasManyBasicOptions {
   type?: string;
   foreign_key?: string;
   integrity?: 'ignore' | 'nullify' | 'restrict' | 'delete';
   description?: string;
 }
 
-export function HasMany(options: IHasManyBasicOptions) {
+export function HasMany(options: HasManyBasicOptions) {
   const c_options = {
     foreign_key: options.foreign_key,
     integrity: options.integrity,
@@ -78,14 +78,14 @@ export function HasMany(options: IHasManyBasicOptions) {
   };
 }
 
-interface IHasOneBasicOptions {
+interface HasOneBasicOptions {
   type?: string;
   foreign_key?: string;
   integrity?: 'ignore' | 'nullify' | 'restrict' | 'delete';
   description?: string;
 }
 
-export function HasOne(options: IHasOneBasicOptions) {
+export function HasOne(options: HasOneBasicOptions) {
   const c_options = {
     foreign_key: options.foreign_key,
     integrity: options.integrity,
@@ -97,14 +97,14 @@ export function HasOne(options: IHasOneBasicOptions) {
   };
 }
 
-interface IBelongsToBasicOptions {
+interface BelongsToBasicOptions {
   type?: string;
   required?: boolean;
   foreign_key?: string;
   description?: string;
 }
 
-export function BelongsTo(options: IBelongsToBasicOptions) {
+export function BelongsTo(options: BelongsToBasicOptions) {
   const c_options = {
     foreign_key: options.foreign_key,
     required: options.required,

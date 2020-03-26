@@ -8,54 +8,54 @@
  * @namespace types
  * @class String
  */
-export interface ICormoTypesString {
+export interface CormoTypesString {
     _type: 'string';
     length?: number;
 }
-interface ICormoTypesStringConstructor {
-    new (length?: number): ICormoTypesString;
-    (length?: number): ICormoTypesString;
+interface CormoTypesStringConstructor {
+    new (length?: number): CormoTypesString;
+    (length?: number): CormoTypesString;
 }
-declare const CormoTypesString: ICormoTypesStringConstructor;
+declare const CormoTypesString: CormoTypesStringConstructor;
 /**
  * Represents a double-precision floating-point, used in model schemas.
  * @namespace types
  * @class Number
  */
-export interface ICormoTypesNumber {
+export interface CormoTypesNumber {
     _type: 'number';
 }
-interface ICormoTypesNumberConstructor {
-    new (): ICormoTypesNumber;
-    (): ICormoTypesNumber;
+interface CormoTypesNumberConstructor {
+    new (): CormoTypesNumber;
+    (): CormoTypesNumber;
 }
-declare const CormoTypesNumber: ICormoTypesNumberConstructor;
+declare const CormoTypesNumber: CormoTypesNumberConstructor;
 /**
  * Represents a boolean, used in model schemas.
  * @namespace types
  * @class Boolean
  */
-export interface ICormoTypesBoolean {
+export interface CormoTypesBoolean {
     _type: 'boolean';
 }
-interface ICormoTypesBooleanConstructor {
-    new (): ICormoTypesBoolean;
-    (): ICormoTypesBoolean;
+interface CormoTypesBooleanConstructor {
+    new (): CormoTypesBoolean;
+    (): CormoTypesBoolean;
 }
-declare const CormoTypesBoolean: ICormoTypesBooleanConstructor;
+declare const CormoTypesBoolean: CormoTypesBooleanConstructor;
 /**
  * Represents a 32bit integer, used in model schemas.
  * @namespace types
  * @class Integer
  */
-export interface ICormoTypesInteger {
+export interface CormoTypesInteger {
     _type: 'integer';
 }
-interface ICormoTypesIntegerConstructor {
-    new (): ICormoTypesInteger;
-    (): ICormoTypesInteger;
+interface CormoTypesIntegerConstructor {
+    new (): CormoTypesInteger;
+    (): CormoTypesInteger;
 }
-declare const CormoTypesInteger: ICormoTypesIntegerConstructor;
+declare const CormoTypesInteger: CormoTypesIntegerConstructor;
 /**
  * Represents a two-dimensional point, used in model schemas.
  *
@@ -63,27 +63,27 @@ declare const CormoTypesInteger: ICormoTypesIntegerConstructor;
  * @namespace types
  * @class GeoPoint
  */
-export interface ICormoTypesGeoPoint {
+export interface CormoTypesGeoPoint {
     _type: 'geopoint';
 }
-interface ICormoTypesGeoPointConstructor {
-    new (): ICormoTypesGeoPoint;
-    (): ICormoTypesGeoPoint;
+interface CormoTypesGeoPointConstructor {
+    new (): CormoTypesGeoPoint;
+    (): CormoTypesGeoPoint;
 }
-declare const CormoTypesGeoPoint: ICormoTypesGeoPointConstructor;
+declare const CormoTypesGeoPoint: CormoTypesGeoPointConstructor;
 /**
  * Represents a date, used in model schemas.
  * @namespace types
  * @class Date
  */
-export interface ICormoTypesDate {
+export interface CormoTypesDate {
     _type: 'date';
 }
-interface ICormoTypesDateConstructor {
-    new (): ICormoTypesDate;
-    (): ICormoTypesDate;
+interface CormoTypesDateConstructor {
+    new (): CormoTypesDate;
+    (): CormoTypesDate;
 }
-declare const CormoTypesDate: ICormoTypesDateConstructor;
+declare const CormoTypesDate: CormoTypesDateConstructor;
 /**
  * Represents a general object, used in model schemas.
  *
@@ -92,42 +92,42 @@ declare const CormoTypesDate: ICormoTypesDateConstructor;
  * @namespace types
  * @class Object
  */
-export interface ICormoTypesObject {
+export interface CormoTypesObject {
     _type: 'object';
 }
-interface ICormoTypesObjectConstructor {
-    new (): ICormoTypesObject;
-    (): ICormoTypesObject;
+interface CormoTypesObjectConstructor {
+    new (): CormoTypesObject;
+    (): CormoTypesObject;
 }
-declare const CormoTypesObject: ICormoTypesObjectConstructor;
+declare const CormoTypesObject: CormoTypesObjectConstructor;
 /**
  * Represents a record id, used in model schemas.
  * @namespace types
  * @class RecordID
  */
-export interface ICormoTypesRecordID {
+export interface CormoTypesRecordID {
     _type: 'recordid';
 }
-interface ICormoTypesRecordIDConstructor {
-    new (): ICormoTypesRecordID;
-    (): ICormoTypesRecordID;
+interface CormoTypesRecordIDConstructor {
+    new (): CormoTypesRecordID;
+    (): CormoTypesRecordID;
 }
-declare const CormoTypesRecordID: ICormoTypesRecordIDConstructor;
+declare const CormoTypesRecordID: CormoTypesRecordIDConstructor;
 /**
  * Represents a text, used in model schemas.
  * @namespace types
  * @class Text
  */
-export interface ICormoTypesText {
+export interface CormoTypesText {
     _type: 'text';
 }
-interface ICormoTypesTextConstructor {
-    new (): ICormoTypesText;
-    (): ICormoTypesText;
+interface CormoTypesTextConstructor {
+    new (): CormoTypesText;
+    (): CormoTypesText;
 }
-declare const CormoTypesText: ICormoTypesTextConstructor;
-export declare type ColumnTypeInternal = ICormoTypesString | ICormoTypesNumber | ICormoTypesBoolean | ICormoTypesDate | ICormoTypesObject | ICormoTypesInteger | ICormoTypesGeoPoint | ICormoTypesRecordID | ICormoTypesText;
-export declare type ColumnTypeInternalConstructor = ICormoTypesStringConstructor | ICormoTypesNumberConstructor | ICormoTypesBooleanConstructor | ICormoTypesDateConstructor | ICormoTypesObjectConstructor | ICormoTypesIntegerConstructor | ICormoTypesGeoPointConstructor | ICormoTypesRecordIDConstructor | ICormoTypesTextConstructor;
+declare const CormoTypesText: CormoTypesTextConstructor;
+export declare type ColumnTypeInternal = CormoTypesString | CormoTypesNumber | CormoTypesBoolean | CormoTypesDate | CormoTypesObject | CormoTypesInteger | CormoTypesGeoPoint | CormoTypesRecordID | CormoTypesText;
+export declare type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor | CormoTypesBooleanConstructor | CormoTypesDateConstructor | CormoTypesObjectConstructor | CormoTypesIntegerConstructor | CormoTypesGeoPointConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor;
 declare type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor | BooleanConstructor | DateConstructor | ObjectConstructor;
 declare type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'geopoint' | 'recordid' | 'text';
 export declare type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor | ColumnTypeNativeConstructor | ColumnTypeString;

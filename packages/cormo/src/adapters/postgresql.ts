@@ -11,7 +11,7 @@ try {
   QueryStream = require('pg-query-stream');
 } catch (error) { /**/ }
 
-export interface IAdapterSettingsPostgreSQL {
+export interface AdapterSettingsPostgreSQL {
   host?: string;
   port?: number;
   user?: string;
@@ -22,19 +22,19 @@ export interface IAdapterSettingsPostgreSQL {
 import stream from 'stream';
 import _ from 'lodash';
 import { Connection } from '../connection';
-import { IColumnPropertyInternal, IIndexProperty, IModelSchemaInternal } from '../model';
+import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { IAdapterCountOptions, IAdapterFindOptions, ISchemas, AdapterBase, ISchemasTable, ISchemasIndex } from './base';
+import { AdapterCountOptions, AdapterFindOptions, Schemas, AdapterBase, SchemasTable, SchemasIndex } from './base';
 import { SQLAdapterBase } from './sql_base';
 
-function _typeToSQL(property: IColumnPropertyInternal) {
+function _typeToSQL(property: ColumnPropertyInternal) {
   if (property.array) {
     return 'JSON';
   }
   switch (property.type_class) {
     case types.String:
-      return `VARCHAR(${(property.type as types.ICormoTypesString).length || 255})`;
+      return `VARCHAR(${(property.type as types.CormoTypesString).length || 255})`;
     case types.Number:
       return 'DOUBLE PRECISION';
     case types.Boolean:
@@ -52,7 +52,7 @@ function _typeToSQL(property: IColumnPropertyInternal) {
   }
 }
 
-function _propertyToSQL(property: IColumnPropertyInternal) {
+function _propertyToSQL(property: ColumnPropertyInternal) {
   let type = _typeToSQL(property);
   if (type) {
     if (property.required) {
@@ -121,9 +121,9 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async getSchemas(): Promise<ISchemas> {
+  public async getSchemas(): Promise<Schemas> {
     const tables = await this._getTables();
-    const table_schemas: { [table_name: string]: ISchemasTable } = {};
+    const table_schemas: { [table_name: string]: SchemasTable } = {};
     for (const table of tables) {
       table_schemas[table] = await this._getSchema(table);
     }
@@ -174,7 +174,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createIndex(model_name: string, index: IIndexProperty) {
+  public async createIndex(model_name: string, index: IndexProperty) {
     const model_class = this._connection.models[model_name];
     const schema = model_class._schema;
     const table_name = model_class.table_name;
@@ -336,7 +336,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any> {
+  public async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
       return await this.query(`EXPLAIN ${sql}`, params, options.transaction);
@@ -360,7 +360,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: IAdapterFindOptions): stream.Readable {
+  public stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable {
     if (!QueryStream) {
       console.log('Install pg-query-stream module to use stream');
       process.exit(1);
@@ -390,7 +390,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number> {
+  public async count(model: string, conditions: any, options: AdapterCountOptions): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `SELECT COUNT(*) AS count FROM "${table_name}"`;
@@ -445,7 +445,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
    * Connects to the database
    * @internal
    */
-  public async connect(settings: IAdapterSettingsPostgreSQL) {
+  public async connect(settings: AdapterSettingsPostgreSQL) {
     // connect
     const pool = new pg.Pool({
       database: settings.database,
@@ -553,7 +553,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  protected _buildGroupExpr(schema: IModelSchemaInternal, group_expr: any) {
+  protected _buildGroupExpr(schema: ModelSchemaInternal, group_expr: any) {
     const op = Object.keys(group_expr)[0];
     if (op === '$any') {
       const sub_expr = group_expr[op];
@@ -579,10 +579,10 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getSchema(table: string): Promise<ISchemasTable> {
+  private async _getSchema(table: string): Promise<SchemasTable> {
     const query = 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1';
     const result = await this._pool.query(query, [table]);
-    const schema: ISchemasTable = {};
+    const schema: SchemasTable = {};
     for (const column of result.rows) {
       const type = column.data_type === 'character varying' ? new types.String(column.character_maximum_length)
         : column.data_type === 'double precision' ? new types.Number()
@@ -602,13 +602,13 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getIndexes(): Promise<{ [table_name: string]: ISchemasIndex }> {
+  private async _getIndexes(): Promise<{ [table_name: string]: SchemasIndex }> {
     // see http://stackoverflow.com/a/2213199/3239514
     const query = `SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name
       FROM pg_class t, pg_class i, pg_index ix, pg_attribute a
       WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND a.attnum = ANY(ix.indkey)`;
     const result = await this._pool.query(query);
-    const indexes: { [table_name: string]: ISchemasIndex } = {};
+    const indexes: { [table_name: string]: SchemasIndex } = {};
     for (const row of result.rows) {
       if (row.index_name === `${row.table_name}_pkey`) {
         continue;
@@ -698,7 +698,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model_name: string, conditions: any, options: IAdapterFindOptions): [string, any[]] {
+  private _buildSqlForFind(model_name: string, conditions: any, options: AdapterFindOptions): [string, any[]] {
     const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {

@@ -4,13 +4,13 @@ import { EventEmitter } from 'events';
 import { inspect } from 'util';
 import _ from 'lodash';
 import { AdapterBase } from '../adapters/base';
-import { createAdapter as createMongoDBAdapter, IAdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
-import { createAdapter as createMySQLAdapter, IAdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
-import { createAdapter as createPostgreSQLAdapter, IAdapterSettingsPostgreSQL, PostgreSQLAdapter } from '../adapters/postgresql';
-import { createAdapter as createSQLite3Adapter, IAdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
-import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, ILogger } from '../logger';
-import { BaseModel, IColumnProperty, IModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
-import { IQueryArray, IQuerySingle } from '../query';
+import { createAdapter as createMongoDBAdapter, AdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
+import { createAdapter as createMySQLAdapter, AdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
+import { createAdapter as createPostgreSQLAdapter, AdapterSettingsPostgreSQL, PostgreSQLAdapter } from '../adapters/postgresql';
+import { createAdapter as createSQLite3Adapter, AdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
+import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, Logger } from '../logger';
+import { BaseModel, ColumnProperty, ModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
+import { QueryArray, QuerySingle } from '../query';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
@@ -26,23 +26,23 @@ try {
 
 type ManipulateCommand = string | { [key: string]: any };
 
-interface IRedisCacheSettings {
+interface RedisCacheSettings {
   client?: object;
   host?: string;
   port?: number;
   database?: number;
 }
 
-interface IConnectionSettings {
+interface ConnectionSettings {
   is_default?: boolean;
-  redis_cache?: IRedisCacheSettings;
+  redis_cache?: RedisCacheSettings;
   implicit_apply_schemas?: boolean;
-  logger?: 'console' | 'color-console' | 'empty' | ILogger;
+  logger?: 'console' | 'color-console' | 'empty' | Logger;
 }
 
 type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
 
-export interface IAssociationHasManyOptions {
+export interface AssociationHasManyOptions {
   connection?: Connection;
   type?: string;
   as?: string;
@@ -50,7 +50,7 @@ export interface IAssociationHasManyOptions {
   integrity?: AssociationIntegrityType;
 }
 
-export interface IAssociationHasOneOptions {
+export interface AssociationHasOneOptions {
   connection?: Connection;
   type?: string;
   as?: string;
@@ -58,7 +58,7 @@ export interface IAssociationHasOneOptions {
   integrity?: AssociationIntegrityType;
 }
 
-export interface IAssociationBelongsToOptions {
+export interface AssociationBelongsToOptions {
   connection?: Connection;
   type?: string;
   as?: string;
@@ -66,38 +66,38 @@ export interface IAssociationBelongsToOptions {
   required?: boolean;
 }
 
-export interface ISchemaChange {
+export interface SchemaChange {
   message: string;
   ignorable?: boolean; // ignored change while applying schema
 }
 
-interface IAssociation {
+interface Association {
   type: 'hasMany' | 'hasOne' | 'belongsTo';
   this_model: typeof BaseModel;
   target_model_or_column: string | typeof BaseModel;
-  options?: IAssociationHasManyOptions | IAssociationHasOneOptions | IAssociationBelongsToOptions;
+  options?: AssociationHasManyOptions | AssociationHasOneOptions | AssociationBelongsToOptions;
 }
 
-interface ITxModelClass<M extends BaseModel> {
+interface TxModelClass<M extends BaseModel> {
   new(data?: object): M;
   create(data?: ModelValueObject<M>): Promise<M>;
   createBulk(data?: Array<ModelValueObject<M>>): Promise<M[]>;
   count(condition?: object): Promise<number>;
   update(updates: any, condition?: object): Promise<number>;
   delete(condition?: object): Promise<number>;
-  query(): IQueryArray<M>;
-  find(id: types.RecordID): IQuerySingle<M>;
-  find(id: types.RecordID[]): IQueryArray<M>;
-  findPreserve(ids: types.RecordID[]): IQueryArray<M>;
-  where(condition?: object): IQueryArray<M>;
-  select<K extends ModelColumnNamesWithId<M>>(columns: K[]): IQueryArray<M, Pick<M, K>>;
-  select<K extends ModelColumnNamesWithId<M>>(columns?: string): IQueryArray<M, Pick<M, K>>;
-  order(orders: string): IQueryArray<M>;
+  query(): QueryArray<M>;
+  find(id: types.RecordID): QuerySingle<M>;
+  find(id: types.RecordID[]): QueryArray<M>;
+  findPreserve(ids: types.RecordID[]): QueryArray<M>;
+  where(condition?: object): QueryArray<M>;
+  select<K extends ModelColumnNamesWithId<M>>(columns: K[]): QueryArray<M, Pick<M, K>>;
+  select<K extends ModelColumnNamesWithId<M>>(columns?: string): QueryArray<M, Pick<M, K>>;
+  order(orders: string): QueryArray<M>;
   group<G extends ModelColumnNamesWithId<M>, F>(
     group_by: G | G[], fields?: F,
-  ): IQueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
-  group<F>(group_by: null, fields?: F): IQueryArray<M, { [field in keyof F]: number }>;
-  group<U>(group_by: string | null, fields?: object): IQueryArray<M, U>;
+  ): QueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
+  group<F>(group_by: null, fields?: F): QueryArray<M, { [field in keyof F]: number }>;
+  group<U>(group_by: string | null, fields?: object): QueryArray<M, U>;
 }
 
 /**
@@ -129,7 +129,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   public models: { [name: string]: typeof BaseModel };
 
   /** @internal */
-  public _logger!: ILogger;
+  public _logger!: Logger;
 
   /** @internal */
   public _schema_changed: boolean = false;
@@ -141,10 +141,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   private _promise_schema_applied?: Promise<void>;
 
   /** @internal */
-  private _pending_associations: IAssociation[];
+  private _pending_associations: Association[];
 
   /** @internal */
-  private _redis_cache_settings: IRedisCacheSettings;
+  private _redis_cache_settings: RedisCacheSettings;
 
   /** @internal */
   private _redis_cache_client: any;
@@ -169,15 +169,15 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    * @see RedisAdapter::connect
    */
   constructor(adapter: 'mongodb' | typeof createMongoDBAdapter,
-    settings: IConnectionSettings & IAdapterSettingsMongoDB);
+    settings: ConnectionSettings & AdapterSettingsMongoDB);
   constructor(adapter: 'mysql' | typeof createMySQLAdapter,
-    settings: IConnectionSettings & IAdapterSettingsMySQL);
+    settings: ConnectionSettings & AdapterSettingsMySQL);
   constructor(adapter: 'postgresql' | typeof createPostgreSQLAdapter,
-    settings: IConnectionSettings & IAdapterSettingsPostgreSQL);
+    settings: ConnectionSettings & AdapterSettingsPostgreSQL);
   constructor(adapter: 'sqlite3' | typeof createSQLite3Adapter,
-    settings: IConnectionSettings & IAdapterSettingsSQLite3);
-  constructor(adapter: 'sqlite3_memory' | typeof createSQLite3Adapter, settings: IConnectionSettings);
-  constructor(adapter: string | ((connection: Connection) => AdapterType), settings: IConnectionSettings) {
+    settings: ConnectionSettings & AdapterSettingsSQLite3);
+  constructor(adapter: 'sqlite3_memory' | typeof createSQLite3Adapter, settings: ConnectionSettings);
+  constructor(adapter: string | ((connection: Connection) => AdapterType), settings: ConnectionSettings) {
     super();
     if (settings.is_default !== false) {
       Connection.defaultConnection = this;
@@ -199,7 +199,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /**
    * Set logger
    */
-  public setLogger(logger?: 'console' | 'color-console' | 'empty' | ILogger) {
+  public setLogger(logger?: 'console' | 'color-console' | 'empty' | Logger) {
     if (logger) {
       if (logger === 'console') {
         this._logger = new ConsoleLogger();
@@ -230,7 +230,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /**
    * Creates a model class
    */
-  public model(name: string, schema: IModelSchema): typeof BaseModel {
+  public model(name: string, schema: ModelSchema): typeof BaseModel {
     return BaseModel.newModel(this, name, schema);
   }
 
@@ -340,13 +340,13 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    * Returns changes of schama
    * @see AdapterBase::applySchema
    */
-  public async getSchemaChanges(): Promise<ISchemaChange[]> {
+  public async getSchemaChanges(): Promise<SchemaChange[]> {
     this._initializeModels();
     this.applyAssociations();
     this._checkArchive();
     await this._promise_connection;
 
-    const changes: ISchemaChange[] = [];
+    const changes: SchemaChange[] = [];
 
     const current = await this._adapter.getSchemas();
 
@@ -512,7 +512,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    * @see BaseModel.hasMany
    * @see BaseModel.belongsTo
    */
-  public addAssociation(association: IAssociation) {
+  public addAssociation(association: Association) {
     this._pending_associations.push(association);
     this._schema_changed = true;
   }
@@ -632,30 +632,30 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   }
 
   public async transaction<T, M1 extends BaseModel>(
-    options: { isolation_level?: IsolationLevel; models: [ITxModelClass<M1>] },
-    block: (m1: ITxModelClass<M1>, transaction: Transaction) => Promise<T>): Promise<T>;
+    options: { isolation_level?: IsolationLevel; models: [TxModelClass<M1>] },
+    block: (m1: TxModelClass<M1>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel>(
-    options: { isolation_level?: IsolationLevel; models: [ITxModelClass<M1>, ITxModelClass<M2>] },
-    block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>, transaction: Transaction) => Promise<T>): Promise<T>;
+    options: { isolation_level?: IsolationLevel; models: [TxModelClass<M1>, TxModelClass<M2>] },
+    block: (m1: TxModelClass<M1>, m2: TxModelClass<M2>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel, M3 extends BaseModel>(
-    options: { isolation_level?: IsolationLevel; models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>] },
-    block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>,
-      m3: ITxModelClass<M3>, transaction: Transaction) => Promise<T>): Promise<T>;
+    options: { isolation_level?: IsolationLevel; models: [TxModelClass<M1>, TxModelClass<M2>, TxModelClass<M3>] },
+    block: (m1: TxModelClass<M1>, m2: TxModelClass<M2>,
+      m3: TxModelClass<M3>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel, M3 extends BaseModel, M4 extends BaseModel>(
     options: {
       isolation_level?: IsolationLevel;
-      models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>, ITxModelClass<M4>];
+      models: [TxModelClass<M1>, TxModelClass<M2>, TxModelClass<M3>, TxModelClass<M4>];
     },
-    block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>,
-      m3: ITxModelClass<M3>, m4: ITxModelClass<M4>, transaction: Transaction) => Promise<T>): Promise<T>;
+    block: (m1: TxModelClass<M1>, m2: TxModelClass<M2>,
+      m3: TxModelClass<M3>, m4: TxModelClass<M4>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel,
     M3 extends BaseModel, M4 extends BaseModel, M5 extends BaseModel>(
       options: {
         isolation_level?: IsolationLevel;
-        models: [ITxModelClass<M1>, ITxModelClass<M2>, ITxModelClass<M3>, ITxModelClass<M4>, ITxModelClass<M4>];
+        models: [TxModelClass<M1>, TxModelClass<M2>, TxModelClass<M3>, TxModelClass<M4>, TxModelClass<M4>];
       },
-      block: (m1: ITxModelClass<M1>, m2: ITxModelClass<M2>, m3: ITxModelClass<M3>,
-        m4: ITxModelClass<M4>, m5: ITxModelClass<M5>, transaction: Transaction) => Promise<T>): Promise<T>;
+      block: (m1: TxModelClass<M1>, m2: TxModelClass<M2>, m3: TxModelClass<M3>,
+        m4: TxModelClass<M4>, m5: TxModelClass<M5>, transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T>(
     options: { isolation_level?: IsolationLevel },
     block: (transaction: Transaction) => Promise<T>): Promise<T>;
@@ -761,7 +761,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     }
   }
 
-  private async _connect(settings: IConnectionSettings) {
+  private async _connect(settings: ConnectionSettings) {
     if (!this._adapter) {
       return;
     }
@@ -906,7 +906,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    */
   private _hasMany(
     this_model: typeof BaseModel, target_model: typeof BaseModel,
-    options?: IAssociationHasManyOptions,
+    options?: AssociationHasManyOptions,
   ) {
     let foreign_key: string;
     if (options && options.foreign_key) {
@@ -919,7 +919,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     target_model.column(foreign_key, {
       connection: this_model._connection,
       type: types.RecordID,
-    } as IColumnProperty);
+    } as ColumnProperty);
     const integrity = options && options.integrity || 'ignore';
     target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
     this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
@@ -969,7 +969,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    */
   private _hasOne(
     this_model: typeof BaseModel, target_model: typeof BaseModel,
-    options?: IAssociationHasOneOptions,
+    options?: AssociationHasOneOptions,
   ) {
     let foreign_key: any;
     if (options && options.foreign_key) {
@@ -982,7 +982,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     target_model.column(foreign_key, {
       connection: this_model._connection,
       type: types.RecordID,
-    } as IColumnProperty);
+    } as ColumnProperty);
     const integrity = options && options.integrity || 'ignore';
     target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
     this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
@@ -1025,7 +1025,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    */
   private _belongsTo(
     this_model: typeof BaseModel, target_model: typeof BaseModel,
-    options?: IAssociationBelongsToOptions,
+    options?: AssociationBelongsToOptions,
   ) {
     let foreign_key: any;
     if (options && options.foreign_key) {
@@ -1039,7 +1039,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       connection: target_model._connection,
       required: options && options.required,
       type: types.RecordID,
-    } as IColumnProperty);
+    } as ColumnProperty);
     const column = options && options.as || inflector.underscore(target_model._name);
     const columnCache = '__cache_' + column;
     const columnGetter = '__getter_' + column;
@@ -1223,25 +1223,25 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
 }
 
 export class MongoDBConnection extends Connection<MongoDBAdapter> {
-  constructor(settings: IConnectionSettings & IAdapterSettingsMongoDB) {
+  constructor(settings: ConnectionSettings & AdapterSettingsMongoDB) {
     super(createMongoDBAdapter, settings);
   }
 }
 
 export class MySQLConnection extends Connection<MySQLAdapter> {
-  constructor(settings: IConnectionSettings & IAdapterSettingsMySQL) {
+  constructor(settings: ConnectionSettings & AdapterSettingsMySQL) {
     super(createMySQLAdapter, settings);
   }
 }
 
 export class PostgreSQLConnection extends Connection<PostgreSQLAdapter> {
-  constructor(settings: IConnectionSettings & IAdapterSettingsPostgreSQL) {
+  constructor(settings: ConnectionSettings & AdapterSettingsPostgreSQL) {
     super(createPostgreSQLAdapter, settings);
   }
 }
 
 export class SQLite3Connection extends Connection<SQLite3Adapter> {
-  constructor(settings: IConnectionSettings & IAdapterSettingsSQLite3) {
+  constructor(settings: ConnectionSettings & AdapterSettingsSQLite3) {
     super(createSQLite3Adapter, settings);
   }
 }

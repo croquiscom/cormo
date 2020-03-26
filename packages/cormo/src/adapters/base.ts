@@ -1,31 +1,31 @@
 import stream from 'stream';
 import _ from 'lodash';
 import { Connection } from '../connection';
-import { IIndexProperty } from '../model';
+import { IndexProperty } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
 
-export interface ISchemasColumn {
+export interface SchemasColumn {
   required: boolean;
   type: types.ColumnType | undefined;
 }
 
-export interface ISchemasTable {
-  [column_name: string]: ISchemasColumn;
+export interface SchemasTable {
+  [column_name: string]: SchemasColumn;
 }
 
-export interface ISchemasIndex {
+export interface SchemasIndex {
   [index_name: string]: any;
 }
 
-export interface ISchemas {
-  tables: { [table_name: string]: ISchemasTable | 'NO SCHEMA' };
-  indexes?: { [table_name: string]: ISchemasIndex };
+export interface Schemas {
+  tables: { [table_name: string]: SchemasTable | 'NO SCHEMA' };
+  indexes?: { [table_name: string]: SchemasIndex };
   foreign_keys?: { [table_name: string]: any };
 }
 
-export interface IAdapterFindOptions {
+export interface AdapterFindOptions {
   lean: boolean;
   orders: any[];
   near?: any;
@@ -42,7 +42,7 @@ export interface IAdapterFindOptions {
   index_hint?: string;
 }
 
-export interface IAdapterCountOptions {
+export interface AdapterCountOptions {
   conditions_of_group: any[];
   group_fields?: any;
   group_by?: string[];
@@ -108,7 +108,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async getSchemas(): Promise<ISchemas> {
+  public async getSchemas(): Promise<Schemas> {
     return Promise.resolve({ tables: {} });
   }
 
@@ -136,7 +136,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async createIndex(model_name: string, index: IIndexProperty) {
+  public async createIndex(model_name: string, index: IndexProperty) {
     return Promise.resolve();
   }
 
@@ -244,21 +244,21 @@ abstract class AdapterBase {
    * @see Query::exec
    * @internal
    */
-  public abstract async find(model: string, conditions: any, options: IAdapterFindOptions): Promise<any>;
+  public abstract async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any>;
 
   /**
    * Streams matching records
    * @see Query::stream
    * @internal
    */
-  public abstract stream(model: any, conditions: any, options: IAdapterFindOptions): stream.Readable;
+  public abstract stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable;
 
   /**
    * Counts records
    * @see Query::count
    * @internal
    */
-  public abstract async count(model: string, conditions: any, options: IAdapterCountOptions): Promise<number>;
+  public abstract async count(model: string, conditions: any, options: AdapterCountOptions): Promise<number>;
 
   /**
    * Deletes records from the database

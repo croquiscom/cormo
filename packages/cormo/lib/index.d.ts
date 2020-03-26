@@ -17,7 +17,7 @@ export { BaseModel, ModelValueObject, ModelValueObjectWithId } from './model';
  * @memberOf cormo
  */
 export { Command } from './command';
-export { IQueryArray, IQuerySingle, Query } from './query';
+export { QueryArray, QuerySingle, Query } from './query';
 export * from './decorators';
 /**
  * Exports [[#types]] module

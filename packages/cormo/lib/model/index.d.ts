@@ -1,8 +1,8 @@
 /// <reference types="node" />
 import { inspect } from 'util';
 import { AdapterBase } from '../adapters/base';
-import { Connection, IAssociationBelongsToOptions, IAssociationHasManyOptions, IAssociationHasOneOptions } from '../connection';
-import { IQueryArray, IQuerySingle } from '../query';
+import { Connection, AssociationBelongsToOptions, AssociationHasManyOptions, AssociationHasOneOptions } from '../connection';
+import { QueryArray, QuerySingle } from '../query';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 declare type ModelCallbackMethod = () => void | 'string';
@@ -10,7 +10,7 @@ export declare type ModelColumnNames<M> = Exclude<keyof M, keyof BaseModel>;
 export declare type ModelColumnNamesWithId<M> = Exclude<keyof M, Exclude<keyof BaseModel, 'id'>>;
 export declare type ModelValueObject<M> = Pick<M, ModelColumnNames<M>>;
 export declare type ModelValueObjectWithId<M> = Pick<M, ModelColumnNamesWithId<M>>;
-export interface IColumnProperty {
+export interface ColumnProperty {
     type: types.ColumnType | types.ColumnType[];
     array?: boolean;
     required?: boolean;
@@ -20,7 +20,7 @@ export interface IColumnProperty {
     description?: string;
     default_value?: string | number | (() => string | number);
 }
-export interface IColumnPropertyInternal extends IColumnProperty {
+export interface ColumnPropertyInternal extends ColumnProperty {
     type: types.ColumnTypeInternal;
     record_id?: boolean;
     type_class: types.ColumnTypeInternalConstructor;
@@ -30,14 +30,14 @@ export interface IColumnPropertyInternal extends IColumnProperty {
     _dbname_us: string;
     primary_key: boolean;
 }
-export interface IColumnNestedProperty {
-    [subcolumn: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;
+export interface ColumnNestedProperty {
+    [subcolumn: string]: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty;
 }
-export interface IModelSchema {
-    [path: string]: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty;
+export interface ModelSchema {
+    [path: string]: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty;
 }
-export interface IModelSchemaInternal {
-    [path: string]: IColumnPropertyInternal;
+export interface ModelSchemaInternal {
+    [path: string]: ColumnPropertyInternal;
 }
 /**
  * Base class for models
@@ -65,7 +65,7 @@ declare class BaseModel {
      */
     static _adapter: AdapterBase;
     static _name: string;
-    static _schema: IModelSchemaInternal;
+    static _schema: ModelSchemaInternal;
     static _object_column_classes: Array<{
         column: string;
         klass: any;
@@ -81,7 +81,7 @@ declare class BaseModel {
     /**
      * Returns a new model class extending BaseModel
      */
-    static newModel(connection: Connection, name: string, schema: IModelSchema): typeof BaseModel;
+    static newModel(connection: Connection, name: string, schema: ModelSchema): typeof BaseModel;
     /**
      * Sets a connection of this model
      *
@@ -93,7 +93,7 @@ declare class BaseModel {
     /**
      * Adds a column to this model
      */
-    static column(path: string, type_or_property: types.ColumnType | types.ColumnType[] | IColumnProperty | IColumnNestedProperty): void;
+    static column(path: string, type_or_property: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty): void;
     /**
      * Adds an index to this model
      */
@@ -120,15 +120,15 @@ declare class BaseModel {
     /**
      * Adds a has-many association
      */
-    static hasMany(target_model_or_column: string | typeof BaseModel, options?: IAssociationHasManyOptions): void;
+    static hasMany(target_model_or_column: string | typeof BaseModel, options?: AssociationHasManyOptions): void;
     /**
      * Adds a has-one association
      */
-    static hasOne(target_model_or_column: string | typeof BaseModel, options?: IAssociationHasOneOptions): void;
+    static hasOne(target_model_or_column: string | typeof BaseModel, options?: AssociationHasOneOptions): void;
     /**
      * Adds a belongs-to association
      */
-    static belongsTo(target_model_or_column: string | typeof BaseModel, options?: IAssociationBelongsToOptions): void;
+    static belongsTo(target_model_or_column: string | typeof BaseModel, options?: AssociationBelongsToOptions): void;
     static [inspect.custom](depth: number): string;
     static _getKeyType(target_connection?: Connection<AdapterBase>): any;
     /**
@@ -205,61 +205,61 @@ declare class BaseModel {
      */
     static query<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, options?: {
         transaction?: Transaction;
-    }): IQueryArray<M>;
+    }): QueryArray<M>;
     /**
      * Finds a record by id
      * @throws {Error('not found')}
      */
     static find<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, id: types.RecordID, options?: {
         transaction?: Transaction;
-    }): IQuerySingle<M>;
+    }): QuerySingle<M>;
     static find<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, id: types.RecordID[], options?: {
         transaction?: Transaction;
-    }): IQueryArray<M>;
+    }): QueryArray<M>;
     /**
      * Finds records by ids while preserving order.
      * @throws {Error('not found')}
      */
     static findPreserve<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, ids: types.RecordID[], options?: {
         transaction?: Transaction;
-    }): IQueryArray<M>;
+    }): QueryArray<M>;
     /**
      * Finds records by conditions
      */
     static where<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, condition?: object, options?: {
         transaction?: Transaction;
-    }): IQueryArray<M>;
+    }): QueryArray<M>;
     /**
      * Selects columns for result
      */
     static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(this: (new (data?: any) => M) & typeof BaseModel, columns: K[], options?: {
         transaction?: Transaction;
-    }): IQueryArray<M, Pick<M, K>>;
+    }): QueryArray<M, Pick<M, K>>;
     static select<M extends BaseModel, K extends ModelColumnNamesWithId<M>>(this: (new (data?: any) => M) & typeof BaseModel, columns?: string, options?: {
         transaction?: Transaction;
-    }): IQueryArray<M, Pick<M, K>>;
+    }): QueryArray<M, Pick<M, K>>;
     /**
      * Specifies orders of result
      */
     static order<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, orders: string, options?: {
         transaction?: Transaction;
-    }): IQueryArray<M>;
+    }): QueryArray<M>;
     /**
      * Groups result records
      */
     static group<M extends BaseModel, G extends ModelColumnNamesWithId<M>, F>(this: (new (data?: any) => M) & typeof BaseModel, group_by: G | G[], fields?: F, options?: {
         transaction?: Transaction;
-    }): IQueryArray<M, {
+    }): QueryArray<M, {
         [field in keyof F]: number;
     } & Pick<M, G>>;
     static group<M extends BaseModel, F>(this: (new (data?: any) => M) & typeof BaseModel, group_by: null, fields?: F, options?: {
         transaction?: Transaction;
-    }): IQueryArray<M, {
+    }): QueryArray<M, {
         [field in keyof F]: number;
     }>;
     static group<M extends BaseModel, U>(this: (new (data?: any) => M) & typeof BaseModel, group_by: string | null, fields?: object, options?: {
         transaction?: Transaction;
-    }): IQueryArray<M, U>;
+    }): QueryArray<M, U>;
     /**
      * Counts records by conditions
      */
@@ -287,8 +287,8 @@ declare class BaseModel {
      * A validator must return false(boolean) or error message(string), or throw an Error exception if invalid
      */
     static addValidator(validator: any): void;
-    static _buildSaveDataColumn(data: any, model: any, column: string, property: IColumnPropertyInternal, allow_null?: boolean): void;
-    static _validateColumn(data: any, column: string, property: IColumnPropertyInternal, for_update?: boolean): void;
+    static _buildSaveDataColumn(data: any, model: any, column: string, property: ColumnPropertyInternal, allow_null?: boolean): void;
+    static _validateColumn(data: any, column: string, property: ColumnPropertyInternal, for_update?: boolean): void;
     private static _validators;
     private static _callbacks_map;
     /**
