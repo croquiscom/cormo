@@ -437,9 +437,9 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const pool = new pg.Pool({
             database: settings.database,
             host: settings.host,
-            password: settings.password,
+            password: await settings.password,
             port: settings.port,
-            user: settings.user,
+            user: await settings.user,
         });
         try {
             const client = await pool.connect();

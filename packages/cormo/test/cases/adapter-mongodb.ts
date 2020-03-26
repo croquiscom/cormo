@@ -1,11 +1,38 @@
 import { expect } from 'chai';
 import { ObjectId } from 'mongodb';
 import * as cormo from '../..';
+import _g = require('../support/common');
 
 export default function(models: {
   connection: cormo.Connection<cormo.MongoDBAdapter> | null;
 }) {
   describe('issues', () => {
+    it('delayed auth info', async () => {
+      const conn = new cormo.MongoDBConnection({
+        implicit_apply_schemas: true,
+        is_default: false,
+        database: _g.db_configs.mongodb.database,
+        port: _g.db_configs.mongodb.port,
+        user: new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(_g.db_configs.mongodb.user);
+          }, 1000);
+        }),
+        password: new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(_g.db_configs.mongodb.password);
+          }, 1000);
+        }),
+      });
+      const User = conn.model('User', {
+        age: Number,
+        name: String,
+      });
+      const user = await User.create({ name: 'John Doe', age: 27 });
+      expect(await User.find(user.id)).to.eql({ id: user.id, name: 'John Doe', age: 27 });
+      await conn.dropAllModels();
+    });
+
     it('insert more than 1000', async () => {
       class Simple extends cormo.BaseModel { }
       Simple.column('value', Number);

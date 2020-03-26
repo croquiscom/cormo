@@ -14,8 +14,8 @@ try {
 export interface AdapterSettingsPostgreSQL {
   host?: string;
   port?: number;
-  user?: string;
-  password?: string;
+  user?: string | Promise<string>;
+  password?: string | Promise<string>;
   database: string;
 }
 
@@ -450,9 +450,9 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const pool = new pg.Pool({
       database: settings.database,
       host: settings.host,
-      password: settings.password,
+      password: await settings.password,
       port: settings.port,
-      user: settings.user,
+      user: await settings.user,
     });
     try {
       const client = await pool.connect();

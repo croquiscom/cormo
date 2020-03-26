@@ -1,10 +1,37 @@
 import { expect } from 'chai';
 import * as cormo from '../..';
+import _g = require('../support/common');
 
 export default function(models: {
   connection: cormo.Connection<cormo.PostgreSQLAdapter> | null;
 }) {
   describe('issues', () => {
+    it('delayed auth info', async () => {
+      const conn = new cormo.PostgreSQLConnection({
+        implicit_apply_schemas: true,
+        is_default: false,
+        database: _g.db_configs.postgresql.database,
+        port: _g.db_configs.postgresql.port,
+        user: new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(_g.db_configs.postgresql.user);
+          }, 1000);
+        }),
+        password: new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(_g.db_configs.postgresql.password);
+          }, 1000);
+        }),
+      });
+      const User = conn.model('User', {
+        age: Number,
+        name: String,
+      });
+      const user = await User.create({ name: 'John Doe', age: 27 });
+      expect(await User.find(user.id)).to.eql({ id: user.id, name: 'John Doe', age: 27 });
+      await conn.dropAllModels();
+    });
+
     it('reserved words', async () => {
       class Reference extends cormo.BaseModel {
         public group!: number;

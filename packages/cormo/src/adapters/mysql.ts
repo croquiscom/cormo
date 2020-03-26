@@ -9,8 +9,8 @@ try {
 export interface AdapterSettingsMySQL {
   host?: string;
   port?: number;
-  user?: string;
-  password?: string;
+  user?: string | Promise<string>;
+  password?: string | Promise<string>;
   database: string;
   charset?: string;
   collation?: string;
@@ -18,7 +18,7 @@ export interface AdapterSettingsMySQL {
   query_timeout?: number;
   replication?: {
     use_master_for_read?: boolean;
-    read_replicas: Array<{ host?: string; port?: number; user?: string; password?: string; pool_size?: number }>;
+    read_replicas: Array<{ host?: string; port?: number; user?: string | Promise<string>; password?: string | Promise<string>; pool_size?: number }>;
   };
 }
 
@@ -529,9 +529,9 @@ export class MySQLAdapter extends SQLAdapterBase {
       client = await _tryCreateConnection({
         charset: settings.charset,
         host: settings.host,
-        password: settings.password,
+        password: await settings.password,
         port: settings.port,
-        user: settings.user,
+        user: await settings.user,
       });
     } catch (error) {
       throw MySQLAdapter.wrapError('failed to connect', error);
@@ -552,9 +552,9 @@ export class MySQLAdapter extends SQLAdapterBase {
       connectionLimit: settings.pool_size || 10,
       database: settings.database,
       host: settings.host,
-      password: settings.password,
+      password: await settings.password,
       port: settings.port,
-      user: settings.user,
+      user: await settings.user,
     });
     this._client._node_id = 'MASTER';
     this._client.queryAsync = util.promisify(this._client.query);
@@ -572,9 +572,9 @@ export class MySQLAdapter extends SQLAdapterBase {
           connectionLimit: replica.pool_size || 10,
           database: settings.database,
           host: replica.host,
-          password: replica.password,
+          password: await replica.password,
           port: replica.port,
-          user: replica.user,
+          user: await replica.user,
         });
         read_client._node_id = `SLAVE${i + 1}`;
         read_client.queryAsync = util.promisify(read_client.query);

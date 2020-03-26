@@ -501,9 +501,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             client = await _tryCreateConnection({
                 charset: settings.charset,
                 host: settings.host,
-                password: settings.password,
+                password: await settings.password,
                 port: settings.port,
-                user: settings.user,
+                user: await settings.user,
             });
         }
         catch (error) {
@@ -527,9 +527,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             connectionLimit: settings.pool_size || 10,
             database: settings.database,
             host: settings.host,
-            password: settings.password,
+            password: await settings.password,
             port: settings.port,
-            user: settings.user,
+            user: await settings.user,
         });
         this._client._node_id = 'MASTER';
         this._client.queryAsync = util_1.default.promisify(this._client.query);
@@ -546,9 +546,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                     connectionLimit: replica.pool_size || 10,
                     database: settings.database,
                     host: replica.host,
-                    password: replica.password,
+                    password: await replica.password,
                     port: replica.port,
-                    user: replica.user,
+                    user: await replica.user,
                 });
                 read_client._node_id = `SLAVE${i + 1}`;
                 read_client.queryAsync = util_1.default.promisify(read_client.query);

@@ -1,8 +1,8 @@
 export interface AdapterSettingsMongoDB {
     host?: string;
     port?: number;
-    user?: string;
-    password?: string;
+    user?: string | Promise<string>;
+    password?: string | Promise<string>;
     database: string;
 }
 import { Connection } from '../connection';

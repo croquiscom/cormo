@@ -9,8 +9,8 @@ try {
 export interface AdapterSettingsMongoDB {
   host?: string;
   port?: number;
-  user?: string;
-  password?: string;
+  user?: string | Promise<string>;
+  password?: string | Promise<string>;
   database: string;
 }
 
@@ -668,12 +668,14 @@ export class MongoDBAdapter extends AdapterBase {
    */
   public async connect(settings: AdapterSettingsMongoDB) {
     let url;
-    if (settings.user || settings.password) {
-      const host = settings.host || 'localhost';
-      const port = settings.port || 27017;
-      url = `mongodb://${settings.user}:${settings.password}@${host}:${port}/${settings.database}`;
+    const host = settings.host || 'localhost';
+    const port = settings.port || 27017;
+    const user = await settings.user;
+    const password = await settings.password;
+    if (user || password) {
+      url = `mongodb://${user}:${password}@${host}:${port}/${settings.database}`;
     } else {
-      url = `mongodb://${settings.host || 'localhost'}:${settings.port || 27017}/${settings.database}`;
+      url = `mongodb://${host}:${port}/${settings.database}`;
     }
     try {
       const client = await mongodb.MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
