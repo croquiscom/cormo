@@ -7,7 +7,13 @@
  * Exports [[#Connection]] class
  * @memberOf cormo
  */
-export { Connection, MongoDBConnection, MySQLConnection, PostgreSQLConnection, SQLite3Connection } from './connection';
+export {
+  Connection,
+  MongoDBConnection, MongoDBConnectionSettings,
+  MySQLConnection, MySQLConnectionSettings,
+  PostgreSQLConnection, PostgreSQLConnectionSettings,
+  SQLite3Connection, SQLite3ConnectionSettings,
+} from './connection';
 
 /**
  * Exports [[#BaseModel]] class

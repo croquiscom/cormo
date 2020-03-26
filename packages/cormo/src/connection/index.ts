@@ -40,6 +40,18 @@ interface ConnectionSettings {
   logger?: 'console' | 'color-console' | 'empty' | Logger;
 }
 
+export interface MongoDBConnectionSettings extends ConnectionSettings, AdapterSettingsMongoDB {
+}
+
+export interface MySQLConnectionSettings extends ConnectionSettings, AdapterSettingsMySQL {
+}
+
+export interface PostgreSQLConnectionSettings extends ConnectionSettings, AdapterSettingsPostgreSQL {
+}
+
+export interface SQLite3ConnectionSettings extends ConnectionSettings, AdapterSettingsSQLite3 {
+}
+
 type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
 
 export interface AssociationHasManyOptions {
@@ -168,14 +180,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    * @see SQLite3Adapter::connect
    * @see RedisAdapter::connect
    */
-  constructor(adapter: 'mongodb' | typeof createMongoDBAdapter,
-    settings: ConnectionSettings & AdapterSettingsMongoDB);
-  constructor(adapter: 'mysql' | typeof createMySQLAdapter,
-    settings: ConnectionSettings & AdapterSettingsMySQL);
-  constructor(adapter: 'postgresql' | typeof createPostgreSQLAdapter,
-    settings: ConnectionSettings & AdapterSettingsPostgreSQL);
-  constructor(adapter: 'sqlite3' | typeof createSQLite3Adapter,
-    settings: ConnectionSettings & AdapterSettingsSQLite3);
+  constructor(adapter: 'mongodb' | typeof createMongoDBAdapter, settings: MongoDBConnectionSettings);
+  constructor(adapter: 'mysql' | typeof createMySQLAdapter, settings: MySQLConnectionSettings);
+  constructor(adapter: 'postgresql' | typeof createPostgreSQLAdapter, settings: PostgreSQLConnectionSettings);
+  constructor(adapter: 'sqlite3' | typeof createSQLite3Adapter, settings: SQLite3ConnectionSettings);
   constructor(adapter: 'sqlite3_memory' | typeof createSQLite3Adapter, settings: ConnectionSettings);
   constructor(adapter: string | ((connection: Connection) => AdapterType), settings: ConnectionSettings) {
     super();
