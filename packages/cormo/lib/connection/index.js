@@ -262,7 +262,8 @@ class Connection extends events_1.EventEmitter {
                 }
             }
             for (const index in (_c = current.indexes) === null || _c === void 0 ? void 0 : _c[modelClass.table_name]) {
-                if (!lodash_1.default.find(modelClass._indexes, (item) => item.options.name === index)) {
+                // MySQL add index for foreign key, so does not need to remove if the index is defined in integrities
+                if (!lodash_1.default.find(modelClass._indexes, (item) => item.options.name === index) && !lodash_1.default.find(modelClass._integrities, (item) => item.column === index)) {
                     changes.push({ message: `Remove index on ${modelClass.table_name} ${index}`, ignorable: true });
                 }
             }
@@ -283,7 +284,7 @@ class Connection extends events_1.EventEmitter {
                 if (type) {
                     const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.table_name]
                         && current.foreign_keys[modelClass.table_name][integrity.column];
-                    if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name)) {
+                    if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name) && this._adapter.native_integrity) {
                         const table_name = modelClass.table_name;
                         const parent_table_name = integrity.parent.table_name;
                         changes.push({ message: `Add foreign key ${table_name}.${integrity.column} to ${parent_table_name}` });

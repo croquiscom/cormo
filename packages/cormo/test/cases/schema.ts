@@ -443,4 +443,24 @@ export default function(db: any, db_config: any) {
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
   });
+
+  it('handle indexes from association', async () => {
+    const User = connection.model('User', { name: String, age: Number });
+    const Post = connection.model('Post', { title: String, body: String });
+    const Computer = connection.model('Computer', { brand: String });
+
+    User.hasMany(Post, { integrity: 'delete' });
+    Post.belongsTo(User);
+
+    Post.hasMany(Post, { as: 'comments', foreign_key: 'parent_post_id', integrity: 'delete' });
+    Post.belongsTo(Post, { as: 'parent_post' });
+
+    User.hasOne(Computer, { integrity: 'delete' });
+    Computer.belongsTo(User);
+
+    await connection.applySchemas();
+
+    expect(await connection.getSchemaChanges()).to.eql([]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+  });
 }

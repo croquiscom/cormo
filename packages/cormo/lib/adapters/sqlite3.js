@@ -91,11 +91,14 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         const tables = await this._getTables();
         const table_schemas = {};
         const all_indexes = {};
+        const all_foreign_keys = {};
         for (const table of tables) {
             table_schemas[table] = await this._getSchema(table);
             all_indexes[table] = await this._getIndexes(table);
+            all_foreign_keys[table] = await this._getForeignKeys(table);
         }
         return {
+            foreign_keys: all_foreign_keys,
             indexes: all_indexes,
             tables: table_schemas,
         };
@@ -558,6 +561,15 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
             }
         }
         return indexes;
+    }
+    /** @internal */
+    async _getForeignKeys(table) {
+        const rows = await this._client.allAsync(`PRAGMA foreign_key_list(\`${table}\`)`);
+        const foreign_keys = {};
+        for (const row of rows) {
+            foreign_keys[row.from] = row.table;
+        }
+        return foreign_keys;
     }
     /** @internal */
     _buildUpdateSetOfColumn(property, data, values, fields, places, insert = false) {
