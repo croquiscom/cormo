@@ -11,11 +11,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 let mysql;
+let is_mysql2 = false;
 try {
-    mysql = require('mysql');
+    mysql = require('mysql2');
+    is_mysql2 = true;
 }
-catch (error) {
-    //
+catch (error1) {
+    try {
+        mysql = require('mysql');
+    }
+    catch (error2) {
+        //
+    }
 }
 const stream_1 = __importDefault(require("stream"));
 const util_1 = __importDefault(require("util"));

@@ -1,9 +1,15 @@
 let mysql: any;
+let is_mysql2 = false;
 
 try {
-  mysql = require('mysql');
-} catch (error) {
-  //
+  mysql = require('mysql2');
+  is_mysql2 = true;
+} catch (error1) {
+  try {
+    mysql = require('mysql');
+  } catch (error2) {
+    //
+  }
 }
 
 export interface AdapterSettingsMySQL {
