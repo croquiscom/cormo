@@ -542,6 +542,8 @@ export class MySQLAdapter extends SQLAdapterBase {
         password: await settings.password,
         port: settings.port,
         user: await settings.user,
+        ssl: settings.ssl,
+        authPlugins: settings.authPlugins,
       });
     } catch (error) {
       if (error.code === 'ER_ACCESS_DENIED_ERROR') {
@@ -568,6 +570,8 @@ export class MySQLAdapter extends SQLAdapterBase {
       password: await settings.password,
       port: settings.port,
       user: await settings.user,
+      ssl: settings.ssl,
+      authPlugins: settings.authPlugins,
     });
     this._client._node_id = 'MASTER';
     this._client.queryAsync = util.promisify(this._client.query);
@@ -588,6 +592,8 @@ export class MySQLAdapter extends SQLAdapterBase {
           password: await replica.password,
           port: replica.port,
           user: await replica.user,
+          ssl: settings.ssl,
+          authPlugins: settings.authPlugins,
         });
         read_client._node_id = `SLAVE${i + 1}`;
         read_client.queryAsync = util.promisify(read_client.query);

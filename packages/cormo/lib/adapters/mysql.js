@@ -511,6 +511,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 password: await settings.password,
                 port: settings.port,
                 user: await settings.user,
+                ssl: settings.ssl,
+                authPlugins: settings.authPlugins,
             });
         }
         catch (error) {
@@ -540,6 +542,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             password: await settings.password,
             port: settings.port,
             user: await settings.user,
+            ssl: settings.ssl,
+            authPlugins: settings.authPlugins,
         });
         this._client._node_id = 'MASTER';
         this._client.queryAsync = util_1.default.promisify(this._client.query);
@@ -559,6 +563,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                     password: await replica.password,
                     port: replica.port,
                     user: await replica.user,
+                    ssl: settings.ssl,
+                    authPlugins: settings.authPlugins,
                 });
                 read_client._node_id = `SLAVE${i + 1}`;
                 read_client.queryAsync = util_1.default.promisify(read_client.query);
