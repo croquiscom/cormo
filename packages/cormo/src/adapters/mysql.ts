@@ -1,6 +1,8 @@
 let mysql: any;
 let is_mysql2 = false;
 
+import tls = require('tls');
+
 try {
   mysql = require('mysql2');
   is_mysql2 = true;
@@ -26,6 +28,8 @@ export interface AdapterSettingsMySQL {
     use_master_for_read?: boolean;
     read_replicas: Array<{ host?: string; port?: number; user?: string | Promise<string>; password?: string | Promise<string>; pool_size?: number }>;
   };
+  ssl?: string | (tls.SecureContextOptions & { rejectUnauthorized?: boolean });
+  authPlugins?: { [plugin: string]: ({ connection, command }: { connection: any; command: any }) => (data: any) => string };
 }
 
 import stream from 'stream';

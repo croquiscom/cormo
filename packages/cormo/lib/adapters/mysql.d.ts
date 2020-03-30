@@ -1,3 +1,5 @@
+/// <reference types="node" />
+import tls = require('tls');
 export interface AdapterSettingsMySQL {
     host?: string;
     port?: number;
@@ -17,6 +19,15 @@ export interface AdapterSettingsMySQL {
             password?: string | Promise<string>;
             pool_size?: number;
         }>;
+    };
+    ssl?: string | (tls.SecureContextOptions & {
+        rejectUnauthorized?: boolean;
+    });
+    authPlugins?: {
+        [plugin: string]: ({ connection, command }: {
+            connection: any;
+            command: any;
+        }) => (data: any) => string;
     };
 }
 import { Connection } from '../connection';
