@@ -534,6 +534,9 @@ export class MySQLAdapter extends SQLAdapterBase {
         user: await settings.user,
       });
     } catch (error) {
+      if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+        throw error;
+      }
       throw MySQLAdapter.wrapError('failed to connect', error);
     }
     try {
