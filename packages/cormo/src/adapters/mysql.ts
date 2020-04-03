@@ -679,8 +679,15 @@ export class MySQLAdapter extends SQLAdapterBase {
     if (!this._client) {
       return;
     }
-    while (this._client._freeConnections.length > 0) {
-      this._client._purgeConnection(this._client._freeConnections[0]);
+    if (is_mysql2) {
+      const list = this._client._freeConnections.toArray();
+      for (const connection of list) {
+        connection.destroy();
+      }
+    } else {
+      while (this._client._freeConnections.length > 0) {
+        this._client._purgeConnection(this._client._freeConnections[0]);
+      }
     }
   }
 
