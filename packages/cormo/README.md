@@ -50,6 +50,14 @@ class Post extends cormo.BaseModel {
 
   @cormo.Column(Date)
   date?: Date;
+
+  @cormo.ObjectColumn({type: Author}) // You can delcare a nested column with `ObjectColumn` type
+  author: Author;
+}
+
+class Auther extends User {
+  @cormo.Column(Date)
+  date_joined? Date;
 }
 ```
 ```javascript
@@ -66,8 +74,9 @@ const User = connection.model('User', {
 const Post = connection.model('Post', {
   title: String, // `String` is the same as `type: String`
   body: 'string', // you can also use `string` to specify a string type
-  date: Date
+  date: Date,
 });
+
 ```
 ```coffeescript
 cormo = require 'cormo'
@@ -121,6 +130,12 @@ const users = await User.where({age: 27})
 
 const users = await User.where({$or: [ { age: { $lt: 20 } }, { age: { $gt: 60 } } ]})
   .where({name: { $contains: 'smi' }});
+
+const posts = await Post.where({
+  title: 'Lorem ipsum',
+  'author.name': 'John Doe',
+});
+
 ```
 ```javascript
 const user = await User.find(1);
@@ -181,6 +196,8 @@ const count = await User.find(1).update({age: 10});
 const count = await User.where({age: 27}).update({age: 10});
 
 const count = await User.where({age: 35}).update({age: {$inc: 3}});
+
+const posts = await Post.where({title: 'Lorem Ipsum'}).update({ author: {age: {$inc: 5}}});
 ```
 ```javascript
 const user = await User.find(1);
