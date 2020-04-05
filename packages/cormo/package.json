@@ -48,7 +48,7 @@
     "@types/mocha": "^7.0.2",
     "@types/mongodb": "^3.5.2",
     "@types/node": "^13.9.3",
-    "@types/sinon": "^7.5.2",
+    "@types/sinon": "^9.0.0",
     "@types/yargs": "^15.0.4",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
