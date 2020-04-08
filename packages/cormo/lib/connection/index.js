@@ -137,7 +137,7 @@ class Connection extends events_1.EventEmitter {
                         const property = modelClass._schema[column];
                         if (!currentTable[property._dbname_us]) {
                             if (options.verbose) {
-                                console.log(`Adding column ${column} to ${modelClass.table_name}`);
+                                console.log(`Adding column ${property._dbname_us} to ${modelClass.table_name}`);
                             }
                             await this._adapter.addColumn(model, property);
                         }
