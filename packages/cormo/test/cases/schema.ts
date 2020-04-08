@@ -205,6 +205,21 @@ export default function(db: any, db_config: any) {
     expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false); // no table to create
 
+    @cormo.Model({ name: 'users' })
+    @cormo.Index({ name: 1 })
+    class User3 extends cormo.BaseModel {
+      @cormo.Column({ type: String, name: 'n' })
+      public name!: string;
+
+      @cormo.Column({ type: Number, name: 'a2' })
+      public age!: number;
+    }
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Add column a2 to users' },
+      { message: 'Remove column a from users', ignorable: true },
+    ]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+
     await connection.applySchemas();
     expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
