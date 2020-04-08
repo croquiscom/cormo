@@ -367,10 +367,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       for (const column in modelClass._schema) {
         const property = modelClass._schema[column];
         if (!currentTable[property._dbname_us]) {
-          changes.push({ message: `Add column ${column} to ${modelClass.table_name}` });
+          changes.push({ message: `Add column ${property._dbname_us} to ${modelClass.table_name}` });
         } else if (column !== 'id') {
           if (property.required && !currentTable[property._dbname_us].required) {
-            changes.push({ message: `Change ${modelClass.table_name}.${column} to required`, ignorable: true });
+            changes.push({ message: `Change ${modelClass.table_name}.${property._dbname_us} to required`, ignorable: true });
           } else if (!property.required && currentTable[property._dbname_us].required) {
             changes.push({ message: `Change ${modelClass.table_name}.${column} to optional`, ignorable: true });
           }
