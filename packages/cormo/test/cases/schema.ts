@@ -408,6 +408,27 @@ export default function(db: any, db_config: any) {
     }
   });
 
+  it('column is added', async () => {
+    class User extends cormo.BaseModel { }
+    User.column('name', String);
+
+    await connection.applySchemas();
+
+    User.column('address', String);
+    User.column('age', { type: String, name: 'a' });
+
+    if (db !== 'mongodb') {
+      expect(await connection.getSchemaChanges()).to.eql([
+        { message: 'Add column address to users' },
+        { message: 'Add column a to users' },
+      ]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    } else {
+      expect(await connection.getSchemaChanges()).to.eql([]);
+      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    }
+  });
+
   it('column requireness is changed', async () => {
     class User extends cormo.BaseModel { }
     User.column('name', { type: String, required: true });
