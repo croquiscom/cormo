@@ -255,7 +255,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             else if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
                 column = schema[column] && schema[column]._dbname_us || column;
-                return `SUM(${column})`;
+                return `SUM(${this._escape_ch}${column}${this._escape_ch})`;
             }
             else {
                 throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -266,7 +266,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
                 column = schema[column] && schema[column]._dbname_us || column;
-                return `MIN(${column})`;
+                return `MIN(${this._escape_ch}${column}${this._escape_ch})`;
             }
             else {
                 throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -277,7 +277,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
                 column = schema[column] && schema[column]._dbname_us || column;
-                return `MAX(${column})`;
+                return `MAX(${this._escape_ch}${column}${this._escape_ch})`;
             }
             else {
                 throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -288,7 +288,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
                 column = schema[column] && schema[column]._dbname_us || column;
-                return `AVG(${column})`;
+                return `AVG(${this._escape_ch}${column}${this._escape_ch})`;
             }
             else {
                 throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -299,7 +299,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
                 column = schema[column] && schema[column]._dbname_us || column;
-                return `${column}`;
+                return `${this._escape_ch}${column}${this._escape_ch}`;
             }
             else {
                 throw new Error(`unknown expression '${JSON.stringify(op)}'`);

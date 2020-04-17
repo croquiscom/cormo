@@ -29,6 +29,9 @@ export default function(models: {
 
       const count_per_group = await Reference.where().group('group', { count: { $sum: 1 } }).order('group');
       expect(count_per_group).to.eql([{ group: 1, count: 2 }, { group: 2, count: 1 }, { group: 3, count: 1 }]);
+
+      const sum_of_group = await Reference.where().group(null, { count: { $sum: '$group' } });
+      expect(sum_of_group).to.eql([{ count: 7 }]);
     });
 
     it('#5 invalid json value', async () => {
