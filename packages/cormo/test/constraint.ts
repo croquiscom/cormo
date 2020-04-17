@@ -1,6 +1,6 @@
+import * as cormo from '..';
 import cases, { PostRef, UserRef } from './cases/constraint';
 import cases_multicolumn, { VersionRef } from './cases/constraint_multicolumn';
-import * as cormo from '..';
 import _g = require('./support/common');
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];

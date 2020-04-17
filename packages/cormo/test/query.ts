@@ -1,3 +1,4 @@
+import * as cormo from '..';
 import cases, { UserRef } from './cases/query';
 import cases_misc from './cases/query_misc';
 import cases_not from './cases/query_not';
@@ -5,7 +6,6 @@ import cases_null from './cases/query_null';
 import cases_stream from './cases/query_stream';
 import cases_update from './cases/query_update';
 import cases_upsert from './cases/query_upsert';
-import * as cormo from '..';
 import _g = require('./support/common');
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
