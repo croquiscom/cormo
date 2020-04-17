@@ -38,6 +38,7 @@ interface ConnectionSettings {
   redis_cache?: RedisCacheSettings;
   implicit_apply_schemas?: boolean;
   logger?: 'console' | 'color-console' | 'empty' | Logger;
+  connection_retry_count?: number;
 }
 
 export interface MongoDBConnectionSettings extends ConnectionSettings, AdapterSettingsMongoDB {
@@ -170,6 +171,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /** @internal */
   private _implicit_apply_schemas: boolean = false;
 
+  /** @internal */
+  private _connection_retry_count: number = 99999;
+
   [name: string]: any;
 
   /**
@@ -191,6 +195,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       Connection.defaultConnection = this;
     }
     this._implicit_apply_schemas = settings.implicit_apply_schemas ?? false;
+    this._connection_retry_count = settings.connection_retry_count ?? 99999;
     const redis_cache = settings.redis_cache || {};
     this._redis_cache_settings = redis_cache;
     this.models = {};
@@ -770,7 +775,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     }
   }
 
-  private async _connect(settings: ConnectionSettings) {
+  private async _connect(settings: ConnectionSettings, count = 0) {
     if (!this._adapter) {
       return;
     }
@@ -778,12 +783,15 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       await this._adapter.connect(settings);
       this._connected = true;
     } catch (error) {
+      if (this._connection_retry_count && this._connection_retry_count <= count) {
+        throw new Error('failed to connect');
+      }
       // try again with delay
       await new Promise((resolve) => {
-        setTimeout(() => resolve(), 5000);
+        setTimeout(() => resolve(), 5000 * (count + 1));
       });
       console.log('try again to connect', error.toString());
-      await this._connect(settings);
+      await this._connect(settings, count + 1);
     }
   }
 

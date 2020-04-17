@@ -36,7 +36,7 @@ catch (error) {
  */
 class Connection extends events_1.EventEmitter {
     constructor(adapter, settings) {
-        var _a;
+        var _a, _b;
         super();
         /** @internal */
         this._schema_changed = false;
@@ -46,10 +46,13 @@ class Connection extends events_1.EventEmitter {
         this._applying_schemas = false;
         /** @internal */
         this._implicit_apply_schemas = false;
+        /** @internal */
+        this._connection_retry_count = 99999;
         if (settings.is_default !== false) {
             Connection.defaultConnection = this;
         }
         this._implicit_apply_schemas = (_a = settings.implicit_apply_schemas) !== null && _a !== void 0 ? _a : false;
+        this._connection_retry_count = (_b = settings.connection_retry_count) !== null && _b !== void 0 ? _b : 99999;
         const redis_cache = settings.redis_cache || {};
         this._redis_cache_settings = redis_cache;
         this.models = {};
@@ -601,7 +604,7 @@ class Connection extends events_1.EventEmitter {
             return client;
         }
     }
-    async _connect(settings) {
+    async _connect(settings, count = 0) {
         if (!this._adapter) {
             return;
         }
@@ -610,12 +613,15 @@ class Connection extends events_1.EventEmitter {
             this._connected = true;
         }
         catch (error) {
+            if (this._connection_retry_count && this._connection_retry_count <= count) {
+                throw new Error('failed to connect');
+            }
             // try again with delay
             await new Promise((resolve) => {
-                setTimeout(() => resolve(), 5000);
+                setTimeout(() => resolve(), 5000 * (count + 1));
             });
             console.log('try again to connect', error.toString());
-            await this._connect(settings);
+            await this._connect(settings, count + 1);
         }
     }
     _initializeModels() {

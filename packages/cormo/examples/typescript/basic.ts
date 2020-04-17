@@ -15,6 +15,7 @@ export const connection = new cormo.MySQLConnection({
     }],
   },
   user: 'cormo_test',
+  connection_retry_count: 2,
 });
 
 class Name {

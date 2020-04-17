@@ -25,6 +25,7 @@ interface ConnectionSettings {
     redis_cache?: RedisCacheSettings;
     implicit_apply_schemas?: boolean;
     logger?: 'console' | 'color-console' | 'empty' | Logger;
+    connection_retry_count?: number;
 }
 export interface MongoDBConnectionSettings extends ConnectionSettings, AdapterSettingsMongoDB {
 }
