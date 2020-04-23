@@ -44,10 +44,10 @@
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/inflected": "^1.1.29",
-    "@types/lodash": "^4.14.149",
+    "@types/lodash": "^4.14.150",
     "@types/mocha": "^7.0.2",
-    "@types/mongodb": "^3.5.8",
-    "@types/node": "^13.11.1",
+    "@types/mongodb": "^3.5.9",
+    "@types/node": "^13.13.2",
     "@types/sinon": "^9.0.0",
     "@types/yargs": "^15.0.4",
     "benchmark": "^2.1.4",
@@ -60,13 +60,13 @@
     "mongodb": "^3.5.6",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
-    "pg": "^8.0.2",
-    "pg-query-stream": "^3.0.6",
+    "pg": "^8.0.3",
+    "pg-query-stream": "^3.0.7",
     "redis": "^3.0.2",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sqlite3": "^4.1.1",
-    "ts-node": "^8.8.2",
+    "ts-node": "^8.9.0",
     "typescript": "^3.8.3"
   }
 }
