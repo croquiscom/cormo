@@ -49,7 +49,7 @@ function createSingleType(model_class, options) {
         if (graphql_type) {
             const description = column === 'id'
                 ? options.id_description
-                : property._graphql && property._graphql.description;
+                : property.description;
             fields[column] = {
                 description,
                 type: graphql_type,
@@ -57,7 +57,7 @@ function createSingleType(model_class, options) {
         }
     }
     return new graphql_1.GraphQLObjectType({
-        description: model_class._graphql && model_class._graphql.description,
+        description: model_class.description,
         fields,
         name: model_class.name,
     });
@@ -132,7 +132,7 @@ function createCreateInputType(model_class, options) {
         if (graphql_type) {
             const description = column === 'id'
                 ? options.id_description
-                : property._graphql && property._graphql.description;
+                : property.description;
             fields[column] = {
                 description,
                 type: graphql_type,
@@ -157,7 +157,7 @@ function createUpdateInputType(model_class, options) {
         if (graphql_type) {
             const description = column === 'id'
                 ? options.id_description
-                : property._graphql && property._graphql.description;
+                : property.description;
             fields[column] = {
                 description,
                 type: graphql_type,

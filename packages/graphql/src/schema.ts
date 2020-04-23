@@ -46,7 +46,7 @@ function createSingleType(model_class: typeof cormo.BaseModel, options: Options)
     if (graphql_type) {
       const description = column === 'id'
         ? options.id_description
-        : (property as any)._graphql && (property as any)._graphql.description;
+        : property.description;
       fields[column] = {
         description,
         type: graphql_type,
@@ -54,7 +54,7 @@ function createSingleType(model_class: typeof cormo.BaseModel, options: Options)
     }
   }
   return new GraphQLObjectType({
-    description: (model_class as any)._graphql && (model_class as any)._graphql.description,
+    description: model_class.description,
     fields,
     name: model_class.name,
   });
@@ -125,7 +125,7 @@ function createCreateInputType(model_class: typeof cormo.BaseModel, options: Opt
     if (graphql_type) {
       const description = column === 'id'
         ? options.id_description
-        : (property as any)._graphql && (property as any)._graphql.description;
+        : property.description;
       fields[column] = {
         description,
         type: graphql_type,
@@ -151,7 +151,7 @@ function createUpdateInputType(model_class: typeof cormo.BaseModel, options: Opt
     if (graphql_type) {
       const description = column === 'id'
         ? options.id_description
-        : (property as any)._graphql && (property as any)._graphql.description;
+        : property.description;
       fields[column] = {
         description,
         type: graphql_type,

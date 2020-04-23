@@ -1,12 +1,9 @@
 import * as cormo from 'cormo';
 
 export function Model(options: { connection?: cormo.Connection; name?: string; description?: string } = {}) {
-  const c = cormo.Model({ connection: options.connection, name: options.name });
+  const c = cormo.Model({ connection: options.connection, name: options.name, description: options.description });
   return (ctor: typeof cormo.BaseModel) => {
     c(ctor);
-    (ctor as any)._graphql = {
-      description: options.description,
-    };
   };
 }
 
@@ -32,13 +29,11 @@ export function Column(options: {
     cormo_type = options.type!;
   }
   const c = cormo.Column({
-    _graphql: {
-      description: options.description,
-    } as any,
     default_value: options.default_value,
     name: options.name,
     required: options.required,
     type: cormo_type,
+    description: options.description,
     unique: options.unique,
   });
   return (target: object, propertyKey: string | symbol) => {

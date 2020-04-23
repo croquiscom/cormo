@@ -105,6 +105,8 @@ class BaseModel {
 
   public static table_name: string;
 
+  public static description?: string;
+
   /**
    * Indicates the connection associated to this model
    */

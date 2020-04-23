@@ -6,6 +6,7 @@ function Model(options = {}) {
         if (options.name) {
             ctor.table_name = options.name;
         }
+        ctor.description = options.description;
         if (options.connection) {
             ctor.connection(options.connection);
         }

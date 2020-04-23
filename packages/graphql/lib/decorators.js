@@ -9,12 +9,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const cormo = __importStar(require("cormo"));
 function Model(options = {}) {
-    const c = cormo.Model({ connection: options.connection, name: options.name });
+    const c = cormo.Model({ connection: options.connection, name: options.name, description: options.description });
     return (ctor) => {
         c(ctor);
-        ctor._graphql = {
-            description: options.description,
-        };
     };
 }
 exports.Model = Model;
@@ -27,13 +24,11 @@ function Column(options) {
         cormo_type = options.type;
     }
     const c = cormo.Column({
-        _graphql: {
-            description: options.description,
-        },
         default_value: options.default_value,
         name: options.name,
         required: options.required,
         type: cormo_type,
+        description: options.description,
         unique: options.unique,
     });
     return (target, propertyKey) => {

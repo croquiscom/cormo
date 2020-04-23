@@ -56,6 +56,7 @@ declare class BaseModel {
      */
     static lean_query: boolean;
     static table_name: string;
+    static description?: string;
     /**
      * Indicates the connection associated to this model
      */
