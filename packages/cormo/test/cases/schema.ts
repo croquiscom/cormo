@@ -484,4 +484,22 @@ export default function(db: any, db_config: any) {
     expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
   });
+
+  it('check schema changes of type', async () => {
+    const Type = connection.model('Type', {
+      boolean: Boolean,
+      date: Date,
+      int_array: [cormo.types.Integer],
+      int_c: cormo.types.Integer,
+      number: Number,
+      object: Object,
+      recordid_array: [cormo.types.RecordID],
+      string: String,
+      text: cormo.types.Text,
+    })
+    await connection.applySchemas();
+
+    expect(await connection.getSchemaChanges()).to.eql([]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+  });
 }

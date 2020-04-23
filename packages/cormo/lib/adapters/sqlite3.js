@@ -35,7 +35,7 @@ function _typeToSQL(property) {
         case types.Boolean:
             return 'TINYINT';
         case types.Integer:
-            return 'INT';
+            return 'INTEGER';
         case types.Date:
             return 'REAL';
         case types.Object:
@@ -181,6 +181,10 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         catch (error) {
             throw SQLite3Adapter.wrapError('unknown error', error);
         }
+    }
+    /** @internal */
+    getAdapterTypeString(column_property) {
+        return _typeToSQL(column_property);
     }
     /** @internal */
     async create(model, data, options) {
@@ -539,10 +543,11 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
                     : /^tinyint/i.test(column.type) ? new types.Boolean()
                         : /^int/i.test(column.type) ? new types.Integer()
                             : /^real/i.test(column.type) ? new types.Date()
-                                : /^text/i.test(column.type) ? new types.Object() : undefined;
+                                : /^text/i.test(column.type) ? new types.Text() : undefined;
             schema[column.name] = {
                 required: column.notnull === 1,
                 type,
+                adapter_type_string: column.type.toUpperCase(),
             };
         }
         return schema;

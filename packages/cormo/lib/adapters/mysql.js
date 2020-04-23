@@ -40,9 +40,9 @@ function _typeToSQL(property, support_fractional_seconds) {
         case types.Number:
             return 'DOUBLE';
         case types.Boolean:
-            return 'BOOLEAN';
+            return 'TINYINT(1)';
         case types.Integer:
-            return 'INT';
+            return 'INT(11)';
         case types.GeoPoint:
             return 'POINT';
         case types.Date:
@@ -248,6 +248,10 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         catch (error) {
             throw MySQLAdapter.wrapError('unknown error', error);
         }
+    }
+    /** @internal */
+    getAdapterTypeString(column_property) {
+        return _typeToSQL(column_property, this.support_fractional_seconds);
     }
     /** @internal */
     async create(model, data, options) {
@@ -735,10 +739,11 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                         : /^int/i.test(column.Type) ? new types.Integer()
                             : /^point/i.test(column.Type) ? new types.GeoPoint()
                                 : /^datetime/i.test(column.Type) ? new types.Date()
-                                    : /^text/i.test(column.Type) ? new types.Object() : undefined;
+                                    : /^text/i.test(column.Type) ? new types.Text() : undefined;
             schema[column.Field] = {
                 required: column.Null === 'NO',
                 type,
+                adapter_type_string: column.Type.toUpperCase(),
             };
         }
         return schema;

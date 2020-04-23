@@ -52,9 +52,9 @@ function _typeToSQL(property: ColumnPropertyInternal, support_fractional_seconds
     case types.Number:
       return 'DOUBLE';
     case types.Boolean:
-      return 'BOOLEAN';
+      return 'TINYINT(1)';
     case types.Integer:
-      return 'INT';
+      return 'INT(11)';
     case types.GeoPoint:
       return 'POINT';
     case types.Date:
@@ -214,7 +214,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async addColumn(model: string, column_property: any) {
+  public async addColumn(model: string, column_property: ColumnPropertyInternal) {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
@@ -278,6 +278,11 @@ export class MySQLAdapter extends SQLAdapterBase {
     } catch (error) {
       throw MySQLAdapter.wrapError('unknown error', error);
     }
+  }
+
+  /** @internal */
+  public getAdapterTypeString(column_property: ColumnPropertyInternal): string | undefined {
+    return _typeToSQL(column_property, this.support_fractional_seconds)
   }
 
   /** @internal */
@@ -771,10 +776,11 @@ export class MySQLAdapter extends SQLAdapterBase {
             : /^int/i.test(column.Type) ? new types.Integer()
               : /^point/i.test(column.Type) ? new types.GeoPoint()
                 : /^datetime/i.test(column.Type) ? new types.Date()
-                  : /^text/i.test(column.Type) ? new types.Object() : undefined;
+                  : /^text/i.test(column.Type) ? new types.Text() : undefined;
       schema[column.Field] = {
         required: column.Null === 'NO',
         type,
+        adapter_type_string: column.Type.toUpperCase(),
       };
     }
     return schema;

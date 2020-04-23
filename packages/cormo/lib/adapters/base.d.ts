@@ -1,8 +1,10 @@
+import { ColumnPropertyInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 export interface SchemasColumn {
     required: boolean;
     type: types.ColumnType | undefined;
+    adapter_type_string?: string;
 }
 export interface SchemasTable {
     [column_name: string]: SchemasColumn;
@@ -50,5 +52,6 @@ export interface AdapterCountOptions {
  * @namespace adapter
  */
 declare abstract class AdapterBase {
+    getAdapterTypeString(column_property: ColumnPropertyInternal): string | undefined;
 }
 export { AdapterBase };

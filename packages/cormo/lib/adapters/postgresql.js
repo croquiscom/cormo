@@ -33,13 +33,13 @@ function _typeToSQL(property) {
     }
     switch (property.type_class) {
         case types.String:
-            return `VARCHAR(${property.type.length || 255})`;
+            return `CHARACTER VARYING(${property.type.length || 255})`;
         case types.Number:
             return 'DOUBLE PRECISION';
         case types.Boolean:
             return 'BOOLEAN';
         case types.Integer:
-            return 'INT';
+            return 'INTEGER';
         case types.GeoPoint:
             return 'GEOMETRY(POINT)';
         case types.Date:
@@ -214,6 +214,10 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         catch (error) {
             throw PostgreSQLAdapter.wrapError('unknown error', error);
         }
+    }
+    /** @internal */
+    getAdapterTypeString(column_property) {
+        return _typeToSQL(column_property);
     }
     /** @internal */
     async create(model, data, options) {
@@ -572,9 +576,14 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
                                 : column.data_type === 'timestamp without time zone' ? new types.Date()
                                     : column.data_type === 'json' ? new types.Object()
                                         : column.data_type === 'text' ? new types.Text() : undefined;
+            let adapter_type_string = column.data_type.toUpperCase();
+            if (column.data_type === 'character varying') {
+                adapter_type_string += `(${column.character_maximum_length || 255})`;
+            }
             schema[column.column_name] = {
                 required: column.is_nullable === 'NO',
                 type,
+                adapter_type_string,
             };
         }
         return schema;

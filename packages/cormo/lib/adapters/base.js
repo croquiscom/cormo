@@ -135,6 +135,9 @@ class AdapterBase {
             util.setPropertyOfPath(instance, property._parts, value);
         }
     }
+    getAdapterTypeString(column_property) {
+        return;
+    }
     /** @internal */
     async getConnection() {
         //

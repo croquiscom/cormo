@@ -1,7 +1,7 @@
 import stream from 'stream';
 import _ from 'lodash';
 import { Connection } from '../connection';
-import { IndexProperty } from '../model';
+import { ColumnPropertyInternal, IndexProperty } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
@@ -9,6 +9,7 @@ import * as util from '../util';
 export interface SchemasColumn {
   required: boolean;
   type: types.ColumnType | undefined;
+  adapter_type_string?: string;
 }
 
 export interface SchemasTable {
@@ -127,7 +128,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async addColumn(model: string, column_property: object) {
+  public async addColumn(model: string, column_property: ColumnPropertyInternal) {
     return Promise.resolve();
   }
 
@@ -191,6 +192,10 @@ abstract class AdapterBase {
       }
       util.setPropertyOfPath(instance, property._parts, value);
     }
+  }
+
+  public getAdapterTypeString(column_property: ColumnPropertyInternal): string | undefined {
+    return;
   }
 
   /**
