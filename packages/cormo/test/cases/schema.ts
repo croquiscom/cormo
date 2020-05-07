@@ -496,7 +496,7 @@ export default function(db: any, db_config: any) {
       recordid_array: [cormo.types.RecordID],
       string: String,
       text: cormo.types.Text,
-    })
+    });
     await connection.applySchemas();
 
     expect(await connection.getSchemaChanges()).to.eql([]);

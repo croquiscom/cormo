@@ -62,19 +62,12 @@ describe('createDefaultCrudSchema (association)', () => {
   });
 
   it('schema', () => {
-    expect(printSchema(schema)).to.eql(`input CreatePostInput {
-  body: String!
-  user_id: ID!
-}
+    expect(printSchema(schema)).to.eql(`type Query {
+  """Single query for Post"""
+  post(id: ID): Post
 
-input DeletePostInput {
-  id: ID!
-}
-
-type Mutation {
-  createPost(input: CreatePostInput): Post!
-  updatePost(input: UpdatePostInput): Post!
-  deletePost(input: DeletePostInput): Boolean!
+  """List query for Post"""
+  post_list(id_list: [ID!], body: String, body_istartswith: String, body_icontains: String, user_id: ID, order: PostOrderType, limit_count: Int, skip_count: Int): PostList!
 }
 
 """A post model"""
@@ -97,18 +90,25 @@ enum PostOrderType {
   USER_ID_DESC
 }
 
-type Query {
-  """Single query for Post"""
-  post(id: ID): Post
+type Mutation {
+  createPost(input: CreatePostInput): Post!
+  updatePost(input: UpdatePostInput): Post!
+  deletePost(input: DeletePostInput): Boolean!
+}
 
-  """List query for Post"""
-  post_list(id_list: [ID!], body: String, body_istartswith: String, body_icontains: String, user_id: ID, order: PostOrderType, limit_count: Int, skip_count: Int): PostList!
+input CreatePostInput {
+  body: String!
+  user_id: ID!
 }
 
 input UpdatePostInput {
   id: ID!
   body: String!
   user_id: ID!
+}
+
+input DeletePostInput {
+  id: ID!
 }
 `);
   });

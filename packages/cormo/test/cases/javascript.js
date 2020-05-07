@@ -52,7 +52,7 @@ module.exports = () => {
   it('simple where', async () => {
     await _createUsers(_g.connection.User);
     const users = await _g.connection.User.where({ age: 27 });
-    expect(users).to.have.length(2)
+    expect(users).to.have.length(2);
     users.sort((a, b) => a.name < b.name ? -1 : 1);
     expect(users[0]).to.have.property('name', 'Alice Jackson');
     expect(users[0]).to.have.property('age', 27);

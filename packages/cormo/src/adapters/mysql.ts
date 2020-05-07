@@ -282,7 +282,7 @@ export class MySQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   public getAdapterTypeString(column_property: ColumnPropertyInternal): string | undefined {
-    return _typeToSQL(column_property, this.support_fractional_seconds)
+    return _typeToSQL(column_property, this.support_fractional_seconds);
   }
 
   /** @internal */

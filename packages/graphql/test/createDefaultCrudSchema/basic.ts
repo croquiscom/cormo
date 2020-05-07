@@ -44,42 +44,12 @@ describe('createDefaultCrudSchema (basic)', () => {
   });
 
   it('schema', () => {
-    expect(printSchema(schema)).to.eql(`input CreateUserInput {
-  """name of user"""
-  name: String!
-
-  """age of user"""
-  age: Int
-}
-
-input DeleteUserInput {
-  """primary key"""
-  id: ID!
-}
-
-type Mutation {
-  createUser(input: CreateUserInput): User!
-  updateUser(input: UpdateUserInput): User!
-  deleteUser(input: DeleteUserInput): Boolean!
-}
-
-type Query {
+    expect(printSchema(schema)).to.eql(`type Query {
   """Single query for User"""
   user(id: ID): User
 
   """List query for User"""
   user_list(id_list: [ID!], name: String, name_istartswith: String, name_icontains: String, age: Int, age_gte: Int, age_gt: Int, age_lte: Int, age_lt: Int, order: UserOrderType, limit_count: Int, skip_count: Int): UserList!
-}
-
-input UpdateUserInput {
-  """primary key"""
-  id: ID!
-
-  """name of user"""
-  name: String!
-
-  """age of user"""
-  age: Int
 }
 
 """A user model"""
@@ -107,6 +77,36 @@ enum UserOrderType {
   NAME_DESC
   AGE_ASC
   AGE_DESC
+}
+
+type Mutation {
+  createUser(input: CreateUserInput): User!
+  updateUser(input: UpdateUserInput): User!
+  deleteUser(input: DeleteUserInput): Boolean!
+}
+
+input CreateUserInput {
+  """name of user"""
+  name: String!
+
+  """age of user"""
+  age: Int
+}
+
+input UpdateUserInput {
+  """primary key"""
+  id: ID!
+
+  """name of user"""
+  name: String!
+
+  """age of user"""
+  age: Int
+}
+
+input DeleteUserInput {
+  """primary key"""
+  id: ID!
 }
 `);
   });
