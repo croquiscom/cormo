@@ -6,6 +6,7 @@ const siteConfig = {
   projectName: 'cormo',
   headerLinks: [
     { doc: 'getting-started', label: 'Docs' },
+    { href: '/cormo/api/cormo', label: 'API' },
   ],
   colors: {
     primaryColor: '#aa5c9f',

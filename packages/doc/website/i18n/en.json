@@ -40,7 +40,8 @@
       }
     },
     "links": {
-      "Docs": "Docs"
+      "Docs": "Docs",
+      "API": "API"
     },
     "categories": {
       "Getting Started": "Getting Started",
