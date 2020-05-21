@@ -27,7 +27,7 @@
         "title": "Geospatial"
       },
       "getting-started": {
-        "title": "Getting Started"
+        "title": "시작하기"
       },
       "miscellaneous": {
         "title": "Miscellaneous"
@@ -40,10 +40,11 @@
       }
     },
     "links": {
-      "Docs": "Docs"
+      "Docs": "문서",
+      "API": "API"
     },
     "categories": {
-      "Getting Started": "Getting Started",
+      "Getting Started": "시작하기",
       "Advanced": "Advanced"
     }
   },
