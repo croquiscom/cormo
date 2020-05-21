@@ -1,3 +1,8 @@
+---
+id: validation
+title: Validation
+---
+
 CORMO validates fields basically based on types.
 
 If a field is invalid, [[#BaseModel::save]] or [[#Query::update]] will return errors like "'&lt;column name&gt;' is not an integer".

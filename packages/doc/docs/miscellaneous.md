@@ -1,3 +1,8 @@
+---
+id: miscellaneous
+title: Miscellaneous
+---
+
 Use [[#BaseModel.timestamps]] to add created\_at and updated\_at to the table.
 
 ```typescript

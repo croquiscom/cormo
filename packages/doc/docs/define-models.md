@@ -1,3 +1,8 @@
+---
+id: define-models
+title: Define Models
+---
+
 # basic
 
 First, you should create a [[#Connection]] to the database.

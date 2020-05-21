@@ -1,3 +1,8 @@
+---
+id: query
+title: Query
+---
+
 To query, create a query object using [[#BaseModel.query]] first.
 Then build up a query by chaining methods,
 and run a query by [[#Query::exec]], [[#Query::count]], [[#Query::update]], or [[#Query::delete]].

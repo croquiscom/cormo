@@ -1,3 +1,8 @@
+---
+id: callback
+title: Callback
+---
+
 CORMO supports following callbacks:
 
 * [[#BaseModel.afterInitialize]]

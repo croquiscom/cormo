@@ -1,0 +1,19 @@
+{
+  "docs": {
+    "Getting Started": [
+      "getting-started",
+      "define-models",
+      "create-records",
+      "query"
+    ],
+    "Advanced": [
+      "aggregation",
+      "association",
+      "callback",
+      "constraint",
+      "geospatial",
+      "miscellaneous",
+      "validation"
+    ]
+  }
+}

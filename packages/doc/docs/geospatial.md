@@ -1,3 +1,8 @@
+---
+id: geospatial
+title: Geospatial
+---
+
 Currently, CORMO supports only near query of 2D location in MongoDB, MySQL and PostgreSQL.
 
 ```coffeescript

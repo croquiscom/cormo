@@ -1,3 +1,8 @@
+---
+id: association
+title: Association
+---
+
 ```coffeescript
 class User extends cormo.BaseModel
   @column 'name', String

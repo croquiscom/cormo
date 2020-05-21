@@ -1,3 +1,8 @@
+---
+id: constraint
+title: Constraint
+---
+
 Currently CORMO supports 'unique' and 'required'(not null).
 
 'unique' is supported on the database layer.

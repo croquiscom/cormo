@@ -1,3 +1,8 @@
+---
+id: aggregation
+title: Aggregation
+---
+
 CORMO supports some basic aggregation operations via [[#Query::group]].
 
 <table class='table table-bordered'><thead><tr>

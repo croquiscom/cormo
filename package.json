@@ -18,6 +18,6 @@
     }
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint"
+    "*.{js,ts,jsx,tsx}": "eslint"
   }
 }

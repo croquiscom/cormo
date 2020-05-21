@@ -1,3 +1,8 @@
+---
+id: create-records
+title: Create Records
+---
+
 You can build a record using [[#BaseModel::constructor]] or [[#BaseModel.build]].
 
 ```coffeescript
