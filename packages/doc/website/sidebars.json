@@ -2,6 +2,7 @@
   "docs": {
     "Getting Started": [
       "getting-started",
+      "define-connection",
       "define-models",
       "create-records",
       "query"

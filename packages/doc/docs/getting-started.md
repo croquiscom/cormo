@@ -24,7 +24,7 @@ You should install the CORMO module and drivers for databases you want.
 ([mysql2](https://www.npmjs.com/package/mysql2) or [mysql](https://www.npmjs.com/package/mysql) for MySQL. [mongodb](https://www.npmjs.com/package/mongodb) for MongoDB. [sqlite3](https://www.npmjs.com/package/sqlite3) for SQLite3. [pg](https://www.npmjs.com/package/pg) for PostgreSQL.)
 
 ```bash
-$ npm install cormo mysql
+$ npm install cormo mysql2
 ```
 
 ## Setup

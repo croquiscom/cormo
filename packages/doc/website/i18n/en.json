@@ -20,6 +20,9 @@
       "create-records": {
         "title": "Create Records"
       },
+      "define-connection": {
+        "title": "Define Connection"
+      },
       "define-models": {
         "title": "Define Models"
       },
