@@ -9,7 +9,6 @@ test
 perf
 guides
 examples
-crojsdoc.yaml
 .travis.yml
 GLOSSARY.md
 .npmignore
