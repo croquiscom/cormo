@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="ko"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Create Records · CORMO</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="You can build a record using [[#BaseModel::constructor]] or [[#BaseModel.build]]."/><meta name="docsearch:language" content="ko"/><meta property="og:title" content="Create Records · CORMO"/><meta property="og:type" content="website"/><meta property="og:url" content="https://croquiscom.github.io/cormo/"/><meta property="og:description" content="You can build a record using [[#BaseModel::constructor]] or [[#BaseModel.build]]."/><meta name="twitter:card" content="summary"/><link rel="shortcut icon" href="/cormo/undefined"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/cormo/js/scrollSpy.js"></script><link rel="stylesheet" href="/cormo/css/main.css"/><script src="/cormo/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/cormo/ko"><h2 class="headerTitle">CORMO</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/cormo/docs/ko/getting-started" target="_self">문서</a></li><li class=""><a href="/cormo/api/cormo" target="_self">API</a></li><span><li><a id="languages-menu" href="#"><img class="languages-icon" src="/cormo/img/language.svg" alt="Languages icon"/>한국어</a><div id="languages-dropdown" class="hide"><ul id="languages-dropdown-items"><li><a href="/cormo/docs/en/create-records">English</a></li></ul></div></li><script>
+<!DOCTYPE html><html lang="ko"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>레코드 생성하기 · CORMO</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="[BaseModel#constructor](/cormo/api/cormo/classes/basemodel.html#constructor)나 [BaseModel.build](/cormo/api/cormo/classes/basemodel.html#build)를 사용해서 레코드를 생성할 수 있습니다."/><meta name="docsearch:language" content="ko"/><meta property="og:title" content="레코드 생성하기 · CORMO"/><meta property="og:type" content="website"/><meta property="og:url" content="https://croquiscom.github.io/cormo/"/><meta property="og:description" content="[BaseModel#constructor](/cormo/api/cormo/classes/basemodel.html#constructor)나 [BaseModel.build](/cormo/api/cormo/classes/basemodel.html#build)를 사용해서 레코드를 생성할 수 있습니다."/><meta name="twitter:card" content="summary"/><link rel="shortcut icon" href="/cormo/undefined"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/cormo/js/scrollSpy.js"></script><link rel="stylesheet" href="/cormo/css/main.css"/><script src="/cormo/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/cormo/ko"><h2 class="headerTitle">CORMO</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/cormo/docs/ko/getting-started" target="_self">문서</a></li><li class=""><a href="/cormo/api/cormo" target="_self">API</a></li><span><li><a id="languages-menu" href="#"><img class="languages-icon" src="/cormo/img/language.svg" alt="Languages icon"/>한국어</a><div id="languages-dropdown" class="hide"><ul id="languages-dropdown-items"><li><a href="/cormo/docs/en/create-records">English</a></li></ul></div></li><script>
         const languagesMenuItem = document.getElementById("languages-menu");
         const languagesDropDown = document.getElementById("languages-dropdown");
         languagesMenuItem.addEventListener("click", function(event) {
@@ -10,7 +10,7 @@
             languagesDropDown.className = "hide";
           }
         });
-      </script></span></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>시작하기</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">시작하기</h3><ul class=""><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/getting-started">시작하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/define-connection">연결 정의하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/define-models">모델 정의하기</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/cormo/docs/ko/create-records">Create Records</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/query">Query</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Advanced</h3><ul class=""><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/aggregation">Aggregation</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/association">Association</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/callback">Callback</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/constraint">Constraint</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/geospatial">Geospatial</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/miscellaneous">Miscellaneous</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/validation">Validation</a></li></ul></div></div></section></div><script>
+      </script></span></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>시작하기</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">시작하기</h3><ul class=""><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/getting-started">시작하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/define-connection">연결 정의하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/define-models">모델 정의하기</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/cormo/docs/ko/create-records">레코드 생성하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/query">Query</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Advanced</h3><ul class=""><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/aggregation">Aggregation</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/association">Association</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/callback">Callback</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/constraint">Constraint</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/geospatial">Geospatial</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/miscellaneous">Miscellaneous</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/validation">Validation</a></li></ul></div></div></section></div><script>
             var coll = document.getElementsByClassName('collapsible');
             var checkActiveCategory = true;
             for (var i = 0; i < coll.length; i++) {
@@ -66,53 +66,26 @@
                 };
               }
             });
-        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">Create Records</h1></header><article><div><span><p>You can build a record using [[#BaseModel::constructor]] or [[#BaseModel.build]].</p>
-<pre><code class="hljs css language-coffeescript">user1 = <span class="hljs-keyword">new</span> User()
-user1.name = <span class="hljs-string">'John Doe'</span>
-user1.age = <span class="hljs-number">27</span>
-
-user2 = <span class="hljs-keyword">new</span> User name: <span class="hljs-string">'John Doe'</span>, age: <span class="hljs-number">27</span>
-
-user3 = User.build name: <span class="hljs-string">'John Doe'</span>, age: <span class="hljs-number">27</span>
-</code></pre>
-<pre><code class="hljs css language-javascript">user1 = <span class="hljs-keyword">new</span> User();
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">레코드 생성하기</h1></header><article><div><span><p><a href="/cormo/api/cormo/classes/basemodel.html#constructor">BaseModel#constructor</a>나 <a href="/cormo/api/cormo/classes/basemodel.html#build">BaseModel.build</a>를 사용해서 레코드를 생성할 수 있습니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">const</span> user1 = <span class="hljs-keyword">new</span> User();
 user1.name = <span class="hljs-string">'John Doe'</span>;
 user1.age = <span class="hljs-number">27</span>;
 
-user2 = <span class="hljs-keyword">new</span> User({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John Doe'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">27</span> });
+<span class="hljs-keyword">const</span> user2 = <span class="hljs-keyword">new</span> User({ name: <span class="hljs-string">'John Doe'</span>, age: <span class="hljs-number">27</span> });
 
-user3 = User.build({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John Doe'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">27</span> });
+<span class="hljs-keyword">const</span> user3 = User.build({ name: <span class="hljs-string">'John Doe'</span>, age: <span class="hljs-number">27</span> });
 </code></pre>
-<p>Then call [[#BaseModel::save]] to make it persistent.</p>
-<pre><code class="hljs css language-coffeescript">user1.save (error) -&gt;
-  <span class="hljs-built_in">console</span>.log error
+<p>그리고 이를 실제 DB에 저장하기 위해서는 <a href="/cormo/api/cormo/classes/basemodel.html#save">BaseModel#save</a>를 호출하면 됩니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">await</span> user1.save();
 </code></pre>
-<pre><code class="hljs css language-javascript">user1.save(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
-  <span class="hljs-built_in">console</span>.log(error);
-});
+<p><a href="/cormo/api/cormo/classes/basemodel.html#create">BaseModel.create</a>는 생성과 저장을 동시에 수행합니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">const</span> user4 = <span class="hljs-keyword">await</span> User.create({ name: <span class="hljs-string">'John Doe'</span>, age: <span class="hljs-number">27</span> });
 </code></pre>
-<p>[[#BaseModel.create]] builds and saves at once.</p>
-<pre><code class="hljs css language-coffeescript">User.create name: <span class="hljs-string">'John Doe'</span>, age: <span class="hljs-number">27</span>, <span class="hljs-function"><span class="hljs-params">(error, user4)</span> -&gt;</span>
-  <span class="hljs-built_in">console</span>.log error
-</code></pre>
-<pre><code class="hljs css language-javascript">User.create({ <span class="hljs-attr">name</span>: <span class="hljs-string">'John Doe'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">27</span> }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error, user4</span>) </span>{
-  <span class="hljs-built_in">console</span>.log(error);
-});
-</code></pre>
-<p>[[#BaseModel.createBulk]] creates multiple records at once.</p>
-<pre><code class="hljs css language-coffeescript">User.createBulk [
-  { name: <span class="hljs-string">'John Doe'</span>, age: <span class="hljs-number">27</span> }
-  { name: <span class="hljs-string">'Bill Smith'</span>, age: <span class="hljs-number">45</span> }
+<p>여러 레코드를 동시에 생성하려면 <a href="/cormo/api/cormo/classes/basemodel.html#createbulk">BaseModel.createBulk</a>를 사용합니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">const</span> users = <span class="hljs-keyword">await</span> User.createBulk([
+  { name: <span class="hljs-string">'John Doe'</span>, age: <span class="hljs-number">27</span> },
+  { name: <span class="hljs-string">'Bill Smith'</span>, age: <span class="hljs-number">45</span> },
   { name: <span class="hljs-string">'Alice Jackson'</span>, age: <span class="hljs-number">27</span> }
-], <span class="hljs-function"><span class="hljs-params">(error, users)</span> -&gt;</span>
-  <span class="hljs-built_in">console</span>.log error
-</code></pre>
-<pre><code class="hljs css language-javascript">User.createBulk([
-  { <span class="hljs-attr">name</span>: <span class="hljs-string">'John Doe'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">27</span> },
-  { <span class="hljs-attr">name</span>: <span class="hljs-string">'Bill Smith'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">45</span> },
-  { <span class="hljs-attr">name</span>: <span class="hljs-string">'Alice Jackson'</span>, <span class="hljs-attr">age</span>: <span class="hljs-number">27</span> }
-], <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error, users</span>) </span>{
-  <span class="hljs-built_in">console</span>.log(error);
-});
+]);
 </code></pre>
 </span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/cormo/docs/ko/define-models"><span class="arrow-prev">← </span><span>모델 정의하기</span></a><a class="docs-next button" href="/cormo/docs/ko/query"><span>Query</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"></nav></div><footer class="nav-footer" id="footer"><section class="copyright">Copyright © 2012-2020 Croquis inc.</section></footer></div></body></html>
