@@ -1,121 +1,67 @@
----
-id: define-models
-title: Define Models
----
+[BaseModel](/cormo/api/cormo/classes/basemodel.html)을 상속받거나 [Connection#models](/cormo/api/cormo/classes/connection.html#models) 메소드를 사용해서 모델을 정의할 수 있습니다.
 
-# basic
+```typescript
+class User extends cormo.BaseModel {
+  name?: string;
+  age?: number;
+}
 
-First, you should create a [[#Connection]] to the database.
+User.column('name', String);
+User.column('age', cormo.types.Integer);
 
-```coffeescript
-cormo = require 'cormo'
-connection = new cormo.Connection 'mysql', database: 'test'
-```
-```javascript
-var cormo = require('cormo');
-var connection = new cormo.Connection('mysql', { database: 'test' });
-```
-
-Available adapters are 'mysql', 'mongodb', 'postgresql', 'sqlite3', and 'sqlite3_memory'.
-See documents for each adapter([[#AdapterBase]]) for detail settings.
-
-Then, you can define [[#BaseModel]]s using the extends keyword.
-Or if you want to use CORMO in JavaScript, use [[#Connection::model]] instead.
-
-```coffeescript
-# this will create two tables - users, posts - in the database.
-
-class User extends cormo.BaseModel
-  @column 'name', type: String
-  @column 'age', type: cormo.types.Integer
-
-class Post extends cormo.BaseModel
-  @column 'title', String # `String` is the same as `type: String`
-  @column 'body', 'string' # you can also use `string` to specify a string type
-  @column 'date', Date
-```
-```javascript
-var User = connection.model('User', {
-  name: { type: String },
-  age: { type: cormo.types.Integer }
-});
-
-var Post = connection.model('Post', {
-  title: String, // `String` is the same as `type: String`
-  body: 'string', // you can also use `string` to specify a string type
-  date: Date
-});
-```
-
-You can use any of cormo.types.String, 'string', or String
-(native JavaScript Function, if exists) to specify a type.
-
-Currently supported [[#types]]:
-
-* [[#types.String]] ('string', String)
-* [[#types.Number]] ('number', Number)
-* [[#types.Boolean]] ('boolean', Boolean)
-* [[#types.Integer]] ('integer')
-* [[#types.Date]] ('date', Date)
-* [[#types.GeoPoint]] ('geopoint')
-    * MySQL, MonogoDB, PostgreSQL only
-* [[#types.Object]] ('object', Object)
-    * Objects are stored as a JSON string in SQL adapters.
-* [[#types.Text]] ('text')
-    * Use for long string content in SQL adapters.
-
-After defining models, you may call [[#Connection::applySchemas]] to apply schemas to the database.
-(It will be called automatically when you run a query.)
-
-## type options
-
-You can give options for types in some adapters.
-
-To specify length for string type in MySQL or PostgreSQL, you should do
-
-```
-@column 'method_1', cormo.types.String(50)
-# or
-@column 'method_2', 'string(50)'
-```
-
-Please note that you must use 'cormo.types.String', not 'String'.
-
-# mixing databases
-
-You can use two or more databases at the same time.
-
-Use [[#BaseModel.connection]] to specify the connection which the model uses if you use CoffeeScript.
-
-```coffeescript
-cormo = require 'cormo'
-mysql = new cormo.Connection 'mysql', database: 'test'
-mongodb = new cormo.Connection 'mongodb', database: 'test'
-
-class User extends cormo.BaseModel
-  @connection mysql
-  @column 'name', String
-  @column 'age', cormo.types.Integer
-
-class Post extends cormo.BaseModel
-  @connection mongodb
-  @column 'title', String
-  @column 'body', String
-  @column 'date', Date
-```
-```javascript
-var cormo = require('cormo');
-var mysql = new cormo.Connection('mysql', { database: 'test' });
-var mongodb = new cormo.Connection('mongodb', { database: 'test' });
-
-var User = mysql.model('User', {
+// class 키워드를 사용하고 싶지 않은 경우
+const User = connection.model('User', {
   name: String,
-  age: cormo.types.Integer
+  age: cormo.types.Integer,
 });
 
-var Post = mongodb.model('Post', {
-  title: String,
-  body: String,
-  date: Date
-});
+// TypeScript 데코레이터를 사용하고 싶은 경우
+@cormo.Model()
+class User extends cormo.BaseModel {
+  @cormo.Column(String)
+  name?: string;
+
+  @cormo.Column(cormo.types.Integer)
+  age?: number;
+}
 ```
+
+타입 클래스 대신에 type 속성을 가진 객체를 넘길 수 있습니다.
+추가 옵션이 필요한 경우 이 형태를 사용하면 됩니다.
+
+```typescript
+User.column('name', { type: String, required: true });
+User.column('age', { type: cormo.types.Integer, description: '사용자의 나이' });
+```
+
+## 타입
+
+타입을 지정하기 위해서 CORMO의 타입 클래스(예, cormo.types.String)나 문자열(예, `'string'`), 또는 JavaScript 기본 함수(예, String)를 사용할 수 있습니다.
+
+현재 지원되는 타입은 다음과 같습니다.
+
+* [types.String](/cormo/api/cormo/interfaces/cormotypesstring.html) ('string', String)
+* [types.Number](/cormo/api/cormo/interfaces/cormotypesnumber.html) ('number', Number)
+* [types.Boolean](/cormo/api/cormo/interfaces/cormotypesboolean.html) ('boolean', Boolean)
+* [types.Integer](/cormo/api/cormo/interfaces/cormotypesinteger.html) ('integer')
+* [types.Date](/cormo/api/cormo/interfaces/cormotypesdate.html) ('date', Date)
+* [types.GeoPoint](/cormo/api/cormo/interfaces/cormotypesgeopoint.html) ('geopoint')
+    * MySQL, MonogoDB, PostgreSQL 만 지원
+* [types.Object](/cormo/api/cormo/interfaces/cormotypesobject.html) ('object', Object)
+    * SQL 어댑터에서 객체는 JSON 문자열로 저장합니다.
+* [types.Text](/cormo/api/cormo/interfaces/cormotypestext.html) ('text')
+    * SQL 어댑터에서 긴 문자열을 저정할 때 사용합니다.
+
+### 타입 옵션
+
+일부 어댑터는 타입에 옵션을 줄 수 있습니다.
+
+다음과 같이 하면 MySQL나 PostgreSQL에서 문자열 타입에 길이를 지정할 수 있습니다.
+
+```typescript
+Model.column('method_1', cormo.types.String(50))
+// 또는
+Model.column('method_2', 'string(50)')
+```
+
+`String`이 아니라 `cormo.types.String`을 사용해야 한다는 점에 주의 하십시오.

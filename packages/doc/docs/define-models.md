@@ -3,119 +3,70 @@ id: define-models
 title: Define Models
 ---
 
-# basic
+You can define Models by extending [BaseModel](/cormo/api/cormo/classes/basemodel.html), or using [Connection#models](/cormo/api/cormo/classes/connection.html#models).
 
-First, you should create a [[#Connection]] to the database.
+```typescript
+class User extends cormo.BaseModel {
+  name?: string;
+  age?: number;
+}
 
-```coffeescript
-cormo = require 'cormo'
-connection = new cormo.Connection 'mysql', database: 'test'
-```
-```javascript
-var cormo = require('cormo');
-var connection = new cormo.Connection('mysql', { database: 'test' });
-```
+User.column('name', String);
+User.column('age', cormo.types.Integer);
 
-Available adapters are 'mysql', 'mongodb', 'postgresql', 'sqlite3', and 'sqlite3_memory'.
-See documents for each adapter([[#AdapterBase]]) for detail settings.
-
-Then, you can define [[#BaseModel]]s using the extends keyword.
-Or if you want to use CORMO in JavaScript, use [[#Connection::model]] instead.
-
-```coffeescript
-# this will create two tables - users, posts - in the database.
-
-class User extends cormo.BaseModel
-  @column 'name', type: String
-  @column 'age', type: cormo.types.Integer
-
-class Post extends cormo.BaseModel
-  @column 'title', String # `String` is the same as `type: String`
-  @column 'body', 'string' # you can also use `string` to specify a string type
-  @column 'date', Date
-```
-```javascript
-var User = connection.model('User', {
-  name: { type: String },
-  age: { type: cormo.types.Integer }
+// or if you don't want to use class keyword
+const User = connection.model('User', {
+  name: String,
+  age: cormo.types.Integer,
 });
 
-var Post = connection.model('Post', {
-  title: String, // `String` is the same as `type: String`
-  body: 'string', // you can also use `string` to specify a string type
-  date: Date
-});
+// or if you want to use TypeScript decorators
+@cormo.Model()
+class User extends cormo.BaseModel {
+  @cormo.Column(String)
+  name?: string;
+
+  @cormo.Column(cormo.types.Integer)
+  age?: number;
+}
 ```
 
-You can use any of cormo.types.String, 'string', or String
-(native JavaScript Function, if exists) to specify a type.
+You can pass an object with type property instead of a type class.
+Use this form to give additional options.
 
-Currently supported [[#types]]:
+```typescript
+User.column('name', { type: String, required: true });
+User.column('age', { type: cormo.types.Integer, description: 'age of the user' });
+```
 
-* [[#types.String]] ('string', String)
-* [[#types.Number]] ('number', Number)
-* [[#types.Boolean]] ('boolean', Boolean)
-* [[#types.Integer]] ('integer')
-* [[#types.Date]] ('date', Date)
-* [[#types.GeoPoint]] ('geopoint')
+## types
+
+You can use any of CORMO type classes(e.g. cormo.types.String), strings(e.g. `'string'`), or native JavaScript Function(e.g. String) to specify a type.
+
+Currently supported types:
+
+* [types.String](/cormo/api/cormo/interfaces/cormotypesstring.html) ('string', String)
+* [types.Number](/cormo/api/cormo/interfaces/cormotypesnumber.html) ('number', Number)
+* [types.Boolean](/cormo/api/cormo/interfaces/cormotypesboolean.html) ('boolean', Boolean)
+* [types.Integer](/cormo/api/cormo/interfaces/cormotypesinteger.html) ('integer')
+* [types.Date](/cormo/api/cormo/interfaces/cormotypesdate.html) ('date', Date)
+* [types.GeoPoint](/cormo/api/cormo/interfaces/cormotypesgeopoint.html) ('geopoint')
     * MySQL, MonogoDB, PostgreSQL only
-* [[#types.Object]] ('object', Object)
+* [types.Object](/cormo/api/cormo/interfaces/cormotypesobject.html) ('object', Object)
     * Objects are stored as a JSON string in SQL adapters.
-* [[#types.Text]] ('text')
+* [types.Text](/cormo/api/cormo/interfaces/cormotypestext.html) ('text')
     * Use for long string content in SQL adapters.
 
-After defining models, you may call [[#Connection::applySchemas]] to apply schemas to the database.
-(It will be called automatically when you run a query.)
-
-## type options
+### type options
 
 You can give options for types in some adapters.
 
 To specify length for string type in MySQL or PostgreSQL, you should do
 
+```typescript
+Model.column('method_1', cormo.types.String(50))
+// or
+Model.column('method_2', 'string(50)')
 ```
-@column 'method_1', cormo.types.String(50)
-# or
-@column 'method_2', 'string(50)'
-```
 
-Please note that you must use 'cormo.types.String', not 'String'.
-
-# mixing databases
-
-You can use two or more databases at the same time.
-
-Use [[#BaseModel.connection]] to specify the connection which the model uses if you use CoffeeScript.
-
-```coffeescript
-cormo = require 'cormo'
-mysql = new cormo.Connection 'mysql', database: 'test'
-mongodb = new cormo.Connection 'mongodb', database: 'test'
-
-class User extends cormo.BaseModel
-  @connection mysql
-  @column 'name', String
-  @column 'age', cormo.types.Integer
-
-class Post extends cormo.BaseModel
-  @connection mongodb
-  @column 'title', String
-  @column 'body', String
-  @column 'date', Date
-```
-```javascript
-var cormo = require('cormo');
-var mysql = new cormo.Connection('mysql', { database: 'test' });
-var mongodb = new cormo.Connection('mongodb', { database: 'test' });
-
-var User = mysql.model('User', {
-  name: String,
-  age: cormo.types.Integer
-});
-
-var Post = mongodb.model('Post', {
-  title: String,
-  body: String,
-  date: Date
-});
-```
+Please note that you must use `cormo.types.String`, not `String`.
