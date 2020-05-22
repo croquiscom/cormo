@@ -1,69 +1,34 @@
----
-id: create-records
-title: Create Records
----
 
-You can build a record using [[#BaseModel::constructor]] or [[#BaseModel.build]].
+[BaseModel#constructor](/cormo/api/cormo/classes/basemodel.html#constructor)나 [BaseModel.build](/cormo/api/cormo/classes/basemodel.html#build)를 사용해서 레코드를 생성할 수 있습니다.
 
-```coffeescript
-user1 = new User()
-user1.name = 'John Doe'
-user1.age = 27
-
-user2 = new User name: 'John Doe', age: 27
-
-user3 = User.build name: 'John Doe', age: 27
-```
-```javascript
-user1 = new User();
+```typescript
+const user1 = new User();
 user1.name = 'John Doe';
 user1.age = 27;
 
-user2 = new User({ name: 'John Doe', age: 27 });
+const user2 = new User({ name: 'John Doe', age: 27 });
 
-user3 = User.build({ name: 'John Doe', age: 27 });
+const user3 = User.build({ name: 'John Doe', age: 27 });
 ```
 
-Then call [[#BaseModel::save]] to make it persistent.
+그리고 이를 실제 DB에 저장하기 위해서는 [BaseModel#save](/cormo/api/cormo/classes/basemodel.html#save)를 호출하면 됩니다.
 
-```coffeescript
-user1.save (error) ->
-  console.log error
-```
-```javascript
-user1.save(function (error) {
-  console.log(error);
-});
+```typescript
+await user1.save();
 ```
 
-[[#BaseModel.create]] builds and saves at once.
+[BaseModel.create](/cormo/api/cormo/classes/basemodel.html#create)는 생성과 저장을 동시에 수행합니다.
 
-```coffeescript
-User.create name: 'John Doe', age: 27, (error, user4) ->
-  console.log error
-```
-```javascript
-User.create({ name: 'John Doe', age: 27 }, function (error, user4) {
-  console.log(error);
-});
+```typescript
+const user4 = await User.create({ name: 'John Doe', age: 27 });
 ```
 
-[[#BaseModel.createBulk]] creates multiple records at once.
+여러 레코드를 동시에 생성하려면 [BaseModel.createBulk](/cormo/api/cormo/classes/basemodel.html#createbulk)를 사용합니다.
 
-```coffeescript
-User.createBulk [
-  { name: 'John Doe', age: 27 }
-  { name: 'Bill Smith', age: 45 }
-  { name: 'Alice Jackson', age: 27 }
-], (error, users) ->
-  console.log error
-```
-```javascript
-User.createBulk([
+```typescript
+const users = await User.createBulk([
   { name: 'John Doe', age: 27 },
   { name: 'Bill Smith', age: 45 },
   { name: 'Alice Jackson', age: 27 }
-], function (error, users) {
-  console.log(error);
-});
+]);
 ```
