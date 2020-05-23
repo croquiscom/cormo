@@ -6,7 +6,7 @@
     "tagline": "Node.js를 위한 ORM 프레임워크",
     "docs": {
       "aggregation": {
-        "title": "Aggregation"
+        "title": "집계"
       },
       "association": {
         "title": "Association"
@@ -48,7 +48,7 @@
     },
     "categories": {
       "Getting Started": "시작하기",
-      "Advanced": "Advanced"
+      "Advanced": "고급"
     }
   },
   "pages-strings": {

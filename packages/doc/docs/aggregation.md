@@ -3,7 +3,7 @@ id: aggregation
 title: Aggregation
 ---
 
-CORMO supports some basic aggregation operations via [[#Query::group]].
+CORMO supports some basic aggregation operations via [Query#group](/cormo/api/cormo/interfaces/queryarray.html#group).
 
 <table class='table table-bordered'><thead><tr>
   <th>Description</th><th>CORMO</th><th>SQL</th><th>MongoDB</th>
@@ -24,7 +24,7 @@ CORMO supports some basic aggregation operations via [[#Query::group]].
 </tr>
 
 <tr>
-<td>Only for matched records</td>
+<td>Only for filtered records</td>
 <td>Order.where({ price: { $lt: 10 } })<br>.group(null, { count: { $sum: 1 }, total: { $sum: '$price' } })</td>
 <td>SELECT COUNT(*) AS count, SUM(price) AS total<br>FROM orders<br>WHERE price&lt;10</td>
 <td>db.orders.aggregate([<br>&nbsp;&nbsp;{$match:{price:{$lt:10}}},<br>&nbsp;&nbsp;{$group:{_id:null,count:{$sum:1},total:{$sum:'$price'}}}<br>])</td>
