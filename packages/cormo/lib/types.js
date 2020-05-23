@@ -5,6 +5,7 @@
  * @namespace cormo
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports._toCORMOType = exports.Text = exports.RecordID = exports.Object = exports.Date = exports.GeoPoint = exports.Integer = exports.Boolean = exports.Number = exports.String = void 0;
 const CormoTypesString = function (length) {
     if (!(this instanceof CormoTypesString)) {
         return new CormoTypesString(length);

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Transaction = exports.IsolationLevel = void 0;
 var IsolationLevel;
 (function (IsolationLevel) {
     IsolationLevel["READ_UNCOMMITTED"] = "READ UNCOMMITTED";

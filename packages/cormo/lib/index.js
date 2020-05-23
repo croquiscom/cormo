@@ -3,42 +3,55 @@
  * CORMO module
  * @module cormo
  */
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.types = void 0;
 /**
  * Exports [[#Connection]] class
  * @memberOf cormo
  */
 var connection_1 = require("./connection");
-exports.Connection = connection_1.Connection;
-exports.MongoDBConnection = connection_1.MongoDBConnection;
-exports.MySQLConnection = connection_1.MySQLConnection;
-exports.PostgreSQLConnection = connection_1.PostgreSQLConnection;
-exports.SQLite3Connection = connection_1.SQLite3Connection;
+Object.defineProperty(exports, "Connection", { enumerable: true, get: function () { return connection_1.Connection; } });
+Object.defineProperty(exports, "MongoDBConnection", { enumerable: true, get: function () { return connection_1.MongoDBConnection; } });
+Object.defineProperty(exports, "MySQLConnection", { enumerable: true, get: function () { return connection_1.MySQLConnection; } });
+Object.defineProperty(exports, "PostgreSQLConnection", { enumerable: true, get: function () { return connection_1.PostgreSQLConnection; } });
+Object.defineProperty(exports, "SQLite3Connection", { enumerable: true, get: function () { return connection_1.SQLite3Connection; } });
 /**
  * Exports [[#BaseModel]] class
  * @memberOf cormo
  */
 var model_1 = require("./model");
-exports.BaseModel = model_1.BaseModel;
+Object.defineProperty(exports, "BaseModel", { enumerable: true, get: function () { return model_1.BaseModel; } });
 /**
  * Exports [[#Command]] class
  * @memberOf cormo
  */
 var command_1 = require("./command");
-exports.Command = command_1.Command;
+Object.defineProperty(exports, "Command", { enumerable: true, get: function () { return command_1.Command; } });
 var query_1 = require("./query");
-exports.Query = query_1.Query;
-__export(require("./decorators"));
+Object.defineProperty(exports, "Query", { enumerable: true, get: function () { return query_1.Query; } });
+__exportStar(require("./decorators"), exports);
 /**
  * Exports [[#types]] module
  * @memberOf cormo
@@ -46,7 +59,7 @@ __export(require("./decorators"));
 const types = __importStar(require("./types"));
 exports.types = types;
 var transaction_1 = require("./transaction");
-exports.IsolationLevel = transaction_1.IsolationLevel;
-exports.Transaction = transaction_1.Transaction;
-__export(require("./logger"));
-__export(require("./adapters"));
+Object.defineProperty(exports, "IsolationLevel", { enumerable: true, get: function () { return transaction_1.IsolationLevel; } });
+Object.defineProperty(exports, "Transaction", { enumerable: true, get: function () { return transaction_1.Transaction; } });
+__exportStar(require("./logger"), exports);
+__exportStar(require("./adapters"), exports);

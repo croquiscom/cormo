@@ -5,6 +5,7 @@
  * @namespace cormo
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.setPropertyOfPath = exports.getPropertyOfPath = exports.getLeafOfPath = void 0;
 /**
  * Returns leaf object and last part.
  *
