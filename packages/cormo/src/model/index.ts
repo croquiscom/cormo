@@ -1067,7 +1067,7 @@ class BaseModel {
         return this.get(path);
       },
       set: (value) => {
-        return this.set(path, value);
+        this.set(path, value);
       },
     });
   }
