@@ -9,8 +9,8 @@ const siteConfig = {
     { href: '/cormo/api/cormo', label: 'API' },
   ],
   colors: {
-    primaryColor: '#aa5c9f',
-    secondaryColor: '#76406f',
+    primaryColor: '#b04176',
+    secondaryColor: '#7b2e53',
   },
   copyright: 'Copyright © 2012-2020 Croquis inc.',
   highlight: {

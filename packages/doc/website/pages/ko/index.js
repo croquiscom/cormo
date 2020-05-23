@@ -16,7 +16,7 @@ const SplashContainer = (props) => (
 const ProjectTitle = (props) => (
   <h2 className="projectTitle">
     CORMO
-    <small>ORM framework for Node.js</small>
+    <small>Node.js를 위한 ORM 프레임워크</small>
   </h2>
 );
 
@@ -53,12 +53,12 @@ const Features = (props) => (
   <Block layout="fourColumn" background="light">
     {[
       {
-        content: 'Support MySQL, MongoDB, PostgreSQL, SQLite',
-        title: 'Multiple Database System',
+        content: 'MySQL, MongoDB, PostgreSQL, SQLite을 지원합니다',
+        title: '다수의 데이터베이스 시스템',
       },
       {
-        content: 'Support compile-time type checking',
-        title: 'TypeScript friendly',
+        content: '컴파일 시점의 타입 체킹을 지원합니다',
+        title: 'TypeScript 친화',
       },
     ]}
   </Block>
@@ -76,7 +76,7 @@ const HomeSplash = (props) => {
       <div className="inner">
         <ProjectTitle />
         <PromoSection>
-          <Button href={docUrl('getting-started.html')}>Getting Started</Button>
+          <Button href={docUrl('getting-started.html')}>시작하기</Button>
         </PromoSection>
       </div>
     </SplashContainer>
