@@ -9,9 +9,9 @@
     ],
     "Advanced": [
       "aggregation",
+      "constraint",
       "association",
       "callback",
-      "constraint",
       "geospatial",
       "miscellaneous",
       "validation"

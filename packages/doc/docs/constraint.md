@@ -9,31 +9,28 @@ Currently CORMO supports 'unique' and 'required'(not null).
 If unique constraint is violated, 'duplicated &lt;column name&gt;' error will be throwed.
 (In some adpater, just 'duplicated' will be throwed.)
 
-'required' is supported on the CORMO layer(while validating).
+'required' is supported on the CORMO layer(while validating) or the database layer.
 If required constraint is violated, '&lt;column name&gt;' is required' error will be throwed.
 
 The column unique but not required can have multiple null values.
 
-```coffeescript
-class User extends cormo.BaseModel
-  @column 'name', type: String, required: true
-  @column 'age', type: Number, required: true
-  @column 'email', type: String, unique: true, required: true
+```typescript
+@cormo.Model()
+class User extends cormo.BaseModel {
+  @cormo.Column({ type: String, required: true })
+  name!: string;
 
-User.create name: 'Bill Smith', age: 45, email: 'bill@foo.org', (error, user1) ->
-  User.create name: 'Bill Simpson', age: 38, email: 'bill@foo.org', (error, user2) ->
-    # error.message will be 'duplicated email' or 'duplicated'
-```
-```javascript
-var User = connection.model('User', {
-  name: { type: String, required: true },
-  age: { type: Number, required: true },
-  email: { type: String, unique: true, required: true }
-});
+  @cormo.Column({ type: Number, required: true })
+  age!: number;
 
-User.create({ name: 'Bill Smith', age: 45, email: 'bill@foo.org' }, function (error, user1) {
-  User.create({ name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, function (error, user2) {
-    // error.message will be 'duplicated email' or 'duplicated'
-  });
-});
+  @cormo.Column({ type: String, unique: true, required: true })
+  email!: string;
+}
+
+const user1 = await User.create({ name: 'Bill Smith', age: 45, email: 'bill@foo.org' });
+try {
+  const user2 = await User.create({ name: 'Bill Simpson', age: 38, email: 'bill@foo.org' });
+} catch (error) {
+  // error.message will be 'duplicated email' or 'duplicated'
+}
 ```

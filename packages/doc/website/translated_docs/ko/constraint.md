@@ -3,37 +3,34 @@ id: constraint
 title: Constraint
 ---
 
-Currently CORMO supports 'unique' and 'required'(not null).
+현재 CORMO는 'unique'(유니크)와 'required'(필수, null이 아님)을 지원합니다.
 
-'unique' is supported on the database layer.
-If unique constraint is violated, 'duplicated &lt;column name&gt;' error will be throwed.
-(In some adpater, just 'duplicated' will be throwed.)
+'unique'는 데이터베이스 계층에서 지원합니다.
+유니크 제약 위반이 발생하면, 'duplicated &lt;컬럼명&gt;' 오류가 발생합니다.
+(어떤 어댑터는 단순히 'duplicated'를 던집니다.)
 
-'required' is supported on the CORMO layer(while validating).
-If required constraint is violated, '&lt;column name&gt;' is required' error will be throwed.
+'required'는 CORMO 계층의 유효성 검사 과정 또는 데이터베이스 계층에서 지원합니다.
+필수 제약 위반이 발생하면, '&lt;컬럼명&gt;' is required' 오류가 발생합니다.
 
-The column unique but not required can have multiple null values.
+유니크이지만 필수가 아닌 컬럼은 null 값을 여러개 가질 수 있습니다.
 
-```coffeescript
-class User extends cormo.BaseModel
-  @column 'name', type: String, required: true
-  @column 'age', type: Number, required: true
-  @column 'email', type: String, unique: true, required: true
+```typescript
+@cormo.Model()
+class User extends cormo.BaseModel {
+  @cormo.Column({ type: String, required: true })
+  name!: string;
 
-User.create name: 'Bill Smith', age: 45, email: 'bill@foo.org', (error, user1) ->
-  User.create name: 'Bill Simpson', age: 38, email: 'bill@foo.org', (error, user2) ->
-    # error.message will be 'duplicated email' or 'duplicated'
-```
-```javascript
-var User = connection.model('User', {
-  name: { type: String, required: true },
-  age: { type: Number, required: true },
-  email: { type: String, unique: true, required: true }
-});
+  @cormo.Column({ type: Number, required: true })
+  age!: number;
 
-User.create({ name: 'Bill Smith', age: 45, email: 'bill@foo.org' }, function (error, user1) {
-  User.create({ name: 'Bill Simpson', age: 38, email: 'bill@foo.org' }, function (error, user2) {
-    // error.message will be 'duplicated email' or 'duplicated'
-  });
-});
+  @cormo.Column({ type: String, unique: true, required: true })
+  email!: string;
+}
+
+const user1 = await User.create({ name: 'Bill Smith', age: 45, email: 'bill@foo.org' });
+try {
+  const user2 = await User.create({ name: 'Bill Simpson', age: 38, email: 'bill@foo.org' });
+} catch (error) {
+  // error.message는 'duplicated email'나 'duplicated'가 됩니다
+}
 ```
