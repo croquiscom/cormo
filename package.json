@@ -9,8 +9,8 @@
     "@croquiscom/eslint-config": "^1.0.2",
     "eslint": "^7.1.0",
     "husky": "^4.2.5",
-    "lerna": "^3.21.0",
-    "lint-staged": "^10.2.6",
+    "lerna": "^3.22.0",
+    "lint-staged": "^10.2.7",
     "typedoc": "^0.17.7",
     "typescript": "^3.9.3"
   },
