@@ -56,7 +56,7 @@
     "coffeescript": "^2.5.1",
     "microtime": "^3.0.0",
     "mocha": "^7.2.0",
-    "mongodb": "^3.5.8",
+    "mongodb": "^3.5.9",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
     "pg": "^8.2.1",
