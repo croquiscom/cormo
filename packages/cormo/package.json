@@ -44,7 +44,7 @@
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/inflected": "^1.1.29",
-    "@types/lodash": "^4.14.154",
+    "@types/lodash": "^4.14.157",
     "@types/mocha": "^7.0.2",
     "@types/mongodb": "^3.5.20",
     "@types/node": "^14.0.9",
