@@ -6,7 +6,7 @@
     "doc": "./builddoc.sh"
   },
   "devDependencies": {
-    "@croquiscom/eslint-config": "^1.0.2",
+    "@croquiscom/eslint-config": "^1.0.4",
     "eslint": "^7.1.0",
     "husky": "^4.2.5",
     "lerna": "^3.22.0",
