@@ -39,7 +39,7 @@
     "inflected": "^2.0.4",
     "lodash": "^4.17.15",
     "toposort-class": "^1.0.1",
-    "yargs": "^15.3.1"
+    "yargs": "^15.4.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
