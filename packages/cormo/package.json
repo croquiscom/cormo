@@ -37,7 +37,7 @@
   "dependencies": {
     "chalk": "^4.0.0",
     "inflected": "^2.0.4",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "toposort-class": "^1.0.1",
     "yargs": "^15.3.1"
   },
