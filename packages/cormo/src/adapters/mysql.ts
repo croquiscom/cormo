@@ -29,7 +29,7 @@ export interface AdapterSettingsMySQL {
     read_replicas: Array<{ host?: string; port?: number; user?: string | Promise<string>; password?: string | Promise<string>; pool_size?: number }>;
   };
   ssl?: string | (tls.SecureContextOptions & { rejectUnauthorized?: boolean });
-  authPlugins?: { [plugin: string]: ({ connection, command }: { connection: any; command: any }) => (data: any) => string };
+  authPlugins?: { [plugin: string]: ({ connection, command }: { connection: any; command: any }) => (data: any) => Buffer };
 }
 
 import stream from 'stream';
