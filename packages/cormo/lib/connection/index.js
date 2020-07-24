@@ -14,7 +14,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -71,6 +71,7 @@ class Connection extends events_1.EventEmitter {
         this.models = {};
         this._pending_associations = [];
         if (typeof adapter === 'string') {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             this._adapter = require(__dirname + '/../adapters/' + adapter).createAdapter(this);
         }
         else {
@@ -140,7 +141,7 @@ class Connection extends events_1.EventEmitter {
             console.log('Applying schemas');
         }
         this._promise_schema_applied = this._promise_connection.then(async () => {
-            var _a, _b;
+            var _a, _b, _c;
             try {
                 const current = await this._adapter.getSchemas();
                 for (const model in this.models) {
@@ -171,7 +172,7 @@ class Connection extends events_1.EventEmitter {
                 for (const model_name in this.models) {
                     const modelClass = this.models[model_name];
                     for (const index of modelClass._indexes) {
-                        if (!((_b = (_a = current.indexes) === null || _a === void 0 ? void 0 : _a[modelClass.table_name]) === null || _b === void 0 ? void 0 : _b[index.options.name])) {
+                        if (!((_b = (_a = current.indexes) === null || _a === void 0 ? void 0 : _a[modelClass.table_name]) === null || _b === void 0 ? void 0 : _b[(_c = index.options.name) !== null && _c !== void 0 ? _c : ''])) {
                             if (options.verbose) {
                                 console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
                             }
@@ -226,7 +227,7 @@ class Connection extends events_1.EventEmitter {
      * @see AdapterBase::applySchema
      */
     async getSchemaChanges() {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         this._initializeModels();
         this.applyAssociations();
         this._checkArchive();
@@ -279,11 +280,11 @@ class Connection extends events_1.EventEmitter {
         for (const model_name in this.models) {
             const modelClass = this.models[model_name];
             for (const index of modelClass._indexes) {
-                if (!((_b = (_a = current.indexes) === null || _a === void 0 ? void 0 : _a[modelClass.table_name]) === null || _b === void 0 ? void 0 : _b[index.options.name])) {
+                if (!((_b = (_a = current.indexes) === null || _a === void 0 ? void 0 : _a[modelClass.table_name]) === null || _b === void 0 ? void 0 : _b[(_c = index.options.name) !== null && _c !== void 0 ? _c : ''])) {
                     changes.push({ message: `Add index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
                 }
             }
-            for (const index in (_c = current.indexes) === null || _c === void 0 ? void 0 : _c[modelClass.table_name]) {
+            for (const index in (_d = current.indexes) === null || _d === void 0 ? void 0 : _d[modelClass.table_name]) {
                 // MySQL add index for foreign key, so does not need to remove if the index is defined in integrities
                 if (!lodash_1.default.find(modelClass._indexes, (item) => item.options.name === index) && !lodash_1.default.find(modelClass._integrities, (item) => item.column === index)) {
                     changes.push({ message: `Remove index on ${modelClass.table_name} ${index}`, ignorable: true });
@@ -657,7 +658,6 @@ class Connection extends events_1.EventEmitter {
         for (const model in this.models) {
             const modelClass = this.models[model];
             if (modelClass.archive && !Object.prototype.hasOwnProperty.call(modelClass._connection.models, '_Archive')) {
-                // eslint-disable-next-line @typescript-eslint/class-name-casing
                 const _Archive = class extends model_1.BaseModel {
                 };
                 _Archive.connection(modelClass._connection);

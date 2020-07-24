@@ -27,7 +27,7 @@ export interface AdapterSettingsMySQL {
         [plugin: string]: ({ connection, command }: {
             connection: any;
             command: any;
-        }) => (data: any) => string;
+        }) => (data: any) => Buffer;
     };
 }
 import { Connection } from '../connection';
