@@ -29,6 +29,7 @@ _dbs.forEach((db) => {
       _g.connection = null;
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require('./cases/adapter-' + db).default(models);
   });
 });

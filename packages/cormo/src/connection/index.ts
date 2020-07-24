@@ -201,6 +201,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     this.models = {};
     this._pending_associations = [];
     if (typeof adapter === 'string') {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       this._adapter = require(__dirname + '/../adapters/' + adapter).createAdapter(this);
     } else {
       this._adapter = adapter(this);
@@ -299,7 +300,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         for (const model_name in this.models) {
           const modelClass = this.models[model_name];
           for (const index of modelClass._indexes) {
-            if (!current.indexes?.[modelClass.table_name]?.[index.options.name!]) {
+            if (!current.indexes?.[modelClass.table_name]?.[index.options.name ?? '']) {
               if (options.verbose) {
                 console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
               }
@@ -413,7 +414,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     for (const model_name in this.models) {
       const modelClass = this.models[model_name];
       for (const index of modelClass._indexes) {
-        if (!current.indexes?.[modelClass.table_name]?.[index.options.name!]) {
+        if (!current.indexes?.[modelClass.table_name]?.[index.options.name ?? '']) {
           changes.push({ message: `Add index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
         }
       }
@@ -819,7 +820,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     for (const model in this.models) {
       const modelClass = this.models[model];
       if (modelClass.archive && !Object.prototype.hasOwnProperty.call(modelClass._connection.models, '_Archive')) {
-        // eslint-disable-next-line @typescript-eslint/class-name-casing
         const _Archive = class extends BaseModel { };
         _Archive.connection(modelClass._connection);
         _Archive.archive = false;
