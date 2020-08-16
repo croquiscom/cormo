@@ -63,7 +63,7 @@
     "pg-query-stream": "^3.2.0",
     "redis": "^3.0.2",
     "rimraf": "^3.0.2",
-    "sinon": "^9.0.2",
+    "sinon": "^9.0.3",
     "sqlite3": "^5.0.0",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
