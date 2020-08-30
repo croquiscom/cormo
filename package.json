@@ -10,7 +10,7 @@
     "eslint": "^7.5.0",
     "husky": "^4.2.5",
     "lerna": "^3.22.1",
-    "lint-staged": "^10.2.11",
+    "lint-staged": "^10.2.13",
     "typedoc": "^0.17.8",
     "typescript": "^3.9.7"
   },
