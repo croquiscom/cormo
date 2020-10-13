@@ -426,7 +426,7 @@ export class MongoDBAdapter extends AdapterBase {
     if (!conditions) {
       conditions = {};
     }
-    const update_ops = {
+    const update_ops: any = {
       $inc: {},
       $set: {},
       $unset: {},
