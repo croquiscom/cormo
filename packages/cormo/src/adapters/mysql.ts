@@ -30,6 +30,7 @@ export interface AdapterSettingsMySQL {
   };
   ssl?: string | (tls.SecureContextOptions & { rejectUnauthorized?: boolean });
   authPlugins?: { [plugin: string]: ({ connection, command }: { connection: any; command: any }) => (data: any) => Buffer };
+  reconnect_if_read_only?: boolean;
 }
 
 import stream from 'stream';
@@ -673,7 +674,19 @@ export class MySQLAdapter extends SQLAdapterBase {
         client = this._read_clients[this._read_client_index];
       }
       this._connection._logger.logQuery(`[${client._node_id}] ${text}`, values);
-      return await client.queryAsync({ sql: text, values, timeout: this._query_timeout });
+      try {
+        return await client.queryAsync({ sql: text, values, timeout: this._query_timeout });
+      } catch (error) {
+        if (this._settings?.reconnect_if_read_only && error.message.includes('read-only')) {
+          // if failover occurred, connections will be reconnected.
+          // But if connection is reconnected before DNS is changed (DNS cache can affect this),
+          // connection may be to the wrong node.
+          // In that case, free all connections and try to reconnect.
+          console.log('connected to the read-only node. try to reconnect');
+          this.emptyFreeConnections();
+        }
+        throw error;
+      }
     }
   }
 

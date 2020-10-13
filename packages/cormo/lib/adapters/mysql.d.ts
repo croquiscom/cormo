@@ -29,6 +29,7 @@ export interface AdapterSettingsMySQL {
             command: any;
         }) => (data: any) => Buffer;
     };
+    reconnect_if_read_only?: boolean;
 }
 import { Connection } from '../connection';
 import { Transaction } from '../transaction';

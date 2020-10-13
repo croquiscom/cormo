@@ -630,6 +630,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
      * Exposes mysql module's query method
      */
     async query(text, values, options) {
+        var _a;
         if (!this._client) {
             await this._connection._promise_connection;
         }
@@ -650,7 +651,20 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 client = this._read_clients[this._read_client_index];
             }
             this._connection._logger.logQuery(`[${client._node_id}] ${text}`, values);
-            return await client.queryAsync({ sql: text, values, timeout: this._query_timeout });
+            try {
+                return await client.queryAsync({ sql: text, values, timeout: this._query_timeout });
+            }
+            catch (error) {
+                if (((_a = this._settings) === null || _a === void 0 ? void 0 : _a.reconnect_if_read_only) && error.message.includes('read-only')) {
+                    // if failover occurred, connections will be reconnected.
+                    // But if connection is reconnected before DNS is changed (DNS cache can affect this),
+                    // connection may be to the wrong node.
+                    // In that case, free all connections and try to reconnect.
+                    console.log('connected to the read-only node. try to reconnect');
+                    this.emptyFreeConnections();
+                }
+                throw error;
+            }
         }
     }
     /**
