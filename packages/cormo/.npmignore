@@ -9,7 +9,6 @@ test
 perf
 guides
 examples
-.travis.yml
 GLOSSARY.md
 .npmignore
 .editorconfig
