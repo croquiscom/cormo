@@ -31,6 +31,7 @@ export interface AdapterSettingsMySQL {
   ssl?: string | (tls.SecureContextOptions & { rejectUnauthorized?: boolean });
   authPlugins?: { [plugin: string]: ({ connection, command }: { connection: any; command: any }) => (data: any) => Buffer };
   reconnect_if_read_only?: boolean;
+  hide_unknown_error?: boolean;
 }
 
 import stream from 'stream';
@@ -81,20 +82,6 @@ function _propertyToSQL(property: ColumnPropertyInternal, support_fractional_sec
       type += ' NULL';
     }
     return type;
-  }
-}
-
-function _processSaveError(error: any) {
-  if (error.code === 'ER_NO_SUCH_TABLE') {
-    return new Error('table does not exist');
-  } else if (error.code === 'ER_DUP_ENTRY') {
-    const key = error.message.match(/for key '([^']*)'/);
-    return new Error('duplicated ' + (key && key[1]));
-  } else if (error.code === 'ER_BAD_NULL_ERROR') {
-    const key = error.message.match(/Column '([^']*)'/);
-    return new Error(`'${key && key[1]}' is required`);
-  } else {
-    return AdapterBase.wrapError('unknown error', error);
   }
 }
 
@@ -210,7 +197,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
-      throw MySQLAdapter.wrapError('unknown error', error);
+      throw this._wrapError('unknown error', error);
     }
   }
 
@@ -223,7 +210,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
-      throw MySQLAdapter.wrapError('unknown error', error);
+      throw this._wrapError('unknown error', error);
     }
   }
 
@@ -242,7 +229,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
-      throw MySQLAdapter.wrapError('unknown error', error);
+      throw this._wrapError('unknown error', error);
     }
   }
 
@@ -267,7 +254,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       await this._client.queryAsync(sql);
     } catch (error) {
-      throw MySQLAdapter.wrapError('unknown error', error);
+      throw this._wrapError('unknown error', error);
     }
   }
 
@@ -277,7 +264,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       await this._client.queryAsync(`DROP TABLE IF EXISTS \`${table_name}\``);
     } catch (error) {
-      throw MySQLAdapter.wrapError('unknown error', error);
+      throw this._wrapError('unknown error', error);
     }
   }
 
@@ -296,7 +283,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       result = await this.query(sql, values, { transaction: options.transaction });
     } catch (error) {
-      throw _processSaveError(error);
+      throw this._processSaveError(error);
     }
     const id = result && result.insertId;
     if (id) {
@@ -322,7 +309,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       result = await this.query(sql, values, { transaction: options.transaction });
     } catch (error) {
-      throw _processSaveError(error);
+      throw this._processSaveError(error);
     }
     const id = result && result.insertId;
     if (id) {
@@ -342,7 +329,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       await this.query(sql, values, { transaction: options.transaction });
     } catch (error) {
-      throw _processSaveError(error);
+      throw this._processSaveError(error);
     }
   }
 
@@ -362,10 +349,10 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       result = await this.query(sql, values, { transaction: options.transaction });
     } catch (error) {
-      throw _processSaveError(error);
+      throw this._processSaveError(error);
     }
     if (result == null) {
-      throw MySQLAdapter.wrapError('unknown error');
+      throw this._wrapError('unknown error');
     }
     return result.affectedRows;
   }
@@ -398,7 +385,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       await this.query(sql, values, options.transaction);
     } catch (error) {
-      throw _processSaveError(error);
+      throw this._processSaveError(error);
     }
   }
 
@@ -418,7 +405,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       result = await this.query(sql, id, { transaction: options.transaction, node: options.node });
     } catch (error) {
-      throw MySQLAdapter.wrapError('unknown error', error);
+      throw this._wrapError('unknown error', error);
     }
     if (result && result.length === 1) {
       return this._convertToModelInstance(model, result[0], options);
@@ -439,7 +426,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       result = await this.query(sql, params, { transaction: options.transaction, node: options.node });
     } catch (error) {
-      throw MySQLAdapter.wrapError('unknown error', error);
+      throw this._wrapError('unknown error', error);
     }
     if (options.group_fields) {
       return result.map((record: any) => {
@@ -498,7 +485,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       result = await this.query(sql, params, { transaction: options.transaction, node: options.node });
     } catch (error) {
-      throw MySQLAdapter.wrapError('unknown error', error);
+      throw this._wrapError('unknown error', error);
     }
     if (result && result.length !== 1) {
       throw new Error('unknown error');
@@ -521,10 +508,10 @@ export class MySQLAdapter extends SQLAdapterBase {
       if (error && (error.code === 'ER_ROW_IS_REFERENCED_' || error.code === 'ER_ROW_IS_REFERENCED_2')) {
         throw new Error('rejected');
       }
-      throw MySQLAdapter.wrapError('unknown error', error);
+      throw this._wrapError('unknown error', error);
     }
     if (result == null) {
-      throw MySQLAdapter.wrapError('unknown error');
+      throw this._wrapError('unknown error');
     }
     return result.affectedRows;
   }
@@ -555,7 +542,7 @@ export class MySQLAdapter extends SQLAdapterBase {
       if (error.code === 'ER_ACCESS_DENIED_ERROR') {
         throw error;
       }
-      throw MySQLAdapter.wrapError('failed to connect', error);
+      throw this._wrapError('failed to connect', error);
     }
     try {
       await this._createDatabase(client);
@@ -960,14 +947,14 @@ export class MySQLAdapter extends SQLAdapterBase {
         try {
           await client.queryAsync(`CREATE DATABASE \`${this._database}\``);
         } catch (error2) {
-          throw MySQLAdapter.wrapError('unknown error', error2);
+          throw this._wrapError('unknown error', error2);
         }
         return (await this._createDatabase(client));
       } else {
         const msg = error1.code === 'ER_DBACCESS_DENIED_ERROR'
           ? `no access right to the database '${this._database}'`
           : 'unknown error';
-        throw MySQLAdapter.wrapError(msg, error1);
+        throw this._wrapError(msg, error1);
       }
     }
   }
@@ -986,6 +973,29 @@ export class MySQLAdapter extends SQLAdapterBase {
         throw error;
       }
     }
+  }
+
+  /** @internal */
+  private _processSaveError(error: any) {
+    if (error.code === 'ER_NO_SUCH_TABLE') {
+      return new Error('table does not exist');
+    } else if (error.code === 'ER_DUP_ENTRY') {
+      const key = error.message.match(/for key '([^']*)'/);
+      return new Error('duplicated ' + (key && key[1]));
+    } else if (error.code === 'ER_BAD_NULL_ERROR') {
+      const key = error.message.match(/Column '([^']*)'/);
+      return new Error(`'${key && key[1]}' is required`);
+    } else {
+      return this._wrapError('unknown error', error);
+    }
+  }
+
+  /** @internal */
+  private _wrapError(msg: string, cause?: Error): Error {
+    if (!this._settings?.hide_unknown_error && msg === 'unknown error' && cause) {
+      return cause;
+    }
+    return MySQLAdapter.wrapError(msg, cause);
   }
 }
 
