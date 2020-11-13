@@ -1,0 +1,65 @@
+name: test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 1
+          MYSQL_DATABASE: cormo_test
+          MYSQL_USER: cormo_test
+          MYSQL_PASSWORD: cormo_test
+        ports:
+          - 21860:3306
+      mongo:
+        image: mongo:3.4-jessie
+        ports:
+          - 21861:27017
+      postgres:
+        image: mdillon/postgis:9.6-alpine
+        env:
+          POSTGRES_DB: cormo_test
+          POSTGRES_USER: cormo_test
+          POSTGRES_PASSWORD: cormo_test
+        ports:
+          - 21862:5432
+      redis:
+        image: redis:4-alpine
+        ports:
+          - 21863:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+
+      - name: Install packages
+        run: |
+          npm install
+          ./node_modules/.bin/lerna bootstrap
+
+      - name: Run test
+        run: ./node_modules/.bin/lerna run test
