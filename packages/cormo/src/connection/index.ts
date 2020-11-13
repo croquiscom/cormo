@@ -889,9 +889,21 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   }
 
   private async _manipulateDeleteAllModels() {
+    const failed_requests: Array<PromiseLike<number>> = [];
     const modelKeys = Object.keys(this.models).filter((key) => key !== '_Archive');
-    const requests = modelKeys.map((key) => this.models[key].where().delete({ skip_log: true }));
+    const requests = modelKeys.map(async (key) => {
+      try {
+        await this.models[key].where().delete({ skip_log: true });
+      } catch (error) {
+        failed_requests.push(this.models[key].where().delete({ skip_log: true }));
+      }
+    });
+
     await Promise.all(requests);
+
+    for (const request of failed_requests) {
+      await request;
+    }
   }
 
   private async _manipulateDropModel(model: string) {
