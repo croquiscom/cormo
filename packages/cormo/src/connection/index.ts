@@ -889,12 +889,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   }
 
   private async _manipulateDeleteAllModels() {
-    for (const model of Object.keys(this.models)) {
-      if (model === '_Archive') {
-        return;
-      }
-      await this.models[model].where().delete({ skip_log: true });
-    }
+    const modelKeys = Object.keys(this.models).filter((key) => key !== '_Archive');
+    const requests = modelKeys.map((key) => this.models[key].where().delete({ skip_log: true }));
+    await Promise.all(requests);
   }
 
   private async _manipulateDropModel(model: string) {
