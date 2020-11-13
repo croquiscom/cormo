@@ -194,6 +194,9 @@ export class MySQLAdapter extends SQLAdapterBase {
     let query = `CREATE TABLE \`${table_name}\` ( ${column_sqls.join(',')} )`;
     query += ` DEFAULT CHARSET=${this._settings!.charset || 'utf8'}`;
     query += ` COLLATE=${this._settings!.collation || 'utf8_unicode_ci'}`;
+    if (model_class.description) {
+      query += ` COMMENT='${model_class.description}'`;
+    }
     return query;
   }
 

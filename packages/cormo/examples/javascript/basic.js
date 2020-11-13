@@ -21,6 +21,7 @@ class User extends cormo.BaseModel {
   }
 }
 
+User.description = 'User model';
 User.connection(connection);
 
 async function run() {
