@@ -1,5 +1,5 @@
 [![npm version](https://badge.fury.io/js/cormo.svg)](http://badge.fury.io/js/cormo)
-[![Build Status](https://travis-ci.org/croquiscom/cormo.svg?branch=master)](https://travis-ci.org/croquiscom/cormo)
+![test](https://github.com/croquiscom/cormo/workflows/test/badge.svg)
 
 # About
 

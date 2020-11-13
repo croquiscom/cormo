@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/croquiscom/cormo.svg?branch=master)](https://travis-ci.org/croquiscom/cormo)
+![test](https://github.com/croquiscom/cormo/workflows/test/badge.svg)
 
 CORMO is an ORM framework for Node.js.
 

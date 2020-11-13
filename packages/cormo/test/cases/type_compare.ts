@@ -99,10 +99,6 @@ export default function(models: {
     expect(records).to.have.length(1);
     expect(records[0].string).to.equal('a');
     records = await models.Type.where({ string: { $lt: 'D' } });
-    if (process.env.TRAVIS === 'true' && records.length === 3) {
-      return;
-    }
-    // This fails on Travis Server PostgreSQL. Maybe locale problem? Anyway, skip this for now
     expect(records).to.have.length(2);
     records.sort((a, b) => a.string! < b.string! ? -1 : 1);
     expect(records[0].string).to.equal('1');
@@ -126,10 +122,6 @@ export default function(models: {
     expect(records).to.have.length(1);
     expect(records[0].text).to.equal('a');
     records = await models.Type.where({ text: { $lt: 'D' } });
-    if (process.env.TRAVIS === 'true' && records.length === 3) {
-      return;
-    }
-    // This fails on Travis Server PostgreSQL. Maybe locale problem? Anyway, skip this for now
     expect(records).to.have.length(2);
     records.sort((a, b) => a.text! < b.text! ? -1 : 1);
     expect(records[0].text).to.equal('1');
