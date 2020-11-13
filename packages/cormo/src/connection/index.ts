@@ -81,6 +81,7 @@ export interface AssociationBelongsToOptions {
 
 export interface SchemaChange {
   message: string;
+  is_query?: boolean;
   ignorable?: boolean; // ignored change while applying schema
 }
 
@@ -282,7 +283,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
               if (options.verbose) {
                 console.log(`Adding column ${property._dbname_us} to ${modelClass.table_name}`);
               }
-              await this._adapter.addColumn(model, property);
+              await this._adapter.addColumn(model, property, options.verbose);
             }
           }
         }
@@ -293,7 +294,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
             if (options.verbose) {
               console.log(`Creating table ${modelClass.table_name}`);
             }
-            await this._adapter.createTable(model);
+            await this._adapter.createTable(model, options.verbose);
           }
         }
 
@@ -304,7 +305,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
               if (options.verbose) {
                 console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
               }
-              await this._adapter.createIndex(model_name, index);
+              await this._adapter.createIndex(model_name, index, options.verbose);
             }
           }
         }
@@ -329,7 +330,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
                   const parent_table_name = integrity.parent.table_name;
                   console.log(`Adding foreign key ${table_name}.${integrity.column} to ${parent_table_name}`);
                 }
-                await this._adapter.createForeignKey(model, integrity.column, type, integrity.parent);
+                await this._adapter.createForeignKey(model, integrity.column, type, integrity.parent, options.verbose);
               }
             }
           }
@@ -374,6 +375,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         const property = modelClass._schema[column];
         if (!currentTable[property._dbname_us]) {
           changes.push({ message: `Add column ${property._dbname_us} to ${modelClass.table_name}` });
+          const query = this._adapter.getAddColumnQuery(model, property);
+          if (query) {
+            changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
+          }
           continue;
         }
 
@@ -402,6 +407,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       const modelClass = this.models[model];
       if (!current.tables[modelClass.table_name]) {
         changes.push({ message: `Add table ${modelClass.table_name}` });
+        const query = this._adapter.getCreateTableQuery(model);
+        if (query) {
+          changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
+        }
       }
     }
 
@@ -416,6 +425,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       for (const index of modelClass._indexes) {
         if (!current.indexes?.[modelClass.table_name]?.[index.options.name ?? '']) {
           changes.push({ message: `Add index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
+          const query = this._adapter.getCreateIndexQuery(model_name, index);
+          if (query) {
+            changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
+          }
         }
       }
       for (const index in current.indexes?.[modelClass.table_name]) {
@@ -444,6 +457,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
             const table_name = modelClass.table_name;
             const parent_table_name = integrity.parent.table_name;
             changes.push({ message: `Add foreign key ${table_name}.${integrity.column} to ${parent_table_name}` });
+            const query = this._adapter.getCreateForeignKeyQuery(model, integrity.column, type, integrity.parent);
+            if (query) {
+              changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
+            }
           }
         }
       }

@@ -21,7 +21,11 @@ class User extends cormo.BaseModel {
   }
 }
 
+User.connection(connection);
+
 async function run() {
+  await connection.applySchemas({ verbose: true });
+
   const user = await User.create({ name: { first: 'Bill', last: 'Smith' }, age: 5 });
   console.log(user);
 

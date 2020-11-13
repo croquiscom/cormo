@@ -32,6 +32,7 @@ export default function(db: any, db_config: any) {
     User.index({ age: 1 }, { unique: true });
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add index on users age' },
+      ...db === 'mysql' ? [{ message: '  (CREATE UNIQUE INDEX `age` ON `users` (`age` ASC))', is_query: true, ignorable: true }] : [],
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -84,7 +85,9 @@ export default function(db: any, db_config: any) {
     User.column('age', Number);
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add table users' },
+      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL,`age` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
       { message: 'Add index on users name,age' },
+      ...db === 'mysql' ? [{ message: '  (CREATE INDEX `name_age` ON `users` (`name` ASC,`age` ASC))', is_query: true, ignorable: true }] : [],
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -96,6 +99,7 @@ export default function(db: any, db_config: any) {
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
         { message: 'Add column address to users' },
+        ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)', is_query: true, ignorable: true }] : [],
       ]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
     } else {
@@ -114,6 +118,7 @@ export default function(db: any, db_config: any) {
     User.column('age', Number);
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add table users' },
+      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL,`age` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -125,6 +130,7 @@ export default function(db: any, db_config: any) {
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
         { message: 'Add column address to users' },
+        ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)', is_query: true, ignorable: true }] : [],
       ]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
     } else {
@@ -158,8 +164,11 @@ export default function(db: any, db_config: any) {
     }
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add table people' },
+      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `people` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
       { message: 'Add table User' },
+      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `User` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
       { message: 'Add table Guest' },
+      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `Guest` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -184,7 +193,9 @@ export default function(db: any, db_config: any) {
     }
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add table users' },
+      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`n` VARCHAR(255) NULL,`a` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
       { message: 'Add index on users n' },
+      ...db === 'mysql' ? [{ message: '  (CREATE INDEX `n` ON `users` (`n` ASC))', is_query: true, ignorable: true }] : [],
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -369,6 +380,7 @@ export default function(db: any, db_config: any) {
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
         { message: 'Add column address to users' },
+        ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)', is_query: true, ignorable: true }] : [],
         { message: 'Remove table people', ignorable: true },
       ]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
@@ -420,7 +432,9 @@ export default function(db: any, db_config: any) {
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
         { message: 'Add column address to users' },
+        ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)', is_query: true, ignorable: true }] : [],
         { message: 'Add column a to users' },
+        ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `a` VARCHAR(255) NULL)', is_query: true, ignorable: true }] : [],
       ]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
     } else {

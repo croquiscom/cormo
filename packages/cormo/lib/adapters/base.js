@@ -72,37 +72,69 @@ class AdapterBase {
     async getSchemas() {
         return Promise.resolve({ tables: {} });
     }
+    /** Get query for creating a table
+     * @abstract
+     * @see Connection::applySchemas
+     * @internal
+     */
+    getCreateTableQuery(model) {
+        return null;
+    }
     /**
      * Creates a table.
      * @abstract
      * @see Connection::applySchemas
      * @internal
      */
-    async createTable(model) {
+    async createTable(model, verbose = false) {
         return Promise.resolve();
+    }
+    /** Get query for adding a column
+     * @abstract
+     * @see Connection::applySchemas
+     * @internal
+     */
+    getAddColumnQuery(model, column_property) {
+        return null;
     }
     /** Adds a column to a table
      * @abstract
      * @see Connection::applySchemas
      * @internal
      */
-    async addColumn(model, column_property) {
+    async addColumn(model, column_property, verbose = false) {
         return Promise.resolve();
+    }
+    /** Get query for creating an index
+     * @abstract
+     * @see Connection::applySchemas
+     * @internal
+     */
+    getCreateIndexQuery(model_name, index) {
+        return null;
     }
     /** Creates an index.
      * @abstract
      * @see Connection::applySchemas
      * @internal
      */
-    async createIndex(model_name, index) {
+    async createIndex(model_name, index, verbose = false) {
         return Promise.resolve();
+    }
+    /** Get query for creating a foreign key
+     * @abstract
+     * @see Connection::applySchemas
+     * @internal
+     */
+    getCreateForeignKeyQuery(model, column, type, references) {
+        return null;
     }
     /** Creates a foreign key.
      * @abstract
      * @see Connection::applySchemas
      * @internal
      */
-    async createForeignKey(model, column, type, references) {
+    async createForeignKey(model, column, type, references, verbose = false) {
         return Promise.resolve();
     }
     /**

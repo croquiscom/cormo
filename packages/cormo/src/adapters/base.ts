@@ -113,14 +113,32 @@ abstract class AdapterBase {
     return Promise.resolve({ tables: {} });
   }
 
+  /** Get query for creating a table
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public getCreateTableQuery(model: string): string | null {
+    return null;
+  }
+
   /**
    * Creates a table.
    * @abstract
    * @see Connection::applySchemas
    * @internal
    */
-  public async createTable(model: string) {
+  public async createTable(model: string, verbose = false) {
     return Promise.resolve();
+  }
+
+  /** Get query for adding a column
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public getAddColumnQuery(model: string, column_property: ColumnPropertyInternal): string | null {
+    return null;
   }
 
   /** Adds a column to a table
@@ -128,8 +146,17 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async addColumn(model: string, column_property: ColumnPropertyInternal) {
+  public async addColumn(model: string, column_property: ColumnPropertyInternal, verbose = false) {
     return Promise.resolve();
+  }
+
+  /** Get query for creating an index
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public getCreateIndexQuery(model_name: string, index: IndexProperty): string | null {
+    return null;
   }
 
   /** Creates an index.
@@ -137,8 +164,17 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async createIndex(model_name: string, index: IndexProperty) {
+  public async createIndex(model_name: string, index: IndexProperty, verbose = false) {
     return Promise.resolve();
+  }
+
+  /** Get query for creating a foreign key
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public getCreateForeignKeyQuery(model: string, column: string, type: string, references: {}): string | null {
+    return null;
   }
 
   /** Creates a foreign key.
@@ -146,7 +182,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async createForeignKey(model: string, column: string, type: string, references: {}) {
+  public async createForeignKey(model: string, column: string, type: string, references: {}, verbose = false) {
     return Promise.resolve();
   }
 

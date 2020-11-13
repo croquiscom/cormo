@@ -59,6 +59,7 @@ export interface AssociationBelongsToOptions {
 }
 export interface SchemaChange {
     message: string;
+    is_query?: boolean;
     ignorable?: boolean;
 }
 interface Association {

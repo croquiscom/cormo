@@ -176,7 +176,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createTable(model: string) {
+  public getCreateTableQuery(model: string): string {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sqls = [];
@@ -191,31 +191,48 @@ export class MySQLAdapter extends SQLAdapterBase {
         }
       }
     }
-    let sql = `CREATE TABLE \`${table_name}\` ( ${column_sqls.join(',')} )`;
-    sql += ` DEFAULT CHARSET=${this._settings!.charset || 'utf8'}`;
-    sql += ` COLLATE=${this._settings!.collation || 'utf8_unicode_ci'}`;
+    let query = `CREATE TABLE \`${table_name}\` ( ${column_sqls.join(',')} )`;
+    query += ` DEFAULT CHARSET=${this._settings!.charset || 'utf8'}`;
+    query += ` COLLATE=${this._settings!.collation || 'utf8_unicode_ci'}`;
+    return query;
+  }
+
+  /** @internal */
+  public async createTable(model: string, verbose = false) {
+    const query = this.getCreateTableQuery(model);
+    if (verbose) {
+      console.log(`  (${query})`);
+    }
     try {
-      await this._client.queryAsync(sql);
+      await this._client.queryAsync(query);
     } catch (error) {
       throw this._wrapError('unknown error', error);
     }
   }
 
   /** @internal */
-  public async addColumn(model: string, column_property: ColumnPropertyInternal) {
+  public getAddColumnQuery(model: string, column_property: ColumnPropertyInternal): string {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     const column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
-    const sql = `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname_us}\` ${column_sql}`;
+    return `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname_us}\` ${column_sql}`;
+  }
+
+  /** @internal */
+  public async addColumn(model: string, column_property: ColumnPropertyInternal, verbose = false) {
+    const query = this.getAddColumnQuery(model, column_property);
+    if (verbose) {
+      console.log(`  (${query})`);
+    }
     try {
-      await this._client.queryAsync(sql);
+      await this._client.queryAsync(query);
     } catch (error) {
       throw this._wrapError('unknown error', error);
     }
   }
 
   /** @internal */
-  public async createIndex(model_name: string, index: IndexProperty) {
+  public getCreateIndexQuery(model_name: string, index: IndexProperty): string {
     const model_class = this._connection.models[model_name];
     const schema = model_class._schema;
     const table_name = model_class.table_name;
@@ -225,16 +242,24 @@ export class MySQLAdapter extends SQLAdapterBase {
       columns.push(`\`${schema[column] && schema[column]._dbname_us || column}\` ${(order === -1 ? 'DESC' : 'ASC')}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
-    const sql = `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${table_name}\` (${columns.join(',')})`;
+    return `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${table_name}\` (${columns.join(',')})`;
+  }
+
+  /** @internal */
+  public async createIndex(model_name: string, index: IndexProperty, verbose = false) {
+    const query = this.getCreateIndexQuery(model_name, index);
+    if (verbose) {
+      console.log(`  (${query})`);
+    }
     try {
-      await this._client.queryAsync(sql);
+      await this._client.queryAsync(query);
     } catch (error) {
       throw this._wrapError('unknown error', error);
     }
   }
 
   /** @internal */
-  public async createForeignKey(model: string, column: string, type: string, references: any) {
+  public getCreateForeignKeyQuery(model: string, column: string, type: string, references: any): string {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
     let action = '';
@@ -249,10 +274,18 @@ export class MySQLAdapter extends SQLAdapterBase {
         action = 'CASCADE';
         break;
     }
-    const sql = `ALTER TABLE \`${table_name}\` ADD FOREIGN KEY (\`${column}\`)
+    return `ALTER TABLE \`${table_name}\` ADD FOREIGN KEY (\`${column}\`)
       REFERENCES \`${references.table_name}\`(id) ON DELETE ${action}`;
+  }
+
+  /** @internal */
+  public async createForeignKey(model: string, column: string, type: string, references: any, verbose = false) {
+    const query = this.getCreateForeignKeyQuery(model, column, type, references);
+    if (verbose) {
+      console.log(`  (${query})`);
+    }
     try {
-      await this._client.queryAsync(sql);
+      await this._client.queryAsync(query);
     } catch (error) {
       throw this._wrapError('unknown error', error);
     }
