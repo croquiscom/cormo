@@ -5,9 +5,13 @@ export interface SchemasColumn {
     required: boolean;
     type: types.ColumnType | undefined;
     adapter_type_string?: string;
+    description?: string;
 }
 export interface SchemasTable {
-    [column_name: string]: SchemasColumn;
+    columns: {
+        [column_name: string]: SchemasColumn;
+    };
+    description?: string;
 }
 export interface SchemasIndex {
     [index_name: string]: any;

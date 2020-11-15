@@ -578,7 +578,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
     async _getSchema(table) {
         const query = 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=$1';
         const result = await this._pool.query(query, [table]);
-        const schema = {};
+        const schema = { columns: {} };
         for (const column of result.rows) {
             const type = column.data_type === 'character varying' ? new types.String(column.character_maximum_length)
                 : column.data_type === 'double precision' ? new types.Number()
@@ -593,7 +593,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
             if (column.data_type === 'character varying') {
                 adapter_type_string += `(${column.character_maximum_length || 255})`;
             }
-            schema[column.column_name] = {
+            schema.columns[column.column_name] = {
                 required: column.is_nullable === 'NO',
                 type,
                 adapter_type_string,

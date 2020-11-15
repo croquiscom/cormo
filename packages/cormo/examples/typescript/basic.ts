@@ -34,7 +34,7 @@ class Name {
   }
 }
 
-@cormo.Model({ connection })
+@cormo.Model({ connection, description: 'User model' })
 @cormo.Index({ 'name.first': 1, 'age': 1 })
 export class User extends cormo.BaseModel {
   public id!: number;
@@ -101,6 +101,8 @@ async function transaction() {
 }
 
 async function run() {
+  await connection.applySchemas({ verbose: true });
+
   await create1();
   await create2();
   await save();
@@ -109,6 +111,7 @@ async function run() {
   await query();
   await count();
   await transaction();
+
   await User.drop();
 }
 

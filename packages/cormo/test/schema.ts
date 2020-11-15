@@ -1,4 +1,5 @@
 import cases from './cases/schema';
+import cases_description from './cases/schema_description';
 import _g = require('./support/common');
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
@@ -10,5 +11,9 @@ _dbs.forEach((db) => {
 
   describe('schema-' + db, () => {
     cases(db, _g.db_configs[db]);
+
+    describe('#description', () => {
+      cases_description(db, _g.db_configs[db]);
+    });
   });
 });

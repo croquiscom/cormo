@@ -549,7 +549,7 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
     /** @internal */
     async _getSchema(table) {
         const columns = (await this._client.allAsync(`PRAGMA table_info(\`${table}\`)`));
-        const schema = {};
+        const schema = { columns: {} };
         for (const column of columns) {
             const type = /^varchar\((\d*)\)/i.test(column.type) ? new types.String(Number(RegExp.$1))
                 : /^double/i.test(column.type) ? new types.Number()
@@ -557,7 +557,7 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
                         : /^int/i.test(column.type) ? new types.Integer()
                             : /^real/i.test(column.type) ? new types.Date()
                                 : /^text/i.test(column.type) ? new types.Text() : undefined;
-            schema[column.name] = {
+            schema.columns[column.name] = {
                 required: column.notnull === 1,
                 type,
                 adapter_type_string: column.type.toUpperCase(),

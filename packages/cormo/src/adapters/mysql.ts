@@ -164,7 +164,8 @@ export class MySQLAdapter extends SQLAdapterBase {
     const tables = await this._getTables();
     const table_schemas: { [table_name: string]: SchemasTable } = {};
     for (const table of tables) {
-      table_schemas[table] = await this._getSchema(table);
+      table_schemas[table.name] = await this._getSchema(table.name);
+      table_schemas[table.name].description = table.comment;
     }
     const indexes = await this._getIndexes();
     const foreign_keys = await this._getForeignKeys();
@@ -185,8 +186,11 @@ export class MySQLAdapter extends SQLAdapterBase {
       if (property.primary_key) {
         column_sqls.push(`\`${property._dbname_us}\` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
       } else {
-        const column_sql = _propertyToSQL(property, this.support_fractional_seconds);
+        let column_sql = _propertyToSQL(property, this.support_fractional_seconds);
         if (column_sql) {
+          if (property.description) {
+            column_sql += ` COMMENT '${property.description}'`;
+          }
           column_sqls.push(`\`${property._dbname_us}\` ${column_sql}`);
         }
       }
@@ -194,6 +198,9 @@ export class MySQLAdapter extends SQLAdapterBase {
     let query = `CREATE TABLE \`${table_name}\` ( ${column_sqls.join(',')} )`;
     query += ` DEFAULT CHARSET=${this._settings!.charset || 'utf8'}`;
     query += ` COLLATE=${this._settings!.collation || 'utf8_unicode_ci'}`;
+    if (model_class.description) {
+      query += ` COMMENT='${model_class.description}'`;
+    }
     return query;
   }
 
@@ -211,16 +218,63 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
+  public getUpdateTableDescriptionQuery(model: string): string {
+    const model_class = this._connection.models[model];
+    const table_name = model_class.table_name;
+    return `ALTER TABLE ${table_name} COMMENT '${model_class.description ?? ''}'`;
+  }
+
+  /** @internal */
+  public async updateTableDescription(model: string, verbose = false) {
+    const query = this.getUpdateTableDescriptionQuery(model);
+    if (verbose) {
+      console.log(`  (${query})`);
+    }
+    try {
+      await this._client.queryAsync(query);
+    } catch (error) {
+      throw this._wrapError('unknown error', error);
+    }
+  }
+
+  /** @internal */
   public getAddColumnQuery(model: string, column_property: ColumnPropertyInternal): string {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
-    const column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+    let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+    if (column_property.description) {
+      column_sql += ` COMMENT '${column_property.description}'`;
+    }
     return `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname_us}\` ${column_sql}`;
   }
 
   /** @internal */
   public async addColumn(model: string, column_property: ColumnPropertyInternal, verbose = false) {
     const query = this.getAddColumnQuery(model, column_property);
+    if (verbose) {
+      console.log(`  (${query})`);
+    }
+    try {
+      await this._client.queryAsync(query);
+    } catch (error) {
+      throw this._wrapError('unknown error', error);
+    }
+  }
+
+  /** @internal */
+  public getUpdateColumnDescriptionQuery(model: string, column_property: ColumnPropertyInternal): string {
+    const model_class = this._connection.models[model];
+    const table_name = model_class.table_name;
+    let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+    if (column_property.description) {
+      column_sql += ` COMMENT '${column_property.description}'`;
+    }
+    return `ALTER TABLE \`${table_name}\` CHANGE COLUMN \`${column_property._dbname_us}\` \`${column_property._dbname_us}\` ${column_sql}`;
+  }
+
+  /** @internal */
+  public async updateColumnDescription(model: string, column_property: ColumnPropertyInternal, verbose = false) {
+    const query = this.getUpdateColumnDescriptionQuery(model, column_property);
     if (verbose) {
       console.log(`  (${query})`);
     }
@@ -789,19 +843,18 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getTables(): Promise<string[]> {
-    let tables = await this._client.queryAsync('SHOW TABLES');
-    tables = tables.map((table: any) => {
-      const key = Object.keys(table)[0];
-      return table[key];
-    });
-    return tables;
+  private async _getTables(): Promise<Array<{ name: string, comment: string }>> {
+    const result = await this._client.queryAsync('SHOW TABLE STATUS');
+    return result.map((item: any) => ({
+      name: item.Name,
+      comment: item.Comment,
+    }));
   }
 
   /** @internal */
   private async _getSchema(table: string): Promise<SchemasTable> {
-    const columns = await this._client.queryAsync(`SHOW COLUMNS FROM \`${table}\``);
-    const schema: SchemasTable = {};
+    const columns = await this._client.queryAsync(`SHOW FULL COLUMNS FROM \`${table}\``);
+    const schema: SchemasTable = { columns: {} };
     for (const column of columns) {
       const type = /^varchar\((\d*)\)/i.test(column.Type) ? new types.String(Number(RegExp.$1))
         : /^double/i.test(column.Type) ? new types.Number()
@@ -810,10 +863,11 @@ export class MySQLAdapter extends SQLAdapterBase {
               : /^point/i.test(column.Type) ? new types.GeoPoint()
                 : /^datetime/i.test(column.Type) ? new types.Date()
                   : /^text/i.test(column.Type) ? new types.Text() : undefined;
-      schema[column.Field] = {
+      schema.columns[column.Field] = {
         required: column.Null === 'NO',
         type,
         adapter_type_string: column.Type.toUpperCase(),
+        description: column.Comment,
       };
     }
     return schema;

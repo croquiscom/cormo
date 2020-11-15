@@ -13,14 +13,15 @@ const connection = new cormo.Connection('mysql', {
 class User extends cormo.BaseModel {
   static initialize() {
     this.column('name', {
-      first: { type: String, required: true },
-      last: { type: String, required: true },
+      first: { type: String, required: true, description: 'First name' },
+      last: { type: String, required: true, description: 'Last name' },
     });
     this.column('age', Number);
     this.index({ 'name.first': 1, 'age': 1 });
   }
 }
 
+User.description = 'User model';
 User.connection(connection);
 
 async function run() {

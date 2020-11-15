@@ -10,10 +10,14 @@ export interface SchemasColumn {
   required: boolean;
   type: types.ColumnType | undefined;
   adapter_type_string?: string;
+  description?: string;
 }
 
 export interface SchemasTable {
-  [column_name: string]: SchemasColumn;
+  columns: {
+    [column_name: string]: SchemasColumn;
+  };
+  description?: string;
 }
 
 export interface SchemasIndex {
@@ -132,6 +136,25 @@ abstract class AdapterBase {
     return Promise.resolve();
   }
 
+  /** Get query for updating a table description
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public getUpdateTableDescriptionQuery(model: string): string | null {
+    return null;
+  }
+
+  /**
+   * Update a table description.
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public async updateTableDescription(model: string, verbose = false) {
+    return Promise.resolve();
+  }
+
   /** Get query for adding a column
    * @abstract
    * @see Connection::applySchemas
@@ -147,6 +170,25 @@ abstract class AdapterBase {
    * @internal
    */
   public async addColumn(model: string, column_property: ColumnPropertyInternal, verbose = false) {
+    return Promise.resolve();
+  }
+
+  /** Get query for updating a column description
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public getUpdateColumnDescriptionQuery(model: string, column_property: ColumnPropertyInternal): string | null {
+    return null;
+  }
+
+  /**
+   * Update a column description.
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public async updateColumnDescription(model: string, column_property: ColumnPropertyInternal, verbose = false) {
     return Promise.resolve();
   }
 

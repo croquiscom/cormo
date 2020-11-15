@@ -141,7 +141,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const tables = await this._getTables();
         const table_schemas = {};
         for (const table of tables) {
-            table_schemas[table] = await this._getSchema(table);
+            table_schemas[table.name] = await this._getSchema(table.name);
+            table_schemas[table.name].description = table.comment;
         }
         const indexes = await this._getIndexes();
         const foreign_keys = await this._getForeignKeys();
@@ -162,8 +163,11 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 column_sqls.push(`\`${property._dbname_us}\` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
             }
             else {
-                const column_sql = _propertyToSQL(property, this.support_fractional_seconds);
+                let column_sql = _propertyToSQL(property, this.support_fractional_seconds);
                 if (column_sql) {
+                    if (property.description) {
+                        column_sql += ` COMMENT '${property.description}'`;
+                    }
                     column_sqls.push(`\`${property._dbname_us}\` ${column_sql}`);
                 }
             }
@@ -171,6 +175,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         let query = `CREATE TABLE \`${table_name}\` ( ${column_sqls.join(',')} )`;
         query += ` DEFAULT CHARSET=${this._settings.charset || 'utf8'}`;
         query += ` COLLATE=${this._settings.collation || 'utf8_unicode_ci'}`;
+        if (model_class.description) {
+            query += ` COMMENT='${model_class.description}'`;
+        }
         return query;
     }
     /** @internal */
@@ -187,15 +194,61 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
+    getUpdateTableDescriptionQuery(model) {
+        var _a;
+        const model_class = this._connection.models[model];
+        const table_name = model_class.table_name;
+        return `ALTER TABLE ${table_name} COMMENT '${(_a = model_class.description) !== null && _a !== void 0 ? _a : ''}'`;
+    }
+    /** @internal */
+    async updateTableDescription(model, verbose = false) {
+        const query = this.getUpdateTableDescriptionQuery(model);
+        if (verbose) {
+            console.log(`  (${query})`);
+        }
+        try {
+            await this._client.queryAsync(query);
+        }
+        catch (error) {
+            throw this._wrapError('unknown error', error);
+        }
+    }
+    /** @internal */
     getAddColumnQuery(model, column_property) {
         const model_class = this._connection.models[model];
         const table_name = model_class.table_name;
-        const column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+        let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+        if (column_property.description) {
+            column_sql += ` COMMENT '${column_property.description}'`;
+        }
         return `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname_us}\` ${column_sql}`;
     }
     /** @internal */
     async addColumn(model, column_property, verbose = false) {
         const query = this.getAddColumnQuery(model, column_property);
+        if (verbose) {
+            console.log(`  (${query})`);
+        }
+        try {
+            await this._client.queryAsync(query);
+        }
+        catch (error) {
+            throw this._wrapError('unknown error', error);
+        }
+    }
+    /** @internal */
+    getUpdateColumnDescriptionQuery(model, column_property) {
+        const model_class = this._connection.models[model];
+        const table_name = model_class.table_name;
+        let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+        if (column_property.description) {
+            column_sql += ` COMMENT '${column_property.description}'`;
+        }
+        return `ALTER TABLE \`${table_name}\` CHANGE COLUMN \`${column_property._dbname_us}\` \`${column_property._dbname_us}\` ${column_sql}`;
+    }
+    /** @internal */
+    async updateColumnDescription(model, column_property, verbose = false) {
+        const query = this.getUpdateColumnDescriptionQuery(model, column_property);
         if (verbose) {
             console.log(`  (${query})`);
         }
@@ -760,17 +813,16 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     async _getTables() {
-        let tables = await this._client.queryAsync('SHOW TABLES');
-        tables = tables.map((table) => {
-            const key = Object.keys(table)[0];
-            return table[key];
-        });
-        return tables;
+        const result = await this._client.queryAsync('SHOW TABLE STATUS');
+        return result.map((item) => ({
+            name: item.Name,
+            comment: item.Comment,
+        }));
     }
     /** @internal */
     async _getSchema(table) {
-        const columns = await this._client.queryAsync(`SHOW COLUMNS FROM \`${table}\``);
-        const schema = {};
+        const columns = await this._client.queryAsync(`SHOW FULL COLUMNS FROM \`${table}\``);
+        const schema = { columns: {} };
         for (const column of columns) {
             const type = /^varchar\((\d*)\)/i.test(column.Type) ? new types.String(Number(RegExp.$1))
                 : /^double/i.test(column.Type) ? new types.Number()
@@ -779,10 +831,11 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                             : /^point/i.test(column.Type) ? new types.GeoPoint()
                                 : /^datetime/i.test(column.Type) ? new types.Date()
                                     : /^text/i.test(column.Type) ? new types.Text() : undefined;
-            schema[column.Field] = {
+            schema.columns[column.Field] = {
                 required: column.Null === 'NO',
                 type,
                 adapter_type_string: column.Type.toUpperCase(),
+                description: column.Comment,
             };
         }
         return schema;
