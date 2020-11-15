@@ -218,6 +218,16 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
+  public async deleteAllIgnoringConstraint(model_list: string[]): Promise<void> {
+    await Promise.all(model_list.map(async (model) => {
+      const table_name = this._connection.models[model].table_name;
+      await this.query(`ALTER TABLE "${table_name}" DISABLE TRIGGER ALL`);
+      await this.query(`DELETE FROM "${table_name}"`);
+      await this.query(`ALTER TABLE "${table_name}" ENABLE TRIGGER ALL`);
+    }));
+  }
+
+  /** @internal */
   public async drop(model: string) {
     const table_name = this._connection.models[model].table_name;
     try {

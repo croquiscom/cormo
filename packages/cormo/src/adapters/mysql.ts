@@ -346,6 +346,21 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
+  public async deleteAllIgnoringConstraint(model_list: string[]): Promise<void> {
+    const connection = await this.getConnection();
+    try {
+      await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 0');
+      await Promise.all(model_list.map(async (model) => {
+        const table_name = this._connection.models[model].table_name;
+        await connection.queryAsync(`TRUNCATE TABLE \`${table_name}\``);
+      }));
+      await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 1');
+    } finally {
+      await this.releaseConnection(connection);
+    }
+  }
+
+  /** @internal */
   public async drop(model: string) {
     const table_name = this._connection.models[model].table_name;
     try {

@@ -180,6 +180,16 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
+  public async deleteAllIgnoringConstraint(model_list: string[]): Promise<void> {
+    await this._client.runAsync('PRAGMA foreign_keys=OFF');
+    await Promise.all(model_list.map(async (model) => {
+      const table_name = this._connection.models[model].table_name;
+      await this._client.runAsync(`DELETE FROM \`${table_name}\``);
+    }));
+    await this._client.runAsync('PRAGMA foreign_keys=ON');
+  }
+
+  /** @internal */
   public async drop(model: string) {
     const table_name = this._connection.models[model].table_name;
     try {

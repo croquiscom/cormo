@@ -752,11 +752,16 @@ class Connection extends events_1.EventEmitter {
         await this.models[model].where(data).delete({ skip_log: true });
     }
     async _manipulateDeleteAllModels() {
-        for (const model of Object.keys(this.models)) {
-            if (model === '_Archive') {
+        const model_list = Object.keys(this.models).filter((key) => key !== '_Archive');
+        try {
+            await this.adapter.deleteAllIgnoringConstraint(model_list);
+        }
+        catch (error) {
+            if (error.message === 'not implemented') {
+                await Promise.all(model_list.map((model) => this.models[model].where().delete({ skip_log: true })));
                 return;
             }
-            await this.models[model].where().delete({ skip_log: true });
+            throw error;
         }
     }
     async _manipulateDropModel(model) {

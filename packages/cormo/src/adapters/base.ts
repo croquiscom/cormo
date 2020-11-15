@@ -229,6 +229,16 @@ abstract class AdapterBase {
   }
 
   /**
+   * Deletes all records with ignoring constraint
+   * @abstract
+   * @see BaseModel.drop
+   * @internal
+   */
+  public async deleteAllIgnoringConstraint(model_list: string[]): Promise<void> {
+    return Promise.reject(new Error('not implemented'));
+  }
+
+  /**
    * Drops a model from the database
    * @abstract
    * @see BaseModel.drop

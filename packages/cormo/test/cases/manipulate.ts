@@ -149,6 +149,46 @@ export default function(models: {
     expect(count).to.equal(0);
   });
 
+  context('delete all with constraint', () => {
+    let A: typeof cormo.BaseModel;
+    let B: typeof cormo.BaseModel;
+    let C: typeof cormo.BaseModel;
+    let D: typeof cormo.BaseModel;
+    before(() => {
+      A = models.connection!.model('A', { value: Number });
+      B = models.connection!.model('B', { value: Number });
+      C = models.connection!.model('C', { value: Number });
+      D = models.connection!.model('D', { value: Number });
+      B.belongsTo(A, { required: true });
+      A.hasMany(B, { integrity: 'restrict' });
+      B.belongsTo(C, { required: true });
+      C.hasMany(B, { integrity: 'restrict' });
+      D.belongsTo(C, { required: true });
+      C.hasMany(D, { integrity: 'restrict' });
+    });
+
+    after(async () => {
+      await B.drop();
+      await D.drop();
+      await C.drop();
+      await A.drop();
+    });
+
+    it('run', async () => {
+      await models.connection!.manipulate([
+        { create_a: { id: 'a1', value: 1 } },
+        { create_c: { id: 'c1', value: 3 } },
+        { create_b: { id: 'b1', value: 2, a_id: 'a1', c_id: 'c1' } },
+        { create_d: { value: 4, c_id: 'c1' } },
+      ]);
+      await models.connection!.manipulate(['deleteAll']);
+      expect(await A.count()).to.equal(0);
+      expect(await B.count()).to.equal(0);
+      expect(await C.count()).to.equal(0);
+      expect(await D.count()).to.equal(0);
+    });
+  });
+
   it('find record', async () => {
     await models.connection!.manipulate([
       { create_user: { name: 'John Doe', age: 27 } },
