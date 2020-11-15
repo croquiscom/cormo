@@ -237,6 +237,29 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
+    getUpdateColumnDescriptionQuery(model, column_property) {
+        const model_class = this._connection.models[model];
+        const table_name = model_class.table_name;
+        let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+        if (column_property.description) {
+            column_sql += ` COMMENT '${column_property.description}'`;
+        }
+        return `ALTER TABLE \`${table_name}\` CHANGE COLUMN \`${column_property._dbname_us}\` \`${column_property._dbname_us}\` ${column_sql}`;
+    }
+    /** @internal */
+    async updateColumnDescription(model, column_property, verbose = false) {
+        const query = this.getUpdateColumnDescriptionQuery(model, column_property);
+        if (verbose) {
+            console.log(`  (${query})`);
+        }
+        try {
+            await this._client.queryAsync(query);
+        }
+        catch (error) {
+            throw this._wrapError('unknown error', error);
+        }
+    }
+    /** @internal */
     getCreateIndexQuery(model_name, index) {
         const model_class = this._connection.models[model_name];
         const schema = model_class._schema;
@@ -798,7 +821,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     async _getSchema(table) {
-        const columns = await this._client.queryAsync(`SHOW COLUMNS FROM \`${table}\``);
+        const columns = await this._client.queryAsync(`SHOW FULL COLUMNS FROM \`${table}\``);
         const schema = { columns: {} };
         for (const column of columns) {
             const type = /^varchar\((\d*)\)/i.test(column.Type) ? new types.String(Number(RegExp.$1))
@@ -812,6 +835,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 required: column.Null === 'NO',
                 type,
                 adapter_type_string: column.Type.toUpperCase(),
+                description: column.Comment,
             };
         }
         return schema;

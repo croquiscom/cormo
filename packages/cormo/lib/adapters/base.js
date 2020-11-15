@@ -122,6 +122,23 @@ class AdapterBase {
     async addColumn(model, column_property, verbose = false) {
         return Promise.resolve();
     }
+    /** Get query for updating a column description
+     * @abstract
+     * @see Connection::applySchemas
+     * @internal
+     */
+    getUpdateColumnDescriptionQuery(model, column_property) {
+        return null;
+    }
+    /**
+     * Update a column description.
+     * @abstract
+     * @see Connection::applySchemas
+     * @internal
+     */
+    async updateColumnDescription(model, column_property, verbose = false) {
+        return Promise.resolve();
+    }
     /** Get query for creating an index
      * @abstract
      * @see Connection::applySchemas

@@ -141,7 +141,7 @@ class Connection extends events_1.EventEmitter {
             console.log('Applying schemas');
         }
         this._promise_schema_applied = this._promise_connection.then(async () => {
-            var _a, _b, _c, _d, _e;
+            var _a, _b, _c, _d, _e, _f, _g;
             try {
                 const current = await this._adapter.getSchemas();
                 for (const model in this.models) {
@@ -152,11 +152,16 @@ class Connection extends events_1.EventEmitter {
                     }
                     for (const column in modelClass._schema) {
                         const property = modelClass._schema[column];
-                        if (!current_table.columns[property._dbname_us]) {
+                        const current_column = current_table.columns[property._dbname_us];
+                        if (!current_column) {
                             if (options.verbose) {
                                 console.log(`Adding column ${property._dbname_us} to ${modelClass.table_name}`);
                             }
                             await this._adapter.addColumn(model, property, options.verbose);
+                            continue;
+                        }
+                        if (((_a = current_column.description) !== null && _a !== void 0 ? _a : '') !== ((_b = property.description) !== null && _b !== void 0 ? _b : '')) {
+                            await this._adapter.updateColumnDescription(model, property, options.verbose);
                         }
                     }
                 }
@@ -169,7 +174,7 @@ class Connection extends events_1.EventEmitter {
                         }
                         await this._adapter.createTable(model, options.verbose);
                     }
-                    else if (current_table !== 'NO SCHEMA' && ((_a = current_table.description) !== null && _a !== void 0 ? _a : '') !== ((_b = modelClass.description) !== null && _b !== void 0 ? _b : '')) {
+                    else if (current_table !== 'NO SCHEMA' && ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = modelClass.description) !== null && _d !== void 0 ? _d : '')) {
                         if (options.verbose) {
                             console.log(`Changing table ${modelClass.table_name}'s description to '${modelClass.description}'`);
                         }
@@ -179,7 +184,7 @@ class Connection extends events_1.EventEmitter {
                 for (const model_name in this.models) {
                     const modelClass = this.models[model_name];
                     for (const index of modelClass._indexes) {
-                        if (!((_d = (_c = current.indexes) === null || _c === void 0 ? void 0 : _c[modelClass.table_name]) === null || _d === void 0 ? void 0 : _d[(_e = index.options.name) !== null && _e !== void 0 ? _e : ''])) {
+                        if (!((_f = (_e = current.indexes) === null || _e === void 0 ? void 0 : _e[modelClass.table_name]) === null || _f === void 0 ? void 0 : _f[(_g = index.options.name) !== null && _g !== void 0 ? _g : ''])) {
                             if (options.verbose) {
                                 console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
                             }
@@ -234,7 +239,7 @@ class Connection extends events_1.EventEmitter {
      * @see AdapterBase::applySchema
      */
     async getSchemaChanges() {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         this._initializeModels();
         this.applyAssociations();
         this._checkArchive();
@@ -249,7 +254,8 @@ class Connection extends events_1.EventEmitter {
             }
             for (const column in modelClass._schema) {
                 const property = modelClass._schema[column];
-                if (!current_table.columns[property._dbname_us]) {
+                const current_column = current_table.columns[property._dbname_us];
+                if (!current_column) {
                     changes.push({ message: `Add column ${property._dbname_us} to ${modelClass.table_name}` });
                     const query = this._adapter.getAddColumnQuery(model, property);
                     if (query) {
@@ -258,17 +264,24 @@ class Connection extends events_1.EventEmitter {
                     continue;
                 }
                 if (column !== 'id') {
-                    if (property.required && !current_table.columns[property._dbname_us].required) {
+                    if (property.required && !current_column.required) {
                         changes.push({ message: `Change ${modelClass.table_name}.${property._dbname_us} to required`, ignorable: true });
                     }
-                    else if (!property.required && current_table.columns[property._dbname_us].required) {
+                    else if (!property.required && current_column.required) {
                         changes.push({ message: `Change ${modelClass.table_name}.${column} to optional`, ignorable: true });
                     }
                 }
                 const expected_type = this._adapter.getAdapterTypeString(property);
-                const real_type = current_table.columns[property._dbname_us].adapter_type_string;
+                const real_type = current_column.adapter_type_string;
                 if (expected_type !== real_type) {
                     changes.push({ message: `Type different ${modelClass.table_name}.${column}: expected=${expected_type}, real=${real_type}`, ignorable: true });
+                }
+                if (((_a = current_column.description) !== null && _a !== void 0 ? _a : '') !== ((_b = property.description) !== null && _b !== void 0 ? _b : '')) {
+                    changes.push({ message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'` });
+                    const query = this._adapter.getUpdateColumnDescriptionQuery(model, property);
+                    if (query) {
+                        changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
+                    }
                 }
             }
             for (const column in current_table.columns) {
@@ -287,7 +300,7 @@ class Connection extends events_1.EventEmitter {
                     changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
                 }
             }
-            else if (current_table !== 'NO SCHEMA' && ((_a = current_table.description) !== null && _a !== void 0 ? _a : '') !== ((_b = modelClass.description) !== null && _b !== void 0 ? _b : '')) {
+            else if (current_table !== 'NO SCHEMA' && ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = modelClass.description) !== null && _d !== void 0 ? _d : '')) {
                 changes.push({ message: `Change table ${modelClass.table_name}'s description to '${modelClass.description}'` });
                 const query = this._adapter.getUpdateTableDescriptionQuery(model);
                 if (query) {
@@ -303,7 +316,7 @@ class Connection extends events_1.EventEmitter {
         for (const model_name in this.models) {
             const modelClass = this.models[model_name];
             for (const index of modelClass._indexes) {
-                if (!((_d = (_c = current.indexes) === null || _c === void 0 ? void 0 : _c[modelClass.table_name]) === null || _d === void 0 ? void 0 : _d[(_e = index.options.name) !== null && _e !== void 0 ? _e : ''])) {
+                if (!((_f = (_e = current.indexes) === null || _e === void 0 ? void 0 : _e[modelClass.table_name]) === null || _f === void 0 ? void 0 : _f[(_g = index.options.name) !== null && _g !== void 0 ? _g : ''])) {
                     changes.push({ message: `Add index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
                     const query = this._adapter.getCreateIndexQuery(model_name, index);
                     if (query) {
@@ -311,7 +324,7 @@ class Connection extends events_1.EventEmitter {
                     }
                 }
             }
-            for (const index in (_f = current.indexes) === null || _f === void 0 ? void 0 : _f[modelClass.table_name]) {
+            for (const index in (_h = current.indexes) === null || _h === void 0 ? void 0 : _h[modelClass.table_name]) {
                 // MySQL add index for foreign key, so does not need to remove if the index is defined in integrities
                 if (!lodash_1.default.find(modelClass._indexes, (item) => item.options.name === index) && !lodash_1.default.find(modelClass._integrities, (item) => item.column === index)) {
                     changes.push({ message: `Remove index on ${modelClass.table_name} ${index}`, ignorable: true });

@@ -5,6 +5,7 @@ export interface SchemasColumn {
     required: boolean;
     type: types.ColumnType | undefined;
     adapter_type_string?: string;
+    description?: string;
 }
 export interface SchemasTable {
     columns: {

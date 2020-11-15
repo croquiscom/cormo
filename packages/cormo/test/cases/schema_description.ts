@@ -116,4 +116,28 @@ export default function(db: any, db_config: any) {
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
   });
+
+  it('change column description after create', async () => {
+    class User extends cormo.BaseModel { }
+    User.column('name', String);
+
+    await connection.applySchemas();
+
+    User._schema.name.description = 'Name of user';
+    connection._schema_changed = true;
+
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: "Change users.name's description to 'Name of user'" },
+      ...db === 'mysql' ? [{ message: "  (ALTER TABLE `users` CHANGE COLUMN `name` `name` VARCHAR(255) NULL COMMENT 'Name of user')", is_query: true, ignorable: true }] : [],
+    ]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+
+    await connection.applySchemas();
+    expect(await connection.getSchemaChanges()).to.eql([]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+
+    const schema = await (connection._adapter as any).getSchemas();
+    const table_names = Object.keys(schema.tables);
+    expect(table_names.sort()).to.eql(['users']);
+  });
 }

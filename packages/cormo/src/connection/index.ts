@@ -279,11 +279,17 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           }
           for (const column in modelClass._schema) {
             const property = modelClass._schema[column];
-            if (!current_table.columns[property._dbname_us]) {
+            const current_column = current_table.columns[property._dbname_us];
+            if (!current_column) {
               if (options.verbose) {
                 console.log(`Adding column ${property._dbname_us} to ${modelClass.table_name}`);
               }
               await this._adapter.addColumn(model, property, options.verbose);
+              continue;
+            }
+
+            if ((current_column.description ?? '') !== (property.description ?? '')) {
+              await this._adapter.updateColumnDescription(model, property, options.verbose);
             }
           }
         }
@@ -379,7 +385,8 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       }
       for (const column in modelClass._schema) {
         const property = modelClass._schema[column];
-        if (!current_table.columns[property._dbname_us]) {
+        const current_column = current_table.columns[property._dbname_us];
+        if (!current_column) {
           changes.push({ message: `Add column ${property._dbname_us} to ${modelClass.table_name}` });
           const query = this._adapter.getAddColumnQuery(model, property);
           if (query) {
@@ -389,17 +396,25 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         }
 
         if (column !== 'id') {
-          if (property.required && !current_table.columns[property._dbname_us].required) {
+          if (property.required && !current_column.required) {
             changes.push({ message: `Change ${modelClass.table_name}.${property._dbname_us} to required`, ignorable: true });
-          } else if (!property.required && current_table.columns[property._dbname_us].required) {
+          } else if (!property.required && current_column.required) {
             changes.push({ message: `Change ${modelClass.table_name}.${column} to optional`, ignorable: true });
           }
         }
 
         const expected_type = this._adapter.getAdapterTypeString(property);
-        const real_type = current_table.columns[property._dbname_us].adapter_type_string;
+        const real_type = current_column.adapter_type_string;
         if (expected_type !== real_type) {
           changes.push({ message: `Type different ${modelClass.table_name}.${column}: expected=${expected_type}, real=${real_type}`, ignorable: true });
+        }
+
+        if ((current_column.description ?? '') !== (property.description ?? '')) {
+          changes.push({ message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'` });
+          const query = this._adapter.getUpdateColumnDescriptionQuery(model, property);
+          if (query) {
+            changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
+          }
         }
       }
       for (const column in current_table.columns) {

@@ -10,6 +10,7 @@ export interface SchemasColumn {
   required: boolean;
   type: types.ColumnType | undefined;
   adapter_type_string?: string;
+  description?: string;
 }
 
 export interface SchemasTable {
@@ -169,6 +170,25 @@ abstract class AdapterBase {
    * @internal
    */
   public async addColumn(model: string, column_property: ColumnPropertyInternal, verbose = false) {
+    return Promise.resolve();
+  }
+
+  /** Get query for updating a column description
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public getUpdateColumnDescriptionQuery(model: string, column_property: ColumnPropertyInternal): string | null {
+    return null;
+  }
+
+  /**
+   * Update a column description.
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public async updateColumnDescription(model: string, column_property: ColumnPropertyInternal, verbose = false) {
     return Promise.resolve();
   }
 
