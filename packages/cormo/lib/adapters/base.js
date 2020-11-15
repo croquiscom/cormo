@@ -89,6 +89,23 @@ class AdapterBase {
     async createTable(model, verbose = false) {
         return Promise.resolve();
     }
+    /** Get query for updating a table description
+     * @abstract
+     * @see Connection::applySchemas
+     * @internal
+     */
+    getUpdateTableDescriptionQuery(model) {
+        return null;
+    }
+    /**
+     * Update a table description.
+     * @abstract
+     * @see Connection::applySchemas
+     * @internal
+     */
+    async updateTableDescription(model, verbose = false) {
+        return Promise.resolve();
+    }
     /** Get query for adding a column
      * @abstract
      * @see Connection::applySchemas

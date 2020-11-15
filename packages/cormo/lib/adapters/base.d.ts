@@ -10,6 +10,7 @@ export interface SchemasTable {
     columns: {
         [column_name: string]: SchemasColumn;
     };
+    description?: string;
 }
 export interface SchemasIndex {
     [index_name: string]: any;

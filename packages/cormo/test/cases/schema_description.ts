@@ -59,6 +59,13 @@ export default function(db: any, db_config: any) {
     User.description = 'User model';
     connection._schema_changed = true;
 
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: "Change table users's description to 'User model'" },
+      ...db === 'mysql' ? [{ message: "  (ALTER TABLE users COMMENT 'User model')", is_query: true, ignorable: true }] : [],
+    ]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+
+    await connection.applySchemas();
     expect(await connection.getSchemaChanges()).to.eql([]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 

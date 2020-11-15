@@ -164,7 +164,8 @@ export class MySQLAdapter extends SQLAdapterBase {
     const tables = await this._getTables();
     const table_schemas: { [table_name: string]: SchemasTable } = {};
     for (const table of tables) {
-      table_schemas[table] = await this._getSchema(table);
+      table_schemas[table.name] = await this._getSchema(table.name);
+      table_schemas[table.name].description = table.comment;
     }
     const indexes = await this._getIndexes();
     const foreign_keys = await this._getForeignKeys();
@@ -203,6 +204,26 @@ export class MySQLAdapter extends SQLAdapterBase {
   /** @internal */
   public async createTable(model: string, verbose = false) {
     const query = this.getCreateTableQuery(model);
+    if (verbose) {
+      console.log(`  (${query})`);
+    }
+    try {
+      await this._client.queryAsync(query);
+    } catch (error) {
+      throw this._wrapError('unknown error', error);
+    }
+  }
+
+  /** @internal */
+  public getUpdateTableDescriptionQuery(model: string): string {
+    const model_class = this._connection.models[model];
+    const table_name = model_class.table_name;
+    return `ALTER TABLE ${table_name} COMMENT '${model_class.description ?? ''}'`;
+  }
+
+  /** @internal */
+  public async updateTableDescription(model: string, verbose = false) {
+    const query = this.getUpdateTableDescriptionQuery(model);
     if (verbose) {
       console.log(`  (${query})`);
     }
@@ -792,13 +813,12 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getTables(): Promise<string[]> {
-    let tables = await this._client.queryAsync('SHOW TABLES');
-    tables = tables.map((table: any) => {
-      const key = Object.keys(table)[0];
-      return table[key];
-    });
-    return tables;
+  private async _getTables(): Promise<Array<{ name: string, comment: string }>> {
+    const result = await this._client.queryAsync('SHOW TABLE STATUS');
+    return result.map((item: any) => ({
+      name: item.Name,
+      comment: item.Comment,
+    }));
   }
 
   /** @internal */

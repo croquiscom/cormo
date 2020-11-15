@@ -16,6 +16,7 @@ export interface SchemasTable {
   columns: {
     [column_name: string]: SchemasColumn;
   };
+  description?: string;
 }
 
 export interface SchemasIndex {
@@ -131,6 +132,25 @@ abstract class AdapterBase {
    * @internal
    */
   public async createTable(model: string, verbose = false) {
+    return Promise.resolve();
+  }
+
+  /** Get query for updating a table description
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public getUpdateTableDescriptionQuery(model: string): string | null {
+    return null;
+  }
+
+  /**
+   * Update a table description.
+   * @abstract
+   * @see Connection::applySchemas
+   * @internal
+   */
+  public async updateTableDescription(model: string, verbose = false) {
     return Promise.resolve();
   }
 
