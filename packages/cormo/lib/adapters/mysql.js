@@ -217,7 +217,10 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     getAddColumnQuery(model, column_property) {
         const model_class = this._connection.models[model];
         const table_name = model_class.table_name;
-        const column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+        let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+        if (column_property.description) {
+            column_sql += ` COMMENT '${column_property.description}'`;
+        }
         return `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname_us}\` ${column_sql}`;
     }
     /** @internal */

@@ -101,4 +101,19 @@ export default function(db: any, db_config: any) {
     const table_names = Object.keys(schema.tables);
     expect(table_names.sort()).to.eql(['guests', 'users']);
   });
+
+  it('set column description on adding column', async () => {
+    class User extends cormo.BaseModel { }
+    User.column('name', String);
+    User.column('age', Number);
+
+    await connection.applySchemas();
+
+    User.column('address', { type: String, description: 'Address of user' });
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: 'Add column address to users' },
+      ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL COMMENT \'Address of user\')', is_query: true, ignorable: true }] : [],
+    ]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+  });
 }
