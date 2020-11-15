@@ -186,8 +186,11 @@ export class MySQLAdapter extends SQLAdapterBase {
       if (property.primary_key) {
         column_sqls.push(`\`${property._dbname_us}\` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
       } else {
-        const column_sql = _propertyToSQL(property, this.support_fractional_seconds);
+        let column_sql = _propertyToSQL(property, this.support_fractional_seconds);
         if (column_sql) {
+          if (property.description) {
+            column_sql += ` COMMENT '${property.description}'`;
+          }
           column_sqls.push(`\`${property._dbname_us}\` ${column_sql}`);
         }
       }
