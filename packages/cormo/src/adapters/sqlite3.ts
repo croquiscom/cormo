@@ -548,7 +548,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   /** @internal */
   private async _getSchema(table: string): Promise<SchemasTable> {
     const columns = (await this._client.allAsync(`PRAGMA table_info(\`${table}\`)`));
-    const schema: SchemasTable = {};
+    const schema: SchemasTable = { columns: {} };
     for (const column of columns) {
       const type = /^varchar\((\d*)\)/i.test(column.type) ? new types.String(Number(RegExp.$1))
         : /^double/i.test(column.type) ? new types.Number()
@@ -556,7 +556,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
             : /^int/i.test(column.type) ? new types.Integer()
               : /^real/i.test(column.type) ? new types.Date()
                 : /^text/i.test(column.type) ? new types.Text() : undefined;
-      schema[column.name] = {
+      schema.columns[column.name] = {
         required: column.notnull === 1,
         type,
         adapter_type_string: column.type.toUpperCase(),

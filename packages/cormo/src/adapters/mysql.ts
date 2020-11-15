@@ -804,7 +804,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   /** @internal */
   private async _getSchema(table: string): Promise<SchemasTable> {
     const columns = await this._client.queryAsync(`SHOW COLUMNS FROM \`${table}\``);
-    const schema: SchemasTable = {};
+    const schema: SchemasTable = { columns: {} };
     for (const column of columns) {
       const type = /^varchar\((\d*)\)/i.test(column.Type) ? new types.String(Number(RegExp.$1))
         : /^double/i.test(column.Type) ? new types.Number()
@@ -813,7 +813,7 @@ export class MySQLAdapter extends SQLAdapterBase {
               : /^point/i.test(column.Type) ? new types.GeoPoint()
                 : /^datetime/i.test(column.Type) ? new types.Date()
                   : /^text/i.test(column.Type) ? new types.Text() : undefined;
-      schema[column.Field] = {
+      schema.columns[column.Field] = {
         required: column.Null === 'NO',
         type,
         adapter_type_string: column.Type.toUpperCase(),

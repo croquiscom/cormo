@@ -7,7 +7,9 @@ export interface SchemasColumn {
     adapter_type_string?: string;
 }
 export interface SchemasTable {
-    [column_name: string]: SchemasColumn;
+    columns: {
+        [column_name: string]: SchemasColumn;
+    };
 }
 export interface SchemasIndex {
     [index_name: string]: any;

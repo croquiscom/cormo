@@ -279,7 +279,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           }
           for (const column in modelClass._schema) {
             const property = modelClass._schema[column];
-            if (!currentTable[property._dbname_us]) {
+            if (!currentTable.columns[property._dbname_us]) {
               if (options.verbose) {
                 console.log(`Adding column ${property._dbname_us} to ${modelClass.table_name}`);
               }
@@ -373,7 +373,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       }
       for (const column in modelClass._schema) {
         const property = modelClass._schema[column];
-        if (!currentTable[property._dbname_us]) {
+        if (!currentTable.columns[property._dbname_us]) {
           changes.push({ message: `Add column ${property._dbname_us} to ${modelClass.table_name}` });
           const query = this._adapter.getAddColumnQuery(model, property);
           if (query) {
@@ -383,20 +383,20 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         }
 
         if (column !== 'id') {
-          if (property.required && !currentTable[property._dbname_us].required) {
+          if (property.required && !currentTable.columns[property._dbname_us].required) {
             changes.push({ message: `Change ${modelClass.table_name}.${property._dbname_us} to required`, ignorable: true });
-          } else if (!property.required && currentTable[property._dbname_us].required) {
+          } else if (!property.required && currentTable.columns[property._dbname_us].required) {
             changes.push({ message: `Change ${modelClass.table_name}.${column} to optional`, ignorable: true });
           }
         }
 
         const expected_type = this._adapter.getAdapterTypeString(property);
-        const real_type = currentTable[property._dbname_us].adapter_type_string;
+        const real_type = currentTable.columns[property._dbname_us].adapter_type_string;
         if (expected_type !== real_type) {
           changes.push({ message: `Type different ${modelClass.table_name}.${column}: expected=${expected_type}, real=${real_type}`, ignorable: true });
         }
       }
-      for (const column in currentTable) {
+      for (const column in currentTable.columns) {
         if (!_.find(modelClass._schema, { _dbname_us: column })) {
           changes.push({ message: `Remove column ${column} from ${modelClass.table_name}`, ignorable: true });
         }
