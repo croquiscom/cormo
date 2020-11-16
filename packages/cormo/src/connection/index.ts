@@ -306,6 +306,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
             if ((current_column.description ?? '') !== (property.description ?? '')) {
               if (!type_changed) {
                 if (options.apply_description_change) {
+                  if (options.verbose) {
+                    console.log(`Changing ${modelClass.table_name}.${column}'s description to '${property.description}'`);
+                  }
                   await this._adapter.updateColumnDescription(model, property, options.verbose);
                 }
               } else {
