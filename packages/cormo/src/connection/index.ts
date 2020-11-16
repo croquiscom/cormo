@@ -253,7 +253,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    * Applies schemas
    * @see AdapterBase::applySchema
    */
-  public async applySchemas(options: { verbose?: boolean } = {}) {
+  public async applySchemas(options: { verbose?: boolean, apply_description_change?: boolean } = {}) {
     this._initializeModels();
     if (!this._schema_changed) {
       return;
@@ -305,7 +305,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
 
             if ((current_column.description ?? '') !== (property.description ?? '')) {
               if (!type_changed) {
-                await this._adapter.updateColumnDescription(model, property, options.verbose);
+                if (options.apply_description_change) {
+                  await this._adapter.updateColumnDescription(model, property, options.verbose);
+                }
               } else {
                 // do not update description to prevent unexpected type change
               }
@@ -322,10 +324,12 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
             }
             await this._adapter.createTable(model, options.verbose);
           } else if (current_table !== 'NO SCHEMA' && (current_table.description ?? '') !== (modelClass.description ?? '')) {
-            if (options.verbose) {
-              console.log(`Changing table ${modelClass.table_name}'s description to '${modelClass.description}'`);
+            if (options.apply_description_change) {
+              if (options.verbose) {
+                console.log(`Changing table ${modelClass.table_name}'s description to '${modelClass.description}'`);
+              }
+              await this._adapter.updateTableDescription(model, options.verbose);
             }
-            await this._adapter.updateTableDescription(model, options.verbose);
           }
         }
 

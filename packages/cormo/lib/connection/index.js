@@ -176,7 +176,9 @@ class Connection extends events_1.EventEmitter {
                         }
                         if (((_a = current_column.description) !== null && _a !== void 0 ? _a : '') !== ((_b = property.description) !== null && _b !== void 0 ? _b : '')) {
                             if (!type_changed) {
-                                await this._adapter.updateColumnDescription(model, property, options.verbose);
+                                if (options.apply_description_change) {
+                                    await this._adapter.updateColumnDescription(model, property, options.verbose);
+                                }
                             }
                             else {
                                 // do not update description to prevent unexpected type change
@@ -194,10 +196,12 @@ class Connection extends events_1.EventEmitter {
                         await this._adapter.createTable(model, options.verbose);
                     }
                     else if (current_table !== 'NO SCHEMA' && ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = modelClass.description) !== null && _d !== void 0 ? _d : '')) {
-                        if (options.verbose) {
-                            console.log(`Changing table ${modelClass.table_name}'s description to '${modelClass.description}'`);
+                        if (options.apply_description_change) {
+                            if (options.verbose) {
+                                console.log(`Changing table ${modelClass.table_name}'s description to '${modelClass.description}'`);
+                            }
+                            await this._adapter.updateTableDescription(model, options.verbose);
                         }
-                        await this._adapter.updateTableDescription(model, options.verbose);
                     }
                 }
                 for (const model_name in this.models) {

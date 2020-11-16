@@ -148,6 +148,7 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
      */
     applySchemas(options?: {
         verbose?: boolean;
+        apply_description_change?: boolean;
     }): Promise<void>;
     isApplyingSchemasNecessary(): Promise<boolean>;
     /**
