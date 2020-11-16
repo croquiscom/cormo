@@ -288,8 +288,27 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
               continue;
             }
 
+            let type_changed = false;
+            if (column !== 'id') {
+              if (property.required && !current_column.required) {
+                type_changed = true;
+              } else if (!property.required && current_column.required) {
+                type_changed = true;
+              }
+            }
+
+            const expected_type = this._adapter.getAdapterTypeString(property);
+            const real_type = current_column.adapter_type_string;
+            if (expected_type !== real_type) {
+              type_changed = true;
+            }
+
             if ((current_column.description ?? '') !== (property.description ?? '')) {
-              await this._adapter.updateColumnDescription(model, property, options.verbose);
+              if (!type_changed) {
+                await this._adapter.updateColumnDescription(model, property, options.verbose);
+              } else {
+                // do not update description to prevent unexpected type change
+              }
             }
           }
         }
@@ -395,10 +414,13 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           continue;
         }
 
+        let type_changed = false;
         if (column !== 'id') {
           if (property.required && !current_column.required) {
+            type_changed = true;
             changes.push({ message: `Change ${modelClass.table_name}.${property._dbname_us} to required`, ignorable: true });
           } else if (!property.required && current_column.required) {
+            type_changed = true;
             changes.push({ message: `Change ${modelClass.table_name}.${column} to optional`, ignorable: true });
           }
         }
@@ -406,14 +428,19 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         const expected_type = this._adapter.getAdapterTypeString(property);
         const real_type = current_column.adapter_type_string;
         if (expected_type !== real_type) {
+          type_changed = true;
           changes.push({ message: `Type different ${modelClass.table_name}.${column}: expected=${expected_type}, real=${real_type}`, ignorable: true });
         }
 
         if ((current_column.description ?? '') !== (property.description ?? '')) {
-          changes.push({ message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'`, ignorable: true });
-          const query = this._adapter.getUpdateColumnDescriptionQuery(model, property);
-          if (query) {
-            changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
+          if (!type_changed) {
+            changes.push({ message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'`, ignorable: true });
+            const query = this._adapter.getUpdateColumnDescriptionQuery(model, property);
+            if (query) {
+              changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
+            }
+          } else {
+            changes.push({ message: `(Skip) Change ${modelClass.table_name}.${column}'s description to '${property.description}'`, ignorable: true });
           }
         }
       }
