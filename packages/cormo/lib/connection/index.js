@@ -277,7 +277,7 @@ class Connection extends events_1.EventEmitter {
                     changes.push({ message: `Type different ${modelClass.table_name}.${column}: expected=${expected_type}, real=${real_type}`, ignorable: true });
                 }
                 if (((_a = current_column.description) !== null && _a !== void 0 ? _a : '') !== ((_b = property.description) !== null && _b !== void 0 ? _b : '')) {
-                    changes.push({ message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'` });
+                    changes.push({ message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'`, ignorable: true });
                     const query = this._adapter.getUpdateColumnDescriptionQuery(model, property);
                     if (query) {
                         changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
@@ -301,7 +301,7 @@ class Connection extends events_1.EventEmitter {
                 }
             }
             else if (current_table !== 'NO SCHEMA' && ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = modelClass.description) !== null && _d !== void 0 ? _d : '')) {
-                changes.push({ message: `Change table ${modelClass.table_name}'s description to '${modelClass.description}'` });
+                changes.push({ message: `Change table ${modelClass.table_name}'s description to '${modelClass.description}'`, ignorable: true });
                 const query = this._adapter.getUpdateTableDescriptionQuery(model);
                 if (query) {
                     changes.push({ message: `  (${query})`, is_query: true, ignorable: true });

@@ -410,7 +410,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         }
 
         if ((current_column.description ?? '') !== (property.description ?? '')) {
-          changes.push({ message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'` });
+          changes.push({ message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'`, ignorable: true });
           const query = this._adapter.getUpdateColumnDescriptionQuery(model, property);
           if (query) {
             changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
@@ -434,7 +434,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
         }
       } else if (current_table !== 'NO SCHEMA' && (current_table.description ?? '') !== (modelClass.description ?? '')) {
-        changes.push({ message: `Change table ${modelClass.table_name}'s description to '${modelClass.description}'` });
+        changes.push({ message: `Change table ${modelClass.table_name}'s description to '${modelClass.description}'`, ignorable: true });
         const query = this._adapter.getUpdateTableDescriptionQuery(model);
         if (query) {
           changes.push({ message: `  (${query})`, is_query: true, ignorable: true });

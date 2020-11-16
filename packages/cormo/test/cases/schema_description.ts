@@ -60,10 +60,10 @@ export default function(db: any, db_config: any) {
     connection._schema_changed = true;
 
     expect(await connection.getSchemaChanges()).to.eql([
-      { message: "Change table users's description to 'User model'" },
+      { message: "Change table users's description to 'User model'", ignorable: true },
       ...db === 'mysql' ? [{ message: "  (ALTER TABLE users COMMENT 'User model')", is_query: true, ignorable: true }] : [],
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     await connection.applySchemas();
     expect(await connection.getSchemaChanges()).to.eql([]);
@@ -127,10 +127,10 @@ export default function(db: any, db_config: any) {
     connection._schema_changed = true;
 
     expect(await connection.getSchemaChanges()).to.eql([
-      { message: "Change users.name's description to 'Name of user'" },
+      { message: "Change users.name's description to 'Name of user'", ignorable: true },
       ...db === 'mysql' ? [{ message: "  (ALTER TABLE `users` CHANGE COLUMN `name` `name` VARCHAR(255) NULL COMMENT 'Name of user')", is_query: true, ignorable: true }] : [],
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     await connection.applySchemas();
     expect(await connection.getSchemaChanges()).to.eql([]);
