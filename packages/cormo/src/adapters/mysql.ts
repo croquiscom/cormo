@@ -351,9 +351,14 @@ export class MySQLAdapter extends SQLAdapterBase {
       const table_name = this._connection.models[model].table_name;
       const connection = await this.getConnection();
       try {
-        await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 0');
-        await connection.queryAsync(`DELETE FROM \`${table_name}\``);
-        await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 1');
+        try {
+          await connection.queryAsync(`DELETE FROM \`${table_name}\``);
+        } catch (error) {
+          // try again with ignoring foreign key constraints
+          await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 0');
+          await connection.queryAsync(`DELETE FROM \`${table_name}\``);
+          await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 1');
+        }
       } finally {
         await this.releaseConnection(connection);
       }
