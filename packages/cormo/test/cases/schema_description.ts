@@ -156,4 +156,24 @@ export default function(db: any, db_config: any) {
     const table_names = Object.keys(schema.tables);
     expect(table_names.sort()).to.eql(['users']);
   });
+
+  it('support special characters', async () => {
+    class User extends cormo.BaseModel { }
+    User.column('name', String);
+
+    await connection.applySchemas();
+
+    User.description = 'use \' in comment';
+    connection._schema_changed = true;
+
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: "Change table users's description to 'use ' in comment'", ignorable: true },
+      ...db === 'mysql' ? [{ message: "  (ALTER TABLE users COMMENT 'use \\' in comment')", is_query: true, ignorable: true }] : [],
+    ]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+
+    await connection.applySchemas({ apply_description_change: true });
+    expect(await connection.getSchemaChanges()).to.eql([]);
+    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+  });
 }

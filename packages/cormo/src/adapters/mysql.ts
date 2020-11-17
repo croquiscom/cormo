@@ -189,7 +189,7 @@ export class MySQLAdapter extends SQLAdapterBase {
         let column_sql = _propertyToSQL(property, this.support_fractional_seconds);
         if (column_sql) {
           if (property.description) {
-            column_sql += ` COMMENT '${property.description}'`;
+            column_sql += ` COMMENT ${mysql.escape(property.description)}`;
           }
           column_sqls.push(`\`${property._dbname_us}\` ${column_sql}`);
         }
@@ -199,7 +199,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     query += ` DEFAULT CHARSET=${this._settings!.charset || 'utf8'}`;
     query += ` COLLATE=${this._settings!.collation || 'utf8_unicode_ci'}`;
     if (model_class.description) {
-      query += ` COMMENT='${model_class.description}'`;
+      query += ` COMMENT=${mysql.escape(model_class.description)}`;
     }
     return query;
   }
@@ -221,7 +221,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   public getUpdateTableDescriptionQuery(model: string): string {
     const model_class = this._connection.models[model];
     const table_name = model_class.table_name;
-    return `ALTER TABLE ${table_name} COMMENT '${model_class.description ?? ''}'`;
+    return `ALTER TABLE ${table_name} COMMENT ${mysql.escape(model_class.description ?? '')}`;
   }
 
   /** @internal */
@@ -243,7 +243,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     const table_name = model_class.table_name;
     let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
     if (column_property.description) {
-      column_sql += ` COMMENT '${column_property.description}'`;
+      column_sql += ` COMMENT ${mysql.escape(column_property.description)}`;
     }
     return `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname_us}\` ${column_sql}`;
   }
@@ -267,7 +267,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     const table_name = model_class.table_name;
     let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
     if (column_property.description) {
-      column_sql += ` COMMENT '${column_property.description}'`;
+      column_sql += ` COMMENT ${mysql.escape(column_property.description)}`;
     }
     return `ALTER TABLE \`${table_name}\` CHANGE COLUMN \`${column_property._dbname_us}\` \`${column_property._dbname_us}\` ${column_sql}`;
   }
