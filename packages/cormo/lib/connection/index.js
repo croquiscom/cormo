@@ -177,6 +177,9 @@ class Connection extends events_1.EventEmitter {
                         if (((_a = current_column.description) !== null && _a !== void 0 ? _a : '') !== ((_b = property.description) !== null && _b !== void 0 ? _b : '')) {
                             if (!type_changed) {
                                 if (options.apply_description_change) {
+                                    if (options.verbose) {
+                                        console.log(`Changing ${modelClass.table_name}.${column}'s description to '${property.description}'`);
+                                    }
                                     await this._adapter.updateColumnDescription(model, property, options.verbose);
                                 }
                             }
