@@ -1,5 +1,6 @@
 import * as cormo from '..';
 import cases, { UserRef } from './cases/query';
+import cases_op from './cases/query_op';
 import cases_misc from './cases/query_misc';
 import cases_not from './cases/query_not';
 import cases_null from './cases/query_null';
@@ -70,6 +71,9 @@ _dbs.forEach((db) => {
 
     describe('#simple', () => {
       cases(models);
+    });
+    describe('#op', () => {
+      cases_op(models);
     });
     describe('#$not', () => {
       cases_not(models);
