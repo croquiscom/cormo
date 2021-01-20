@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as cormo from '../..';
 
-import { UserRef, UserRefVO } from './query';
+import { UserRef, UserRefVO, LedgerRef, LedgerRefVO } from './query';
 
 function _compareUser(user: UserRef, expected: UserRefVO) {
   expect(user).to.have.keys('id', 'name', 'age');
@@ -25,6 +25,7 @@ async function _createUsers(User: typeof UserRef, data?: UserRefVO[]) {
 
 export default function(models: {
   User: typeof UserRef;
+  Ledger: typeof LedgerRef;
   connection: cormo.Connection | null;
 }) {
   it('comparison', async () => {
@@ -164,5 +165,98 @@ export default function(models: {
       }
       throw error;
     }
+  });
+
+  it('column comparison - equal to', async () => {
+    await models.Ledger.createBulk([
+      { date_ymd: 20210105, debit: 500, credit: 600, balance: 1000 },
+      { date_ymd: 20210106, debit: 400, credit: 300, balance: 900 },
+      { date_ymd: 20210107, debit: 600, credit: 600, balance: 400 },
+      { date_ymd: 20210108, debit: 900, credit: 400, balance: 400 },
+      { date_ymd: 20210109, debit: 300, credit: 700, balance: 800 },
+    ]);
+    const ledgers = await models.Ledger.where({ debit: { $ceq: '$credit' } }).select(['date_ymd']);
+    expect(ledgers).to.eql([
+      { id: null, date_ymd: 20210107 },
+    ]);
+  });
+
+  it('column comparison - not equal to', async () => {
+    await models.Ledger.createBulk([
+      { date_ymd: 20210105, debit: 500, credit: 600, balance: 1000 },
+      { date_ymd: 20210106, debit: 400, credit: 300, balance: 900 },
+      { date_ymd: 20210107, debit: 600, credit: 600, balance: 400 },
+      { date_ymd: 20210108, debit: 900, credit: 400, balance: 400 },
+      { date_ymd: 20210109, debit: 300, credit: 700, balance: 800 },
+    ]);
+    const ledgers = await models.Ledger.where({ debit: { $cne: '$credit' } }).select(['date_ymd']);
+    expect(ledgers).to.eql([
+      { id: null, date_ymd: 20210105 },
+      { id: null, date_ymd: 20210106 },
+      { id: null, date_ymd: 20210108 },
+      { id: null, date_ymd: 20210109 },
+    ]);
+  });
+
+  it('column comparison - greater than', async () => {
+    await models.Ledger.createBulk([
+      { date_ymd: 20210105, debit: 500, credit: 600, balance: 1000 },
+      { date_ymd: 20210106, debit: 400, credit: 300, balance: 900 },
+      { date_ymd: 20210107, debit: 600, credit: 600, balance: 400 },
+      { date_ymd: 20210108, debit: 900, credit: 400, balance: 400 },
+      { date_ymd: 20210109, debit: 300, credit: 700, balance: 800 },
+    ]);
+    const ledgers = await models.Ledger.where({ debit: { $cgt: '$credit' } }).select(['date_ymd']);
+    expect(ledgers).to.eql([
+      { id: null, date_ymd: 20210106 },
+      { id: null, date_ymd: 20210108 },
+    ]);
+  });
+
+  it('column comparison - greater than or equal to', async () => {
+    await models.Ledger.createBulk([
+      { date_ymd: 20210105, debit: 500, credit: 600, balance: 1000 },
+      { date_ymd: 20210106, debit: 400, credit: 300, balance: 900 },
+      { date_ymd: 20210107, debit: 600, credit: 600, balance: 400 },
+      { date_ymd: 20210108, debit: 900, credit: 400, balance: 400 },
+      { date_ymd: 20210109, debit: 300, credit: 700, balance: 800 },
+    ]);
+    const ledgers = await models.Ledger.where({ debit: { $cgte: '$credit' } }).select(['date_ymd']);
+    expect(ledgers).to.eql([
+      { id: null, date_ymd: 20210106 },
+      { id: null, date_ymd: 20210107 },
+      { id: null, date_ymd: 20210108 },
+    ]);
+  });
+
+  it('column comparison - less than', async () => {
+    await models.Ledger.createBulk([
+      { date_ymd: 20210105, debit: 500, credit: 600, balance: 1000 },
+      { date_ymd: 20210106, debit: 400, credit: 300, balance: 900 },
+      { date_ymd: 20210107, debit: 600, credit: 600, balance: 400 },
+      { date_ymd: 20210108, debit: 900, credit: 400, balance: 400 },
+      { date_ymd: 20210109, debit: 300, credit: 700, balance: 800 },
+    ]);
+    const ledgers = await models.Ledger.where({ debit: { $clt: '$credit' } }).select(['date_ymd']);
+    expect(ledgers).to.eql([
+      { id: null, date_ymd: 20210105 },
+      { id: null, date_ymd: 20210109 },
+    ]);
+  });
+
+  it('column comparison - less than', async () => {
+    await models.Ledger.createBulk([
+      { date_ymd: 20210105, debit: 500, credit: 600, balance: 1000 },
+      { date_ymd: 20210106, debit: 400, credit: 300, balance: 900 },
+      { date_ymd: 20210107, debit: 600, credit: 600, balance: 400 },
+      { date_ymd: 20210108, debit: 900, credit: 400, balance: 400 },
+      { date_ymd: 20210109, debit: 300, credit: 700, balance: 800 },
+    ]);
+    const ledgers = await models.Ledger.where({ debit: { $clte: '$credit' } }).select(['date_ymd']);
+    expect(ledgers).to.eql([
+      { id: null, date_ymd: 20210105 },
+      { id: null, date_ymd: 20210107 },
+      { id: null, date_ymd: 20210109 },
+    ]);
   });
 }

@@ -1,5 +1,5 @@
 import * as cormo from '..';
-import cases, { UserRef } from './cases/query';
+import cases, { UserRef, LedgerRef } from './cases/query';
 import cases_op from './cases/query_op';
 import cases_misc from './cases/query_misc';
 import cases_not from './cases/query_not';
@@ -20,6 +20,7 @@ _dbs.forEach((db) => {
     const models = {
       User: UserRef,
       UserUnique: UserRef,
+      Ledger: LedgerRef,
       connection: null as cormo.Connection | null,
     };
 
@@ -45,6 +46,22 @@ _dbs.forEach((db) => {
           public age?: number;
         }
         models.UserUnique = UserUnique;
+
+        @cormo.Model()
+        class Ledger extends cormo.BaseModel {
+          @cormo.Column(cormo.types.Integer)
+          public date_ymd?: number;
+
+          @cormo.Column(Number)
+          public debit?: number;
+
+          @cormo.Column(Number)
+          public credit?: number;
+
+          @cormo.Column(Number)
+          public balance?: number;
+        }
+        models.Ledger = Ledger;
       } else {
         models.User = _g.connection.model('User', {
           age: Number,
@@ -54,12 +71,18 @@ _dbs.forEach((db) => {
           age: Number,
           name: { type: String, unique: true },
         });
+        models.Ledger = _g.connection.model('Ledger', {
+          date_ymd: cormo.types.Integer,
+          debit: Number,
+          credit: Number,
+          balance: Number,
+        });
       }
       await _g.connection.dropAllModels();
     });
 
     beforeEach(async () => {
-      await _g.deleteAllRecords([models.User, models.UserUnique]);
+      await _g.deleteAllRecords([models.User, models.UserUnique, models.Ledger]);
     });
 
     after(async () => {

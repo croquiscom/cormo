@@ -9,6 +9,18 @@ export class UserRef extends cormo.BaseModel {
 
 export type UserRefVO = cormo.ModelValueObject<UserRef>;
 
+export class LedgerRef extends cormo.BaseModel {
+  public date_ymd?: number | null;
+
+  public debit?: number | null;
+
+  public credit?: number | null;
+
+  public balance?: number | null;
+}
+
+export type LedgerRefVO = cormo.ModelValueObject<LedgerRef>;
+
 function _getInvalidID(id: number | string) {
   if (typeof id === 'number') {
     // MySQL

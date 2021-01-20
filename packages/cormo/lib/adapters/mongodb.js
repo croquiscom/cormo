@@ -93,6 +93,37 @@ function _buildWhereSingle(property, key, value, not_op) {
                 }
                 return lodash_1.default.zipObject([key], [value]);
             }
+            case '$ceq':
+            case '$cne':
+            case '$cgt':
+            case '$clt':
+            case '$cgte':
+            case '$clte': {
+                const sub_expr = value[sub_key];
+                if (sub_expr.substr(0, 1) === '$') {
+                    const compare_column = sub_expr.substr(1);
+                    if (not_op) {
+                        const op = sub_key === '$cgt' ? '<='
+                            : sub_key === '$cgte' ? '<'
+                                : sub_key === '$clt' ? '>='
+                                    : sub_key === '$clte' ? '>'
+                                        : sub_key === '$ceq' ? '!=' : '==';
+                        return { $where: `this.${key} ${op} this.${compare_column}` };
+                    }
+                    else {
+                        const op = sub_key === '$cgt' ? '>'
+                            : sub_key === '$cgte' ? '>='
+                                : sub_key === '$clt' ? '<'
+                                    : sub_key === '$clte' ? '<='
+                                        : sub_key === '$ceq' ? '==' : '!=';
+                        return { $where: `this.${key} ${op} this.${compare_column}` };
+                    }
+                }
+                else {
+                    throw new Error(`unknown expression '${sub_expr}'`);
+                }
+                return lodash_1.default.zipObject([key], [value]);
+            }
             case '$contains':
                 if (Array.isArray(value[sub_key])) {
                     value = value[sub_key].map((v) => new RegExp(v, 'i'));

@@ -140,6 +140,26 @@ abstract class SQLAdapterBase extends AdapterBase {
           op = '<=';
           value = value[sub_key];
           break;
+        case '$ceq':
+        case '$cne':
+        case '$cgt':
+        case '$clt':
+        case '$cgte':
+        case '$clte': {
+          const sub_expr = value[sub_key];
+          if (sub_expr.substr(0, 1) === '$') {
+            let compare_column = sub_expr.substr(1);
+            compare_column = schema[compare_column] && schema[compare_column]._dbname_us || compare_column;
+            op = sub_key === '$cgt' ? '>'
+              : sub_key === '$cgte' ? '>='
+                : sub_key === '$clt' ? '<'
+                  : sub_key === '$clte' ? '<='
+                    : sub_key === '$ceq' ? '=' : '!=';
+            return `${column} ${op} ${compare_column}`;
+          } else {
+            throw new Error(`unknown expression '${sub_expr}'`);
+          }
+        }
         case '$contains': {
           op = ' ' + this._contains_op + ' ';
           let values = value[sub_key];
