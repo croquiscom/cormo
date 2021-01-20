@@ -399,7 +399,7 @@ class BaseModel {
   public static async _saveToCache(key: string, ttl: number, data: any) {
     const redis = await this._connection._connectRedisCache();
     key = 'CC.' + tableize(this._name) + ':' + key;
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       redis.setex(key, ttl, JSON.stringify(data), (error: Error) => {
         if (error) {
           reject(error);
@@ -413,7 +413,7 @@ class BaseModel {
   public static async removeCache(key: string) {
     const redis = await this._connection._connectRedisCache();
     key = 'CC.' + tableize(this._name) + ':' + key;
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       redis.del(key, () => {
         resolve();
       });

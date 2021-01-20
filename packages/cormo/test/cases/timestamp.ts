@@ -25,7 +25,7 @@ export default function(models: {
   it('updated_at', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const created_at = user.created_at;
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       return setTimeout(function() {
         return resolve();
       }, 50);

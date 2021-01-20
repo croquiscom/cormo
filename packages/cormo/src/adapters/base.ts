@@ -290,13 +290,13 @@ abstract class AdapterBase {
    * Creates a record
    * @internal
    */
-  public abstract async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any>;
+  public abstract create(model: string, data: any, options: { transaction?: Transaction }): Promise<any>;
 
   /**
    * Creates records
    * @internal
    */
-  public abstract async createBulk(
+  public abstract createBulk(
     model: string, data: any[],
     options: { transaction?: Transaction },
   ): Promise<any[]>;
@@ -305,13 +305,13 @@ abstract class AdapterBase {
    * Updates a record
    * @internal
    */
-  public abstract async update(model: string, data: any, options: { transaction?: Transaction }): Promise<void>;
+  public abstract update(model: string, data: any, options: { transaction?: Transaction }): Promise<void>;
 
   /**
    * Updates some fields of records that match conditions
    * @internal
    */
-  public abstract async updatePartial(
+  public abstract updatePartial(
     model: string, data: any, conditions: any,
     options: { transaction?: Transaction },
   ): Promise<number>;
@@ -320,14 +320,14 @@ abstract class AdapterBase {
    * Updates some fields of records that match conditions or inserts a new record
    * @internal
    */
-  public abstract async upsert(model: string, data: any, conditions: any, options: any): Promise<void>;
+  public abstract upsert(model: string, data: any, conditions: any, options: any): Promise<void>;
 
   /**
    * Finds a record by id
    * @see Query::exec
    * @internal
    */
-  public abstract async findById(
+  public abstract findById(
     model: string, id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction; node?: 'master' | 'read' },
   ): Promise<any>;
@@ -337,7 +337,7 @@ abstract class AdapterBase {
    * @see Query::exec
    * @internal
    */
-  public abstract async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any>;
+  public abstract find(model: string, conditions: any, options: AdapterFindOptions): Promise<any>;
 
   /**
    * Streams matching records
@@ -351,14 +351,14 @@ abstract class AdapterBase {
    * @see Query::count
    * @internal
    */
-  public abstract async count(model: string, conditions: any, options: AdapterCountOptions): Promise<number>;
+  public abstract count(model: string, conditions: any, options: AdapterCountOptions): Promise<number>;
 
   /**
    * Deletes records from the database
    * @see Query::delete
    * @internal
    */
-  public abstract async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number>;
+  public abstract delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number>;
 
   /**
    * Closes connection

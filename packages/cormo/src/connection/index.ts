@@ -876,7 +876,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         throw new Error('failed to connect');
       }
       // try again with delay
-      await new Promise((resolve) => {
+      await new Promise<void>((resolve) => {
         setTimeout(() => resolve(), 5000 * (count + 1));
       });
       console.log('try again to connect', error.toString());

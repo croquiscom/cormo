@@ -98,7 +98,7 @@ async function _tryCreateConnection(config: any, count: number = 0): Promise<any
     client.end();
     if (error.errorno === 'ETIMEDOUT') {
       if (count < 5) {
-        await new Promise((resolve) => {
+        await new Promise<void>((resolve) => {
           const time = Math.floor(Math.random() * Math.pow(2, count) * 200);
           setTimeout(() => resolve(), time);
         });

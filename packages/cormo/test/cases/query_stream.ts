@@ -24,7 +24,7 @@ export default function(models: {
   it('simple', async () => {
     await _createUsers(models.User);
     let count = 0;
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       models.User.where({ age: 27 })
         .stream()
         .on('data', (user: UserRef) => {
@@ -44,7 +44,7 @@ export default function(models: {
   it('lean option', async () => {
     await _createUsers(models.User);
     let count = 0;
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       models.User.where({ age: 27 }).lean()
         .stream()
         .on('data', (user: UserRefVO) => {
