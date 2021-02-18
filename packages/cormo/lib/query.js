@@ -342,6 +342,7 @@ class Query {
      * @see AdapterBase::upsert
      */
     async upsert(updates, options) {
+        var _a;
         this._setUsed();
         await this._model._checkReady();
         const errors = [];
@@ -354,8 +355,10 @@ class Query {
             this._conditions.push({ id: this._id });
             delete this._id;
         }
-        this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options: Object.assign(Object.assign({}, this._options), options) });
-        return await this._adapter.upsert(this._name, data, this._conditions, Object.assign(Object.assign({}, this._options), options));
+        const default_applied_columns = this._model.applyDefaultValues(data);
+        options = Object.assign(Object.assign({}, this._options), { ignore_on_update: ((_a = options === null || options === void 0 ? void 0 : options.ignore_on_update) !== null && _a !== void 0 ? _a : []).concat(default_applied_columns) });
+        this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options });
+        return await this._adapter.upsert(this._name, data, this._conditions, options);
     }
     /**
      * Executes the query as a delete operation

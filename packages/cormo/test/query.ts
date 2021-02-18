@@ -35,7 +35,7 @@ _dbs.forEach((db) => {
           @cormo.Column(Number)
           public age?: number;
 
-          @cormo.Column(Number)
+          @cormo.Column({ type: Number, default_value: 5 })
           public count?: number;
         }
         models.User = User;
@@ -48,7 +48,7 @@ _dbs.forEach((db) => {
           @cormo.Column(Number)
           public age?: number;
 
-          @cormo.Column(Number)
+          @cormo.Column({ type: Number, default_value: 5 })
           public count?: number;
         }
         models.UserUnique = UserUnique;
@@ -72,12 +72,12 @@ _dbs.forEach((db) => {
         models.User = _g.connection.model('User', {
           name: String,
           age: Number,
-          count: Number,
+          count: { type: Number, default_value: 5 },
         });
         models.UserUnique = _g.connection.model('UserUnique', {
           name: { type: String, unique: true },
           age: Number,
-          count: Number,
+          count: { type: Number, default_value: 5 },
         });
         models.Ledger = _g.connection.model('Ledger', {
           date_ymd: cormo.types.Integer,

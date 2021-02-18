@@ -30,9 +30,9 @@ export default function(models: {
     const users = await models.UserUnique.where();
     users.sort((a, b) => a.name! < b.name! ? -1 : 1);
     expect(users).to.have.length(3);
-    _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: null });
-    _compareUserUnique(users[1], { name: 'Bill Smith', age: 45, count: null });
-    _compareUserUnique(users[2], { name: 'Elsa Wood', age: 10, count: null });
+    _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
+    _compareUserUnique(users[1], { name: 'Bill Smith', age: 45, count: 5 });
+    _compareUserUnique(users[2], { name: 'Elsa Wood', age: 10, count: 5 });
   });
 
   it('update exist', async () => {
@@ -41,8 +41,19 @@ export default function(models: {
     const users = await models.UserUnique.where();
     users.sort((a, b) => a.name! < b.name! ? -1 : 1);
     expect(users).to.have.length(2);
-    _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: null });
-    _compareUserUnique(users[1], { name: 'Bill Smith', age: 10, count: null });
+    _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
+    _compareUserUnique(users[1], { name: 'Bill Smith', age: 10, count: 5 });
+  });
+
+  it('default value ignored on update', async () => {
+    await _createUserUniques(models.UserUnique);
+    await models.UserUnique.where({ name: 'Bill Smith' }).update({ age: 10, count: 8 });
+    await models.UserUnique.where({ name: 'Bill Smith' }).upsert({ age: 10 });
+    const users = await models.UserUnique.where();
+    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    expect(users).to.have.length(2);
+    _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
+    _compareUserUnique(users[1], { name: 'Bill Smith', age: 10, count: 8 });
   });
 
   it('$inc for new', async () => {
@@ -51,9 +62,9 @@ export default function(models: {
     const users = await models.UserUnique.where();
     users.sort((a, b) => a.name! < b.name! ? -1 : 1);
     expect(users).to.have.length(3);
-    _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: null });
-    _compareUserUnique(users[1], { name: 'Bill Smith', age: 45, count: null });
-    _compareUserUnique(users[2], { name: 'Elsa Wood', age: 4, count: null });
+    _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
+    _compareUserUnique(users[1], { name: 'Bill Smith', age: 45, count: 5 });
+    _compareUserUnique(users[2], { name: 'Elsa Wood', age: 4, count: 5 });
   });
 
   it('$inc for exist', async () => {
@@ -62,8 +73,8 @@ export default function(models: {
     const users = await models.UserUnique.where();
     users.sort((a, b) => a.name! < b.name! ? -1 : 1);
     expect(users).to.have.length(2);
-    _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: null });
-    _compareUserUnique(users[1], { name: 'Bill Smith', age: 49, count: null });
+    _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
+    _compareUserUnique(users[1], { name: 'Bill Smith', age: 49, count: 5 });
   });
 
   it('set field only on update', async () => {
@@ -94,11 +105,11 @@ export default function(models: {
     await models.UserUnique.where({ name: 'Elsa Wood' }).upsert({ age: 10 }, { ignore_on_update: ['age'] });
     const users1 = await models.UserUnique.where();
     expect(users1).to.have.length(1);
-    _compareUserUnique(users1[0], { name: 'Elsa Wood', age: 10, count: null });
+    _compareUserUnique(users1[0], { name: 'Elsa Wood', age: 10, count: 5 });
 
     await models.UserUnique.where({ name: 'Elsa Wood' }).upsert({ age: 30 }, { ignore_on_update: ['age'] });
     const users2 = await models.UserUnique.where();
     expect(users2).to.have.length(1);
-    _compareUserUnique(users2[0], { name: 'Elsa Wood', age: 10, count: null });
+    _compareUserUnique(users2[0], { name: 'Elsa Wood', age: 10, count: 5 });
   });
 }

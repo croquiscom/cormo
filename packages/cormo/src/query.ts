@@ -552,8 +552,13 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       this._conditions.push({ id: this._id });
       delete this._id;
     }
-    this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options: { ...this._options, ...options } });
-    return await this._adapter.upsert(this._name, data, this._conditions, { ...this._options, ...options });
+    const default_applied_columns = this._model.applyDefaultValues(data);
+    options = {
+      ...this._options,
+      ignore_on_update: (options?.ignore_on_update ?? []).concat(default_applied_columns),
+    };
+    this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options });
+    return await this._adapter.upsert(this._name, data, this._conditions, options);
   }
 
   /**

@@ -36,7 +36,7 @@ export default function(models: {
   it('lean option for a single record', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const record = await models.User.find(user.id).lean();
-    expect(record).to.eql({ id: user.id, name: user.name, age: user.age, count: null });
+    expect(record).to.eql({ id: user.id, name: user.name, age: user.age, count: 5 });
   });
 
   it('lean option for multiple records', async () => {

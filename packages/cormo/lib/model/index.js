@@ -485,7 +485,7 @@ class BaseModel {
         const records = data.map((item) => {
             return this.build(item);
         });
-        records.forEach((record) => record._applyDefaultValues());
+        records.forEach((record) => this.applyDefaultValues(record));
         await Promise.all(records.map((record) => record.validate()));
         for (const record of records) {
             record._runCallbacks('save', 'before');
@@ -829,7 +829,7 @@ class BaseModel {
         const ctor = this.constructor;
         await ctor._checkReady();
         if (!this._is_persisted) {
-            this._applyDefaultValues();
+            ctor.applyDefaultValues(this);
         }
         if (options.validate !== false) {
             this.validate();
@@ -1002,25 +1002,25 @@ class BaseModel {
             return this._prev_attributes = {};
         }
     }
-    _applyDefaultValues() {
-        const ctor = this.constructor;
-        // apply default values
-        const schema = ctor._schema;
-        for (const column in schema) {
-            const property = schema[column];
-            if (property.primary_key) {
+    static applyDefaultValues(obj) {
+        const applied_columns = [];
+        for (const column in this._schema) {
+            const property = this._schema[column];
+            if (property.primary_key || property.default_value == null) {
                 continue;
             }
-            const value = util.getPropertyOfPath(this, property._parts);
-            if (value == null && property.default_value !== undefined) {
+            const value = util.getPropertyOfPath(obj, property._parts);
+            if (value == null) {
                 if (lodash_1.default.isFunction(property.default_value)) {
-                    util.setPropertyOfPath(this, property._parts, property.default_value());
+                    util.setPropertyOfPath(obj, property._parts, property.default_value());
                 }
                 else {
-                    util.setPropertyOfPath(this, property._parts, property.default_value);
+                    util.setPropertyOfPath(obj, property._parts, property.default_value);
                 }
+                applied_columns.push(property._dbname_dot);
             }
         }
+        return applied_columns;
     }
 }
 exports.BaseModel = BaseModel;
