@@ -22,7 +22,7 @@ import { Connection } from '../connection';
 import { BaseModel, ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
-import { AdapterBase, AdapterCountOptions, AdapterFindOptions, Schemas, SchemasIndex } from './base';
+import { AdapterBase, AdapterCountOptions, AdapterFindOptions, AdapterUpsertOptions, Schemas, SchemasIndex } from './base';
 
 function _convertValueToObjectID(value: any, key: any) {
   if (value == null) {
@@ -479,24 +479,28 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async upsert(model: any, data: any, conditions: any, options: any) {
+  public async upsert(model: any, data: any, conditions: any, options: AdapterUpsertOptions) {
     const schema = this._connection.models[model]._schema;
     conditions = _buildWhere(schema, conditions);
     if (!conditions) {
       conditions = {};
     }
     const update_ops: any = {
-      $inc: {},
       $set: {},
+      $setOnInsert: {},
       $unset: {},
+      $inc: {},
     };
     for (const key in conditions) {
       const value = conditions[key];
       update_ops.$set[key] = value;
     }
-    this._buildUpdateOps(schema, update_ops, data, '', data);
+    this._buildUpdateOps(schema, update_ops, data, '', data, options.ignore_on_update);
     if (Object.keys(update_ops.$set).length === 0) {
       delete update_ops.$set;
+    }
+    if (Object.keys(update_ops.$setOnInsert).length === 0) {
+      delete update_ops.$setOnInsert;
     }
     if (Object.keys(update_ops.$unset).length === 0) {
       delete update_ops.$unset;
@@ -804,7 +808,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private _buildUpdateOps(schema: ModelSchemaInternal, update_ops: any, data: any, path: any, object: any): any {
+  private _buildUpdateOps(schema: ModelSchemaInternal, update_ops: any, data: any, path: any, object: any, ignore_on_update?: string[]): any {
     for (const column in object) {
       const value = object[column];
       const property = _.find(schema, { _dbname_dot: path + column });
@@ -814,9 +818,17 @@ export class MongoDBAdapter extends AdapterBase {
         }
         if (value != null) {
           if (value.$inc != null) {
-            update_ops.$inc[path + column] = value.$inc;
+            if (ignore_on_update?.includes(column)) {
+              update_ops.$setOnInsert[path + column] = value.$inc;
+            } else {
+              update_ops.$inc[path + column] = value.$inc;
+            }
           } else {
-            update_ops.$set[path + column] = value;
+            if (ignore_on_update?.includes(column)) {
+              update_ops.$setOnInsert[path + column] = value;
+            } else {
+              update_ops.$set[path + column] = value;
+            }
           }
         } else {
           update_ops.$unset[path + column] = '';

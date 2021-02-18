@@ -63,7 +63,7 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
   explain(): PromiseLike<any>;
   count(): PromiseLike<number>;
   update(updates: object): PromiseLike<number>;
-  upsert(updates: object): PromiseLike<void>;
+  upsert(updates: object, options?: { ignore_on_update: string[] }): PromiseLike<void>;
   delete(options?: any): PromiseLike<number>;
 }
 
@@ -100,7 +100,7 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
   explain(): PromiseLike<any>;
   count(): PromiseLike<number>;
   update(updates: object): PromiseLike<number>;
-  upsert(updates: object): PromiseLike<void>;
+  upsert(updates: object, options?: { ignore_on_update: string[] }): PromiseLike<void>;
   delete(options?: any): PromiseLike<number>;
 }
 
@@ -137,7 +137,7 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
   explain(): PromiseLike<any>;
   count(): PromiseLike<number>;
   update(updates: object): PromiseLike<number>;
-  upsert(updates: object): PromiseLike<void>;
+  upsert(updates: object, options?: { ignore_on_update: string[] }): PromiseLike<void>;
   delete(options?: any): PromiseLike<number>;
 }
 
@@ -539,7 +539,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
    * Executes the query as an insert or update operation
    * @see AdapterBase::upsert
    */
-  public async upsert(updates: any): Promise<void> {
+  public async upsert(updates: any, options?: { ignore_on_update: string[] }): Promise<void> {
     this._setUsed();
     await this._model._checkReady();
     const errors: any[] = [];
@@ -552,8 +552,8 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       this._conditions.push({ id: this._id });
       delete this._id;
     }
-    this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options: this._options });
-    return await this._adapter.upsert(this._name, data, this._conditions, this._options);
+    this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options: { ...this._options, ...options } });
+    return await this._adapter.upsert(this._name, data, this._conditions, { ...this._options, ...options });
   }
 
   /**

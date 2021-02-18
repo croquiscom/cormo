@@ -19,7 +19,7 @@ import { Connection } from '../connection';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 import { tableize } from '../util/inflector';
-import { AdapterBase, AdapterCountOptions, AdapterFindOptions } from './base';
+import { AdapterBase, AdapterCountOptions, AdapterFindOptions, AdapterUpsertOptions } from './base';
 
 // Adapter for Redis
 // @namespace adapter
@@ -149,7 +149,7 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async upsert(model: string, data: any, conditions: any, options: any): Promise<void> {
+  public async upsert(model: string, data: any, conditions: any, options: AdapterUpsertOptions): Promise<void> {
     return Promise.reject(new Error('not implemented'));
   }
 

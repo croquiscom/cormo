@@ -341,7 +341,7 @@ class Query {
      * Executes the query as an insert or update operation
      * @see AdapterBase::upsert
      */
-    async upsert(updates) {
+    async upsert(updates, options) {
         this._setUsed();
         await this._model._checkReady();
         const errors = [];
@@ -354,8 +354,8 @@ class Query {
             this._conditions.push({ id: this._id });
             delete this._id;
         }
-        this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options: this._options });
-        return await this._adapter.upsert(this._name, data, this._conditions, this._options);
+        this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options: Object.assign(Object.assign({}, this._options), options) });
+        return await this._adapter.upsert(this._name, data, this._conditions, Object.assign(Object.assign({}, this._options), options));
     }
     /**
      * Executes the query as a delete operation

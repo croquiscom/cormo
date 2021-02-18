@@ -56,6 +56,12 @@ export interface AdapterCountOptions {
   index_hint?: string;
 }
 
+export interface AdapterUpsertOptions {
+  transaction?: Transaction;
+  node?: 'master' | 'read';
+  ignore_on_update?: string[];
+}
+
 /**
  * Base class for adapters
  * @namespace adapter
@@ -320,7 +326,7 @@ abstract class AdapterBase {
    * Updates some fields of records that match conditions or inserts a new record
    * @internal
    */
-  public abstract upsert(model: string, data: any, conditions: any, options: any): Promise<void>;
+  public abstract upsert(model: string, data: any, conditions: any, options: AdapterUpsertOptions): Promise<void>;
 
   /**
    * Finds a record by id

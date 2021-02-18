@@ -61,7 +61,9 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
     explain(): PromiseLike<any>;
     count(): PromiseLike<number>;
     update(updates: object): PromiseLike<number>;
-    upsert(updates: object): PromiseLike<void>;
+    upsert(updates: object, options?: {
+        ignore_on_update: string[];
+    }): PromiseLike<void>;
     delete(options?: any): PromiseLike<number>;
 }
 interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | null> {
@@ -100,7 +102,9 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
     explain(): PromiseLike<any>;
     count(): PromiseLike<number>;
     update(updates: object): PromiseLike<number>;
-    upsert(updates: object): PromiseLike<void>;
+    upsert(updates: object, options?: {
+        ignore_on_update: string[];
+    }): PromiseLike<void>;
     delete(options?: any): PromiseLike<number>;
 }
 export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]> {
@@ -139,7 +143,9 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
     explain(): PromiseLike<any>;
     count(): PromiseLike<number>;
     update(updates: object): PromiseLike<number>;
-    upsert(updates: object): PromiseLike<void>;
+    upsert(updates: object, options?: {
+        ignore_on_update: string[];
+    }): PromiseLike<void>;
     delete(options?: any): PromiseLike<number>;
 }
 /**
@@ -279,7 +285,9 @@ declare class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, Qu
      * Executes the query as an insert or update operation
      * @see AdapterBase::upsert
      */
-    upsert(updates: any): Promise<void>;
+    upsert(updates: any, options?: {
+        ignore_on_update: string[];
+    }): Promise<void>;
     /**
      * Executes the query as a delete operation
      * @see AdapterBase::delete

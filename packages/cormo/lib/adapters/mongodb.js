@@ -495,17 +495,21 @@ class MongoDBAdapter extends base_1.AdapterBase {
             conditions = {};
         }
         const update_ops = {
-            $inc: {},
             $set: {},
+            $setOnInsert: {},
             $unset: {},
+            $inc: {},
         };
         for (const key in conditions) {
             const value = conditions[key];
             update_ops.$set[key] = value;
         }
-        this._buildUpdateOps(schema, update_ops, data, '', data);
+        this._buildUpdateOps(schema, update_ops, data, '', data, options.ignore_on_update);
         if (Object.keys(update_ops.$set).length === 0) {
             delete update_ops.$set;
+        }
+        if (Object.keys(update_ops.$setOnInsert).length === 0) {
+            delete update_ops.$setOnInsert;
         }
         if (Object.keys(update_ops.$unset).length === 0) {
             delete update_ops.$unset;
@@ -811,7 +815,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
         return indexes;
     }
     /** @internal */
-    _buildUpdateOps(schema, update_ops, data, path, object) {
+    _buildUpdateOps(schema, update_ops, data, path, object, ignore_on_update) {
         for (const column in object) {
             const value = object[column];
             const property = lodash_1.default.find(schema, { _dbname_dot: path + column });
@@ -821,10 +825,20 @@ class MongoDBAdapter extends base_1.AdapterBase {
                 }
                 if (value != null) {
                     if (value.$inc != null) {
-                        update_ops.$inc[path + column] = value.$inc;
+                        if (ignore_on_update === null || ignore_on_update === void 0 ? void 0 : ignore_on_update.includes(column)) {
+                            update_ops.$setOnInsert[path + column] = value.$inc;
+                        }
+                        else {
+                            update_ops.$inc[path + column] = value.$inc;
+                        }
                     }
                     else {
-                        update_ops.$set[path + column] = value;
+                        if (ignore_on_update === null || ignore_on_update === void 0 ? void 0 : ignore_on_update.includes(column)) {
+                            update_ops.$setOnInsert[path + column] = value;
+                        }
+                        else {
+                            update_ops.$set[path + column] = value;
+                        }
                     }
                 }
                 else {

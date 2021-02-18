@@ -41,7 +41,7 @@ import { Connection } from '../connection';
 import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { AdapterCountOptions, AdapterFindOptions, Schemas, AdapterBase, SchemasTable, SchemasIndex } from './base';
+import { AdapterCountOptions, AdapterFindOptions, Schemas, SchemasTable, SchemasIndex, AdapterUpsertOptions } from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: ColumnPropertyInternal, support_fractional_seconds: boolean) {
@@ -465,15 +465,19 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async upsert(model: string, data: any, conditions: any, options: any) {
+  public async upsert(model: string, data: any, conditions: any, options: AdapterUpsertOptions) {
     const table_name = this._connection.models[model].table_name;
     const insert_data: any = {};
+    const update_data: any = {};
     for (const key in data) {
       const value = data[key];
       if (value && value.$inc != null) {
         insert_data[key] = value.$inc;
       } else {
         insert_data[key] = value;
+      }
+      if (!options.ignore_on_update?.includes(key)) {
+        update_data[key] = value;
       }
     }
     for (const condition of conditions) {
@@ -485,12 +489,18 @@ export class MySQLAdapter extends SQLAdapterBase {
     const values: any = [];
     let fields;
     let places = '';
-    [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
-    let sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
-    [fields] = this._buildPartialUpdateSet(model, data, values);
-    sql += ` ON DUPLICATE KEY UPDATE ${fields}`;
+    let sql = '';
+    if (Object.keys(update_data).length === 0) {
+      [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
+      sql = `INSERT IGNORE \`${table_name}\` (${fields}) VALUES (${places})`;
+    } else {
+      [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
+      sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
+      [fields] = this._buildPartialUpdateSet(model, update_data, values);
+      sql += ` ON DUPLICATE KEY UPDATE ${fields}`;
+    }
     try {
-      await this.query(sql, values, options.transaction);
+      await this.query(sql, values, { transaction: options.transaction, node: options.node });
     } catch (error) {
       throw this._processSaveError(error);
     }

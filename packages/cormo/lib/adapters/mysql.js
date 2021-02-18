@@ -437,8 +437,10 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     async upsert(model, data, conditions, options) {
+        var _a;
         const table_name = this._connection.models[model].table_name;
         const insert_data = {};
+        const update_data = {};
         for (const key in data) {
             const value = data[key];
             if (value && value.$inc != null) {
@@ -446,6 +448,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             }
             else {
                 insert_data[key] = value;
+            }
+            if (!((_a = options.ignore_on_update) === null || _a === void 0 ? void 0 : _a.includes(key))) {
+                update_data[key] = value;
             }
         }
         for (const condition of conditions) {
@@ -457,12 +462,19 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const values = [];
         let fields;
         let places = '';
-        [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
-        let sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
-        [fields] = this._buildPartialUpdateSet(model, data, values);
-        sql += ` ON DUPLICATE KEY UPDATE ${fields}`;
+        let sql = '';
+        if (Object.keys(update_data).length === 0) {
+            [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
+            sql = `INSERT IGNORE \`${table_name}\` (${fields}) VALUES (${places})`;
+        }
+        else {
+            [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
+            sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
+            [fields] = this._buildPartialUpdateSet(model, update_data, values);
+            sql += ` ON DUPLICATE KEY UPDATE ${fields}`;
+        }
         try {
-            await this.query(sql, values, options.transaction);
+            await this.query(sql, values, { transaction: options.transaction, node: options.node });
         }
         catch (error) {
             throw this._processSaveError(error);

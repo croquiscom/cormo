@@ -44,11 +44,9 @@ class SQLAdapterBase extends base_1.AdapterBase {
     }
     /** @internal */
     async upsert(model, data, conditions, options) {
-        const count = await this.updatePartial(model, data, conditions, options);
-        if (count > 0) {
-            return;
-        }
+        var _a;
         const insert_data = {};
+        const update_data = {};
         for (const key in data) {
             const value = data[key];
             if (value && value.$inc != null) {
@@ -57,6 +55,9 @@ class SQLAdapterBase extends base_1.AdapterBase {
             else {
                 insert_data[key] = value;
             }
+            if (!((_a = options.ignore_on_update) === null || _a === void 0 ? void 0 : _a.includes(key))) {
+                update_data[key] = value;
+            }
         }
         for (const condition of conditions) {
             for (const key in condition) {
@@ -64,14 +65,30 @@ class SQLAdapterBase extends base_1.AdapterBase {
                 insert_data[key] = value;
             }
         }
-        try {
-            return await this.create(model, insert_data, {});
-        }
-        catch (error) {
-            if (!/duplicated/.test(error.message)) {
-                throw error;
+        if (Object.keys(update_data).length === 0) {
+            try {
+                return await this.create(model, insert_data, {});
             }
-            return await this.updatePartial(model, data, conditions, options);
+            catch (error) {
+                if (!/duplicated/.test(error.message)) {
+                    throw error;
+                }
+            }
+        }
+        else {
+            const count = await this.updatePartial(model, update_data, conditions, options);
+            if (count > 0) {
+                return;
+            }
+            try {
+                return await this.create(model, insert_data, {});
+            }
+            catch (error) {
+                if (!/duplicated/.test(error.message)) {
+                    throw error;
+                }
+                return await this.updatePartial(model, update_data, conditions, options);
+            }
         }
     }
     /** @internal */

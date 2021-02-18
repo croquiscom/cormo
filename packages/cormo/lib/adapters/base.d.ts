@@ -51,6 +51,11 @@ export interface AdapterCountOptions {
     node?: 'master' | 'read';
     index_hint?: string;
 }
+export interface AdapterUpsertOptions {
+    transaction?: Transaction;
+    node?: 'master' | 'read';
+    ignore_on_update?: string[];
+}
 /**
  * Base class for adapters
  * @namespace adapter
