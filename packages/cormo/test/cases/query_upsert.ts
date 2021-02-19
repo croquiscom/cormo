@@ -4,7 +4,7 @@ import * as cormo from '../..';
 import { UserRef, UserRefVO } from './query';
 
 function _compareUserUnique(user: UserRef, expected: UserRefVO) {
-  expect(user).to.have.keys('id', 'name', 'age', 'count');
+  expect(user).to.have.keys('id', 'name', 'age', 'count', 'date_created');
   expect(user.name).to.equal(expected.name);
   expect(user.age).to.equal(expected.age);
   expect(user.count).to.equal(expected.count);

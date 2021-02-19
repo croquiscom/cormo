@@ -5,10 +5,10 @@ import { LedgerRef, UserRef, UserRefVO } from './query';
 
 function _compareUser(user: UserRef, expected: UserRefVO) {
   if (expected.age != null) {
-    expect(user).to.have.keys('id', 'name', 'age', 'count');
+    expect(user).to.have.keys('id', 'name', 'age', 'count', 'date_created');
     expect(user.age).to.equal(expected.age);
   } else {
-    expect(user).to.have.keys('id', 'name', 'age', 'count');
+    expect(user).to.have.keys('id', 'name', 'age', 'count', 'date_created');
   }
   expect(user.name).to.equal(expected.name);
 }

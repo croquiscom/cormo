@@ -30,7 +30,7 @@ export default function(models: {
         .on('data', (user: UserRef) => {
           count++;
           expect(user).to.be.an.instanceof(models.User);
-          expect(user).to.have.keys('id', 'name', 'age', 'count');
+          expect(user).to.have.keys('id', 'name', 'age', 'count', 'date_created');
           expect(user.age).to.eql(27);
         }).on('end', () => {
           expect(count).to.eql(2);
@@ -50,7 +50,7 @@ export default function(models: {
         .on('data', (user: UserRefVO) => {
           count++;
           expect(user).to.not.be.an.instanceof(models.User);
-          expect(user).to.have.keys('id', 'name', 'age', 'count');
+          expect(user).to.have.keys('id', 'name', 'age', 'count', 'date_created');
           expect(user.age).to.eql(27);
         }).on('end', () => {
           expect(count).to.eql(2);

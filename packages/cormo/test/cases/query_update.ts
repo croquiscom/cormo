@@ -4,7 +4,7 @@ import * as cormo from '../..';
 import { UserRef, UserRefVO } from './query';
 
 function _compareUser(user: UserRef, expected: UserRefVO) {
-  expect(user).to.have.keys('id', 'name', 'age', 'count');
+  expect(user).to.have.keys('id', 'name', 'age', 'count', 'date_created');
   expect(user.name).to.equal(expected.name);
   expect(user.age).to.equal(expected.age);
 }
@@ -99,7 +99,7 @@ export default function(models: {
     const count = await models.User.find(users[2].id).update({ age: null });
     expect(count).to.equal(1);
     const user = await models.User.find(users[2].id);
-    expect(user).to.have.keys('id', 'name', 'age', 'count');
+    expect(user).to.have.keys('id', 'name', 'age', 'count', 'date_created');
   });
 
   it('$inc', async () => {

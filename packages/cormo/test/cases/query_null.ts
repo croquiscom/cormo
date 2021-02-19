@@ -16,7 +16,7 @@ function _getInvalidID(id: number | string) {
 }
 
 function _compareUser(user: UserRef, expected: UserRefVO) {
-  expect(user).to.have.keys('id', 'name', 'age', 'count');
+  expect(user).to.have.keys('id', 'name', 'age', 'count', 'date_created');
   if (expected.name != null) {
     expect(user.name).to.equal(expected.name);
   }

@@ -1260,11 +1260,9 @@ class BaseModel {
       }
       const value = util.getPropertyOfPath(obj, property._parts);
       if (value == null) {
-        if (_.isFunction(property.default_value)) {
-          util.setPropertyOfPath(obj, property._parts, property.default_value());
-        } else {
-          util.setPropertyOfPath(obj, property._parts, property.default_value);
-        }
+        const default_value = _.isFunction(property.default_value) ? property.default_value() : property.default_value;
+        util.setPropertyOfPath(obj, property._parts, default_value);
+        this._validateColumn(obj, column, property);
         applied_columns.push(property._dbname_dot);
       }
     }
