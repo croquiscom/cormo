@@ -5,16 +5,12 @@ export class UserRef extends cormo.BaseModel {
   public name?: string | null;
 
   public age?: number | null;
-
-  public count?: number | null;
-
-  public date_created?: Date | null;
 }
 
 export type UserRefVO = cormo.ModelValueObject<UserRef>;
 
 function _compareUser(user: UserRef, expected: UserRefVO) {
-  expect(user).to.have.keys('id', 'name', 'age', 'count', 'date_created');
+  expect(user).to.have.keys('id', 'name', 'age');
   expect(user.name).to.equal(expected.name);
   expect(user.age).to.equal(expected.age);
 }
@@ -40,7 +36,7 @@ export default function(models: {
   it('lean option for a single record', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const record = await models.User.find(user.id).lean();
-    expect(record).to.eql({ id: user.id, name: user.name, age: user.age, count: 5, date_created: record?.date_created });
+    expect(record).to.eql({ id: user.id, name: user.name, age: user.age });
   });
 
   it('lean option for multiple records', async () => {
@@ -66,7 +62,7 @@ export default function(models: {
     await models.User.createBulk([{ name: 'Gina Baker' }]);
     const users = await models.User.query().lean();
     expect(users).to.have.length(1);
-    expect(users[0]).to.have.keys('id', 'name', 'age', 'count', 'date_created');
+    expect(users[0]).to.have.keys('id', 'name', 'age');
     expect(users[0].age).to.be.null;
   });
 

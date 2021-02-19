@@ -19,7 +19,6 @@ _dbs.forEach((db) => {
   describe('query-' + db, () => {
     const models = {
       User: UserRef,
-      UserUnique: UserRef,
       Ledger: LedgerRef,
       connection: null as cormo.Connection | null,
     };
@@ -34,30 +33,8 @@ _dbs.forEach((db) => {
 
           @cormo.Column(Number)
           public age?: number;
-
-          @cormo.Column({ type: Number, default_value: 5 })
-          public count?: number;
-
-          @cormo.Column({ type: Date, default_value: Date.now })
-          public date_created?: Date;
         }
         models.User = User;
-
-        @cormo.Model()
-        class UserUnique extends cormo.BaseModel {
-          @cormo.Column({ type: String, unique: true })
-          public name?: string;
-
-          @cormo.Column(Number)
-          public age?: number;
-
-          @cormo.Column({ type: Number, default_value: 5 })
-          public count?: number;
-
-          @cormo.Column({ type: Date, default_value: Date.now })
-          public date_created?: Date;
-        }
-        models.UserUnique = UserUnique;
 
         @cormo.Model()
         class Ledger extends cormo.BaseModel {
@@ -81,12 +58,6 @@ _dbs.forEach((db) => {
           count: { type: Number, default_value: 5 },
           date_created: { type: Date, default_value: Date.now },
         });
-        models.UserUnique = _g.connection.model('UserUnique', {
-          name: { type: String, unique: true },
-          age: Number,
-          count: { type: Number, default_value: 5 },
-          date_created: { type: Date, default_value: Date.now },
-        });
         models.Ledger = _g.connection.model('Ledger', {
           date_ymd: cormo.types.Integer,
           debit: Number,
@@ -98,7 +69,7 @@ _dbs.forEach((db) => {
     });
 
     beforeEach(async () => {
-      await _g.deleteAllRecords([models.User, models.UserUnique, models.Ledger]);
+      await _g.deleteAllRecords([models.User, models.Ledger]);
     });
 
     after(async () => {
