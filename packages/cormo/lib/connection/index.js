@@ -611,7 +611,6 @@ class Connection extends events_1.EventEmitter {
         }
         else {
             options = options_or_block;
-            block = block;
         }
         const transaction = new transaction_1.Transaction(this);
         await transaction.setup(options && options.isolation_level);

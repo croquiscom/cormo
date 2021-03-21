@@ -772,7 +772,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       block = options_or_block;
     } else {
       options = options_or_block;
-      block = block!;
     }
     const transaction = new Transaction(this);
     await transaction.setup(options && options.isolation_level);
@@ -822,7 +821,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         return txModel;
       });
       args.push(transaction);
-      const result = await block(...args);
+      const result = await block!(...args);
       await transaction.commit();
       return result;
     } catch (error) {
