@@ -94,7 +94,12 @@ async function _tryCreateConnection(config, count = 0) {
         return client;
     }
     catch (error) {
-        client.end();
+        try {
+            client.end();
+        }
+        catch (e) {
+            // ignore error
+        }
         if (error.errorno === 'ETIMEDOUT') {
             if (count < 5) {
                 await new Promise((resolve) => {

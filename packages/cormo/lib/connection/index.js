@@ -718,7 +718,7 @@ class Connection extends events_1.EventEmitter {
             await new Promise((resolve) => {
                 setTimeout(() => resolve(), 5000 * (count + 1));
             });
-            console.log('try again to connect', error.toString());
+            console.log('try again to connect', error.cause ? error.cause.toString() : error.toString());
             await this._connect(settings, count + 1);
         }
     }

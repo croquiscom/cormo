@@ -95,7 +95,11 @@ async function _tryCreateConnection(config: any, count: number = 0): Promise<any
     await client.connectAsync();
     return client;
   } catch (error) {
-    client.end();
+    try {
+      client.end();
+    } catch (e) {
+      // ignore error
+    }
     if (error.errorno === 'ETIMEDOUT') {
       if (count < 5) {
         await new Promise<void>((resolve) => {
