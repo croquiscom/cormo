@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable indent */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -272,7 +273,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const columns = [];
         for (const column in index.columns) {
             const order = index.columns[column];
-            columns.push(`\`${schema[column] && schema[column]._dbname_us || column}\` ${(order === -1 ? 'DESC' : 'ASC')}`);
+            columns.push(`\`${(schema[column] && schema[column]._dbname_us) || column}\` ${order === -1 ? 'DESC' : 'ASC'}`);
         }
         const unique = index.options.unique ? 'UNIQUE ' : '';
         return `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${table_name}\` (${columns.join(',')})`;
@@ -553,9 +554,13 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             callback();
         };
         this._connection._logger.logQuery(sql, params);
-        this._client.query(sql, params).stream().on('error', (error) => {
+        this._client
+            .query(sql, params)
+            .stream()
+            .on('error', (error) => {
             return transformer.emit('error', error);
-        }).pipe(transformer);
+        })
+            .pipe(transformer);
         return transformer;
     }
     /** @internal */
@@ -745,8 +750,10 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         else {
             let client = this._client;
-            if (options && options.node === 'read' && this._read_clients.length > 0
-                && text.substring(0, 6).toUpperCase() === 'SELECT') {
+            if (options &&
+                options.node === 'read' &&
+                this._read_clients.length > 0 &&
+                text.substring(0, 6).toUpperCase() === 'SELECT') {
                 this._read_client_index++;
                 if (this._read_client_index >= this._read_clients.length || this._read_client_index < 0) {
                     this._read_client_index = 0;
@@ -838,7 +845,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             const sub_expr = group_expr[op];
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
-                column = schema[column] && schema[column]._dbname_us || column;
+                column = (schema[column] && schema[column]._dbname_us) || column;
                 return `ANY_VALUE(${column})`;
             }
             else {
@@ -862,13 +869,21 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const columns = await this._client.queryAsync(`SHOW FULL COLUMNS FROM \`${table}\``);
         const schema = { columns: {} };
         for (const column of columns) {
-            const type = /^varchar\((\d*)\)/i.test(column.Type) ? new types.String(Number(RegExp.$1))
-                : /^double/i.test(column.Type) ? new types.Number()
-                    : /^tinyint\(1\)/i.test(column.Type) ? new types.Boolean()
-                        : /^int/i.test(column.Type) ? new types.Integer()
-                            : /^point/i.test(column.Type) ? new types.GeoPoint()
-                                : /^datetime/i.test(column.Type) ? new types.Date()
-                                    : /^text/i.test(column.Type) ? new types.Text() : undefined;
+            const type = /^varchar\((\d*)\)/i.test(column.Type)
+                ? new types.String(Number(RegExp.$1))
+                : /^double/i.test(column.Type)
+                    ? new types.Number()
+                    : /^tinyint\(1\)/i.test(column.Type)
+                        ? new types.Boolean()
+                        : /^int/i.test(column.Type)
+                            ? new types.Integer()
+                            : /^point/i.test(column.Type)
+                                ? new types.GeoPoint()
+                                : /^datetime/i.test(column.Type)
+                                    ? new types.Date()
+                                    : /^text/i.test(column.Type)
+                                        ? new types.Text()
+                                        : undefined;
             schema.columns[column.Field] = {
                 required: column.Null === 'NO',
                 type,
@@ -1008,7 +1023,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                     column = order;
                     order = 'ASC';
                 }
-                column = schema[column] && schema[column]._dbname_us || column;
+                column = (schema[column] && schema[column]._dbname_us) || column;
                 return `\`${column}\` ${order}`;
             });
             if (order_by) {
@@ -1042,7 +1057,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 catch (error2) {
                     throw this._wrapError('unknown error', error2);
                 }
-                return (await this._createDatabase(client));
+                return await this._createDatabase(client);
             }
             else {
                 const msg = error1.code === 'ER_DBACCESS_DENIED_ERROR'

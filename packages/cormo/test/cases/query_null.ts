@@ -27,22 +27,13 @@ function _compareUser(user: UserRef, expected: UserRefVO) {
 
 async function _createUsers(User: typeof UserRef, data?: UserRefVO[]) {
   if (!data) {
-    data = [
-      { name: 'John Doe', age: 27 },
-      { name: 'Bill Smith', age: 45 },
-      { name: 'Alice Jackson' },
-      {},
-      { age: 8 },
-    ];
+    data = [{ name: 'John Doe', age: 27 }, { name: 'Bill Smith', age: 45 }, { name: 'Alice Jackson' }, {}, { age: 8 }];
   }
   data.sort(() => 0.5 - Math.random()); // random sort
   return await User.createBulk(data);
 }
 
-export default function(models: {
-  User: typeof UserRef;
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { User: typeof UserRef; connection: cormo.Connection | null }) {
   it('equal null 1', async () => {
     await _createUsers(models.User);
     const users = await models.User.where({ age: null });
@@ -69,7 +60,7 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ age: { $not: null } });
     expect(users).to.have.length(3);
-    users.sort((a, b) => a.age! < b.age! ? -1 : 1);
+    users.sort((a, b) => (a.age! < b.age! ? -1 : 1));
     _compareUser(users[0], { age: 8 });
     _compareUser(users[1], { name: 'John Doe', age: 27 });
     _compareUser(users[2], { name: 'Bill Smith', age: 45 });
@@ -79,7 +70,7 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ name: { $not: null } });
     expect(users).to.have.length(3);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson' });
     _compareUser(users[1], { name: 'Bill Smith', age: 45 });
     _compareUser(users[2], { name: 'John Doe', age: 27 });
@@ -127,8 +118,20 @@ export default function(models: {
     expect(await models.User.where({ id: user.id }).one().selectSingle('name')).to.eql(user.name);
     expect(await models.User.where({ id: user.id }).one().selectSingle('age')).to.eql(user.age);
 
-    expect(await models.User.where({ id: _getInvalidID(user.id) }).one().selectSingle('id')).to.eql(null);
-    expect(await models.User.where({ id: _getInvalidID(user.id) }).one().selectSingle('name')).to.eql(null);
-    expect(await models.User.where({ id: _getInvalidID(user.id) }).one().selectSingle('age')).to.eql(null);
+    expect(
+      await models.User.where({ id: _getInvalidID(user.id) })
+        .one()
+        .selectSingle('id'),
+    ).to.eql(null);
+    expect(
+      await models.User.where({ id: _getInvalidID(user.id) })
+        .one()
+        .selectSingle('name'),
+    ).to.eql(null);
+    expect(
+      await models.User.where({ id: _getInvalidID(user.id) })
+        .one()
+        .selectSingle('age'),
+    ).to.eql(null);
   });
 }

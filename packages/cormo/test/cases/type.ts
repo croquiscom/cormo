@@ -13,12 +13,14 @@ export class Type extends cormo.BaseModel {
   public text?: string;
 }
 
-export default function(models: {
-  Type: typeof Type;
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { Type: typeof Type; connection: cormo.Connection | null }) {
   it('number', async () => {
-    const data = [['30', 30], ['12.8', 12.8], ['8a', null], ['abc', null]];
+    const data = [
+      ['30', 30],
+      ['12.8', 12.8],
+      ['8a', null],
+      ['abc', null],
+    ];
     for (const item of data) {
       try {
         let type = await models.Type.create({ number: item[0] as any });
@@ -36,7 +38,13 @@ export default function(models: {
   });
 
   it('integer', async () => {
-    const data = [['30', 30], ['9876543210', null], ['12.8', null], ['8a', null], ['abc', null]];
+    const data = [
+      ['30', 30],
+      ['9876543210', null],
+      ['12.8', null],
+      ['8a', null],
+      ['abc', null],
+    ];
     for (const item of data) {
       try {
         let type = await models.Type.create({ int_c: item[0] as any });
@@ -58,7 +66,8 @@ export default function(models: {
       ['2012/10/12 21:32:54', new Date('2012/10/12 21:32:54').getTime()],
       ['2012-09-11 20:31:53', new Date('2012/09/11 20:31:53').getTime()],
       ['2012/11/02', new Date('2012/11/02 00:00:00').getTime()],
-      ['2012/10/12 34:00:00', null], ['2012/13/01', null],
+      ['2012/10/12 34:00:00', null],
+      ['2012/13/01', null],
       [new Date('2013/01/12 03:42:21').getTime(), new Date('2013/01/12 03:42:21').getTime()],
     ];
     for (const item of data) {
@@ -106,7 +115,12 @@ export default function(models: {
   });
 
   it('boolean', async () => {
-    const data = [[true, true], [false, false], ['str', null], [5, null]];
+    const data = [
+      [true, true],
+      [false, false],
+      ['str', null],
+      [5, null],
+    ];
     for (const item of data) {
       try {
         let type = await models.Type.create({ boolean: item[0] as any });
@@ -129,7 +143,10 @@ export default function(models: {
       [30, 30],
       [true, true],
       [false, false],
-      [{ a: 5, b: ['oh'] }, { a: 5, b: ['oh'] }],
+      [
+        { a: 5, b: ['oh'] },
+        { a: 5, b: ['oh'] },
+      ],
     ];
     for (const item of data) {
       let type = await models.Type.create({ object: item[0] as any });
@@ -148,7 +165,14 @@ export default function(models: {
   });
 
   it('array of integer', async () => {
-    const data = [[[9, '30'], [9, 30]], [9, null], [[9, '12.8'], null]];
+    const data = [
+      [
+        [9, '30'],
+        [9, 30],
+      ],
+      [9, null],
+      [[9, '12.8'], null],
+    ];
     for (const item of data) {
       try {
         let type = await models.Type.create({ int_array: item[0] as any });

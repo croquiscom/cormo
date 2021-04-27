@@ -3,10 +3,7 @@ import * as cormo from '../..';
 
 import { Type } from './type';
 
-export default function(models: {
-  Type: typeof Type;
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { Type: typeof Type; connection: cormo.Connection | null }) {
   it('string length(function)', async () => {
     try {
       @cormo.Model()

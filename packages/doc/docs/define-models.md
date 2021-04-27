@@ -45,17 +45,17 @@ You can use any of CORMO type classes(e.g. cormo.types.String), strings(e.g. `'s
 
 Currently supported types:
 
-* [types.String](/cormo/api/cormo/interfaces/cormotypesstring.html) ('string', String)
-* [types.Number](/cormo/api/cormo/interfaces/cormotypesnumber.html) ('number', Number)
-* [types.Boolean](/cormo/api/cormo/interfaces/cormotypesboolean.html) ('boolean', Boolean)
-* [types.Integer](/cormo/api/cormo/interfaces/cormotypesinteger.html) ('integer')
-* [types.Date](/cormo/api/cormo/interfaces/cormotypesdate.html) ('date', Date)
-* [types.GeoPoint](/cormo/api/cormo/interfaces/cormotypesgeopoint.html) ('geopoint')
-    * MySQL, MonogoDB, PostgreSQL only
-* [types.Object](/cormo/api/cormo/interfaces/cormotypesobject.html) ('object', Object)
-    * Objects are stored as a JSON string in SQL adapters.
-* [types.Text](/cormo/api/cormo/interfaces/cormotypestext.html) ('text')
-    * Use for long string content in SQL adapters.
+- [types.String](/cormo/api/cormo/interfaces/cormotypesstring.html) ('string', String)
+- [types.Number](/cormo/api/cormo/interfaces/cormotypesnumber.html) ('number', Number)
+- [types.Boolean](/cormo/api/cormo/interfaces/cormotypesboolean.html) ('boolean', Boolean)
+- [types.Integer](/cormo/api/cormo/interfaces/cormotypesinteger.html) ('integer')
+- [types.Date](/cormo/api/cormo/interfaces/cormotypesdate.html) ('date', Date)
+- [types.GeoPoint](/cormo/api/cormo/interfaces/cormotypesgeopoint.html) ('geopoint')
+  - MySQL, MonogoDB, PostgreSQL only
+- [types.Object](/cormo/api/cormo/interfaces/cormotypesobject.html) ('object', Object)
+  - Objects are stored as a JSON string in SQL adapters.
+- [types.Text](/cormo/api/cormo/interfaces/cormotypestext.html) ('text')
+  - Use for long string content in SQL adapters.
 
 ### type options
 
@@ -64,9 +64,9 @@ You can give options for types in some adapters.
 To specify length for string type in MySQL or PostgreSQL, you should do
 
 ```typescript
-Model.column('method_1', cormo.types.String(50))
+Model.column('method_1', cormo.types.String(50));
 // or
-Model.column('method_2', 'string(50)')
+Model.column('method_2', 'string(50)');
 ```
 
 Please note that you must use `cormo.types.String`, not `String`.

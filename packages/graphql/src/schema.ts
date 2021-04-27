@@ -1,10 +1,22 @@
 import { CrJson, CrTimestamp, getFieldList } from '@croquiscom/crary-graphql';
 import * as cormo from 'cormo';
 import {
-  GraphQLBoolean, GraphQLEnumType, GraphQLEnumValueConfigMap, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap,
-  GraphQLFloat, GraphQLID, GraphQLInputFieldConfigMap, GraphQLInputObjectType,
-  GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
-  GraphQLSchema, GraphQLString,
+  GraphQLBoolean,
+  GraphQLEnumType,
+  GraphQLEnumValueConfigMap,
+  GraphQLFieldConfigArgumentMap,
+  GraphQLFieldConfigMap,
+  GraphQLFloat,
+  GraphQLID,
+  GraphQLInputFieldConfigMap,
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLSchema,
+  GraphQLString,
 } from 'graphql';
 import _ from 'lodash';
 
@@ -44,9 +56,7 @@ function createSingleType(model_class: typeof cormo.BaseModel, options: Options)
   for (const [column, property] of Object.entries(model_class._schema)) {
     const graphql_type = getGraphQlType(property);
     if (graphql_type) {
-      const description = column === 'id'
-        ? options.id_description
-        : property.description;
+      const description = column === 'id' ? options.id_description : property.description;
       fields[column] = {
         description,
         type: graphql_type,
@@ -123,9 +133,7 @@ function createCreateInputType(model_class: typeof cormo.BaseModel, options: Opt
     }
     const graphql_type = getGraphQlType(property);
     if (graphql_type) {
-      const description = column === 'id'
-        ? options.id_description
-        : property.description;
+      const description = column === 'id' ? options.id_description : property.description;
       fields[column] = {
         description,
         type: graphql_type,
@@ -149,9 +157,7 @@ function createUpdateInputType(model_class: typeof cormo.BaseModel, options: Opt
     }
     const graphql_type = getGraphQlType(property);
     if (graphql_type) {
-      const description = column === 'id'
-        ? options.id_description
-        : property.description;
+      const description = column === 'id' ? options.id_description : property.description;
       fields[column] = {
         description,
         type: graphql_type,
@@ -195,8 +201,7 @@ function createOrderType(model_class: typeof cormo.BaseModel, options: Options) 
 }
 
 function buildListQueryArgs(model_class: typeof cormo.BaseModel, options: Options) {
-  const list_query_args: GraphQLFieldConfigArgumentMap = {
-  };
+  const list_query_args: GraphQLFieldConfigArgumentMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
     if (column === 'id') {
       list_query_args[column + '_list'] = {

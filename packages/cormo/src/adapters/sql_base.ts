@@ -1,3 +1,5 @@
+/* eslint-disable indent */
+
 import _ from 'lodash';
 import { BaseModel, ColumnPropertyInternal, ModelSchemaInternal } from '../model';
 import * as types from '../types';
@@ -78,7 +80,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       }
     } else if (property_type_class === types.Integer) {
       value = Number(value);
-      if (isNaN(value) || (value >> 0) !== value) {
+      if (isNaN(value) || value >> 0 !== value) {
         value = -2147483648;
       }
     }
@@ -87,7 +89,11 @@ abstract class SQLAdapterBase extends AdapterBase {
 
   /** @internal */
   protected _buildWhereSingle(
-    schema: ModelSchemaInternal, property: ColumnPropertyInternal, key: any, value: any, params: any,
+    schema: ModelSchemaInternal,
+    property: ColumnPropertyInternal,
+    key: any,
+    value: any,
+    params: any,
   ): any {
     let property_type_class;
     if (key === 'id') {
@@ -163,12 +169,19 @@ abstract class SQLAdapterBase extends AdapterBase {
           const sub_expr = value[sub_key];
           if (sub_expr.substr(0, 1) === '$') {
             let compare_column = sub_expr.substr(1);
-            compare_column = schema[compare_column] && schema[compare_column]._dbname_us || compare_column;
-            op = sub_key === '$cgt' ? '>'
-              : sub_key === '$cgte' ? '>='
-                : sub_key === '$clt' ? '<'
-                  : sub_key === '$clte' ? '<='
-                    : sub_key === '$ceq' ? '=' : '!=';
+            compare_column = (schema[compare_column] && schema[compare_column]._dbname_us) || compare_column;
+            op =
+              sub_key === '$cgt'
+                ? '>'
+                : sub_key === '$cgte'
+                ? '>='
+                : sub_key === '$clt'
+                ? '<'
+                : sub_key === '$clte'
+                ? '<='
+                : sub_key === '$ceq'
+                ? '='
+                : '!=';
             return `${column} ${op} ${compare_column}`;
           } else {
             throw new Error(`unknown expression '${sub_expr}'`);
@@ -266,7 +279,7 @@ abstract class SQLAdapterBase extends AdapterBase {
         return 'COUNT(*)';
       } else if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return `SUM(${this._escape_ch}${column}${this._escape_ch})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -275,7 +288,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return `MIN(${this._escape_ch}${column}${this._escape_ch})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -284,7 +297,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return `MAX(${this._escape_ch}${column}${this._escape_ch})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -293,7 +306,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return `AVG(${this._escape_ch}${column}${this._escape_ch})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -302,7 +315,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return `${this._escape_ch}${column}${this._escape_ch}`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);

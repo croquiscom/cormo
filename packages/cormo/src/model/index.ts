@@ -36,13 +36,17 @@ function _pf_get(this: any, path: string) {
   return util.getPropertyOfPath(this, path.split('.'));
 }
 
-function _pf_getPrevious() { /**/ }
+function _pf_getPrevious() {
+  /**/
+}
 
 function _pf_set(this: any, path: string, value: any) {
   return util.setPropertyOfPath(this, path.split('.'), value);
 }
 
-function _pf_reset() { /**/ }
+function _pf_reset() {
+  /**/
+}
 
 export interface ColumnProperty {
   type: types.ColumnType | types.ColumnType[];
@@ -136,13 +140,15 @@ class BaseModel {
 
   public static _property_decorators: any[];
 
-  public static initialize() { /**/ }
+  public static initialize() {
+    /**/
+  }
 
   /**
    * Returns a new model class extending BaseModel
    */
   public static newModel(connection: Connection, name: string, schema: ModelSchema): typeof BaseModel {
-    const NewModel = class extends BaseModel { };
+    const NewModel = class extends BaseModel {};
     NewModel.connection(connection, name);
     for (const column_name in schema) {
       const property = schema[column_name];
@@ -199,7 +205,8 @@ class BaseModel {
    * Adds a column to this model
    */
   public static column(
-    path: string, type_or_property: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty,
+    path: string,
+    type_or_property: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty,
   ): void;
   public static column(path: string, type_or_property: any) {
     this._checkConnection();
@@ -237,8 +244,11 @@ class BaseModel {
     if (type.constructor === types.GeoPoint && !this._adapter.support_geopoint) {
       throw new Error('this adapter does not support GeoPoint type');
     }
-    if (type.constructor === types.String && (type as types.CormoTypesString).length
-      && !this._adapter.support_string_type_with_length) {
+    if (
+      type.constructor === types.String &&
+      (type as types.CormoTypesString).length &&
+      !this._adapter.support_string_type_with_length
+    ) {
       throw new Error('this adapter does not support String type with length');
     }
     const parts = path.split('.');
@@ -293,10 +303,7 @@ class BaseModel {
    * Creates a record.
    * 'Model.build(data)' is the same as 'new Model(data)'
    */
-  public static build<M extends BaseModel>(
-    this: new (data?: any) => M,
-    data?: ModelValueObject<M>,
-  ): M {
+  public static build<M extends BaseModel>(this: new (data?: any) => M, data?: ModelValueObject<M>): M {
     return new this(data);
   }
 
@@ -332,7 +339,8 @@ class BaseModel {
   }
 
   public static [inspect.custom](depth: number) {
-    const schema = Object.keys(this._schema || {}).sort()
+    const schema = Object.keys(this._schema || {})
+      .sort()
       .map((column) => `${column}: ${this._schema[column].type}`)
       .join(', ');
     return '\u001b[36m' + `[Model: ${this.name}(` + '\u001b[90m' + schema + '\u001b[36m' + ')]' + '\u001b[39m';
@@ -683,7 +691,8 @@ class BaseModel {
    * Updates some fields of records that match conditions
    */
   public static async update(
-    updates: any, condition?: object,
+    updates: any,
+    condition?: object,
     options?: { transaction?: Transaction },
   ): Promise<number> {
     return await this.query(options).where(condition).update(updates);
@@ -702,11 +711,11 @@ class BaseModel {
   public static timestamps() {
     this.column('created_at', Date);
     this.column('updated_at', Date);
-    this.beforeCreate(function(this: any) {
+    this.beforeCreate(function (this: any) {
       const d = new Date();
       this.created_at = this.updated_at = d;
     });
-    this.beforeUpdate(function(this: any) {
+    this.beforeUpdate(function (this: any) {
       const d = new Date();
       this.updated_at = d;
     });
@@ -722,7 +731,11 @@ class BaseModel {
   }
 
   public static _buildSaveDataColumn(
-    data: any, model: any, column: string, property: ColumnPropertyInternal, allow_null: boolean = false,
+    data: any,
+    model: any,
+    column: string,
+    property: ColumnPropertyInternal,
+    allow_null: boolean = false,
   ) {
     const adapter = this._adapter;
     let value = util.getPropertyOfPath(model, property._parts);
@@ -737,7 +750,10 @@ class BaseModel {
   }
 
   public static _validateColumn(
-    data: any, column: string, property: ColumnPropertyInternal, for_update: boolean = false,
+    data: any,
+    column: string,
+    property: ColumnPropertyInternal,
+    for_update: boolean = false,
   ) {
     let obj: any;
     let last: any;
@@ -784,7 +800,7 @@ class BaseModel {
     for (const index of this._indexes) {
       if (!index.options.name) {
         const column_names = Object.keys(index.columns).map((column_name) => {
-          return this._schema[column_name] && this._schema[column_name]._dbname_us || column_name;
+          return (this._schema[column_name] && this._schema[column_name]._dbname_us) || column_name;
         });
         index.options.name = column_names.join('_');
       }
@@ -854,7 +870,7 @@ class BaseModel {
       case types.Integer:
         value = Number(value);
         // value>>0 checkes integer and 32bit
-        if (isNaN(value) || (value >> 0) !== value) {
+        if (isNaN(value) || value >> 0 !== value) {
           throw new Error(`'${column}' is not an integer`);
         }
         break;
@@ -1219,7 +1235,7 @@ class BaseModel {
     } catch (error) {
       //
     }
-    return this._prev_attributes = {};
+    return (this._prev_attributes = {});
   }
 
   private async _update(options: { transaction?: Transaction; skip_log?: boolean }) {
@@ -1239,7 +1255,7 @@ class BaseModel {
         ctor._connection.log(ctor._name, 'update', data);
       }
       await adapter.updatePartial(ctor._name, data, [{ id: this.id }], {});
-      return this._prev_attributes = {};
+      return (this._prev_attributes = {});
     } else {
       // update all
       const data = this._buildSaveData();
@@ -1247,7 +1263,7 @@ class BaseModel {
         ctor._connection.log(ctor._name, 'update', data);
       }
       await ctor._adapter.update(ctor._name, data, { transaction: options.transaction || this._transaction });
-      return this._prev_attributes = {};
+      return (this._prev_attributes = {});
     }
   }
 

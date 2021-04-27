@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable indent */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -103,19 +104,31 @@ function _buildWhereSingle(property, key, value, not_op) {
                 if (sub_expr.substr(0, 1) === '$') {
                     const compare_column = sub_expr.substr(1);
                     if (not_op) {
-                        const op = sub_key === '$cgt' ? '<='
-                            : sub_key === '$cgte' ? '<'
-                                : sub_key === '$clt' ? '>='
-                                    : sub_key === '$clte' ? '>'
-                                        : sub_key === '$ceq' ? '!=' : '==';
+                        const op = sub_key === '$cgt'
+                            ? '<='
+                            : sub_key === '$cgte'
+                                ? '<'
+                                : sub_key === '$clt'
+                                    ? '>='
+                                    : sub_key === '$clte'
+                                        ? '>'
+                                        : sub_key === '$ceq'
+                                            ? '!='
+                                            : '==';
                         return { $where: `this.${key} ${op} this.${compare_column}` };
                     }
                     else {
-                        const op = sub_key === '$cgt' ? '>'
-                            : sub_key === '$cgte' ? '>='
-                                : sub_key === '$clt' ? '<'
-                                    : sub_key === '$clte' ? '<='
-                                        : sub_key === '$ceq' ? '==' : '!=';
+                        const op = sub_key === '$cgt'
+                            ? '>'
+                            : sub_key === '$cgte'
+                                ? '>='
+                                : sub_key === '$clt'
+                                    ? '<'
+                                    : sub_key === '$clte'
+                                        ? '<='
+                                        : sub_key === '$ceq'
+                                            ? '=='
+                                            : '!=';
                         return { $where: `this.${key} ${op} this.${compare_column}` };
                     }
                 }
@@ -239,7 +252,7 @@ function _buildGroupExpr(schema, group_expr) {
     }
     if (typeof sub_expr === 'string' && sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return { [op]: `$${column}` };
     }
     else {
@@ -254,7 +267,7 @@ function _buildGroupFields(model_class, group_by, group_fields) {
         }
         else {
             group._id = {};
-            group_by.forEach((field) => group._id[field] = '$' + field);
+            group_by.forEach((field) => (group._id[field] = '$' + field));
         }
     }
     else {
@@ -423,7 +436,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
         }
         let result;
         try {
-            result = (await this._collection(model).insertMany(data, { safe: true }));
+            result = await this._collection(model).insertMany(data, { safe: true });
         }
         catch (e) {
             throw _processSaveError(e);
@@ -650,9 +663,11 @@ class MongoDBAdapter extends base_1.AdapterBase {
                 transformer.emit('error', MongoDBAdapter.wrapError('unknown error', error));
                 return;
             }
-            cursor.on('error', (e) => {
+            cursor
+                .on('error', (e) => {
                 transformer.emit('error', e);
-            }).pipe(transformer);
+            })
+                .pipe(transformer);
         });
         return transformer;
     }
@@ -738,7 +753,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
             this._client.close();
         }
         this._client = null;
-        return this._db = null;
+        return (this._db = null);
     }
     /**
      * Exposes mongodb module's a collection object
@@ -786,7 +801,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
     _collection(model) {
         const name = this._connection.models[model].table_name;
         if (!this._collections[name]) {
-            return this._collections[name] = this._db.collection(_getMongoDBColName(name));
+            return (this._collections[name] = this._db.collection(_getMongoDBColName(name)));
         }
         else {
             return this._collections[name];

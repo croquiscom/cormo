@@ -22,17 +22,11 @@ function _compareUser(user: UserRef, expected: UserRefVO) {
   return expect(user.age).to.equal(expected.age);
 }
 
-export default function(models: {
-  User: typeof UserRef;
-  Post: typeof PostRef;
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { User: typeof UserRef; Post: typeof PostRef; connection: cormo.Connection | null }) {
   it('create simple', async () => {
     const count = await models.User.count();
     expect(count).to.equal(0);
-    await models.connection!.manipulate([
-      { create_user: { name: 'John Doe', age: 27 } },
-    ]);
+    await models.connection!.manipulate([{ create_user: { name: 'John Doe', age: 27 } }]);
     const users = await models.connection!.User.where();
     expect(users).to.have.length(1);
     expect(users[0]).to.have.keys('id', 'name', 'age');
@@ -42,9 +36,7 @@ export default function(models: {
 
   it('invalid model', async () => {
     try {
-      await models.connection!.manipulate([
-        { create_account: { name: 'John Doe', age: 27 } },
-      ]);
+      await models.connection!.manipulate([{ create_account: { name: 'John Doe', age: 27 } }]);
       throw new Error('must throw an error.');
     } catch (error) {
       expect(error).to.exist;
@@ -80,9 +72,7 @@ export default function(models: {
       { create_user: { name: 'Bill Smith', age: 45 } },
       { create_user: { name: 'Alice Jackson', age: 27 } },
     ]);
-    await models.connection!.manipulate([
-      { delete_user: { age: 27 } },
-    ]);
+    await models.connection!.manipulate([{ delete_user: { age: 27 } }]);
     const count = await models.User.count();
     expect(count).to.equal(1);
     const users = await models.User.where();
@@ -119,9 +109,7 @@ export default function(models: {
   });
 
   it('id is not shared between manipulates', async () => {
-    await models.connection!.manipulate([
-      { create_user: { id: 'user1', name: 'John Doe', age: 27 } },
-    ]);
+    await models.connection!.manipulate([{ create_user: { id: 'user1', name: 'John Doe', age: 27 } }]);
     try {
       await models.connection!.manipulate([
         { create_post: { title: 'first post', body: 'This is the 1st post.', user_id: 'user1' } },
@@ -140,12 +128,12 @@ export default function(models: {
     ]);
     let count = await models.User.count();
     expect(count).to.equal(1);
-    count = (await models.Post.count());
+    count = await models.Post.count();
     expect(count).to.equal(1);
     await models.connection!.manipulate(['deleteAll']);
-    count = (await models.User.count());
+    count = await models.User.count();
     expect(count).to.equal(0);
-    count = (await models.Post.count());
+    count = await models.Post.count();
     expect(count).to.equal(0);
   });
 
@@ -195,9 +183,7 @@ export default function(models: {
       { create_user: { name: 'Bill Smith', age: 45 } },
       { create_user: { name: 'Alice Jackson', age: 27 } },
     ]);
-    const id_to_record_map = await models.connection!.manipulate([
-      { find_users: { id: 'users', age: 27 } },
-    ]);
+    const id_to_record_map = await models.connection!.manipulate([{ find_users: { id: 'users', age: 27 } }]);
     const users = id_to_record_map.users;
     expect(users).to.be.an.instanceof(Array);
     expect(users).to.have.length(2);
@@ -217,7 +203,14 @@ export default function(models: {
       { create_user: { id: 'user1', name: 'John Doe', age: 27 } },
       { create_user: { id: 'user2', name: 'Bill Smith', age: 45 } },
       { create_user: { id: 'user3', name: 'Alice Jackson', age: 27 } },
-      { create_post: { title: 'first post', body: 'This is the 1st post.', user_id: 'user1', readers: ['user2', 'user3'] } },
+      {
+        create_post: {
+          title: 'first post',
+          body: 'This is the 1st post.',
+          user_id: 'user1',
+          readers: ['user2', 'user3'],
+        },
+      },
     ]);
     const users = [id_to_record_map.user1, id_to_record_map.user2, id_to_record_map.user3];
     const posts = await models.Post.where();

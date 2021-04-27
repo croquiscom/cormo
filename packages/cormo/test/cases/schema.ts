@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as cormo from '../..';
 
-export default function(db: any, db_config: any) {
+export default function (db: any, db_config: any) {
   let connection!: cormo.Connection;
   let sandbox: sinon.SinonSandbox;
 
@@ -18,7 +18,7 @@ export default function(db: any, db_config: any) {
   });
 
   it('add index', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
     User.column('age', Number);
 
@@ -32,7 +32,9 @@ export default function(db: any, db_config: any) {
     User.index({ age: 1 }, { unique: true });
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add index on users age' },
-      ...db === 'mysql' ? [{ message: '  (CREATE UNIQUE INDEX `age` ON `users` (`age` ASC))', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [{ message: '  (CREATE UNIQUE INDEX `age` ON `users` (`age` ASC))', is_query: true, ignorable: true }]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -79,15 +81,32 @@ export default function(db: any, db_config: any) {
   });
 
   it('applySchemas successes if an index already exist', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.index({ name: 1, age: 1 });
     User.column('name', String);
     User.column('age', Number);
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add table users' },
-      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL,`age` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message:
+                '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL,`age` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
       { message: 'Add index on users name,age' },
-      ...db === 'mysql' ? [{ message: '  (CREATE INDEX `name_age` ON `users` (`name` ASC,`age` ASC))', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message: '  (CREATE INDEX `name_age` ON `users` (`name` ASC,`age` ASC))',
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -99,7 +118,15 @@ export default function(db: any, db_config: any) {
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
         { message: 'Add column address to users' },
-        ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)', is_query: true, ignorable: true }] : [],
+        ...(db === 'mysql'
+          ? [
+              {
+                message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)',
+                is_query: true,
+                ignorable: true,
+              },
+            ]
+          : []),
       ]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
     } else {
@@ -113,12 +140,21 @@ export default function(db: any, db_config: any) {
   });
 
   it('add column', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
     User.column('age', Number);
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add table users' },
-      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL,`age` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message:
+                '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL,`age` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -130,7 +166,15 @@ export default function(db: any, db_config: any) {
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
         { message: 'Add column address to users' },
-        ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)', is_query: true, ignorable: true }] : [],
+        ...(db === 'mysql'
+          ? [
+              {
+                message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)',
+                is_query: true,
+                ignorable: true,
+              },
+            ]
+          : []),
       ]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
     } else {
@@ -148,11 +192,11 @@ export default function(db: any, db_config: any) {
 
   it('table name', async () => {
     // default table name is a pluralized form
-    class Person extends cormo.BaseModel { }
+    class Person extends cormo.BaseModel {}
     Person.column('name', String);
 
     // explicitly set name
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.table_name = 'User';
     User.column('name', String);
 
@@ -164,11 +208,38 @@ export default function(db: any, db_config: any) {
     }
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add table people' },
-      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `people` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message:
+                '  (CREATE TABLE `people` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
       { message: 'Add table User' },
-      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `User` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message:
+                '  (CREATE TABLE `User` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
       { message: 'Add table Guest' },
-      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `Guest` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message:
+                '  (CREATE TABLE `Guest` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -193,9 +264,20 @@ export default function(db: any, db_config: any) {
     }
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add table users' },
-      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`n` VARCHAR(255) NULL,`a` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message:
+                '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`n` VARCHAR(255) NULL,`a` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
       { message: 'Add index on users n' },
-      ...db === 'mysql' ? [{ message: '  (CREATE INDEX `n` ON `users` (`n` ASC))', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [{ message: '  (CREATE INDEX `n` ON `users` (`n` ASC))', is_query: true, ignorable: true }]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -253,9 +335,7 @@ export default function(db: any, db_config: any) {
     expect(await User2.where({ name: { $contains: 'Doe' } }).order('id')).to.eql([
       { id: user1.id, name: 'Jone Doe', age: 36 },
     ]);
-    expect(await User2.where({ age: 28 }).order('id')).to.eql([
-      { id: user2.id, name: 'Bill Smith', age: 28 },
-    ]);
+    expect(await User2.where({ age: 28 }).order('id')).to.eql([{ id: user2.id, name: 'Bill Smith', age: 28 }]);
 
     // group
     expect(await User2.group(['name'], { max_age: { $max: '$age' } }).order('name')).to.eql([
@@ -367,10 +447,10 @@ export default function(db: any, db_config: any) {
   });
 
   it('table is removed', async () => {
-    class Person extends cormo.BaseModel { }
+    class Person extends cormo.BaseModel {}
     Person.column('name', String);
 
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
 
     await connection.applySchemas();
@@ -380,29 +460,33 @@ export default function(db: any, db_config: any) {
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
         { message: 'Add column address to users' },
-        ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)', is_query: true, ignorable: true }] : [],
+        ...(db === 'mysql'
+          ? [
+              {
+                message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)',
+                is_query: true,
+                ignorable: true,
+              },
+            ]
+          : []),
         { message: 'Remove table people', ignorable: true },
       ]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
     } else {
-      expect(await connection.getSchemaChanges()).to.eql([
-        { message: 'Remove table people', ignorable: true },
-      ]);
+      expect(await connection.getSchemaChanges()).to.eql([{ message: 'Remove table people', ignorable: true }]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
     }
 
     await connection.applySchemas();
 
-    expect(await connection.getSchemaChanges()).to.eql([
-      { message: 'Remove table people', ignorable: true },
-    ]);
+    expect(await connection.getSchemaChanges()).to.eql([{ message: 'Remove table people', ignorable: true }]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     connection.models.Person = Person;
   });
 
   it('column is removed', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
     User.column('address', String);
 
@@ -421,7 +505,7 @@ export default function(db: any, db_config: any) {
   });
 
   it('column is added', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
 
     await connection.applySchemas();
@@ -432,9 +516,19 @@ export default function(db: any, db_config: any) {
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
         { message: 'Add column address to users' },
-        ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)', is_query: true, ignorable: true }] : [],
+        ...(db === 'mysql'
+          ? [
+              {
+                message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL)',
+                is_query: true,
+                ignorable: true,
+              },
+            ]
+          : []),
         { message: 'Add column a to users' },
-        ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `a` VARCHAR(255) NULL)', is_query: true, ignorable: true }] : [],
+        ...(db === 'mysql'
+          ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `a` VARCHAR(255) NULL)', is_query: true, ignorable: true }]
+          : []),
       ]);
       expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
     } else {
@@ -444,7 +538,7 @@ export default function(db: any, db_config: any) {
   });
 
   it('column requireness is changed', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', { type: String, required: true });
     User.column('address', String);
 
@@ -465,7 +559,7 @@ export default function(db: any, db_config: any) {
   });
 
   it('index is removed', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
     User.column('age', Number);
     User.index({ age: 1 }, { unique: true });
@@ -473,9 +567,7 @@ export default function(db: any, db_config: any) {
     await connection.applySchemas();
     (User as any)._indexes.pop();
 
-    expect(await connection.getSchemaChanges()).to.eql([
-      { message: 'Remove index on users age', ignorable: true },
-    ]);
+    expect(await connection.getSchemaChanges()).to.eql([{ message: 'Remove index on users age', ignorable: true }]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
   });
 

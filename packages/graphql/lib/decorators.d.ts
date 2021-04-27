@@ -12,11 +12,11 @@ interface ColumnBasicOptions {
     description?: string;
     default_value?: string | number | (() => string | number);
 }
-export declare function Column(options: {
+export declare function Column(options: ({
     enum: any;
-} & ColumnBasicOptions | {
+} & ColumnBasicOptions) | ({
     type: cormo.types.ColumnType | cormo.types.ColumnType[];
-} & ColumnBasicOptions): PropertyDecorator;
+} & ColumnBasicOptions)): PropertyDecorator;
 interface ObjectColumnOptions {
     type: any;
     required?: boolean;

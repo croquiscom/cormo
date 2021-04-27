@@ -63,7 +63,7 @@ _dbs.forEach((db) => {
       await _g.connection.dropAllModels();
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       await _g.deleteAllRecords([models.User, models.Post]);
     });
 

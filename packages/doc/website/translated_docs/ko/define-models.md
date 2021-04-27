@@ -40,17 +40,17 @@ User.column('age', { type: cormo.types.Integer, description: '사용자의 나�
 
 현재 지원되는 타입은 다음과 같습니다.
 
-* [types.String](/cormo/api/cormo/interfaces/cormotypesstring.html) ('string', String)
-* [types.Number](/cormo/api/cormo/interfaces/cormotypesnumber.html) ('number', Number)
-* [types.Boolean](/cormo/api/cormo/interfaces/cormotypesboolean.html) ('boolean', Boolean)
-* [types.Integer](/cormo/api/cormo/interfaces/cormotypesinteger.html) ('integer')
-* [types.Date](/cormo/api/cormo/interfaces/cormotypesdate.html) ('date', Date)
-* [types.GeoPoint](/cormo/api/cormo/interfaces/cormotypesgeopoint.html) ('geopoint')
-    * MySQL, MonogoDB, PostgreSQL 만 지원
-* [types.Object](/cormo/api/cormo/interfaces/cormotypesobject.html) ('object', Object)
-    * SQL 어댑터에서 객체는 JSON 문자열로 저장합니다.
-* [types.Text](/cormo/api/cormo/interfaces/cormotypestext.html) ('text')
-    * SQL 어댑터에서 긴 문자열을 저정할 때 사용합니다.
+- [types.String](/cormo/api/cormo/interfaces/cormotypesstring.html) ('string', String)
+- [types.Number](/cormo/api/cormo/interfaces/cormotypesnumber.html) ('number', Number)
+- [types.Boolean](/cormo/api/cormo/interfaces/cormotypesboolean.html) ('boolean', Boolean)
+- [types.Integer](/cormo/api/cormo/interfaces/cormotypesinteger.html) ('integer')
+- [types.Date](/cormo/api/cormo/interfaces/cormotypesdate.html) ('date', Date)
+- [types.GeoPoint](/cormo/api/cormo/interfaces/cormotypesgeopoint.html) ('geopoint')
+  - MySQL, MonogoDB, PostgreSQL 만 지원
+- [types.Object](/cormo/api/cormo/interfaces/cormotypesobject.html) ('object', Object)
+  - SQL 어댑터에서 객체는 JSON 문자열로 저장합니다.
+- [types.Text](/cormo/api/cormo/interfaces/cormotypestext.html) ('text')
+  - SQL 어댑터에서 긴 문자열을 저정할 때 사용합니다.
 
 ### 타입 옵션
 
@@ -59,9 +59,9 @@ User.column('age', { type: cormo.types.Integer, description: '사용자의 나�
 다음과 같이 하면 MySQL나 PostgreSQL에서 문자열 타입에 길이를 지정할 수 있습니다.
 
 ```typescript
-Model.column('method_1', cormo.types.String(50))
+Model.column('method_1', cormo.types.String(50));
 // 또는
-Model.column('method_2', 'string(50)')
+Model.column('method_2', 'string(50)');
 ```
 
 `String`이 아니라 `cormo.types.String`을 사용해야 한다는 점에 주의 하십시오.

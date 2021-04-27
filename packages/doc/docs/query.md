@@ -161,7 +161,7 @@ If you want to apply different criteria in one query chain, you can use [Query#i
 You can use them to simplify query statements.
 
 ```typescript
-async function getOldUsers(options: {limit?: number, columns?: string[]}) {
+async function getOldUsers(options: { limit?: number; columns?: string[] }) {
   const query = User.query();
   query.where({ age: { $gt: 30 } });
   if (options.limit) {
@@ -175,11 +175,15 @@ async function getOldUsers(options: {limit?: number, columns?: string[]}) {
 
 // wiil be
 
-async function getOldUsers(options: {limit?: number, columns?: string[]}) {
+async function getOldUsers(options: { limit?: number; columns?: string[] }) {
   return await User.query()
     .where({ age: { $gt: 30 } })
-    .if(options.limit != null).limit(options.limit).endif()
-    .if(options.columns != null).select(options.columns as any).endif()
+    .if(options.limit != null)
+    .limit(options.limit)
+    .endif()
+    .if(options.columns != null)
+    .select(options.columns as any)
+    .endif()
     .exec();
 }
 ```
@@ -193,7 +197,7 @@ But if you use [Query#find](/cormo/api/cormo/classes/query.html#find) with a sin
 
 ```typescript
 const user = await User.find(1).exec();
-const users = await User.find([1,2,3]).exec();
+const users = await User.find([1, 2, 3]).exec();
 ```
 
 [Query](/cormo/api/cormo/classes/query.html) has the `then` method (i.e. thenable) which calls `exec` internally. So you can omit to call `exec`, just `await`.
@@ -206,7 +210,7 @@ const users = await User.where({ age: 30 });
 `find` does not preserve given order, so if you want to get same ordered array, use [Query#findPreserve](/cormo/api/cormo/classes/query.html#findpreserve) instead.
 
 ```typescript
-const users = await User.findPreserve([2,1,2,3]).exec();
+const users = await User.findPreserve([2, 1, 2, 3]).exec();
 // users[0].id is 2, users[1].id is 1, users[2].id is 2 and users[3].id is 3
 ```
 
@@ -272,7 +276,7 @@ If the result has huge records, you can use Node.js stream API to reduce memory 
 ```typescript
 let count = 0;
 await new Promise((resolve, reject) => {
-  const stream = User.where({age: 27}).stream();
+  const stream = User.where({ age: 27 }).stream();
   stream.on('data', function (user) {
     count++;
   });

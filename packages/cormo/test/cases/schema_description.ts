@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as cormo from '../..';
 
-export default function(db: any, db_config: any) {
+export default function (db: any, db_config: any) {
   if (db !== 'mysql') {
     return;
   }
@@ -22,7 +22,7 @@ export default function(db: any, db_config: any) {
   });
 
   it('set table description at create', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
     User.description = 'User model';
 
@@ -35,9 +35,27 @@ export default function(db: any, db_config: any) {
 
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add table users' },
-      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT=\'User model\')', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message:
+                "  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='User model')",
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
       { message: 'Add table guests' },
-      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `guests` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT=\'Guest model\')', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message:
+                "  (CREATE TABLE `guests` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Guest model')",
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -51,7 +69,7 @@ export default function(db: any, db_config: any) {
   });
 
   it('change table description after create', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
 
     await connection.applySchemas();
@@ -61,14 +79,18 @@ export default function(db: any, db_config: any) {
 
     expect(await connection.getSchemaChanges()).to.eql([
       { message: "Change table users's description to 'User model'", ignorable: true },
-      ...db === 'mysql' ? [{ message: "  (ALTER TABLE users COMMENT 'User model')", is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [{ message: "  (ALTER TABLE users COMMENT 'User model')", is_query: true, ignorable: true }]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     await connection.applySchemas();
     expect(await connection.getSchemaChanges()).to.eql([
       { message: "Change table users's description to 'User model'", ignorable: true },
-      ...db === 'mysql' ? [{ message: "  (ALTER TABLE users COMMENT 'User model')", is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [{ message: "  (ALTER TABLE users COMMENT 'User model')", is_query: true, ignorable: true }]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
@@ -83,7 +105,7 @@ export default function(db: any, db_config: any) {
   });
 
   it('set column description at create', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', { type: String, description: 'user name' });
 
     // using Decorator
@@ -95,9 +117,27 @@ export default function(db: any, db_config: any) {
 
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add table users' },
-      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL COMMENT \'user name\' ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message:
+                "  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL COMMENT 'user name' ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)",
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
       { message: 'Add table guests' },
-      ...db === 'mysql' ? [{ message: '  (CREATE TABLE `guests` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL COMMENT \'user name\' ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message:
+                "  (CREATE TABLE `guests` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL COMMENT 'user name' ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)",
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
 
@@ -111,7 +151,7 @@ export default function(db: any, db_config: any) {
   });
 
   it('set column description on adding column', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
     User.column('age', Number);
 
@@ -120,13 +160,21 @@ export default function(db: any, db_config: any) {
     User.column('address', { type: String, description: 'Address of user' });
     expect(await connection.getSchemaChanges()).to.eql([
       { message: 'Add column address to users' },
-      ...db === 'mysql' ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL COMMENT \'Address of user\')', is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message: "  (ALTER TABLE `users` ADD COLUMN `address` VARCHAR(255) NULL COMMENT 'Address of user')",
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
   });
 
   it('change column description after create', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
 
     await connection.applySchemas();
@@ -136,14 +184,30 @@ export default function(db: any, db_config: any) {
 
     expect(await connection.getSchemaChanges()).to.eql([
       { message: "Change users.name's description to 'Name of user'", ignorable: true },
-      ...db === 'mysql' ? [{ message: "  (ALTER TABLE `users` CHANGE COLUMN `name` `name` VARCHAR(255) NULL COMMENT 'Name of user')", is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message: "  (ALTER TABLE `users` CHANGE COLUMN `name` `name` VARCHAR(255) NULL COMMENT 'Name of user')",
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
     await connection.applySchemas();
     expect(await connection.getSchemaChanges()).to.eql([
       { message: "Change users.name's description to 'Name of user'", ignorable: true },
-      ...db === 'mysql' ? [{ message: "  (ALTER TABLE `users` CHANGE COLUMN `name` `name` VARCHAR(255) NULL COMMENT 'Name of user')", is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [
+            {
+              message: "  (ALTER TABLE `users` CHANGE COLUMN `name` `name` VARCHAR(255) NULL COMMENT 'Name of user')",
+              is_query: true,
+              ignorable: true,
+            },
+          ]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 
@@ -158,17 +222,19 @@ export default function(db: any, db_config: any) {
   });
 
   it('support special characters', async () => {
-    class User extends cormo.BaseModel { }
+    class User extends cormo.BaseModel {}
     User.column('name', String);
 
     await connection.applySchemas();
 
-    User.description = 'use \' in comment';
+    User.description = "use ' in comment";
     connection._schema_changed = true;
 
     expect(await connection.getSchemaChanges()).to.eql([
       { message: "Change table users's description to 'use ' in comment'", ignorable: true },
-      ...db === 'mysql' ? [{ message: "  (ALTER TABLE users COMMENT 'use \\' in comment')", is_query: true, ignorable: true }] : [],
+      ...(db === 'mysql'
+        ? [{ message: "  (ALTER TABLE users COMMENT 'use \\' in comment')", is_query: true, ignorable: true }]
+        : []),
     ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
 

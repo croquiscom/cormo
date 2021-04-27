@@ -1,3 +1,5 @@
+/* eslint-disable indent */
+
 let sqlite3: any;
 
 try {
@@ -130,7 +132,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
       }
     }
     for (const integrity of model_class._integrities) {
-      const parenttable_name = integrity.parent && integrity.parent.table_name || '';
+      const parenttable_name = (integrity.parent && integrity.parent.table_name) || '';
       if (integrity.type === 'child_nullify') {
         column_sqls.push(`FOREIGN KEY ("${integrity.column}") REFERENCES "${parenttable_name}"(id) ON DELETE SET NULL`);
       } else if (integrity.type === 'child_restrict') {
@@ -168,7 +170,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const columns = [];
     for (const column in index.columns) {
       const order = index.columns[column];
-      columns.push(`"${schema[column] && schema[column]._dbname_us || column}" ${(order === -1 ? 'DESC' : 'ASC')}`);
+      columns.push(`"${(schema[column] && schema[column]._dbname_us) || column}" ${order === -1 ? 'DESC' : 'ASC'}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
     const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
@@ -182,10 +184,12 @@ export class SQLite3Adapter extends SQLAdapterBase {
   /** @internal */
   public async deleteAllIgnoringConstraint(model_list: string[]): Promise<void> {
     await this._client.runAsync('PRAGMA foreign_keys=OFF');
-    await Promise.all(model_list.map(async (model) => {
-      const table_name = this._connection.models[model].table_name;
-      await this._client.runAsync(`DELETE FROM \`${table_name}\``);
-    }));
+    await Promise.all(
+      model_list.map(async (model) => {
+        const table_name = this._connection.models[model].table_name;
+        await this._client.runAsync(`DELETE FROM \`${table_name}\``);
+      }),
+    );
     await this._client.runAsync('PRAGMA foreign_keys=ON');
   }
 
@@ -215,7 +219,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
       if (options.transaction) {
         options.transaction.checkFinished();
         id = await new Promise((resolve, reject) => {
-          options.transaction!._adapter_connection.run(sql, values, function(this: any, error: any) {
+          options.transaction!._adapter_connection.run(sql, values, function (this: any, error: any) {
             if (error) {
               reject(error);
             } else {
@@ -225,7 +229,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
         });
       } else {
         id = await new Promise((resolve, reject) => {
-          this._client.run(sql, values, function(this: any, error: any) {
+          this._client.run(sql, values, function (this: any, error: any) {
             if (error) {
               reject(error);
             } else {
@@ -255,7 +259,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     let id: any;
     try {
       id = await new Promise((resolve, reject) => {
-        this._client.run(sql, values, function(this: any, error: any) {
+        this._client.run(sql, values, function (this: any, error: any) {
           if (error) {
             reject(error);
           } else {
@@ -290,7 +294,9 @@ export class SQLite3Adapter extends SQLAdapterBase {
 
   /** @internal */
   public async updatePartial(
-    model: string, data: any, conditions: any,
+    model: string,
+    data: any,
+    conditions: any,
     options: { transaction?: Transaction },
   ): Promise<number> {
     const table_name = this._connection.models[model].table_name;
@@ -302,7 +308,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
     try {
       return await new Promise<number>((resolve, reject) => {
-        this._client.run(sql, values, function(this: any, error: any) {
+        this._client.run(sql, values, function (this: any, error: any) {
           if (error) {
             reject(error);
           } else {
@@ -317,7 +323,8 @@ export class SQLite3Adapter extends SQLAdapterBase {
 
   /** @internal */
   public async findById(
-    model: string, id: any,
+    model: string,
+    id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
@@ -328,7 +335,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = (await this._client.allAsync(sql, id));
+      result = await this._client.allAsync(sql, id);
     } catch (error) {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
@@ -349,7 +356,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
     let result;
     try {
-      result = (await this._client.allAsync(sql, params));
+      result = await this._client.allAsync(sql, params);
     } catch (error) {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
@@ -376,16 +383,23 @@ export class SQLite3Adapter extends SQLAdapterBase {
       return r;
     }
     const readable = new stream.Readable({ objectMode: true });
-    readable._read = () => { /**/ };
-    this._client.each(sql, params, (error: any, record: any) => {
-      if (error) {
-        readable.emit('error', error);
-        return;
-      }
-      readable.push(this._convertToModelInstance(model, record, options));
-    }, () => {
-      readable.push(null);
-    });
+    readable._read = () => {
+      /**/
+    };
+    this._client.each(
+      sql,
+      params,
+      (error: any, record: any) => {
+        if (error) {
+          readable.emit('error', error);
+          return;
+        }
+        readable.push(this._convertToModelInstance(model, record, options));
+      },
+      () => {
+        readable.push(null);
+      },
+    );
     return readable;
   }
 
@@ -427,7 +441,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
     try {
       return await new Promise<number>((resolve, reject) => {
-        this._client.run(sql, params, function(this: any, error: any) {
+        this._client.run(sql, params, function (this: any, error: any) {
           if (error) {
             reject(error);
           } else {
@@ -557,15 +571,22 @@ export class SQLite3Adapter extends SQLAdapterBase {
 
   /** @internal */
   private async _getSchema(table: string): Promise<SchemasTable> {
-    const columns = (await this._client.allAsync(`PRAGMA table_info(\`${table}\`)`));
+    const columns = await this._client.allAsync(`PRAGMA table_info(\`${table}\`)`);
     const schema: SchemasTable = { columns: {} };
     for (const column of columns) {
-      const type = /^varchar\((\d*)\)/i.test(column.type) ? new types.String(Number(RegExp.$1))
-        : /^double/i.test(column.type) ? new types.Number()
-          : /^tinyint/i.test(column.type) ? new types.Boolean()
-            : /^int/i.test(column.type) ? new types.Integer()
-              : /^real/i.test(column.type) ? new types.Date()
-                : /^text/i.test(column.type) ? new types.Text() : undefined;
+      const type = /^varchar\((\d*)\)/i.test(column.type)
+        ? new types.String(Number(RegExp.$1))
+        : /^double/i.test(column.type)
+        ? new types.Number()
+        : /^tinyint/i.test(column.type)
+        ? new types.Boolean()
+        : /^int/i.test(column.type)
+        ? new types.Integer()
+        : /^real/i.test(column.type)
+        ? new types.Date()
+        : /^text/i.test(column.type)
+        ? new types.Text()
+        : undefined;
       schema.columns[column.name] = {
         required: column.notnull === 1,
         type,
@@ -603,7 +624,12 @@ export class SQLite3Adapter extends SQLAdapterBase {
 
   /** @internal */
   private _buildUpdateSetOfColumn(
-    property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
+    property: any,
+    data: any,
+    values: any,
+    fields: any[],
+    places: any[],
+    insert: boolean = false,
   ) {
     const dbname = property._dbname_us;
     const value = data[dbname];
@@ -689,7 +715,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
           column = order;
           order = 'ASC';
         }
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return `"${column}" ${order}`;
       });
       sql += ' ORDER BY ' + orders.join(',');

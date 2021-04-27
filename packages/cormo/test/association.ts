@@ -60,7 +60,7 @@ _dbs.forEach((db) => {
           public comments?: () => Promise<Post[]>;
 
           @cormo.BelongsTo({ type: 'Post' })
-          public parent_post?: () => Promise<Post | null>
+          public parent_post?: () => Promise<Post | null>;
 
           public parent_post_id?: number | null;
         }

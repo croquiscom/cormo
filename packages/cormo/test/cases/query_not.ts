@@ -27,7 +27,7 @@ async function _createUsers(User: typeof UserRef, data?: UserRefVO[]) {
   return await User.createBulk(data);
 }
 
-export default function(models: {
+export default function (models: {
   User: typeof UserRef;
   Ledger: typeof LedgerRef;
   connection: cormo.Connection | null;
@@ -36,7 +36,7 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ age: { $not: 27 } });
     expect(users).to.have.length(3);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Bill Smith', age: 45 });
     _compareUser(users[1], { name: 'Daniel Smith', age: 8 });
     _compareUser(users[2], { name: 'Gina Baker' });
@@ -44,10 +44,9 @@ export default function(models: {
 
   it('where not chain', async () => {
     await _createUsers(models.User);
-    const users = await models.User.where({ age: { $not: 27 } })
-      .where({ name: { $not: 'Daniel Smith' } });
+    const users = await models.User.where({ age: { $not: 27 } }).where({ name: { $not: 'Daniel Smith' } });
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Bill Smith', age: 45 });
     _compareUser(users[1], { name: 'Gina Baker' });
   });
@@ -65,7 +64,7 @@ export default function(models: {
     _compareUser(users[0], { name: 'Bill Smith', age: 45 });
     // '> 30' != 'not < 30' because of null value
     users = await models.User.where({ age: { $not: { $lt: 30 } } });
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     expect(users).to.have.length(2);
     _compareUser(users[0], { name: 'Bill Smith', age: 45 });
     _compareUser(users[1], { name: 'Gina Baker' });
@@ -75,7 +74,7 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ name: { $not: { $contains: 'smi' } } });
     expect(users).to.have.length(3);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'Gina Baker' });
     _compareUser(users[2], { name: 'John Doe', age: 27 });
@@ -95,7 +94,7 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ name: { $not: { $contains: ['baker', 'doe'] } } });
     expect(users).to.have.length(3);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'Bill Smith', age: 45 });
     _compareUser(users[2], { name: 'Daniel Smith', age: 8 });
@@ -105,7 +104,7 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ name: { $not: { $startswith: 'd' } } });
     expect(users).to.have.length(4);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'Bill Smith', age: 45 });
     _compareUser(users[2], { name: 'Gina Baker' });
@@ -126,7 +125,7 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ name: { $not: { $endswith: 'h' } } });
     expect(users).to.have.length(3);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'Gina Baker' });
     _compareUser(users[2], { name: 'John Doe', age: 27 });
@@ -146,17 +145,17 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ age: { $not: { $in: [27, 45, 57] } } });
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Daniel Smith', age: 8 });
     _compareUser(users[1], { name: 'Gina Baker' });
   });
 
   it('not $in for id', async () => {
     const sources = await _createUsers(models.User);
-    sources.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    sources.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     const users = await models.User.where({ id: { $not: { $in: [sources[2].id, sources[0].id] } } });
     expect(users).to.have.length(3);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Bill Smith', age: 45 });
     _compareUser(users[1], { name: 'Gina Baker' });
     _compareUser(users[2], { name: 'John Doe', age: 27 });
@@ -166,7 +165,7 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ age: { $not: [27, 45, 57] } });
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Daniel Smith', age: 8 });
     _compareUser(users[1], { name: 'Gina Baker' });
   });
@@ -197,9 +196,7 @@ export default function(models: {
       { date_ymd: 20210109, debit: 300, credit: 700, balance: 800 },
     ]);
     const ledgers = await models.Ledger.where({ debit: { $not: { $cne: '$credit' } } }).select(['date_ymd']);
-    expect(ledgers).to.eql([
-      { id: null, date_ymd: 20210107 },
-    ]);
+    expect(ledgers).to.eql([{ id: null, date_ymd: 20210107 }]);
   });
 
   it('not for column comparison - greater than', async () => {

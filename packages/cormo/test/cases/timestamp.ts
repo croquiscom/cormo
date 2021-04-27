@@ -9,10 +9,7 @@ export class UserRef extends cormo.BaseModel {
   public updated_at?: Date;
 }
 
-export default function(models: {
-  User: typeof UserRef;
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { User: typeof UserRef; connection: cormo.Connection | null }) {
   it('created_at', async () => {
     const now = Date.now();
     const user = await models.User.create({ name: 'John Doe', age: 27 });
@@ -26,7 +23,7 @@ export default function(models: {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const created_at = user.created_at;
     await new Promise<void>((resolve, reject) => {
-      return setTimeout(function() {
+      return setTimeout(function () {
         return resolve();
       }, 50);
     });

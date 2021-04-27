@@ -53,15 +53,12 @@ async function _createUsers(User: typeof UserRef, data?: UserRefVO[]) {
   return await User.createBulk(data);
 }
 
-export default function(models: {
-  User: typeof UserRef;
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { User: typeof UserRef; connection: cormo.Connection | null }) {
   it('simple where', async () => {
     await _createUsers(models.User);
     const users = await models.User.where({ age: 27 });
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'John Doe', age: 27 });
   });
@@ -91,7 +88,7 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ $or: [{ age: 32 }, { name: 'John Doe' }] });
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Gina Baker', age: 32 });
     _compareUser(users[1], { name: 'John Doe', age: 27 });
   });
@@ -127,7 +124,7 @@ export default function(models: {
     expect(count).to.equal(2);
     const users = await models.User.where();
     expect(users).to.have.length(3);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Bill Smith', age: 45 });
     _compareUser(users[1], { name: 'Daniel Smith', age: 8 });
     _compareUser(users[2], { name: 'Gina Baker', age: 32 });
@@ -180,7 +177,7 @@ export default function(models: {
     _compareUser(users[1], { name: 'Bill Smith', age: 45 });
     users = await models.User.query().order('age').skip(1).limit(2);
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'John Doe', age: 27 });
   });
@@ -226,7 +223,7 @@ export default function(models: {
 
     const users = await models.User.where();
     expect(users).to.have.length(5);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'Bill Smith', age: 45 });
     _compareUser(users[2], { name: 'Daniel Smith', age: 8 });
@@ -265,9 +262,21 @@ export default function(models: {
     expect(await models.User.where({ id: user.id }).one().selectSingle('name')).to.eql(user.name);
     expect(await models.User.where({ id: user.id }).one().selectSingle('age')).to.eql(user.age);
 
-    expect(await models.User.where({ id: _getInvalidID(user.id) }).one().selectSingle('id')).to.eql(null);
-    expect(await models.User.where({ id: _getInvalidID(user.id) }).one().selectSingle('name')).to.eql(null);
-    expect(await models.User.where({ id: _getInvalidID(user.id) }).one().selectSingle('age')).to.eql(null);
+    expect(
+      await models.User.where({ id: _getInvalidID(user.id) })
+        .one()
+        .selectSingle('id'),
+    ).to.eql(null);
+    expect(
+      await models.User.where({ id: _getInvalidID(user.id) })
+        .one()
+        .selectSingle('name'),
+    ).to.eql(null);
+    expect(
+      await models.User.where({ id: _getInvalidID(user.id) })
+        .one()
+        .selectSingle('age'),
+    ).to.eql(null);
   });
 
   it('order (string)', async () => {
@@ -325,7 +334,7 @@ export default function(models: {
     _compareUser(users[2], { name: 'John Doe', age: 27 });
     _compareUser(users[3], { name: 'Gina Baker', age: 32 });
     _compareUser(users[4], { name: 'Bill Smith', age: 45 });
-    users = (await models.User.order('age -name'));
+    users = await models.User.order('age -name');
     expect(users).to.have.length(5);
     _compareUser(users[0], { name: 'Daniel Smith', age: 8 });
     _compareUser(users[1], { name: 'John Doe', age: 27 });
@@ -336,7 +345,7 @@ export default function(models: {
 
   it('order (id)', async () => {
     const sources = await _createUsers(models.User);
-    sources.sort((a, b) => a.id < b.id ? -1 : 1);
+    sources.sort((a, b) => (a.id < b.id ? -1 : 1));
     let users = await models.User.order('id');
     expect(users).to.have.length(5);
     for (let i = 0; i <= 4; i++) {

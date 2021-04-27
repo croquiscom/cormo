@@ -6,7 +6,11 @@ import _ from 'lodash';
 import { AdapterBase } from '../adapters/base';
 import { createAdapter as createMongoDBAdapter, AdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
 import { createAdapter as createMySQLAdapter, AdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
-import { createAdapter as createPostgreSQLAdapter, AdapterSettingsPostgreSQL, PostgreSQLAdapter } from '../adapters/postgresql';
+import {
+  createAdapter as createPostgreSQLAdapter,
+  AdapterSettingsPostgreSQL,
+  PostgreSQLAdapter,
+} from '../adapters/postgresql';
 import { createAdapter as createSQLite3Adapter, AdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
 import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, Logger } from '../logger';
 import { BaseModel, ColumnProperty, ModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
@@ -41,17 +45,13 @@ interface ConnectionSettings {
   connection_retry_count?: number;
 }
 
-export interface MongoDBConnectionSettings extends ConnectionSettings, AdapterSettingsMongoDB {
-}
+export interface MongoDBConnectionSettings extends ConnectionSettings, AdapterSettingsMongoDB {}
 
-export interface MySQLConnectionSettings extends ConnectionSettings, AdapterSettingsMySQL {
-}
+export interface MySQLConnectionSettings extends ConnectionSettings, AdapterSettingsMySQL {}
 
-export interface PostgreSQLConnectionSettings extends ConnectionSettings, AdapterSettingsPostgreSQL {
-}
+export interface PostgreSQLConnectionSettings extends ConnectionSettings, AdapterSettingsPostgreSQL {}
 
-export interface SQLite3ConnectionSettings extends ConnectionSettings, AdapterSettingsSQLite3 {
-}
+export interface SQLite3ConnectionSettings extends ConnectionSettings, AdapterSettingsSQLite3 {}
 
 type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
 
@@ -93,7 +93,7 @@ interface Association {
 }
 
 interface TxModelClass<M extends BaseModel> {
-  new(data?: object): M;
+  new (data?: object): M;
   create(data?: ModelValueObject<M>): Promise<M>;
   createBulk(data?: Array<ModelValueObject<M>>): Promise<M[]>;
   count(condition?: object): Promise<number>;
@@ -108,7 +108,8 @@ interface TxModelClass<M extends BaseModel> {
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): QueryArray<M, Pick<M, K>>;
   order(orders: string): QueryArray<M>;
   group<G extends ModelColumnNamesWithId<M>, F>(
-    group_by: G | G[], fields?: F,
+    group_by: G | G[],
+    fields?: F,
   ): QueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F): QueryArray<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QueryArray<M, U>;
@@ -253,7 +254,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    * Applies schemas
    * @see AdapterBase::applySchema
    */
-  public async applySchemas(options: { verbose?: boolean, apply_description_change?: boolean } = {}) {
+  public async applySchemas(options: { verbose?: boolean; apply_description_change?: boolean } = {}) {
     this._initializeModels();
     if (!this._schema_changed) {
       return;
@@ -307,7 +308,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
               if (!type_changed) {
                 if (options.apply_description_change) {
                   if (options.verbose) {
-                    console.log(`Changing ${modelClass.table_name}.${column}'s description to '${property.description}'`);
+                    console.log(
+                      `Changing ${modelClass.table_name}.${column}'s description to '${property.description}'`,
+                    );
                   }
                   await this._adapter.updateColumnDescription(model, property, options.verbose);
                 }
@@ -326,7 +329,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
               console.log(`Creating table ${modelClass.table_name}`);
             }
             await this._adapter.createTable(model, options.verbose);
-          } else if (current_table !== 'NO SCHEMA' && (current_table.description ?? '') !== (modelClass.description ?? '')) {
+          } else if (
+            current_table !== 'NO SCHEMA' &&
+            (current_table.description ?? '') !== (modelClass.description ?? '')
+          ) {
             if (options.apply_description_change) {
               if (options.verbose) {
                 console.log(`Changing table ${modelClass.table_name}'s description to '${modelClass.description}'`);
@@ -360,8 +366,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
               type = 'delete';
             }
             if (type) {
-              const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.table_name]
-                && current.foreign_keys[modelClass.table_name][integrity.column];
+              const current_foreign_key =
+                current.foreign_keys &&
+                current.foreign_keys[modelClass.table_name] &&
+                current.foreign_keys[modelClass.table_name][integrity.column];
               if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name)) {
                 if (options.verbose) {
                   const table_name = modelClass.table_name;
@@ -425,7 +433,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         if (column !== 'id') {
           if (property.required && !current_column.required) {
             type_changed = true;
-            changes.push({ message: `Change ${modelClass.table_name}.${property._dbname_us} to required`, ignorable: true });
+            changes.push({
+              message: `Change ${modelClass.table_name}.${property._dbname_us} to required`,
+              ignorable: true,
+            });
           } else if (!property.required && current_column.required) {
             type_changed = true;
             changes.push({ message: `Change ${modelClass.table_name}.${column} to optional`, ignorable: true });
@@ -436,18 +447,27 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         const real_type = current_column.adapter_type_string;
         if (expected_type !== real_type) {
           type_changed = true;
-          changes.push({ message: `Type different ${modelClass.table_name}.${column}: expected=${expected_type}, real=${real_type}`, ignorable: true });
+          changes.push({
+            message: `Type different ${modelClass.table_name}.${column}: expected=${expected_type}, real=${real_type}`,
+            ignorable: true,
+          });
         }
 
         if ((current_column.description ?? '') !== (property.description ?? '')) {
           if (!type_changed) {
-            changes.push({ message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'`, ignorable: true });
+            changes.push({
+              message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'`,
+              ignorable: true,
+            });
             const query = this._adapter.getUpdateColumnDescriptionQuery(model, property);
             if (query) {
               changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
             }
           } else {
-            changes.push({ message: `(Skip) Change ${modelClass.table_name}.${column}'s description to '${property.description}'`, ignorable: true });
+            changes.push({
+              message: `(Skip) Change ${modelClass.table_name}.${column}'s description to '${property.description}'`,
+              ignorable: true,
+            });
           }
         }
       }
@@ -467,8 +487,14 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         if (query) {
           changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
         }
-      } else if (current_table !== 'NO SCHEMA' && (current_table.description ?? '') !== (modelClass.description ?? '')) {
-        changes.push({ message: `Change table ${modelClass.table_name}'s description to '${modelClass.description}'`, ignorable: true });
+      } else if (
+        current_table !== 'NO SCHEMA' &&
+        (current_table.description ?? '') !== (modelClass.description ?? '')
+      ) {
+        changes.push({
+          message: `Change table ${modelClass.table_name}'s description to '${modelClass.description}'`,
+          ignorable: true,
+        });
         const query = this._adapter.getUpdateTableDescriptionQuery(model);
         if (query) {
           changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
@@ -495,7 +521,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       }
       for (const index in current.indexes?.[modelClass.table_name]) {
         // MySQL add index for foreign key, so does not need to remove if the index is defined in integrities
-        if (!_.find(modelClass._indexes, (item) => item.options.name === index) && !_.find(modelClass._integrities, (item) => item.column === index)) {
+        if (
+          !_.find(modelClass._indexes, (item) => item.options.name === index) &&
+          !_.find(modelClass._integrities, (item) => item.column === index)
+        ) {
           changes.push({ message: `Remove index on ${modelClass.table_name} ${index}`, ignorable: true });
         }
       }
@@ -513,9 +542,14 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           type = 'delete';
         }
         if (type) {
-          const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.table_name]
-            && current.foreign_keys[modelClass.table_name][integrity.column];
-          if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name) && this._adapter.native_integrity) {
+          const current_foreign_key =
+            current.foreign_keys &&
+            current.foreign_keys[modelClass.table_name] &&
+            current.foreign_keys[modelClass.table_name][integrity.column];
+          if (
+            !(current_foreign_key && current_foreign_key === integrity.parent.table_name) &&
+            this._adapter.native_integrity
+          ) {
             const table_name = modelClass.table_name;
             const parent_table_name = integrity.parent.table_name;
             changes.push({ message: `Add foreign key ${table_name}.${integrity.column} to ${parent_table_name}` });
@@ -543,7 +577,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /**
    * Logs
    */
-  public log(model: string, type: string, data: object) { /**/ }
+  public log(model: string, type: string, data: object) {
+    /**/
+  }
 
   public [inspect.custom]() {
     return inspect(this.models);
@@ -657,10 +693,12 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    * Fetches associated records
    */
   public async fetchAssociated(
-    records: any, column: string, select?: string,
+    records: any,
+    column: string,
+    select?: string,
     options?: { lean?: boolean; model?: typeof BaseModel; transaction?: Transaction },
   ) {
-    if ((select != null) && typeof select === 'object') {
+    if (select != null && typeof select === 'object') {
       options = select;
       select = undefined;
     } else if (options == null) {
@@ -683,8 +721,14 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     if (association.type === 'belongsTo') {
       return await this._fetchAssociatedBelongsTo(records, association.target_model, column, select, options);
     } else if (association.type === 'hasMany') {
-      return await this._fetchAssociatedHasMany(records, association.target_model, association.foreign_key,
-        column, select, options);
+      return await this._fetchAssociatedHasMany(
+        records,
+        association.target_model,
+        association.foreign_key,
+        column,
+        select,
+        options,
+      );
     } else {
       throw new Error(`unknown column '${column}'`);
     }
@@ -736,36 +780,59 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
 
   public async transaction<T, M1 extends BaseModel>(
     options: { isolation_level?: IsolationLevel; models: [TxModelClass<M1>] },
-    block: (m1: TxModelClass<M1>, transaction: Transaction) => Promise<T>): Promise<T>;
+    block: (m1: TxModelClass<M1>, transaction: Transaction) => Promise<T>,
+  ): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel>(
     options: { isolation_level?: IsolationLevel; models: [TxModelClass<M1>, TxModelClass<M2>] },
-    block: (m1: TxModelClass<M1>, m2: TxModelClass<M2>, transaction: Transaction) => Promise<T>): Promise<T>;
+    block: (m1: TxModelClass<M1>, m2: TxModelClass<M2>, transaction: Transaction) => Promise<T>,
+  ): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel, M3 extends BaseModel>(
     options: { isolation_level?: IsolationLevel; models: [TxModelClass<M1>, TxModelClass<M2>, TxModelClass<M3>] },
-    block: (m1: TxModelClass<M1>, m2: TxModelClass<M2>,
-      m3: TxModelClass<M3>, transaction: Transaction) => Promise<T>): Promise<T>;
+    block: (m1: TxModelClass<M1>, m2: TxModelClass<M2>, m3: TxModelClass<M3>, transaction: Transaction) => Promise<T>,
+  ): Promise<T>;
   public async transaction<T, M1 extends BaseModel, M2 extends BaseModel, M3 extends BaseModel, M4 extends BaseModel>(
     options: {
       isolation_level?: IsolationLevel;
       models: [TxModelClass<M1>, TxModelClass<M2>, TxModelClass<M3>, TxModelClass<M4>];
     },
-    block: (m1: TxModelClass<M1>, m2: TxModelClass<M2>,
-      m3: TxModelClass<M3>, m4: TxModelClass<M4>, transaction: Transaction) => Promise<T>): Promise<T>;
-  public async transaction<T, M1 extends BaseModel, M2 extends BaseModel,
-    M3 extends BaseModel, M4 extends BaseModel, M5 extends BaseModel>(
-      options: {
-        isolation_level?: IsolationLevel;
-        models: [TxModelClass<M1>, TxModelClass<M2>, TxModelClass<M3>, TxModelClass<M4>, TxModelClass<M4>];
-      },
-      block: (m1: TxModelClass<M1>, m2: TxModelClass<M2>, m3: TxModelClass<M3>,
-        m4: TxModelClass<M4>, m5: TxModelClass<M5>, transaction: Transaction) => Promise<T>): Promise<T>;
+    block: (
+      m1: TxModelClass<M1>,
+      m2: TxModelClass<M2>,
+      m3: TxModelClass<M3>,
+      m4: TxModelClass<M4>,
+      transaction: Transaction,
+    ) => Promise<T>,
+  ): Promise<T>;
+  public async transaction<
+    T,
+    M1 extends BaseModel,
+    M2 extends BaseModel,
+    M3 extends BaseModel,
+    M4 extends BaseModel,
+    M5 extends BaseModel
+  >(
+    options: {
+      isolation_level?: IsolationLevel;
+      models: [TxModelClass<M1>, TxModelClass<M2>, TxModelClass<M3>, TxModelClass<M4>, TxModelClass<M4>];
+    },
+    block: (
+      m1: TxModelClass<M1>,
+      m2: TxModelClass<M2>,
+      m3: TxModelClass<M3>,
+      m4: TxModelClass<M4>,
+      m5: TxModelClass<M5>,
+      transaction: Transaction,
+    ) => Promise<T>,
+  ): Promise<T>;
   public async transaction<T>(
     options: { isolation_level?: IsolationLevel },
-    block: (transaction: Transaction) => Promise<T>): Promise<T>;
+    block: (transaction: Transaction) => Promise<T>,
+  ): Promise<T>;
   public async transaction<T>(block: (transaction: Transaction) => Promise<T>): Promise<T>;
   public async transaction<T>(
     options_or_block: { isolation_level?: IsolationLevel; models?: any[] } | ((...args: any[]) => Promise<T>),
-    block?: (...args: any[]) => Promise<T>): Promise<T> {
+    block?: (...args: any[]) => Promise<T>,
+  ): Promise<T> {
     let options: { isolation_level?: IsolationLevel; models?: any[] };
     if (typeof options_or_block === 'function') {
       options = {};
@@ -777,7 +844,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     await transaction.setup(options && options.isolation_level);
     try {
       const args: any[] = (options.models || []).map((model) => {
-        const txModel = function(data?: object) {
+        const txModel = function (data?: object) {
           const instance = new model(data);
           instance._transaction = transaction;
           return instance;
@@ -849,7 +916,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       throw new Error('cache needs Redis');
     } else {
       const settings = this._redis_cache_settings;
-      const client = settings.client || (redis.createClient(settings.port || 6379, settings.host || '127.0.0.1'));
+      const client = settings.client || redis.createClient(settings.port || 6379, settings.host || '127.0.0.1');
       this._redis_cache_client = client;
       if (settings.database != null) {
         client.select(settings.database);
@@ -898,7 +965,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     for (const model in this.models) {
       const modelClass = this.models[model];
       if (modelClass.archive && !Object.prototype.hasOwnProperty.call(modelClass._connection.models, '_Archive')) {
-        const _Archive = class extends BaseModel { };
+        const _Archive = class extends BaseModel {};
         _Archive.connection(modelClass._connection);
         _Archive.archive = false;
         _Archive.column('model', String);
@@ -1012,10 +1079,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /**
    * Adds a has-many association
    */
-  private _hasMany(
-    this_model: typeof BaseModel, target_model: typeof BaseModel,
-    options?: AssociationHasManyOptions,
-  ) {
+  private _hasMany(this_model: typeof BaseModel, target_model: typeof BaseModel, options?: AssociationHasManyOptions) {
     let foreign_key: string;
     if (options && options.foreign_key) {
       foreign_key = options.foreign_key;
@@ -1028,10 +1092,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       connection: this_model._connection,
       type: types.RecordID,
     } as ColumnProperty);
-    const integrity = options && options.integrity || 'ignore';
+    const integrity = (options && options.integrity) || 'ignore';
     target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
     this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
-    const column = options && options.as || inflector.tableize(target_model._name);
+    const column = (options && options.as) || inflector.tableize(target_model._name);
     const columnCache = '__cache_' + column;
     const columnGetter = '__getter_' + column;
     this_model._associations[column] = { type: 'hasMany', target_model, foreign_key };
@@ -1075,10 +1139,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /**
    * Adds a has-one association
    */
-  private _hasOne(
-    this_model: typeof BaseModel, target_model: typeof BaseModel,
-    options?: AssociationHasOneOptions,
-  ) {
+  private _hasOne(this_model: typeof BaseModel, target_model: typeof BaseModel, options?: AssociationHasOneOptions) {
     let foreign_key: any;
     if (options && options.foreign_key) {
       foreign_key = options.foreign_key;
@@ -1091,10 +1152,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       connection: this_model._connection,
       type: types.RecordID,
     } as ColumnProperty);
-    const integrity = options && options.integrity || 'ignore';
+    const integrity = (options && options.integrity) || 'ignore';
     target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
     this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
-    const column = options && options.as || inflector.underscore(target_model._name);
+    const column = (options && options.as) || inflector.underscore(target_model._name);
     const columnCache = '__cache_' + column;
     const columnGetter = '__getter_' + column;
     this_model._associations[column] = { type: 'hasOne', target_model };
@@ -1132,7 +1193,8 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
    * Adds a belongs-to association
    */
   private _belongsTo(
-    this_model: typeof BaseModel, target_model: typeof BaseModel,
+    this_model: typeof BaseModel,
+    target_model: typeof BaseModel,
     options?: AssociationBelongsToOptions,
   ) {
     let foreign_key: any;
@@ -1148,7 +1210,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       required: options && options.required,
       type: types.RecordID,
     } as ColumnProperty);
-    const column = options && options.as || inflector.underscore(target_model._name);
+    const column = (options && options.as) || inflector.underscore(target_model._name);
     const columnCache = '__cache_' + column;
     const columnGetter = '__getter_' + column;
     this_model._associations[column] = { type: 'belongsTo', target_model };
@@ -1179,7 +1241,10 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   }
 
   private async _fetchAssociatedBelongsTo(
-    records: any, target_model: any, column: string, select: string | undefined,
+    records: any,
+    target_model: any,
+    column: string,
+    select: string | undefined,
     options: { lean?: boolean; transaction?: Transaction },
   ) {
     const id_column = column + '_id';
@@ -1268,7 +1333,11 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   }
 
   private async _fetchAssociatedHasMany(
-    records: any, target_model: any, foreign_key: any, column: string, select: string | undefined,
+    records: any,
+    target_model: any,
+    foreign_key: any,
+    column: string,
+    select: string | undefined,
     options: { lean?: boolean; transaction?: Transaction },
   ) {
     if (Array.isArray(records)) {

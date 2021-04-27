@@ -1,3 +1,5 @@
+/* eslint-disable indent */
+
 let mongodb: any;
 
 try {
@@ -14,7 +16,7 @@ export interface AdapterSettingsMongoDB {
   database: string;
 }
 
-class CormoTypesObjectId { }
+class CormoTypesObjectId {}
 
 import stream from 'stream';
 import _ from 'lodash';
@@ -22,7 +24,14 @@ import { Connection } from '../connection';
 import { BaseModel, ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
-import { AdapterBase, AdapterCountOptions, AdapterFindOptions, AdapterUpsertOptions, Schemas, SchemasIndex } from './base';
+import {
+  AdapterBase,
+  AdapterCountOptions,
+  AdapterFindOptions,
+  AdapterUpsertOptions,
+  Schemas,
+  SchemasIndex,
+} from './base';
 
 function _convertValueToObjectID(value: any, key: any) {
   if (value == null) {
@@ -89,18 +98,32 @@ function _buildWhereSingle(property: ColumnPropertyInternal, key: any, value: an
         if (sub_expr.substr(0, 1) === '$') {
           const compare_column = sub_expr.substr(1);
           if (not_op) {
-            const op = sub_key === '$cgt' ? '<='
-              : sub_key === '$cgte' ? '<'
-                : sub_key === '$clt' ? '>='
-                  : sub_key === '$clte' ? '>'
-                    : sub_key === '$ceq' ? '!=' : '==';
+            const op =
+              sub_key === '$cgt'
+                ? '<='
+                : sub_key === '$cgte'
+                ? '<'
+                : sub_key === '$clt'
+                ? '>='
+                : sub_key === '$clte'
+                ? '>'
+                : sub_key === '$ceq'
+                ? '!='
+                : '==';
             return { $where: `this.${key} ${op} this.${compare_column}` };
           } else {
-            const op = sub_key === '$cgt' ? '>'
-              : sub_key === '$cgte' ? '>='
-                : sub_key === '$clt' ? '<'
-                  : sub_key === '$clte' ? '<='
-                    : sub_key === '$ceq' ? '==' : '!=';
+            const op =
+              sub_key === '$cgt'
+                ? '>'
+                : sub_key === '$cgte'
+                ? '>='
+                : sub_key === '$clt'
+                ? '<'
+                : sub_key === '$clte'
+                ? '<='
+                : sub_key === '$ceq'
+                ? '=='
+                : '!=';
             return { $where: `this.${key} ${op} this.${compare_column}` };
           }
         } else {
@@ -192,9 +215,13 @@ function _buildWhere(schema: ModelSchemaInternal, conditions: any, conjunction =
     return subs[0];
   } else {
     if (conjunction === '$and') {
-      const before_count = _.reduce(subs, (memo, sub) => {
-        return memo + Object.keys(sub).length;
-      }, 0);
+      const before_count = _.reduce(
+        subs,
+        (memo, sub) => {
+          return memo + Object.keys(sub).length;
+        },
+        0,
+      );
       const obj: any = _.extend({}, ...subs);
       const keys = Object.keys(obj);
       const after_count = keys.length;
@@ -214,7 +241,7 @@ function _buildGroupExpr(schema: ModelSchemaInternal, group_expr: any) {
   }
   if (typeof sub_expr === 'string' && sub_expr.substr(0, 1) === '$') {
     let column = sub_expr.substr(1);
-    column = schema[column] && schema[column]._dbname_us || column;
+    column = (schema[column] && schema[column]._dbname_us) || column;
     return { [op]: `$${column}` };
   } else {
     return { [op]: sub_expr };
@@ -228,7 +255,7 @@ function _buildGroupFields(model_class: typeof BaseModel, group_by: any, group_f
       group._id = '$' + group_by[0];
     } else {
       group._id = {};
-      group_by.forEach((field: any) => group._id[field] = '$' + field);
+      group_by.forEach((field: any) => (group._id[field] = '$' + field));
     }
   } else {
     group._id = null;
@@ -413,7 +440,7 @@ export class MongoDBAdapter extends AdapterBase {
     }
     let result: any;
     try {
-      result = (await this._collection(model).insertMany(data, { safe: true }));
+      result = await this._collection(model).insertMany(data, { safe: true });
     } catch (e) {
       throw _processSaveError(e);
     }
@@ -447,7 +474,9 @@ export class MongoDBAdapter extends AdapterBase {
 
   /** @internal */
   public async updatePartial(
-    model: string, data: any, conditions: any,
+    model: string,
+    data: any,
+    conditions: any,
     options: { transaction?: Transaction },
   ): Promise<number> {
     const schema = this._connection.models[model]._schema;
@@ -517,7 +546,8 @@ export class MongoDBAdapter extends AdapterBase {
 
   /** @internal */
   public async findById(
-    model: string, id: any,
+    model: string,
+    id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
     const fields = this._buildSelect(options.select);
@@ -639,9 +669,11 @@ export class MongoDBAdapter extends AdapterBase {
         transformer.emit('error', MongoDBAdapter.wrapError('unknown error', error));
         return;
       }
-      cursor.on('error', (e: any) => {
-        transformer.emit('error', e);
-      }).pipe(transformer);
+      cursor
+        .on('error', (e: any) => {
+          transformer.emit('error', e);
+        })
+        .pipe(transformer);
     });
     return transformer;
   }
@@ -725,7 +757,7 @@ export class MongoDBAdapter extends AdapterBase {
       this._client.close();
     }
     this._client = null;
-    return this._db = null;
+    return (this._db = null);
   }
 
   /**
@@ -776,7 +808,7 @@ export class MongoDBAdapter extends AdapterBase {
   private _collection(model: any): any {
     const name = this._connection.models[model].table_name;
     if (!this._collections[name]) {
-      return this._collections[name] = this._db.collection(_getMongoDBColName(name));
+      return (this._collections[name] = this._db.collection(_getMongoDBColName(name)));
     } else {
       return this._collections[name];
     }
@@ -808,7 +840,14 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private _buildUpdateOps(schema: ModelSchemaInternal, update_ops: any, data: any, path: any, object: any, ignore_on_update?: string[]): any {
+  private _buildUpdateOps(
+    schema: ModelSchemaInternal,
+    update_ops: any,
+    data: any,
+    path: any,
+    object: any,
+    ignore_on_update?: string[],
+  ): any {
     for (const column in object) {
       const value = object[column];
       const property = _.find(schema, { _dbname_dot: path + column });

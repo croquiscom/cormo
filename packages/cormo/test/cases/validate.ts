@@ -7,10 +7,7 @@ export class User extends cormo.BaseModel {
   public email?: string;
 }
 
-export default function(models: {
-  User: typeof User;
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { User: typeof User; connection: cormo.Connection | null }) {
   it('valid', async () => {
     await models.User.create({ name: 'John Doe', age: 27 });
   });

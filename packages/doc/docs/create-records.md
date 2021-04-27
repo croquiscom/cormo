@@ -33,6 +33,6 @@ const user4 = await User.create({ name: 'John Doe', age: 27 });
 const users = await User.createBulk([
   { name: 'John Doe', age: 27 },
   { name: 'Bill Smith', age: 45 },
-  { name: 'Alice Jackson', age: 27 }
+  { name: 'Alice Jackson', age: 27 },
 ]);
 ```

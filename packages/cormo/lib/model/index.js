@@ -40,11 +40,15 @@ function _pf_getChanged() {
 function _pf_get(path) {
     return util.getPropertyOfPath(this, path.split('.'));
 }
-function _pf_getPrevious() { }
+function _pf_getPrevious() {
+    /**/
+}
 function _pf_set(path, value) {
     return util.setPropertyOfPath(this, path.split('.'), value);
 }
-function _pf_reset() { }
+function _pf_reset() {
+    /**/
+}
 /**
  * Base class for models
  */
@@ -131,7 +135,9 @@ class BaseModel {
         }
         this._runCallbacks('initialize', 'after');
     }
-    static initialize() { }
+    static initialize() {
+        /**/
+    }
     /**
      * Returns a new model class extending BaseModel
      */
@@ -222,8 +228,9 @@ class BaseModel {
         if (type.constructor === types.GeoPoint && !this._adapter.support_geopoint) {
             throw new Error('this adapter does not support GeoPoint type');
         }
-        if (type.constructor === types.String && type.length
-            && !this._adapter.support_string_type_with_length) {
+        if (type.constructor === types.String &&
+            type.length &&
+            !this._adapter.support_string_type_with_length) {
             throw new Error('this adapter does not support String type with length');
         }
         const parts = path.split('.');
@@ -307,7 +314,8 @@ class BaseModel {
         this._connection.addAssociation({ type: 'belongsTo', this_model: this, target_model_or_column, options });
     }
     static [util_1.inspect.custom](depth) {
-        const schema = Object.keys(this._schema || {}).sort()
+        const schema = Object.keys(this._schema || {})
+            .sort()
             .map((column) => `${column}: ${this._schema[column].type}`)
             .join(', ');
         return '\u001b[36m' + `[Model: ${this.name}(` + '\u001b[90m' + schema + '\u001b[36m' + ')]' + '\u001b[39m';
@@ -644,7 +652,7 @@ class BaseModel {
         for (const index of this._indexes) {
             if (!index.options.name) {
                 const column_names = Object.keys(index.columns).map((column_name) => {
-                    return this._schema[column_name] && this._schema[column_name]._dbname_us || column_name;
+                    return (this._schema[column_name] && this._schema[column_name]._dbname_us) || column_name;
                 });
                 index.options.name = column_names.join('_');
             }
@@ -703,7 +711,7 @@ class BaseModel {
             case types.Integer:
                 value = Number(value);
                 // value>>0 checkes integer and 32bit
-                if (isNaN(value) || (value >> 0) !== value) {
+                if (isNaN(value) || value >> 0 !== value) {
                     throw new Error(`'${column}' is not an integer`);
                 }
                 break;
@@ -971,7 +979,7 @@ class BaseModel {
         catch (error) {
             //
         }
-        return this._prev_attributes = {};
+        return (this._prev_attributes = {});
     }
     async _update(options) {
         const ctor = this.constructor;
@@ -990,7 +998,7 @@ class BaseModel {
                 ctor._connection.log(ctor._name, 'update', data);
             }
             await adapter.updatePartial(ctor._name, data, [{ id: this.id }], {});
-            return this._prev_attributes = {};
+            return (this._prev_attributes = {});
         }
         else {
             // update all
@@ -999,7 +1007,7 @@ class BaseModel {
                 ctor._connection.log(ctor._name, 'update', data);
             }
             await ctor._adapter.update(ctor._name, data, { transaction: options.transaction || this._transaction });
-            return this._prev_attributes = {};
+            return (this._prev_attributes = {});
         }
     }
     static applyDefaultValues(obj) {

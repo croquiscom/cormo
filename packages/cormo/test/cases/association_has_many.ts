@@ -7,11 +7,7 @@ function _comparePost(a: PostRef, b: PostRef) {
   expect(a).to.have.property('body', b.body);
 }
 
-export default function(models: {
-  Computer: typeof ComputerRef;
-  Post: typeof PostRef;
-  User: typeof UserRef;
-}) {
+export default function (models: { Computer: typeof ComputerRef; Post: typeof PostRef; User: typeof UserRef }) {
   it('collection_accessor.build on a new object', async () => {
     // create two new objects
     const user1 = models.User.build({ name: 'John Doe', age: 27 });
@@ -88,7 +84,7 @@ export default function(models: {
     const post2 = await models.Post.create({ title: 'second post', body: 'This is the 2nd post.', user_id: user.id });
     const posts = await user.posts!();
     expect(posts).to.have.length(2);
-    posts.sort((a, b) => a.body! < b.body! ? -1 : 1);
+    posts.sort((a, b) => (a.body! < b.body! ? -1 : 1));
     _comparePost(posts[0], post1);
     _comparePost(posts[1], post2);
   });
@@ -107,7 +103,7 @@ export default function(models: {
     // ignore cache and force reload
     const user_posts3 = await user.posts!(true);
     expect(user_posts3).to.have.length(2);
-    user_posts3.sort((a, b) => a.body! < b.body! ? -1 : 1);
+    user_posts3.sort((a, b) => (a.body! < b.body! ? -1 : 1));
     _comparePost(user_posts3[0], post1);
     _comparePost(user_posts3[1], post2);
   });

@@ -18,9 +18,7 @@ function _getInvalidID(id: number | string) {
   }
 }
 
-export default function(models: {
-  User: typeof User;
-}) {
+export default function (models: { User: typeof User }) {
   it('create one', () => {
     const user = new models.User();
     user.name = 'John Doe';
@@ -179,9 +177,9 @@ export default function(models: {
       models.User.create({ name: 'Bill Smith', age: 45 }),
       models.User.create({ name: 'Alice Jackson', age: 27 }),
     ]);
-    users.sort((a, b) => a.id < b.id ? -1 : 1);
+    users.sort((a, b) => (a.id < b.id ? -1 : 1));
     const records = await models.User.find([users[0].id, users[1].id]);
-    records.sort((a, b) => a.id < b.id ? -1 : 1);
+    records.sort((a, b) => (a.id < b.id ? -1 : 1));
     expect(records[0]).to.be.an.instanceof(models.User);
     expect(records[1]).to.be.an.instanceof(models.User);
     expect(records[0]).to.eql(users[0]);
@@ -194,7 +192,7 @@ export default function(models: {
       models.User.create({ name: 'Bill Smith', age: 45 }),
       models.User.create({ name: 'Alice Jackson', age: 27 }),
     ]);
-    users.sort((a, b) => a.id < b.id ? -1 : 1);
+    users.sort((a, b) => (a.id < b.id ? -1 : 1));
     try {
       await models.User.find([users[2].id, users[1].id, _getInvalidID(users[0].id)]);
       throw new Error('must throw an error.');
@@ -210,9 +208,9 @@ export default function(models: {
       models.User.create({ name: 'Bill Smith', age: 45 }),
       models.User.create({ name: 'Alice Jackson', age: 27 }),
     ]);
-    users.sort((a, b) => a.id < b.id ? -1 : 1);
+    users.sort((a, b) => (a.id < b.id ? -1 : 1));
     const records = await models.User.find([users[2].id, users[0].id, users[0].id, users[0].id, users[2].id]);
-    records.sort((a, b) => a.id < b.id ? -1 : 1);
+    records.sort((a, b) => (a.id < b.id ? -1 : 1));
     expect(records[0]).to.be.an.instanceof(models.User);
     expect(records[1]).to.be.an.instanceof(models.User);
     expect(records[0]).to.eql(users[0]);

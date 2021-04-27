@@ -113,9 +113,7 @@ input DeleteUserInput {
 
   describe('single query', () => {
     it('no argument returns null', async () => {
-      const id_to_record_map = await connection.manipulate([
-        { create_user: { id: 'user', name: 'Test', age: 15 } },
-      ]);
+      const id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const query = '{ user { id } }';
       const result = await graphql(schema, query);
       expect(result).to.eql({
@@ -126,9 +124,7 @@ input DeleteUserInput {
     });
 
     it('argument id is given', async () => {
-      const id_to_record_map = await connection.manipulate([
-        { create_user: { id: 'user', name: 'Test', age: 15 } },
-      ]);
+      const id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const query = 'query($id: ID) { user(id: $id) { id } }';
       const variables = { id: String(id_to_record_map.user.id) };
       const result = await graphql(schema, query, null, null, variables);
@@ -153,9 +149,7 @@ input DeleteUserInput {
     });
 
     it('get fields', async () => {
-      const id_to_record_map = await connection.manipulate([
-        { create_user: { id: 'user', name: 'Test', age: 15 } },
-      ]);
+      const id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const query = 'query($id: ID) { user(id: $id) { id name age } }';
       const variables = { id: String(id_to_record_map.user.id) };
       const result = await graphql(schema, query, null, null, variables);
@@ -203,10 +197,7 @@ input DeleteUserInput {
       expect(result).to.eql({
         data: {
           user_list: {
-            item_list: [
-              { id: String(id_to_record_map.user1.id) },
-              { id: String(id_to_record_map.user3.id) },
-            ],
+            item_list: [{ id: String(id_to_record_map.user1.id) }, { id: String(id_to_record_map.user3.id) }],
           },
         },
       });
@@ -226,9 +217,7 @@ input DeleteUserInput {
       expect(result).to.eql({
         data: {
           user_list: {
-            item_list: [
-              { id: String(id_to_record_map.user1.id) },
-            ],
+            item_list: [{ id: String(id_to_record_map.user1.id) }],
           },
         },
       });
@@ -269,9 +258,7 @@ input DeleteUserInput {
         expect(result).to.eql({
           data: {
             user_list: {
-              item_list: [
-                { id: String(id_to_record_map.user1.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.user1.id) }],
             },
           },
         });
@@ -288,10 +275,7 @@ input DeleteUserInput {
         expect(result).to.eql({
           data: {
             user_list: {
-              item_list: [
-                { id: String(id_to_record_map.user1.id) },
-                { id: String(id_to_record_map.user2.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.user1.id) }, { id: String(id_to_record_map.user2.id) }],
             },
           },
         });
@@ -308,10 +292,7 @@ input DeleteUserInput {
         expect(result).to.eql({
           data: {
             user_list: {
-              item_list: [
-                { id: String(id_to_record_map.user1.id) },
-                { id: String(id_to_record_map.user2.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.user1.id) }, { id: String(id_to_record_map.user2.id) }],
             },
           },
         });
@@ -328,9 +309,7 @@ input DeleteUserInput {
         expect(result).to.eql({
           data: {
             user_list: {
-              item_list: [
-                { id: String(id_to_record_map.user2.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.user2.id) }],
             },
           },
         });
@@ -347,10 +326,7 @@ input DeleteUserInput {
         expect(result).to.eql({
           data: {
             user_list: {
-              item_list: [
-                { id: String(id_to_record_map.user2.id) },
-                { id: String(id_to_record_map.user3.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.user2.id) }, { id: String(id_to_record_map.user3.id) }],
             },
           },
         });
@@ -367,10 +343,7 @@ input DeleteUserInput {
         expect(result).to.eql({
           data: {
             user_list: {
-              item_list: [
-                { id: String(id_to_record_map.user2.id) },
-                { id: String(id_to_record_map.user3.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.user2.id) }, { id: String(id_to_record_map.user3.id) }],
             },
           },
         });
@@ -387,10 +360,7 @@ input DeleteUserInput {
         expect(result).to.eql({
           data: {
             user_list: {
-              item_list: [
-                { id: String(id_to_record_map.user1.id) },
-                { id: String(id_to_record_map.user3.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.user1.id) }, { id: String(id_to_record_map.user3.id) }],
             },
           },
         });
@@ -407,10 +377,7 @@ input DeleteUserInput {
         expect(result).to.eql({
           data: {
             user_list: {
-              item_list: [
-                { id: String(id_to_record_map.user1.id) },
-                { id: String(id_to_record_map.user3.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.user1.id) }, { id: String(id_to_record_map.user3.id) }],
             },
           },
         });
@@ -430,9 +397,7 @@ input DeleteUserInput {
         expect(result).to.eql({
           data: {
             user_list: {
-              item_list: [
-                { id: String(id_to_record_map.user1.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.user1.id) }],
             },
           },
         });
@@ -452,10 +417,7 @@ input DeleteUserInput {
         expect(result).to.eql({
           data: {
             user_list: {
-              item_list: [
-                { id: String(id_to_record_map.user2.id) },
-                { id: String(id_to_record_map.user3.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.user2.id) }, { id: String(id_to_record_map.user3.id) }],
             },
           },
         });
@@ -602,9 +564,7 @@ input DeleteUserInput {
           createUser: { id, name: 'Test', age: 15 },
         },
       });
-      expect(await UserModel.where()).to.eql([
-        { id: Number(id), name: 'Test', age: 15 },
-      ]);
+      expect(await UserModel.where()).to.eql([{ id: Number(id), name: 'Test', age: 15 }]);
     });
 
     it('optional field', async () => {
@@ -617,17 +577,13 @@ input DeleteUserInput {
           createUser: { id, name: 'Test', age: null },
         },
       });
-      expect(await UserModel.where()).to.eql([
-        { id: Number(id), name: 'Test', age: null },
-      ]);
+      expect(await UserModel.where()).to.eql([{ id: Number(id), name: 'Test', age: null }]);
     });
   });
 
   describe('update', () => {
     it('update one', async () => {
-      const id_to_record_map = await connection.manipulate([
-        { create_user: { id: 'user', name: 'Test', age: 15 } },
-      ]);
+      const id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const id = id_to_record_map.user.id;
       const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
       const variables = { input: { id: String(id), name: 'Sample', age: 30 } };
@@ -637,15 +593,11 @@ input DeleteUserInput {
           updateUser: { id: String(id), name: 'Sample', age: 30 },
         },
       });
-      expect(await UserModel.where()).to.eql([
-        { id, name: 'Sample', age: 30 },
-      ]);
+      expect(await UserModel.where()).to.eql([{ id, name: 'Sample', age: 30 }]);
     });
 
     it('omit optional field', async () => {
-      const id_to_record_map = await connection.manipulate([
-        { create_user: { id: 'user', name: 'Test', age: 15 } },
-      ]);
+      const id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const id = id_to_record_map.user.id;
       const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
       const variables = { input: { id: String(id), name: 'Sample' } };
@@ -655,9 +607,7 @@ input DeleteUserInput {
           updateUser: { id: String(id), name: 'Sample', age: 15 },
         },
       });
-      expect(await UserModel.where()).to.eql([
-        { id, name: 'Sample', age: 15 },
-      ]);
+      expect(await UserModel.where()).to.eql([{ id, name: 'Sample', age: 15 }]);
     });
 
     it('record not found', async () => {
@@ -666,20 +616,20 @@ input DeleteUserInput {
       const result = await graphql(schema, query, null, null, variables);
       expect(result).to.eql({
         data: null,
-        errors: [{
-          locations: [{ column: 38, line: 1 }],
-          message: 'not found',
-          path: ['updateUser'],
-        }],
+        errors: [
+          {
+            locations: [{ column: 38, line: 1 }],
+            message: 'not found',
+            path: ['updateUser'],
+          },
+        ],
       });
     });
   });
 
   describe('delete', () => {
     it('delete one', async () => {
-      const id_to_record_map = await connection.manipulate([
-        { create_user: { id: 'user', name: 'Test', age: 15 } },
-      ]);
+      const id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const id = id_to_record_map.user.id;
       const query = 'mutation($input: DeleteUserInput!) { deleteUser(input: $input) }';
       const variables = { input: { id: String(id) } };
@@ -698,11 +648,13 @@ input DeleteUserInput {
       const result = await graphql(schema, query, null, null, variables);
       expect(result).to.eql({
         data: null,
-        errors: [{
-          locations: [{ column: 38, line: 1 }],
-          message: 'not found',
-          path: ['deleteUser'],
-        }],
+        errors: [
+          {
+            locations: [{ column: 38, line: 1 }],
+            message: 'not found',
+            path: ['deleteUser'],
+          },
+        ],
       });
     });
   });

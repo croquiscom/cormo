@@ -41,10 +41,11 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): QuerySingle<M, Pick<M, K>>;
   selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QuerySingle<M, M[K]>;
   order(orders?: string): QuerySingle<M, T>;
-  group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
-    QuerySingle<M, { [field in keyof F]: number } & Pick<M, G>>;
-  group<F>(group_by: null, fields?: F):
-    QuerySingle<M, { [field in keyof F]: number }>;
+  group<G extends ModelColumnNamesWithId<M>, F>(
+    group_by: G | G[],
+    fields?: F,
+  ): QuerySingle<M, { [field in keyof F]: number } & Pick<M, G>>;
+  group<F>(group_by: null, fields?: F): QuerySingle<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QuerySingle<M, U>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QuerySingle<M, T>;
@@ -78,10 +79,11 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): QuerySingleNull<M, Pick<M, K>>;
   selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QuerySingleNull<M, M[K]>;
   order(orders?: string): QuerySingleNull<M, T>;
-  group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
-    QuerySingleNull<M, { [field in keyof F]: number } & Pick<M, G>>;
-  group<F>(group_by: null, fields?: F):
-    QuerySingleNull<M, { [field in keyof F]: number }>;
+  group<G extends ModelColumnNamesWithId<M>, F>(
+    group_by: G | G[],
+    fields?: F,
+  ): QuerySingleNull<M, { [field in keyof F]: number } & Pick<M, G>>;
+  group<F>(group_by: null, fields?: F): QuerySingleNull<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QuerySingleNull<M, U>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QuerySingleNull<M, T>;
@@ -115,10 +117,11 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): QueryArray<M, Pick<M, K>>;
   selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QueryArray<M, M[K]>;
   order(orders?: string): QueryArray<M, T>;
-  group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F):
-    QueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
-  group<F>(group_by: null, fields?: F):
-    QueryArray<M, { [field in keyof F]: number }>;
+  group<G extends ModelColumnNamesWithId<M>, F>(
+    group_by: G | G[],
+    fields?: F,
+  ): QueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
+  group<F>(group_by: null, fields?: F): QueryArray<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QueryArray<M, U>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QueryArray<M, T>;
@@ -256,7 +259,9 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
    */
   public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): QuerySingle<M, Pick<M, K>>;
   public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): QueryArray<M, Pick<M, K>>;
-  public select<K extends ModelColumnNamesWithId<M>>(columns?: string | string[]): QuerySingle<M, Pick<M, K>> | QueryArray<M, Pick<M, K>> {
+  public select<K extends ModelColumnNamesWithId<M>>(
+    columns?: string | string[],
+  ): QuerySingle<M, Pick<M, K>> | QueryArray<M, Pick<M, K>> {
     if (!this._current_if) {
       return this as any;
     }
@@ -462,15 +467,17 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
   public stream(): stream.Readable {
     this._setUsed();
     const transformer = new stream.Transform({ objectMode: true });
-    transformer._transform = function(chunk, encoding, callback) {
+    transformer._transform = function (chunk, encoding, callback) {
       this.push(chunk);
       callback();
     };
     this._model._checkReady().then(() => {
-      this._adapter.stream(this._name, this._conditions, this._getAdapterFindOptions())
+      this._adapter
+        .stream(this._name, this._conditions, this._getAdapterFindOptions())
         .on('error', (error) => {
           transformer.emit('error', error);
-        }).pipe(transformer);
+        })
+        .pipe(transformer);
     });
     return transformer;
   }
@@ -489,8 +496,11 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
    * Executes the query as a promise (.then == .exec().then)
    */
   public then<TResult1 = T, TResult2 = never>(
-    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) |
-      ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onfulfilled?:
+      | ((value: T) => TResult1 | PromiseLike<TResult1>)
+      | ((value: T[]) => TResult1 | PromiseLike<TResult1>)
+      | undefined
+      | null,
     onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
   ): PromiseLike<TResult1 | TResult2>;
   public then<TResult1 = T, TResult2 = never>(
@@ -668,9 +678,11 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
 
     let group_by: string[] | undefined;
     if (this._options.group_by) {
-      group_by = this._options.group_by.map((column) => {
-        return this._model._schema[column]._dbname_us;
-      }).filter((column) => column != null);
+      group_by = this._options.group_by
+        .map((column) => {
+          return this._model._schema[column]._dbname_us;
+        })
+        .filter((column) => column != null);
     }
 
     const orders: string[] = [];
@@ -722,13 +734,15 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
         }
       }
     }
-    await Promise.all(this._includes.map(async (include) => {
-      await this._connection.fetchAssociated(records, include.column, include.select, {
-        lean: this._options.lean,
-        model: this._model,
-        transaction: this._options.transaction,
-      });
-    }));
+    await Promise.all(
+      this._includes.map(async (include) => {
+        await this._connection.fetchAssociated(records, include.column, include.select, {
+          lean: this._options.lean,
+          model: this._model,
+          transaction: this._options.transaction,
+        });
+      }),
+    );
     return records;
   }
 
@@ -765,7 +779,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       if (integrity.type === 'parent_nullify') {
         await integrity.child.update(_.zipObject([integrity.column], [null]), _.zipObject([integrity.column], [ids]));
       } else if (integrity.type === 'parent_restrict') {
-        const count = (await integrity.child.count(_.zipObject([integrity.column], [ids])));
+        const count = await integrity.child.count(_.zipObject([integrity.column], [ids]));
         if (count > 0) {
           throw new Error('rejected');
         }
@@ -786,7 +800,8 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
     }
     // find all records to be deleted
     const query = this._model.where(this._conditions);
-    if (!need_archive) { // we need only id field for integrity
+    if (!need_archive) {
+      // we need only id field for integrity
       query.select('');
     }
     const records: any[] = await query.exec({ skip_log: options && options.skip_log });

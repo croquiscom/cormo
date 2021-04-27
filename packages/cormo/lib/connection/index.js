@@ -198,7 +198,8 @@ class Connection extends events_1.EventEmitter {
                         }
                         await this._adapter.createTable(model, options.verbose);
                     }
-                    else if (current_table !== 'NO SCHEMA' && ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = modelClass.description) !== null && _d !== void 0 ? _d : '')) {
+                    else if (current_table !== 'NO SCHEMA' &&
+                        ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = modelClass.description) !== null && _d !== void 0 ? _d : '')) {
                         if (options.apply_description_change) {
                             if (options.verbose) {
                                 console.log(`Changing table ${modelClass.table_name}'s description to '${modelClass.description}'`);
@@ -232,8 +233,9 @@ class Connection extends events_1.EventEmitter {
                             type = 'delete';
                         }
                         if (type) {
-                            const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.table_name]
-                                && current.foreign_keys[modelClass.table_name][integrity.column];
+                            const current_foreign_key = current.foreign_keys &&
+                                current.foreign_keys[modelClass.table_name] &&
+                                current.foreign_keys[modelClass.table_name][integrity.column];
                             if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name)) {
                                 if (options.verbose) {
                                     const table_name = modelClass.table_name;
@@ -293,7 +295,10 @@ class Connection extends events_1.EventEmitter {
                 if (column !== 'id') {
                     if (property.required && !current_column.required) {
                         type_changed = true;
-                        changes.push({ message: `Change ${modelClass.table_name}.${property._dbname_us} to required`, ignorable: true });
+                        changes.push({
+                            message: `Change ${modelClass.table_name}.${property._dbname_us} to required`,
+                            ignorable: true,
+                        });
                     }
                     else if (!property.required && current_column.required) {
                         type_changed = true;
@@ -304,18 +309,27 @@ class Connection extends events_1.EventEmitter {
                 const real_type = current_column.adapter_type_string;
                 if (expected_type !== real_type) {
                     type_changed = true;
-                    changes.push({ message: `Type different ${modelClass.table_name}.${column}: expected=${expected_type}, real=${real_type}`, ignorable: true });
+                    changes.push({
+                        message: `Type different ${modelClass.table_name}.${column}: expected=${expected_type}, real=${real_type}`,
+                        ignorable: true,
+                    });
                 }
                 if (((_a = current_column.description) !== null && _a !== void 0 ? _a : '') !== ((_b = property.description) !== null && _b !== void 0 ? _b : '')) {
                     if (!type_changed) {
-                        changes.push({ message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'`, ignorable: true });
+                        changes.push({
+                            message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'`,
+                            ignorable: true,
+                        });
                         const query = this._adapter.getUpdateColumnDescriptionQuery(model, property);
                         if (query) {
                             changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
                         }
                     }
                     else {
-                        changes.push({ message: `(Skip) Change ${modelClass.table_name}.${column}'s description to '${property.description}'`, ignorable: true });
+                        changes.push({
+                            message: `(Skip) Change ${modelClass.table_name}.${column}'s description to '${property.description}'`,
+                            ignorable: true,
+                        });
                     }
                 }
             }
@@ -335,8 +349,12 @@ class Connection extends events_1.EventEmitter {
                     changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
                 }
             }
-            else if (current_table !== 'NO SCHEMA' && ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = modelClass.description) !== null && _d !== void 0 ? _d : '')) {
-                changes.push({ message: `Change table ${modelClass.table_name}'s description to '${modelClass.description}'`, ignorable: true });
+            else if (current_table !== 'NO SCHEMA' &&
+                ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = modelClass.description) !== null && _d !== void 0 ? _d : '')) {
+                changes.push({
+                    message: `Change table ${modelClass.table_name}'s description to '${modelClass.description}'`,
+                    ignorable: true,
+                });
                 const query = this._adapter.getUpdateTableDescriptionQuery(model);
                 if (query) {
                     changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
@@ -361,7 +379,8 @@ class Connection extends events_1.EventEmitter {
             }
             for (const index in (_h = current.indexes) === null || _h === void 0 ? void 0 : _h[modelClass.table_name]) {
                 // MySQL add index for foreign key, so does not need to remove if the index is defined in integrities
-                if (!lodash_1.default.find(modelClass._indexes, (item) => item.options.name === index) && !lodash_1.default.find(modelClass._integrities, (item) => item.column === index)) {
+                if (!lodash_1.default.find(modelClass._indexes, (item) => item.options.name === index) &&
+                    !lodash_1.default.find(modelClass._integrities, (item) => item.column === index)) {
                     changes.push({ message: `Remove index on ${modelClass.table_name} ${index}`, ignorable: true });
                 }
             }
@@ -380,9 +399,11 @@ class Connection extends events_1.EventEmitter {
                     type = 'delete';
                 }
                 if (type) {
-                    const current_foreign_key = current.foreign_keys && current.foreign_keys[modelClass.table_name]
-                        && current.foreign_keys[modelClass.table_name][integrity.column];
-                    if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name) && this._adapter.native_integrity) {
+                    const current_foreign_key = current.foreign_keys &&
+                        current.foreign_keys[modelClass.table_name] &&
+                        current.foreign_keys[modelClass.table_name][integrity.column];
+                    if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name) &&
+                        this._adapter.native_integrity) {
                         const table_name = modelClass.table_name;
                         const parent_table_name = integrity.parent.table_name;
                         changes.push({ message: `Add foreign key ${table_name}.${integrity.column} to ${parent_table_name}` });
@@ -407,7 +428,9 @@ class Connection extends events_1.EventEmitter {
     /**
      * Logs
      */
-    log(model, type, data) { }
+    log(model, type, data) {
+        /**/
+    }
     [util_1.inspect.custom]() {
         return util_1.inspect(this.models);
     }
@@ -525,7 +548,7 @@ class Connection extends events_1.EventEmitter {
      * Fetches associated records
      */
     async fetchAssociated(records, column, select, options) {
-        if ((select != null) && typeof select === 'object') {
+        if (select != null && typeof select === 'object') {
             options = select;
             select = undefined;
         }
@@ -689,7 +712,7 @@ class Connection extends events_1.EventEmitter {
         }
         else {
             const settings = this._redis_cache_settings;
-            const client = settings.client || (redis.createClient(settings.port || 6379, settings.host || '127.0.0.1'));
+            const client = settings.client || redis.createClient(settings.port || 6379, settings.host || '127.0.0.1');
             this._redis_cache_client = client;
             if (settings.database != null) {
                 client.select(settings.database);
@@ -861,10 +884,10 @@ class Connection extends events_1.EventEmitter {
             connection: this_model._connection,
             type: types.RecordID,
         });
-        const integrity = options && options.integrity || 'ignore';
+        const integrity = (options && options.integrity) || 'ignore';
         target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
         this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
-        const column = options && options.as || inflector.tableize(target_model._name);
+        const column = (options && options.as) || inflector.tableize(target_model._name);
         const columnCache = '__cache_' + column;
         const columnGetter = '__getter_' + column;
         this_model._associations[column] = { type: 'hasMany', target_model, foreign_key };
@@ -923,10 +946,10 @@ class Connection extends events_1.EventEmitter {
             connection: this_model._connection,
             type: types.RecordID,
         });
-        const integrity = options && options.integrity || 'ignore';
+        const integrity = (options && options.integrity) || 'ignore';
         target_model._integrities.push({ type: 'child_' + integrity, column: foreign_key, parent: this_model });
         this_model._integrities.push({ type: 'parent_' + integrity, column: foreign_key, child: target_model });
-        const column = options && options.as || inflector.underscore(target_model._name);
+        const column = (options && options.as) || inflector.underscore(target_model._name);
         const columnCache = '__cache_' + column;
         const columnGetter = '__getter_' + column;
         this_model._associations[column] = { type: 'hasOne', target_model };
@@ -979,7 +1002,7 @@ class Connection extends events_1.EventEmitter {
             required: options && options.required,
             type: types.RecordID,
         });
-        const column = options && options.as || inflector.underscore(target_model._name);
+        const column = (options && options.as) || inflector.underscore(target_model._name);
         const columnCache = '__cache_' + column;
         const columnGetter = '__getter_' + column;
         this_model._associations[column] = { type: 'belongsTo', target_model };

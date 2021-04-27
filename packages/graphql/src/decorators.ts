@@ -16,12 +16,17 @@ interface ColumnBasicOptions {
   default_value?: string | number | (() => string | number);
 }
 
-export function Column(options: { enum: any } & ColumnBasicOptions
-  | { type: cormo.types.ColumnType | cormo.types.ColumnType[] } & ColumnBasicOptions): PropertyDecorator;
-export function Column(options: {
-  enum?: any; type?: cormo.types.ColumnType
-  | cormo.types.ColumnType[];
-} & ColumnBasicOptions): PropertyDecorator {
+export function Column(
+  options:
+    | ({ enum: any } & ColumnBasicOptions)
+    | ({ type: cormo.types.ColumnType | cormo.types.ColumnType[] } & ColumnBasicOptions),
+): PropertyDecorator;
+export function Column(
+  options: {
+    enum?: any;
+    type?: cormo.types.ColumnType | cormo.types.ColumnType[];
+  } & ColumnBasicOptions,
+): PropertyDecorator {
   let cormo_type: cormo.types.ColumnType | cormo.types.ColumnType[];
   if (options.enum) {
     cormo_type = cormo.types.Integer;

@@ -156,7 +156,7 @@ const users = await User.where({ age: 27 }).exec();
 이를 이용해 질의 문장을 단순화할 수 있습니다.
 
 ```typescript
-async function getOldUsers(options: {limit?: number, columns?: string[]}) {
+async function getOldUsers(options: { limit?: number; columns?: string[] }) {
   const query = User.query();
   query.where({ age: { $gt: 30 } });
   if (options.limit) {
@@ -170,11 +170,15 @@ async function getOldUsers(options: {limit?: number, columns?: string[]}) {
 
 // 위 코드를 다음과 같이 작성할 수 있습니다.
 
-async function getOldUsers(options: {limit?: number, columns?: string[]}) {
+async function getOldUsers(options: { limit?: number; columns?: string[] }) {
   return await User.query()
     .where({ age: { $gt: 30 } })
-    .if(options.limit != null).limit(options.limit).endif()
-    .if(options.columns != null).select(options.columns as any).endif()
+    .if(options.limit != null)
+    .limit(options.limit)
+    .endif()
+    .if(options.columns != null)
+    .select(options.columns as any)
+    .endif()
     .exec();
 }
 ```
@@ -188,7 +192,7 @@ async function getOldUsers(options: {limit?: number, columns?: string[]}) {
 
 ```typescript
 const user = await User.find(1).exec();
-const users = await User.find([1,2,3]).exec();
+const users = await User.find([1, 2, 3]).exec();
 ```
 
 [Query](/cormo/api/cormo/classes/query.html)는 내부적으로 `exec`를 호출하는 `then` 메소드를 가지고 있습니다(즉 thenable). 따라서 `exec` 호출을 생략하고 단순히 `await`만 붙여줘도 됩니다.
@@ -201,7 +205,7 @@ const users = await User.where({ age: 30 });
 `find`는 주어진 순서를 보정하지 않습니다. 순서를 보장하고 싶은 경우 대신 [Query#findPreserve](/cormo/api/cormo/classes/query.html#findpreserve)를 사용하십시오.
 
 ```typescript
-const users = await User.findPreserve([2,1,2,3]).exec();
+const users = await User.findPreserve([2, 1, 2, 3]).exec();
 // users[0].id는 2, users[1].id는 1, users[2].id는 2, users[3].id는 3입니다.
 ```
 
@@ -267,7 +271,7 @@ const user_name = await User.find(1).selectSingle('name');
 ```typescript
 let count = 0;
 await new Promise((resolve, reject) => {
-  const stream = User.where({age: 27}).stream();
+  const stream = User.where({ age: 27 }).stream();
   stream.on('data', function (user) {
     count++;
   });

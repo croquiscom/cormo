@@ -3,9 +3,7 @@ import { ObjectId } from 'mongodb';
 import * as cormo from '../..';
 import _g = require('../support/common');
 
-export default function(models: {
-  connection: cormo.Connection<cormo.MongoDBAdapter> | null;
-}) {
+export default function (models: { connection: cormo.Connection<cormo.MongoDBAdapter> | null }) {
   describe('issues', () => {
     it('delayed auth info', async () => {
       const conn = new cormo.MongoDBConnection({
@@ -34,7 +32,7 @@ export default function(models: {
     });
 
     it('insert more than 1000', async () => {
-      class Simple extends cormo.BaseModel { }
+      class Simple extends cormo.BaseModel {}
       Simple.column('value', Number);
       const range = Array.from({ length: 1500 }, (v, i) => i + 1);
       const records = await Simple.createBulk(range.map((i) => ({ value: i })));

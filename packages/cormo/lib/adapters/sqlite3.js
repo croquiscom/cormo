@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable indent */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -134,7 +135,7 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
             }
         }
         for (const integrity of model_class._integrities) {
-            const parenttable_name = integrity.parent && integrity.parent.table_name || '';
+            const parenttable_name = (integrity.parent && integrity.parent.table_name) || '';
             if (integrity.type === 'child_nullify') {
                 column_sqls.push(`FOREIGN KEY ("${integrity.column}") REFERENCES "${parenttable_name}"(id) ON DELETE SET NULL`);
             }
@@ -174,7 +175,7 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         const columns = [];
         for (const column in index.columns) {
             const order = index.columns[column];
-            columns.push(`"${schema[column] && schema[column]._dbname_us || column}" ${(order === -1 ? 'DESC' : 'ASC')}`);
+            columns.push(`"${(schema[column] && schema[column]._dbname_us) || column}" ${order === -1 ? 'DESC' : 'ASC'}`);
         }
         const unique = index.options.unique ? 'UNIQUE ' : '';
         const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
@@ -332,7 +333,7 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         }
         let result;
         try {
-            result = (await this._client.allAsync(sql, id));
+            result = await this._client.allAsync(sql, id);
         }
         catch (error) {
             throw SQLite3Adapter.wrapError('unknown error', error);
@@ -355,7 +356,7 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         }
         let result;
         try {
-            result = (await this._client.allAsync(sql, params));
+            result = await this._client.allAsync(sql, params);
         }
         catch (error) {
             throw SQLite3Adapter.wrapError('unknown error', error);
@@ -384,7 +385,9 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
             return r;
         }
         const readable = new stream_1.default.Readable({ objectMode: true });
-        readable._read = () => { };
+        readable._read = () => {
+            /**/
+        };
         this._client.each(sql, params, (error, record) => {
             if (error) {
                 readable.emit('error', error);
@@ -557,15 +560,22 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     async _getSchema(table) {
-        const columns = (await this._client.allAsync(`PRAGMA table_info(\`${table}\`)`));
+        const columns = await this._client.allAsync(`PRAGMA table_info(\`${table}\`)`);
         const schema = { columns: {} };
         for (const column of columns) {
-            const type = /^varchar\((\d*)\)/i.test(column.type) ? new types.String(Number(RegExp.$1))
-                : /^double/i.test(column.type) ? new types.Number()
-                    : /^tinyint/i.test(column.type) ? new types.Boolean()
-                        : /^int/i.test(column.type) ? new types.Integer()
-                            : /^real/i.test(column.type) ? new types.Date()
-                                : /^text/i.test(column.type) ? new types.Text() : undefined;
+            const type = /^varchar\((\d*)\)/i.test(column.type)
+                ? new types.String(Number(RegExp.$1))
+                : /^double/i.test(column.type)
+                    ? new types.Number()
+                    : /^tinyint/i.test(column.type)
+                        ? new types.Boolean()
+                        : /^int/i.test(column.type)
+                            ? new types.Integer()
+                            : /^real/i.test(column.type)
+                                ? new types.Date()
+                                : /^text/i.test(column.type)
+                                    ? new types.Text()
+                                    : undefined;
             schema.columns[column.name] = {
                 required: column.notnull === 1,
                 type,
@@ -686,7 +696,7 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
                     column = order;
                     order = 'ASC';
                 }
-                column = schema[column] && schema[column]._dbname_us || column;
+                column = (schema[column] && schema[column]._dbname_us) || column;
                 return `"${column}" ${order}`;
             });
             sql += ' ORDER BY ' + orders.join(',');

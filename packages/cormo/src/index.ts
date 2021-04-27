@@ -9,10 +9,14 @@
  */
 export {
   Connection,
-  MongoDBConnection, MongoDBConnectionSettings,
-  MySQLConnection, MySQLConnectionSettings,
-  PostgreSQLConnection, PostgreSQLConnectionSettings,
-  SQLite3Connection, SQLite3ConnectionSettings,
+  MongoDBConnection,
+  MongoDBConnectionSettings,
+  MySQLConnection,
+  MySQLConnectionSettings,
+  PostgreSQLConnection,
+  PostgreSQLConnectionSettings,
+  SQLite3Connection,
+  SQLite3ConnectionSettings,
 } from './connection';
 
 /**

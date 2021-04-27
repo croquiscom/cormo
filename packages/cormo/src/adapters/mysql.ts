@@ -1,3 +1,5 @@
+/* eslint-disable indent */
+
 let mysql: any;
 let is_mysql2 = false;
 
@@ -26,10 +28,18 @@ export interface AdapterSettingsMySQL {
   query_timeout?: number;
   replication?: {
     use_master_for_read?: boolean;
-    read_replicas: Array<{ host?: string; port?: number; user?: string | Promise<string>; password?: string | Promise<string>; pool_size?: number }>;
+    read_replicas: Array<{
+      host?: string;
+      port?: number;
+      user?: string | Promise<string>;
+      password?: string | Promise<string>;
+      pool_size?: number;
+    }>;
   };
   ssl?: string | (tls.SecureContextOptions & { rejectUnauthorized?: boolean });
-  authPlugins?: { [plugin: string]: ({ connection, command }: { connection: any; command: any }) => (data: any) => Buffer };
+  authPlugins?: {
+    [plugin: string]: ({ connection, command }: { connection: any; command: any }) => (data: any) => Buffer;
+  };
   reconnect_if_read_only?: boolean;
   hide_unknown_error?: boolean;
 }
@@ -41,7 +51,14 @@ import { Connection } from '../connection';
 import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-import { AdapterCountOptions, AdapterFindOptions, Schemas, SchemasTable, SchemasIndex, AdapterUpsertOptions } from './base';
+import {
+  AdapterCountOptions,
+  AdapterFindOptions,
+  Schemas,
+  SchemasTable,
+  SchemasIndex,
+  AdapterUpsertOptions,
+} from './base';
 import { SQLAdapterBase } from './sql_base';
 
 function _typeToSQL(property: ColumnPropertyInternal, support_fractional_seconds: boolean) {
@@ -297,7 +314,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     const columns = [];
     for (const column in index.columns) {
       const order = index.columns[column];
-      columns.push(`\`${schema[column] && schema[column]._dbname_us || column}\` ${(order === -1 ? 'DESC' : 'ASC')}`);
+      columns.push(`\`${(schema[column] && schema[column]._dbname_us) || column}\` ${order === -1 ? 'DESC' : 'ASC'}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
     return `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${table_name}\` (${columns.join(',')})`;
@@ -351,22 +368,24 @@ export class MySQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   public async deleteAllIgnoringConstraint(model_list: string[]): Promise<void> {
-    await Promise.all(model_list.map(async (model) => {
-      const table_name = this._connection.models[model].table_name;
-      const connection = await this.getConnection();
-      try {
+    await Promise.all(
+      model_list.map(async (model) => {
+        const table_name = this._connection.models[model].table_name;
+        const connection = await this.getConnection();
         try {
-          await connection.queryAsync(`DELETE FROM \`${table_name}\``);
-        } catch (error) {
-          // try again with ignoring foreign key constraints
-          await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 0');
-          await connection.queryAsync(`DELETE FROM \`${table_name}\``);
-          await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 1');
+          try {
+            await connection.queryAsync(`DELETE FROM \`${table_name}\``);
+          } catch (error) {
+            // try again with ignoring foreign key constraints
+            await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 0');
+            await connection.queryAsync(`DELETE FROM \`${table_name}\``);
+            await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 1');
+          }
+        } finally {
+          await this.releaseConnection(connection);
         }
-      } finally {
-        await this.releaseConnection(connection);
-      }
-    }));
+      }),
+    );
   }
 
   /** @internal */
@@ -446,7 +465,9 @@ export class MySQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   public async updatePartial(
-    model: string, data: any, conditions: any,
+    model: string,
+    data: any,
+    conditions: any,
     options: { transaction?: Transaction },
   ): Promise<number> {
     const table_name = this._connection.models[model].table_name;
@@ -512,7 +533,8 @@ export class MySQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   public async findById(
-    model: string, id: any,
+    model: string,
+    id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction; node?: 'master' | 'read' },
   ): Promise<any> {
     id = this._convertValueType(id, this.key_type);
@@ -577,9 +599,13 @@ export class MySQLAdapter extends SQLAdapterBase {
       callback();
     };
     this._connection._logger.logQuery(sql, params);
-    this._client.query(sql, params).stream().on('error', (error: any) => {
-      return transformer.emit('error', error);
-    }).pipe(transformer);
+    this._client
+      .query(sql, params)
+      .stream()
+      .on('error', (error: any) => {
+        return transformer.emit('error', error);
+      })
+      .pipe(transformer);
     return transformer;
   }
 
@@ -773,8 +799,12 @@ export class MySQLAdapter extends SQLAdapterBase {
       return await transaction._adapter_connection.queryAsync({ sql: text, values, timeout: this._query_timeout });
     } else {
       let client = this._client;
-      if (options && options.node === 'read' && this._read_clients.length > 0
-        && text.substring(0, 6).toUpperCase() === 'SELECT') {
+      if (
+        options &&
+        options.node === 'read' &&
+        this._read_clients.length > 0 &&
+        text.substring(0, 6).toUpperCase() === 'SELECT'
+      ) {
         this._read_client_index++;
         if (this._read_client_index >= this._read_clients.length || this._read_client_index < 0) {
           this._read_client_index = 0;
@@ -866,7 +896,7 @@ export class MySQLAdapter extends SQLAdapterBase {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return `ANY_VALUE(${column})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -877,7 +907,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getTables(): Promise<Array<{ name: string, comment: string }>> {
+  private async _getTables(): Promise<Array<{ name: string; comment: string }>> {
     const result = await this._client.queryAsync('SHOW TABLE STATUS');
     return result.map((item: any) => ({
       name: item.Name,
@@ -890,13 +920,21 @@ export class MySQLAdapter extends SQLAdapterBase {
     const columns = await this._client.queryAsync(`SHOW FULL COLUMNS FROM \`${table}\``);
     const schema: SchemasTable = { columns: {} };
     for (const column of columns) {
-      const type = /^varchar\((\d*)\)/i.test(column.Type) ? new types.String(Number(RegExp.$1))
-        : /^double/i.test(column.Type) ? new types.Number()
-          : /^tinyint\(1\)/i.test(column.Type) ? new types.Boolean()
-            : /^int/i.test(column.Type) ? new types.Integer()
-              : /^point/i.test(column.Type) ? new types.GeoPoint()
-                : /^datetime/i.test(column.Type) ? new types.Date()
-                  : /^text/i.test(column.Type) ? new types.Text() : undefined;
+      const type = /^varchar\((\d*)\)/i.test(column.Type)
+        ? new types.String(Number(RegExp.$1))
+        : /^double/i.test(column.Type)
+        ? new types.Number()
+        : /^tinyint\(1\)/i.test(column.Type)
+        ? new types.Boolean()
+        : /^int/i.test(column.Type)
+        ? new types.Integer()
+        : /^point/i.test(column.Type)
+        ? new types.GeoPoint()
+        : /^datetime/i.test(column.Type)
+        ? new types.Date()
+        : /^text/i.test(column.Type)
+        ? new types.Text()
+        : undefined;
       schema.columns[column.Field] = {
         required: column.Null === 'NO',
         type,
@@ -937,7 +975,12 @@ export class MySQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   private _buildUpdateSetOfColumn(
-    property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
+    property: any,
+    data: any,
+    values: any,
+    fields: any[],
+    places: any[],
+    insert: boolean = false,
   ) {
     const dbname = property._dbname_us;
     const value = data[dbname];
@@ -1038,7 +1081,7 @@ export class MySQLAdapter extends SQLAdapterBase {
           column = order;
           order = 'ASC';
         }
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return `\`${column}\` ${order}`;
       });
       if (order_by) {
@@ -1070,11 +1113,12 @@ export class MySQLAdapter extends SQLAdapterBase {
         } catch (error2) {
           throw this._wrapError('unknown error', error2);
         }
-        return (await this._createDatabase(client));
+        return await this._createDatabase(client);
       } else {
-        const msg = error1.code === 'ER_DBACCESS_DENIED_ERROR'
-          ? `no access right to the database '${this._database}'`
-          : 'unknown error';
+        const msg =
+          error1.code === 'ER_DBACCESS_DENIED_ERROR'
+            ? `no access right to the database '${this._database}'`
+            : 'unknown error';
         throw this._wrapError(msg, error1);
       }
     }

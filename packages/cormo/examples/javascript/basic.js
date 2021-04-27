@@ -36,10 +36,12 @@ async function run() {
   await User.drop();
 }
 
-run().then(() => {
-  console.log('Done');
-  process.exit(0);
-}).catch((error) => {
-  console.log((error.cause || error).toString());
-  process.exit(0);
-});
+run()
+  .then(() => {
+    console.log('Done');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.log((error.cause || error).toString());
+    process.exit(0);
+  });

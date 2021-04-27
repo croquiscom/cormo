@@ -1,4 +1,3 @@
-
 [BaseModel#constructor](/cormo/api/cormo/classes/basemodel.html#constructor)나 [BaseModel.build](/cormo/api/cormo/classes/basemodel.html#build)를 사용해서 레코드를 생성할 수 있습니다.
 
 ```typescript
@@ -29,6 +28,6 @@ const user4 = await User.create({ name: 'John Doe', age: 27 });
 const users = await User.createBulk([
   { name: 'John Doe', age: 27 },
   { name: 'Bill Smith', age: 45 },
-  { name: 'Alice Jackson', age: 27 }
+  { name: 'Alice Jackson', age: 27 },
 ]);
 ```

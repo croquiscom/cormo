@@ -5,18 +5,18 @@ title: Callback
 
 CORMO supports following callbacks:
 
-* [[#BaseModel.afterInitialize]]
-* [[#BaseModel.afterFind]]
-* [[#BaseModel.beforeValidate]]
-* [[#BaseModel.afterValidate]]
-* [[#BaseModel.beforeSave]]
-* [[#BaseModel.afterSave]]
-* [[#BaseModel.beforeCreate]]
-* [[#BaseModel.afterCreate]]
-* [[#BaseModel.beforeUpdate]]
-* [[#BaseModel.afterUpdate]]
-* [[#BaseModel.beforeDestroy]]
-* [[#BaseModel.afterDestroy]]
+- [[#BaseModel.afterInitialize]]
+- [[#BaseModel.afterFind]]
+- [[#BaseModel.beforeValidate]]
+- [[#BaseModel.afterValidate]]
+- [[#BaseModel.beforeSave]]
+- [[#BaseModel.afterSave]]
+- [[#BaseModel.beforeCreate]]
+- [[#BaseModel.afterCreate]]
+- [[#BaseModel.beforeUpdate]]
+- [[#BaseModel.afterUpdate]]
+- [[#BaseModel.beforeDestroy]]
+- [[#BaseModel.afterDestroy]]
 
 You can register a callback as a method name or an anonymous function
 
@@ -29,6 +29,7 @@ class User extends cormo.BaseModel
   @afterCreate ->
     console.log 'created'
 ```
+
 ```javascript
 var User = connection.model('User', {});
 

@@ -53,7 +53,7 @@ module.exports = () => {
     await _createUsers(_g.connection.User);
     const users = await _g.connection.User.where({ age: 27 });
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name < b.name ? -1 : 1);
+    users.sort((a, b) => (a.name < b.name ? -1 : 1));
     expect(users[0]).to.have.property('name', 'Alice Jackson');
     expect(users[0]).to.have.property('age', 27);
     expect(users[1]).to.have.property('name', 'John Doe');
@@ -72,7 +72,9 @@ module.exports = () => {
     await _createUsers(_g.connection.User);
     const users = await _g.connection.User.where({ $or: [{ age: 32 }, { name: 'John Doe' }] });
     expect(users).to.have.length(2);
-    users.sort(function (a, b) { return a.name < b.name ? -1 : 1; });
+    users.sort(function (a, b) {
+      return a.name < b.name ? -1 : 1;
+    });
     expect(users[0]).to.have.property('name', 'Gina Baker');
     expect(users[0]).to.have.property('age', 32);
     expect(users[1]).to.have.property('name', 'John Doe');

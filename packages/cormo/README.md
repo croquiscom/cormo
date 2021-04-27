@@ -7,16 +7,16 @@ CORMO is an ORM framework for Node.js.
 
 Currently supports:
 
-* multi-DB: MySQL, MongoDB, SQLite3, PostgreSQL
-* constraints
-* validations
-* associations
-* geospatial query
-* callbacks
-* aggregation
-* nested column
-* transactions
-* schema migration
+- multi-DB: MySQL, MongoDB, SQLite3, PostgreSQL
+- constraints
+- validations
+- associations
+- geospatial query
+- callbacks
+- aggregation
+- nested column
+- transactions
+- schema migration
 
 See https://github.com/croquiscom/cormo/wiki/Future-Plans for future plans.
 
@@ -41,11 +41,7 @@ class User extends cormo.BaseModel {
 
 await User.create({ name: 'John Doe', age: 27 });
 
-const users = await User.where({age: 27})
-  .select(['name'])
-  .order('name')
-  .limit(5)
-  .skip(100);
+const users = await User.where({ age: 27 }).select(['name']).order('name').limit(5).skip(100);
 ```
 
 # License

@@ -7,11 +7,7 @@ function _compareComment(a: PostRef, b: PostRef) {
   return expect(a).to.have.property('parent_post_id', b.parent_post_id);
 }
 
-export default function(models: {
-  Computer: typeof ComputerRef;
-  Post: typeof PostRef;
-  User: typeof UserRef;
-}) {
+export default function (models: { Computer: typeof ComputerRef; Post: typeof PostRef; User: typeof UserRef }) {
   it('get sub objects', async () => {
     const post = await models.Post.create({ title: 'my post', body: 'This is a my post.' });
     const comment1 = await models.Post.create({
@@ -26,7 +22,7 @@ export default function(models: {
     });
     const comments = await post.comments!();
     expect(comments).to.have.length(2);
-    comments.sort((a, b) => a.body! < b.body! ? -1 : 1);
+    comments.sort((a, b) => (a.body! < b.body! ? -1 : 1));
     _compareComment(comments[0], comment1);
     _compareComment(comments[1], comment2);
   });

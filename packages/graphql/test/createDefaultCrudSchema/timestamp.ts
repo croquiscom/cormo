@@ -161,8 +161,11 @@ input DeleteUserInput {
       const id_to_record_map = await connection.manipulate([
         {
           create_user: {
-            age: 15, date_created: new Date(2019, 5, 13), date_updated: new Date(2019, 5, 15),
-            id: 'user', name: 'Test',
+            age: 15,
+            date_created: new Date(2019, 5, 13),
+            date_updated: new Date(2019, 5, 15),
+            id: 'user',
+            name: 'Test',
           },
         },
       ]);

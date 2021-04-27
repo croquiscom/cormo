@@ -285,10 +285,12 @@ class Query {
             callback();
         };
         this._model._checkReady().then(() => {
-            this._adapter.stream(this._name, this._conditions, this._getAdapterFindOptions())
+            this._adapter
+                .stream(this._name, this._conditions, this._getAdapterFindOptions())
                 .on('error', (error) => {
                 transformer.emit('error', error);
-            }).pipe(transformer);
+            })
+                .pipe(transformer);
         });
         return transformer;
     }
@@ -469,9 +471,11 @@ class Query {
         }
         let group_by;
         if (this._options.group_by) {
-            group_by = this._options.group_by.map((column) => {
+            group_by = this._options.group_by
+                .map((column) => {
                 return this._model._schema[column]._dbname_us;
-            }).filter((column) => column != null);
+            })
+                .filter((column) => column != null);
         }
         const orders = [];
         if (typeof this._options.orders === 'string') {
@@ -553,7 +557,7 @@ class Query {
                 await integrity.child.update(lodash_1.default.zipObject([integrity.column], [null]), lodash_1.default.zipObject([integrity.column], [ids]));
             }
             else if (integrity.type === 'parent_restrict') {
-                const count = (await integrity.child.count(lodash_1.default.zipObject([integrity.column], [ids])));
+                const count = await integrity.child.count(lodash_1.default.zipObject([integrity.column], [ids]));
                 if (count > 0) {
                     throw new Error('rejected');
                 }
@@ -574,7 +578,8 @@ class Query {
         }
         // find all records to be deleted
         const query = this._model.where(this._conditions);
-        if (!need_archive) { // we need only id field for integrity
+        if (!need_archive) {
+            // we need only id field for integrity
             query.select('');
         }
         const records = await query.exec({ skip_log: options && options.skip_log });

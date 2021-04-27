@@ -8,11 +8,13 @@ export const connection = new cormo.MySQLConnection({
   password: 'cormo_test',
   port: 21860,
   replication: {
-    read_replicas: [{
-      password: 'cormo_test',
-      port: 21860,
-      user: 'cormo_test',
-    }],
+    read_replicas: [
+      {
+        password: 'cormo_test',
+        port: 21860,
+        user: 'cormo_test',
+      },
+    ],
   },
   user: 'cormo_test',
   connection_retry_count: 2,
@@ -116,11 +118,13 @@ async function run() {
 }
 
 if (require.main === module) {
-  run().then(() => {
-    console.log('Done');
-    process.exit(0);
-  }).catch((error) => {
-    console.log((error.cause || error).toString());
-    process.exit(0);
-  });
+  run()
+    .then(() => {
+      console.log('Done');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.log((error.cause || error).toString());
+      process.exit(0);
+    });
 }

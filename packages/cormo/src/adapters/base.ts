@@ -302,10 +302,7 @@ abstract class AdapterBase {
    * Creates records
    * @internal
    */
-  public abstract createBulk(
-    model: string, data: any[],
-    options: { transaction?: Transaction },
-  ): Promise<any[]>;
+  public abstract createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]>;
 
   /**
    * Updates a record
@@ -318,7 +315,9 @@ abstract class AdapterBase {
    * @internal
    */
   public abstract updatePartial(
-    model: string, data: any, conditions: any,
+    model: string,
+    data: any,
+    conditions: any,
     options: { transaction?: Transaction },
   ): Promise<number>;
 
@@ -334,7 +333,8 @@ abstract class AdapterBase {
    * @internal
    */
   public abstract findById(
-    model: string, id: any,
+    model: string,
+    id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction; node?: 'master' | 'read' },
   ): Promise<any>;
 
@@ -456,9 +456,11 @@ abstract class AdapterBase {
 
   /** @internal */
   protected async _createBulkDefault(model: string, data: any[], options: { transaction?: Transaction }) {
-    return await Promise.all(data.map((item: any) => {
-      return this.create(model, item, options);
-    }));
+    return await Promise.all(
+      data.map((item: any) => {
+        return this.create(model, item, options);
+      }),
+    );
   }
 }
 

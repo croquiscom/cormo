@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as cormo from '../..';
 
-export default function(db: any, db_config: any) {
+export default function (db: any, db_config: any) {
   let connection!: cormo.Connection;
 
   beforeEach(() => {
@@ -143,7 +143,7 @@ export default function(db: any, db_config: any) {
     await User.create({ name: { first: 'Daniel', last: 'Smith' } });
     const users = await User.where({ 'name.last': 'Smith' });
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name!.first! < b.name!.first! ? -1 : 1);
+    users.sort((a, b) => (a.name!.first! < b.name!.first! ? -1 : 1));
     expect(users[0]).to.have.keys('id', 'name');
     expect(users[0].name).to.eql({ first: 'Bill', last: 'Smith' });
     expect(users[1]).to.have.keys('id', 'name');
@@ -166,7 +166,7 @@ export default function(db: any, db_config: any) {
     const user = await User.create({ name: { first: 'John', last: 'Doe' } });
     const count = await User.find(user.id).update({ name: { first: 'Bill' } });
     expect(count).to.equal(1);
-    const record = (await User.find(user.id));
+    const record = await User.find(user.id);
     expect(record).to.have.keys('id', 'name');
     expect(record.name).to.eql({ first: 'Bill', last: 'Doe' });
   });

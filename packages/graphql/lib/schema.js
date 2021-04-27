@@ -60,9 +60,7 @@ function createSingleType(model_class, options) {
     for (const [column, property] of Object.entries(model_class._schema)) {
         const graphql_type = getGraphQlType(property);
         if (graphql_type) {
-            const description = column === 'id'
-                ? options.id_description
-                : property.description;
+            const description = column === 'id' ? options.id_description : property.description;
             fields[column] = {
                 description,
                 type: graphql_type,
@@ -143,9 +141,7 @@ function createCreateInputType(model_class, options) {
         }
         const graphql_type = getGraphQlType(property);
         if (graphql_type) {
-            const description = column === 'id'
-                ? options.id_description
-                : property.description;
+            const description = column === 'id' ? options.id_description : property.description;
             fields[column] = {
                 description,
                 type: graphql_type,
@@ -168,9 +164,7 @@ function createUpdateInputType(model_class, options) {
         }
         const graphql_type = getGraphQlType(property);
         if (graphql_type) {
-            const description = column === 'id'
-                ? options.id_description
-                : property.description;
+            const description = column === 'id' ? options.id_description : property.description;
             fields[column] = {
                 description,
                 type: graphql_type,

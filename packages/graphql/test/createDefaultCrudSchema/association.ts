@@ -129,10 +129,7 @@ input DeletePostInput {
         expect(result).to.eql({
           data: {
             post_list: {
-              item_list: [
-                { id: String(id_to_record_map.post1.id) },
-                { id: String(id_to_record_map.post3.id) },
-              ],
+              item_list: [{ id: String(id_to_record_map.post1.id) }, { id: String(id_to_record_map.post3.id) }],
             },
           },
         });

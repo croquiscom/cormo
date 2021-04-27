@@ -31,9 +31,7 @@ async function _createUserUniques(User: typeof UserRef, data?: UserRefVO[]) {
   return await User.createBulk(data);
 }
 
-export default function(models: {
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { connection: cormo.Connection | null }) {
   let sandbox: sinon.SinonSandbox;
   let User: typeof UserRef;
 
@@ -67,7 +65,7 @@ export default function(models: {
     await _createUserUniques(User);
     await User.where({ name: 'Elsa Wood' }).upsert({ age: 10 });
     const users = await User.where();
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     expect(users).to.have.length(3);
     _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
     _compareUserUnique(users[1], { name: 'Bill Smith', age: 45, count: 5 });
@@ -78,7 +76,7 @@ export default function(models: {
     await _createUserUniques(User);
     await User.where({ name: 'Bill Smith' }).upsert({ age: 10 });
     const users = await User.where();
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     expect(users).to.have.length(2);
     _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
     _compareUserUnique(users[1], { name: 'Bill Smith', age: 10, count: 5 });
@@ -89,7 +87,7 @@ export default function(models: {
     await User.where({ name: 'Bill Smith' }).update({ age: 10, count: 8 });
     await User.where({ name: 'Bill Smith' }).upsert({ age: 10 });
     const users = await User.where();
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     expect(users).to.have.length(2);
     _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
     _compareUserUnique(users[1], { name: 'Bill Smith', age: 10, count: 8 });
@@ -99,7 +97,7 @@ export default function(models: {
     await _createUserUniques(User);
     await User.where({ name: 'Elsa Wood' }).upsert({ age: { $inc: 4 } });
     const users = await User.where();
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     expect(users).to.have.length(3);
     _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
     _compareUserUnique(users[1], { name: 'Bill Smith', age: 45, count: 5 });
@@ -110,7 +108,7 @@ export default function(models: {
     await _createUserUniques(User);
     await User.where({ name: 'Bill Smith' }).upsert({ age: { $inc: 4 } });
     const users = await User.where();
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     expect(users).to.have.length(2);
     _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
     _compareUserUnique(users[1], { name: 'Bill Smith', age: 49, count: 5 });

@@ -1,9 +1,7 @@
 import { expect } from 'chai';
 import * as cormo from '../..';
 
-export default function(models: {
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { connection: cormo.Connection | null }) {
   let User: typeof cormo.BaseModel;
   let Post: typeof cormo.BaseModel;
 
@@ -54,7 +52,11 @@ export default function(models: {
 
       await tx.commit();
     } finally {
-      try { await tx.rollback(); } catch (error) { /**/ }
+      try {
+        await tx.rollback();
+      } catch (error) {
+        /**/
+      }
     }
   });
 }

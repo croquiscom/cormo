@@ -3,12 +3,14 @@ import * as cormo from '../..';
 
 import { Type } from './type';
 
-export default function(models: {
-  Type: typeof Type;
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { Type: typeof Type; connection: cormo.Connection | null }) {
   it('number on Model.update', async () => {
-    const data = [['30', 30], ['12.8', 12.8], ['8a', null], ['abc', null]];
+    const data = [
+      ['30', 30],
+      ['12.8', 12.8],
+      ['8a', null],
+      ['abc', null],
+    ];
     for (const item of data) {
       let type = await models.Type.create();
       try {
@@ -27,7 +29,13 @@ export default function(models: {
   });
 
   it('integer on Model.update', async () => {
-    const data = [['30', 30], ['9876543210', null], ['12.8', null], ['8a', null], ['abc', null]];
+    const data = [
+      ['30', 30],
+      ['9876543210', null],
+      ['12.8', null],
+      ['8a', null],
+      ['abc', null],
+    ];
     for (const item of data) {
       let type = await models.Type.create();
       try {
@@ -36,7 +44,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(count).to.equal(1);
-        type = (await models.Type.find(type.id));
+        type = await models.Type.find(type.id);
         expect(type.int_c).to.equal(item[1]);
       } catch (error) {
         expect(error).to.exist;
@@ -62,7 +70,7 @@ export default function(models: {
           throw new Error('must throw an error.');
         }
         expect(count).to.equal(1);
-        type = (await models.Type.find(type.id));
+        type = await models.Type.find(type.id);
         expect(type.date).to.be.an.instanceof(Date);
         expect(type.date!.getTime()).to.equal(item[1]);
       } catch (error) {
@@ -73,7 +81,12 @@ export default function(models: {
   });
 
   it('boolean on Model.update', async () => {
-    const data = [[true, true], [false, false], ['str', null], [5, null]];
+    const data = [
+      [true, true],
+      [false, false],
+      ['str', null],
+      [5, null],
+    ];
     for (const item of data) {
       let type = await models.Type.create();
       try {
@@ -97,7 +110,10 @@ export default function(models: {
       [30, 30],
       [true, true],
       [false, false],
-      [{ a: 5, b: ['oh'] }, { a: 5, b: ['oh'] }],
+      [
+        { a: 5, b: ['oh'] },
+        { a: 5, b: ['oh'] },
+      ],
     ];
     for (const item of data) {
       let type = await models.Type.create();
@@ -114,7 +130,10 @@ export default function(models: {
 
   it('array of integer on Model.update', async () => {
     const data = [
-      [[9, '30'], [9, 30]],
+      [
+        [9, '30'],
+        [9, 30],
+      ],
       [9, null],
       [[9, '12.8'], null],
     ];

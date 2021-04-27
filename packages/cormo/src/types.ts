@@ -15,16 +15,16 @@ export interface CormoTypesString {
 }
 
 interface CormoTypesStringConstructor {
-  new(length?: number): CormoTypesString;
+  new (length?: number): CormoTypesString;
   (length?: number): CormoTypesString;
 }
 
-const CormoTypesString: CormoTypesStringConstructor = function(this: CormoTypesString, length?: number): void {
+const CormoTypesString: CormoTypesStringConstructor = function (this: CormoTypesString, length?: number): void {
   if (!(this instanceof CormoTypesString)) {
     return new (CormoTypesString as any)(length);
   }
   this.length = length;
-  this.toString = () => this.length ? `string(${this.length})` : 'string';
+  this.toString = () => (this.length ? `string(${this.length})` : 'string');
 } as CormoTypesStringConstructor;
 
 /**
@@ -37,11 +37,11 @@ export interface CormoTypesNumber {
 }
 
 interface CormoTypesNumberConstructor {
-  new(): CormoTypesNumber;
+  new (): CormoTypesNumber;
   (): CormoTypesNumber;
 }
 
-const CormoTypesNumber: CormoTypesNumberConstructor = function(this: CormoTypesNumber): void {
+const CormoTypesNumber: CormoTypesNumberConstructor = function (this: CormoTypesNumber): void {
   if (!(this instanceof CormoTypesNumber)) {
     return new (CormoTypesNumber as any)();
   }
@@ -58,11 +58,11 @@ export interface CormoTypesBoolean {
 }
 
 interface CormoTypesBooleanConstructor {
-  new(): CormoTypesBoolean;
+  new (): CormoTypesBoolean;
   (): CormoTypesBoolean;
 }
 
-const CormoTypesBoolean: CormoTypesBooleanConstructor = function(this: CormoTypesBoolean): void {
+const CormoTypesBoolean: CormoTypesBooleanConstructor = function (this: CormoTypesBoolean): void {
   if (!(this instanceof CormoTypesBoolean)) {
     return new (CormoTypesBoolean as any)();
   }
@@ -79,11 +79,11 @@ export interface CormoTypesInteger {
 }
 
 interface CormoTypesIntegerConstructor {
-  new(): CormoTypesInteger;
+  new (): CormoTypesInteger;
   (): CormoTypesInteger;
 }
 
-const CormoTypesInteger: CormoTypesIntegerConstructor = function(this: CormoTypesInteger): void {
+const CormoTypesInteger: CormoTypesIntegerConstructor = function (this: CormoTypesInteger): void {
   if (!(this instanceof CormoTypesInteger)) {
     return new (CormoTypesInteger as any)();
   }
@@ -102,11 +102,11 @@ export interface CormoTypesGeoPoint {
 }
 
 interface CormoTypesGeoPointConstructor {
-  new(): CormoTypesGeoPoint;
+  new (): CormoTypesGeoPoint;
   (): CormoTypesGeoPoint;
 }
 
-const CormoTypesGeoPoint: CormoTypesGeoPointConstructor = function(this: CormoTypesGeoPoint): void {
+const CormoTypesGeoPoint: CormoTypesGeoPointConstructor = function (this: CormoTypesGeoPoint): void {
   if (!(this instanceof CormoTypesGeoPoint)) {
     return new (CormoTypesGeoPoint as any)();
   }
@@ -123,11 +123,11 @@ export interface CormoTypesDate {
 }
 
 interface CormoTypesDateConstructor {
-  new(): CormoTypesDate;
+  new (): CormoTypesDate;
   (): CormoTypesDate;
 }
 
-const CormoTypesDate: CormoTypesDateConstructor = function(this: CormoTypesDate): void {
+const CormoTypesDate: CormoTypesDateConstructor = function (this: CormoTypesDate): void {
   if (!(this instanceof CormoTypesDate)) {
     return new (CormoTypesDate as any)();
   }
@@ -147,11 +147,11 @@ export interface CormoTypesObject {
 }
 
 interface CormoTypesObjectConstructor {
-  new(): CormoTypesObject;
+  new (): CormoTypesObject;
   (): CormoTypesObject;
 }
 
-const CormoTypesObject: CormoTypesObjectConstructor = function(this: CormoTypesObject): void {
+const CormoTypesObject: CormoTypesObjectConstructor = function (this: CormoTypesObject): void {
   if (!(this instanceof CormoTypesObject)) {
     return new (CormoTypesObject as any)();
   }
@@ -168,11 +168,11 @@ export interface CormoTypesRecordID {
 }
 
 interface CormoTypesRecordIDConstructor {
-  new(): CormoTypesRecordID;
+  new (): CormoTypesRecordID;
   (): CormoTypesRecordID;
 }
 
-const CormoTypesRecordID: CormoTypesRecordIDConstructor = function(this: CormoTypesRecordID): void {
+const CormoTypesRecordID: CormoTypesRecordIDConstructor = function (this: CormoTypesRecordID): void {
   if (!(this instanceof CormoTypesRecordID)) {
     return new (CormoTypesRecordID as any)();
   }
@@ -189,35 +189,62 @@ export interface CormoTypesText {
 }
 
 interface CormoTypesTextConstructor {
-  new(): CormoTypesText;
+  new (): CormoTypesText;
   (): CormoTypesText;
 }
 
-const CormoTypesText: CormoTypesTextConstructor = function(this: CormoTypesText): void {
+const CormoTypesText: CormoTypesTextConstructor = function (this: CormoTypesText): void {
   if (!(this instanceof CormoTypesText)) {
     return new (CormoTypesText as any)();
   }
   this.toString = () => 'text';
 } as CormoTypesTextConstructor;
 
-export type ColumnTypeInternal = CormoTypesString | CormoTypesNumber
-  | CormoTypesBoolean | CormoTypesDate
-  | CormoTypesObject | CormoTypesInteger
-  | CormoTypesGeoPoint | CormoTypesRecordID | CormoTypesText;
+export type ColumnTypeInternal =
+  | CormoTypesString
+  | CormoTypesNumber
+  | CormoTypesBoolean
+  | CormoTypesDate
+  | CormoTypesObject
+  | CormoTypesInteger
+  | CormoTypesGeoPoint
+  | CormoTypesRecordID
+  | CormoTypesText;
 
-export type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor
-  | CormoTypesBooleanConstructor | CormoTypesDateConstructor
-  | CormoTypesObjectConstructor | CormoTypesIntegerConstructor
-  | CormoTypesGeoPointConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor;
+export type ColumnTypeInternalConstructor =
+  | CormoTypesStringConstructor
+  | CormoTypesNumberConstructor
+  | CormoTypesBooleanConstructor
+  | CormoTypesDateConstructor
+  | CormoTypesObjectConstructor
+  | CormoTypesIntegerConstructor
+  | CormoTypesGeoPointConstructor
+  | CormoTypesRecordIDConstructor
+  | CormoTypesTextConstructor;
 
-type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor
-  | BooleanConstructor | DateConstructor | ObjectConstructor;
+type ColumnTypeNativeConstructor =
+  | StringConstructor
+  | NumberConstructor
+  | BooleanConstructor
+  | DateConstructor
+  | ObjectConstructor;
 
-type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date'
-  | 'object' | 'integer' | 'geopoint' | 'recordid' | 'text';
+type ColumnTypeString =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'date'
+  | 'object'
+  | 'integer'
+  | 'geopoint'
+  | 'recordid'
+  | 'text';
 
-export type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor
-  | ColumnTypeNativeConstructor | ColumnTypeString;
+export type ColumnType =
+  | ColumnTypeInternal
+  | ColumnTypeInternalConstructor
+  | ColumnTypeNativeConstructor
+  | ColumnTypeString;
 
 /**
  * Converts JavaScript built-in class to CORMO type

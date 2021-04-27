@@ -106,7 +106,7 @@ class RedisAdapter extends base_1.AdapterBase {
         data.$_$ = ''; // ensure that there is one argument(one field) at least
         let exists;
         try {
-            exists = (await this._client.existsAsync(key));
+            exists = await this._client.existsAsync(key);
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);
@@ -163,7 +163,7 @@ class RedisAdapter extends base_1.AdapterBase {
     async findById(model, id, options) {
         let result;
         try {
-            result = (await this._client.hgetallAsync(`${inflector_1.tableize(model)}:${id}`));
+            result = await this._client.hgetallAsync(`${inflector_1.tableize(model)}:${id}`);
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);
@@ -208,7 +208,7 @@ class RedisAdapter extends base_1.AdapterBase {
         }
         let count;
         try {
-            count = (await this._client.delAsync(keys));
+            count = await this._client.delAsync(keys);
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);
@@ -229,7 +229,7 @@ class RedisAdapter extends base_1.AdapterBase {
         for (const method of methods) {
             this._client[method + 'Async'] = util_1.default.promisify(this._client[method]);
         }
-        return (await this._client.selectAsync(settings.database || 0));
+        return await this._client.selectAsync(settings.database || 0);
     }
     /** @internal */
     valueToModel(value, property) {
@@ -251,7 +251,7 @@ class RedisAdapter extends base_1.AdapterBase {
     async _getKeys(table, conditions) {
         if (Array.isArray(conditions)) {
             if (conditions.length === 0) {
-                return (await this._client.keysAsync(`${table}:*`));
+                return await this._client.keysAsync(`${table}:*`);
             }
             const all_keys = [];
             await Promise.all(conditions.map(async (condition) => {

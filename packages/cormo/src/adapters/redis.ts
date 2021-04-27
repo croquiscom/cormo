@@ -99,7 +99,7 @@ export class RedisAdapter extends AdapterBase {
     data.$_$ = ''; // ensure that there is one argument(one field) at least
     let exists;
     try {
-      exists = (await this._client.existsAsync(key));
+      exists = await this._client.existsAsync(key);
     } catch (error) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
@@ -120,7 +120,9 @@ export class RedisAdapter extends AdapterBase {
 
   /** @internal */
   public async updatePartial(
-    model: string, data: any, conditions: any,
+    model: string,
+    data: any,
+    conditions: any,
     options: { transaction?: Transaction },
   ): Promise<number> {
     const fields_to_del = Object.keys(data).filter((key) => data[key] == null);
@@ -155,12 +157,13 @@ export class RedisAdapter extends AdapterBase {
 
   /** @internal */
   public async findById(
-    model: string, id: any,
+    model: string,
+    id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
     let result;
     try {
-      result = (await this._client.hgetallAsync(`${tableize(model)}:${id}`));
+      result = await this._client.hgetallAsync(`${tableize(model)}:${id}`);
     } catch (error) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
@@ -176,13 +179,15 @@ export class RedisAdapter extends AdapterBase {
   public async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any> {
     const table = tableize(model);
     const keys = await this._getKeys(table, conditions);
-    let records: any[] = await Promise.all(keys.map(async (key: any) => {
-      const result = await this._client.hgetallAsync(key);
-      if (result) {
-        result.id = Number(key.substr(table.length + 1));
-      }
-      return result;
-    }));
+    let records: any[] = await Promise.all(
+      keys.map(async (key: any) => {
+        const result = await this._client.hgetallAsync(key);
+        if (result) {
+          result.id = Number(key.substr(table.length + 1));
+        }
+        return result;
+      }),
+    );
     records = records.filter((record) => record != null);
     return records.map((record) => {
       return this._convertToModelInstance(model, record, options);
@@ -207,7 +212,7 @@ export class RedisAdapter extends AdapterBase {
     }
     let count;
     try {
-      count = (await this._client.delAsync(keys));
+      count = await this._client.delAsync(keys);
     } catch (error) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
@@ -229,7 +234,7 @@ export class RedisAdapter extends AdapterBase {
     for (const method of methods) {
       this._client[method + 'Async'] = util.promisify(this._client[method]);
     }
-    return (await this._client.selectAsync(settings.database || 0));
+    return await this._client.selectAsync(settings.database || 0);
   }
 
   /** @internal */
@@ -253,13 +258,15 @@ export class RedisAdapter extends AdapterBase {
   private async _getKeys(table: any, conditions: any) {
     if (Array.isArray(conditions)) {
       if (conditions.length === 0) {
-        return (await this._client.keysAsync(`${table}:*`));
+        return await this._client.keysAsync(`${table}:*`);
       }
       const all_keys: any[] = [];
-      await Promise.all(conditions.map(async (condition) => {
-        const keys = await this._getKeys(table, condition);
-        [].push.apply(all_keys, keys);
-      }));
+      await Promise.all(
+        conditions.map(async (condition) => {
+          const keys = await this._getKeys(table, condition);
+          [].push.apply(all_keys, keys);
+        }),
+      );
       return all_keys;
     } else if (typeof conditions === 'object' && conditions.id) {
       if (conditions.id.$in) {

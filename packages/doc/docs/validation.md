@@ -29,15 +29,16 @@ class User extends cormo.BaseModel
 User.create name: 'John Doe', age: 10, email: 'invalid', (error, user) ->
   # error.message will be 'invalid email,too young' or 'too young,invalid email'
 ```
+
 ```javascript
 var User = connection.model('User', {
   name: String,
   age: Number,
-  email: String
+  email: String,
 });
 
 User.addValidator(function (record) {
-  if (record.age<18) {
+  if (record.age < 18) {
     return 'too young';
   }
 });
@@ -49,7 +50,7 @@ User.addValidator(function (record) {
   return true;
 });
 
-User.create({name: 'John Doe', age: 10, email: 'invalid'}, function (error, user) {
+User.create({ name: 'John Doe', age: 10, email: 'invalid' }, function (error, user) {
   // error.message will be 'invalid email,too young' or 'too young,invalid email'
 });
 ```

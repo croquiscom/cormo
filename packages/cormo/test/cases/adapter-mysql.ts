@@ -2,9 +2,7 @@ import { expect } from 'chai';
 import * as cormo from '../..';
 import _g = require('../support/common');
 
-export default function(models: {
-  connection: cormo.Connection<cormo.MySQLAdapter> | null;
-}) {
+export default function (models: { connection: cormo.Connection<cormo.MySQLAdapter> | null }) {
   describe('issues', () => {
     it('delayed auth info', async () => {
       const conn = new cormo.MySQLConnection({
@@ -39,12 +37,7 @@ export default function(models: {
       Reference.index({ group: 1 });
       Reference.column('group', 'integer');
 
-      const data = [
-        { group: 1 },
-        { group: 1 },
-        { group: 2 },
-        { group: 3 },
-      ];
+      const data = [{ group: 1 }, { group: 1 }, { group: 2 }, { group: 3 }];
       const records = await Reference.createBulk(data);
 
       const record = await Reference.find(records[0].id).select('group');
@@ -54,8 +47,14 @@ export default function(models: {
       const count = await Reference.count({ group: 1 });
       expect(count).to.eql(2);
 
-      const count_per_group = await Reference.where().group('group', { count: { $sum: 1 } }).order('group');
-      expect(count_per_group).to.eql([{ group: 1, count: 2 }, { group: 2, count: 1 }, { group: 3, count: 1 }]);
+      const count_per_group = await Reference.where()
+        .group('group', { count: { $sum: 1 } })
+        .order('group');
+      expect(count_per_group).to.eql([
+        { group: 1, count: 2 },
+        { group: 2, count: 1 },
+        { group: 3, count: 1 },
+      ]);
 
       const sum_of_group = await Reference.where().group(null, { count: { $sum: '$group' } });
       expect(sum_of_group).to.eql([{ count: 7 }]);
@@ -70,9 +69,7 @@ export default function(models: {
       Test.column('object', { type: Object, required: true });
       Test.column('array', { type: [String], required: true });
       const records = await Test.where().lean(true);
-      expect(records).to.eql([
-        { id: records[0].id, name: 'croquis', object: null, array: null },
-      ]);
+      expect(records).to.eql([{ id: records[0].id, name: 'croquis', object: null, array: null }]);
     });
 
     it('select for associated column without applySchemas', async () => {
@@ -85,7 +82,7 @@ export default function(models: {
           FOREIGN KEY (user_id) REFERENCES users(id)
           );
       `);
-      const result = await models.connection!.adapter.query('INSERT INTO users (name) VALUES (\'John Doe\')');
+      const result = await models.connection!.adapter.query("INSERT INTO users (name) VALUES ('John Doe')");
       const user_id = result.insertId;
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('First Post', ${user_id})`);
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('Second Post', ${user_id})`);
@@ -127,7 +124,7 @@ export default function(models: {
           FOREIGN KEY (user_id) REFERENCES users(id)
           );
       `);
-      const result = await models.connection!.adapter.query('INSERT INTO users (name) VALUES (\'John Doe\')');
+      const result = await models.connection!.adapter.query("INSERT INTO users (name) VALUES ('John Doe')");
       const user_id = result.insertId;
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('First Post', ${user_id})`);
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('Second Post', ${user_id})`);
@@ -153,9 +150,7 @@ export default function(models: {
       }
 
       const records = await Post.query().group('user_id', { count: { $sum: 1 } });
-      expect(records).to.eql([
-        { user_id, count: 2 },
-      ]);
+      expect(records).to.eql([{ user_id, count: 2 }]);
     });
 
     it('order for associated column without applySchemas', async () => {
@@ -168,9 +163,9 @@ export default function(models: {
           FOREIGN KEY (user_id) REFERENCES users(id)
           );
       `);
-      const result1 = await models.connection!.adapter.query('INSERT INTO users (name) VALUES (\'John Doe\')');
+      const result1 = await models.connection!.adapter.query("INSERT INTO users (name) VALUES ('John Doe')");
       const user1_id = result1.insertId;
-      const result2 = await models.connection!.adapter.query('INSERT INTO users (name) VALUES (\'Bill Smith\')');
+      const result2 = await models.connection!.adapter.query("INSERT INTO users (name) VALUES ('Bill Smith')");
       const user2_id = result2.insertId;
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('First Post', ${user1_id})`);
       await models.connection!.adapter.query(`INSERT INTO posts (title, user_id) VALUES ('Second Post', ${user2_id})`);
@@ -196,10 +191,7 @@ export default function(models: {
       }
 
       const records = await Post.query().select(['title']).order('-user_id').lean(true);
-      expect(records).to.eql([
-        { title: 'Second Post' },
-        { title: 'First Post' },
-      ]);
+      expect(records).to.eql([{ title: 'Second Post' }, { title: 'First Post' }]);
     });
 
     it('getTransaction without waiting connection', async () => {
@@ -282,10 +274,7 @@ export default function(models: {
       const c = new cormo.MySQLConnection({
         ..._g.db_configs.mysql,
         replication: {
-          read_replicas: [
-            { ..._g.db_configs.mysql },
-            { ..._g.db_configs.mysql },
-          ],
+          read_replicas: [{ ..._g.db_configs.mysql }, { ..._g.db_configs.mysql }],
           use_master_for_read: true,
         },
       });

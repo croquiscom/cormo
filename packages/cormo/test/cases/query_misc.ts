@@ -29,10 +29,7 @@ async function _createUsers(User: typeof UserRef, data?: UserRefVO[]) {
   return await User.createBulk(data);
 }
 
-export default function(models: {
-  User: typeof UserRef;
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { User: typeof UserRef; connection: cormo.Connection | null }) {
   it('lean option for a single record', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const record = await models.User.find(user.id).lean();
@@ -43,7 +40,7 @@ export default function(models: {
     await _createUsers(models.User);
     const users = await models.User.where({ age: 27 }).lean();
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     expect(users[0]).to.not.be.an.instanceof(models.User);
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     expect(users[1]).to.not.be.an.instanceof(models.User);
@@ -107,13 +104,13 @@ export default function(models: {
     await _createUsers(models.User);
     let users = await models.User.where({ age: 27 }).cache({ key: 'user', ttl: 30, refresh: true });
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'John Doe', age: 27 });
     // different conditions, will return cached result
     users = await models.User.where({ age: 8 }).cache({ key: 'user', ttl: 30 });
     expect(users).to.have.length(2);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'John Doe', age: 27 });
     // try ignoring cache
@@ -133,7 +130,7 @@ export default function(models: {
 
   it('comparison on id', async () => {
     const users = await _createUsers(models.User);
-    users.sort((a, b) => a.id < b.id ? -1 : 1);
+    users.sort((a, b) => (a.id < b.id ? -1 : 1));
     const records = await models.User.where({ id: { $lt: users[2].id } });
     expect(records).to.have.length(2);
     _compareUser(users[0], records[0]);
@@ -170,9 +167,15 @@ export default function(models: {
 
   it('nested if', async () => {
     await _createUsers(models.User);
-    const query = async (limit: boolean) => await models.User.query()
-      .if(limit).if(false).where({ name: 'Unknown' }).endif().limit(1).endif()
-      .where({ age: 27 });
+    const query = async (limit: boolean) =>
+      await models.User.query()
+        .if(limit)
+        .if(false)
+        .where({ name: 'Unknown' })
+        .endif()
+        .limit(1)
+        .endif()
+        .where({ age: 27 });
     let users = await query(false);
     expect(users).to.have.length(2);
     expect(users[0]).to.have.property('age', 27);
@@ -241,12 +244,12 @@ export default function(models: {
     await _createUsers(models.User);
     const query = models.User.where({ age: 27 }).select(['name']);
     const cloned = query.clone();
-    expect(await query.where({ name: 'John Doe' }).select(['name', 'age']))
-      .to.eql([{ id: null, name: 'John Doe', age: 27 }]);
-    expect(await cloned.order('name'))
-      .to.eql([
-        { id: null, name: 'Alice Jackson' },
-        { id: null, name: 'John Doe' },
-      ]);
+    expect(await query.where({ name: 'John Doe' }).select(['name', 'age'])).to.eql([
+      { id: null, name: 'John Doe', age: 27 },
+    ]);
+    expect(await cloned.order('name')).to.eql([
+      { id: null, name: 'Alice Jackson' },
+      { id: null, name: 'John Doe' },
+    ]);
   });
 }

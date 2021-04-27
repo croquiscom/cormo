@@ -6,9 +6,7 @@ export class VersionRef extends cormo.BaseModel {
   public minor?: number | null;
 }
 
-export default function(models: {
-  Version: typeof VersionRef;
-}) {
+export default function (models: { Version: typeof VersionRef }) {
   it('unique', async () => {
     await models.Version.create({ major: 1, minor: 1 });
     try {

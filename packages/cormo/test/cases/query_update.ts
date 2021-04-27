@@ -23,16 +23,13 @@ async function _createUsers(User: typeof UserRef, data?: UserRefVO[]) {
   return await User.createBulk(data);
 }
 
-export default function(models: {
-  User: typeof UserRef;
-  connection: cormo.Connection | null;
-}) {
+export default function (models: { User: typeof UserRef; connection: cormo.Connection | null }) {
   it('update all', async () => {
     await _createUsers(models.User);
     const count = await models.User.update({ age: 10 });
     expect(count).to.equal(5);
     const users = await models.User.where();
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 10 });
     _compareUser(users[1], { name: 'Bill Smith', age: 10 });
     _compareUser(users[2], { name: 'Daniel Smith', age: 10 });
@@ -45,7 +42,7 @@ export default function(models: {
     const count = await models.User.update({ age: 10 }, { age: 27 });
     expect(count).to.equal(2);
     const users = await models.User.where();
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 10 });
     _compareUser(users[1], { name: 'Bill Smith', age: 45 });
     _compareUser(users[2], { name: 'Daniel Smith', age: 8 });
@@ -55,11 +52,11 @@ export default function(models: {
 
   it('find & update', async () => {
     const sources = await _createUsers(models.User);
-    sources.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    sources.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     const count = await models.User.find(sources[2].id).update({ age: 10 });
     expect(count).to.equal(1);
     const users = await models.User.where();
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'Bill Smith', age: 45 });
     _compareUser(users[2], { name: 'Daniel Smith', age: 10 });
@@ -69,11 +66,11 @@ export default function(models: {
 
   it('find multiple & update', async () => {
     const sources = await _createUsers(models.User);
-    sources.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    sources.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     const count = await models.User.find([sources[2].id, sources[3].id]).update({ age: 10 });
     expect(count).to.equal(2);
     const users = await models.User.where();
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'Bill Smith', age: 45 });
     _compareUser(users[2], { name: 'Daniel Smith', age: 10 });
@@ -86,7 +83,7 @@ export default function(models: {
     const count = await models.User.find(undefined as any).update({ age: 10 });
     expect(count).to.equal(0);
     const users = await models.User.where();
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
     _compareUser(users[1], { name: 'Bill Smith', age: 45 });
     _compareUser(users[2], { name: 'Daniel Smith', age: 8 });
@@ -104,7 +101,7 @@ export default function(models: {
 
   it('$inc', async () => {
     const users = await _createUsers(models.User);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     const count = await models.User.find(users[2].id).update({ age: { $inc: 4 } });
     expect(count).to.equal(1);
     const user = await models.User.find(users[2].id);
@@ -113,7 +110,7 @@ export default function(models: {
 
   it('$inc for non-integer column', async () => {
     const users = await _createUsers(models.User);
-    users.sort((a, b) => a.name! < b.name! ? -1 : 1);
+    users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     try {
       await models.User.find(users[2].id).update({ name: { $inc: 4 } });
       throw new Error('must throw an error.');

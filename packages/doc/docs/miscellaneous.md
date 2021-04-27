@@ -3,14 +3,16 @@ id: miscellaneous
 title: Miscellaneous
 ---
 
-Use [[#BaseModel.timestamps]] to add created\_at and updated\_at to the table.
+Use [[#BaseModel.timestamps]] to add created_at and updated_at to the table.
 
 ```typescript
 User.timestamps();
 ```
+
 ```javascript
 User.timestamps();
 ```
+
 ```coffeescript
 User.timestamps()
 ```
@@ -24,6 +26,7 @@ const count = await User.delete({ age: 27 });
 //   { model: 'User', data: <deleted user 1> },
 //   { model: 'User', data: <deleted user 2> }, ...
 ```
+
 ```javascript
 User.archive = true;
 const count = await User.delete({ age: 27 });
@@ -31,6 +34,7 @@ const count = await User.delete({ age: 27 });
 //   { model: 'User', data: <deleted user 1> },
 //   { model: 'User', data: <deleted user 2> }, ...
 ```
+
 ```coffeescript
 User.archive = true
 count = await User.delete age: 27

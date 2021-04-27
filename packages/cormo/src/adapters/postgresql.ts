@@ -1,3 +1,5 @@
+/* eslint-disable indent */
+
 let pg: any;
 let QueryStream: any;
 
@@ -9,7 +11,9 @@ try {
 
 try {
   QueryStream = require('pg-query-stream');
-} catch (error) { /**/ }
+} catch (error) {
+  /**/
+}
 
 export interface AdapterSettingsPostgreSQL {
   host?: string;
@@ -181,7 +185,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const columns = [];
     for (const column in index.columns) {
       const order = index.columns[column];
-      columns.push(`"${schema[column] && schema[column]._dbname_us || column}" ${(order === -1 ? 'DESC' : 'ASC')}`);
+      columns.push(`"${(schema[column] && schema[column]._dbname_us) || column}" ${order === -1 ? 'DESC' : 'ASC'}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
     const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
@@ -219,12 +223,14 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   public async deleteAllIgnoringConstraint(model_list: string[]): Promise<void> {
-    await Promise.all(model_list.map(async (model) => {
-      const table_name = this._connection.models[model].table_name;
-      await this.query(`ALTER TABLE "${table_name}" DISABLE TRIGGER ALL`);
-      await this.query(`DELETE FROM "${table_name}"`);
-      await this.query(`ALTER TABLE "${table_name}" ENABLE TRIGGER ALL`);
-    }));
+    await Promise.all(
+      model_list.map(async (model) => {
+        const table_name = this._connection.models[model].table_name;
+        await this.query(`ALTER TABLE "${table_name}" DISABLE TRIGGER ALL`);
+        await this.query(`DELETE FROM "${table_name}"`);
+        await this.query(`ALTER TABLE "${table_name}" ENABLE TRIGGER ALL`);
+      }),
+    );
   }
 
   /** @internal */
@@ -304,7 +310,9 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   public async updatePartial(
-    model: string, data: any, conditions: any,
+    model: string,
+    data: any,
+    conditions: any,
     options: { transaction?: Transaction },
   ): Promise<number> {
     const table_name = this._connection.models[model].table_name;
@@ -325,7 +333,8 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   public async findById(
-    model: string, id: any,
+    model: string,
+    id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
@@ -395,11 +404,15 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
       callback();
     };
     this._pool.connect().then((client: any) => {
-      client.query(new QueryStream(sql, params)).on('end', () => {
-        client.release();
-      }).on('error', (error: any) => {
-        transformer.emit('error', error);
-      }).pipe(transformer);
+      client
+        .query(new QueryStream(sql, params))
+        .on('end', () => {
+          client.release();
+        })
+        .on('error', (error: any) => {
+          transformer.emit('error', error);
+        })
+        .pipe(transformer);
     });
     return transformer;
   }
@@ -574,7 +587,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return `(ARRAY_AGG(${column}))[1]`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -599,15 +612,24 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const result = await this._pool.query(query, [table]);
     const schema: SchemasTable = { columns: {} };
     for (const column of result.rows) {
-      const type = column.data_type === 'character varying' ? new types.String(column.character_maximum_length)
-        : column.data_type === 'double precision' ? new types.Number()
-          : column.data_type === 'boolean' ? new types.Boolean()
-            : column.data_type === 'integer' ? new types.Integer()
-              : column.data_type === 'USER-DEFINED' && column.udt_schema === 'public' && column.udt_name === 'geometry'
-                ? new types.GeoPoint()
-                : column.data_type === 'timestamp without time zone' ? new types.Date()
-                  : column.data_type === 'json' ? new types.Object()
-                    : column.data_type === 'text' ? new types.Text() : undefined;
+      const type =
+        column.data_type === 'character varying'
+          ? new types.String(column.character_maximum_length)
+          : column.data_type === 'double precision'
+          ? new types.Number()
+          : column.data_type === 'boolean'
+          ? new types.Boolean()
+          : column.data_type === 'integer'
+          ? new types.Integer()
+          : column.data_type === 'USER-DEFINED' && column.udt_schema === 'public' && column.udt_name === 'geometry'
+          ? new types.GeoPoint()
+          : column.data_type === 'timestamp without time zone'
+          ? new types.Date()
+          : column.data_type === 'json'
+          ? new types.Object()
+          : column.data_type === 'text'
+          ? new types.Text()
+          : undefined;
       let adapter_type_string = column.data_type.toUpperCase();
       if (column.data_type === 'character varying') {
         adapter_type_string += `(${column.character_maximum_length || 255})`;
@@ -659,7 +681,12 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   private _buildUpdateSetOfColumn(
-    property: any, data: any, values: any, fields: any[], places: any[], insert: boolean = false,
+    property: any,
+    data: any,
+    values: any,
+    fields: any[],
+    places: any[],
+    insert: boolean = false,
   ) {
     const dbname = property._dbname_us;
     const value = data[dbname];
@@ -757,7 +784,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
           column = order;
           order = 'ASC';
         }
-        column = schema[column] && schema[column]._dbname_us || column;
+        column = (schema[column] && schema[column]._dbname_us) || column;
         return `"${column}" ${order}`;
       });
       if (order_by) {

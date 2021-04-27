@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable indent */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -34,7 +35,9 @@ catch (error) {
 try {
     QueryStream = require('pg-query-stream');
 }
-catch (error) { /**/ }
+catch (error) {
+    /**/
+}
 const stream_1 = __importDefault(require("stream"));
 const lodash_1 = __importDefault(require("lodash"));
 const types = __importStar(require("../types"));
@@ -182,7 +185,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const columns = [];
         for (const column in index.columns) {
             const order = index.columns[column];
-            columns.push(`"${schema[column] && schema[column]._dbname_us || column}" ${(order === -1 ? 'DESC' : 'ASC')}`);
+            columns.push(`"${(schema[column] && schema[column]._dbname_us) || column}" ${order === -1 ? 'DESC' : 'ASC'}`);
         }
         const unique = index.options.unique ? 'UNIQUE ' : '';
         const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
@@ -394,11 +397,15 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
             callback();
         };
         this._pool.connect().then((client) => {
-            client.query(new QueryStream(sql, params)).on('end', () => {
+            client
+                .query(new QueryStream(sql, params))
+                .on('end', () => {
                 client.release();
-            }).on('error', (error) => {
+            })
+                .on('error', (error) => {
                 transformer.emit('error', error);
-            }).pipe(transformer);
+            })
+                .pipe(transformer);
         });
         return transformer;
     }
@@ -564,7 +571,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
             const sub_expr = group_expr[op];
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
-                column = schema[column] && schema[column]._dbname_us || column;
+                column = (schema[column] && schema[column]._dbname_us) || column;
                 return `(ARRAY_AGG(${column}))[1]`;
             }
             else {
@@ -589,15 +596,23 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const result = await this._pool.query(query, [table]);
         const schema = { columns: {} };
         for (const column of result.rows) {
-            const type = column.data_type === 'character varying' ? new types.String(column.character_maximum_length)
-                : column.data_type === 'double precision' ? new types.Number()
-                    : column.data_type === 'boolean' ? new types.Boolean()
-                        : column.data_type === 'integer' ? new types.Integer()
+            const type = column.data_type === 'character varying'
+                ? new types.String(column.character_maximum_length)
+                : column.data_type === 'double precision'
+                    ? new types.Number()
+                    : column.data_type === 'boolean'
+                        ? new types.Boolean()
+                        : column.data_type === 'integer'
+                            ? new types.Integer()
                             : column.data_type === 'USER-DEFINED' && column.udt_schema === 'public' && column.udt_name === 'geometry'
                                 ? new types.GeoPoint()
-                                : column.data_type === 'timestamp without time zone' ? new types.Date()
-                                    : column.data_type === 'json' ? new types.Object()
-                                        : column.data_type === 'text' ? new types.Text() : undefined;
+                                : column.data_type === 'timestamp without time zone'
+                                    ? new types.Date()
+                                    : column.data_type === 'json'
+                                        ? new types.Object()
+                                        : column.data_type === 'text'
+                                            ? new types.Text()
+                                            : undefined;
             let adapter_type_string = column.data_type.toUpperCase();
             if (column.data_type === 'character varying') {
                 adapter_type_string += `(${column.character_maximum_length || 255})`;
@@ -745,7 +760,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
                     column = order;
                     order = 'ASC';
                 }
-                column = schema[column] && schema[column]._dbname_us || column;
+                column = (schema[column] && schema[column]._dbname_us) || column;
                 return `"${column}" ${order}`;
             });
             if (order_by) {

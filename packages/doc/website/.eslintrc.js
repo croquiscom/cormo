@@ -4,9 +4,7 @@ module.exports = {
     node: true,
     es6: true,
   },
-  extends: [
-    '@croquiscom',
-  ],
+  extends: ['@croquiscom'],
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',

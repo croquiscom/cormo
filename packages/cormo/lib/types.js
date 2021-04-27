@@ -11,7 +11,7 @@ const CormoTypesString = function (length) {
         return new CormoTypesString(length);
     }
     this.length = length;
-    this.toString = () => this.length ? `string(${this.length})` : 'string';
+    this.toString = () => (this.length ? `string(${this.length})` : 'string');
 };
 exports.String = CormoTypesString;
 const CormoTypesNumber = function () {

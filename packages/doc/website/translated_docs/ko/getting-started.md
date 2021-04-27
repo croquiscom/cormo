@@ -2,16 +2,16 @@ CORMO는 Node.js를 위한 ORM 프레임워크입니다.
 
 현재 다음과 같은 기능을 제공합니다.
 
-* 다양한 DB: MySQL, MongoDB, SQLite3, PostgreSQL
-* 제약(constraints)
-* 유효성 검사(validations)
-* 관계(associations)
-* 지리공간 질의(geospatial query)
-* 콜백(callbacks)
-* 집합(aggregation)
-* 중첩 컬럼(nested column)
-* 트랜잭션(transactions)
-* 스키마 마이그레이션(schema migration)
+- 다양한 DB: MySQL, MongoDB, SQLite3, PostgreSQL
+- 제약(constraints)
+- 유효성 검사(validations)
+- 관계(associations)
+- 지리공간 질의(geospatial query)
+- 콜백(callbacks)
+- 집합(aggregation)
+- 중첩 컬럼(nested column)
+- 트랜잭션(transactions)
+- 스키마 마이그레이션(schema migration)
 
 ## 설치
 

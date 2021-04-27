@@ -4,11 +4,7 @@ import {
   AssociationHasManyOptions,
   AssociationHasOneOptions,
 } from './connection';
-import {
-  BaseModel,
-  ColumnNestedProperty,
-  ColumnProperty,
-} from './model';
+import { BaseModel, ColumnNestedProperty, ColumnProperty } from './model';
 import * as types from './types';
 
 export function Model(options: { connection?: Connection; name?: string; description?: string } = {}) {
@@ -39,8 +35,9 @@ export function Model(options: { connection?: Connection; name?: string; descrip
   };
 }
 
-export function Column(column_property: types.ColumnType | types.ColumnType[]
-  | ColumnProperty | ColumnNestedProperty): PropertyDecorator {
+export function Column(
+  column_property: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty,
+): PropertyDecorator {
   return (target: object, propertyKey: string | symbol) => {
     const ctor = target.constructor as typeof BaseModel;
     if (!ctor._property_decorators) {

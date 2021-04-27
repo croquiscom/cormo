@@ -1,7 +1,7 @@
 import * as sinon from 'sinon';
 import * as cormo from '../..';
 
-export default function(db: any, db_config: any) {
+export default function (db: any, db_config: any) {
   let connection!: cormo.Connection;
   let sandbox: sinon.SinonSandbox;
 
@@ -15,5 +15,4 @@ export default function(db: any, db_config: any) {
     connection.close();
     sandbox.restore();
   });
-
 }
