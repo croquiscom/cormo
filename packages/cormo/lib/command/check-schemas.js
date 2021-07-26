@@ -17,7 +17,7 @@ class CommandCheckSchemas {
             .alias('r', 'require')
             .help('help')
             .alias('h', 'help')
-            .parse(argv);
+            .parseSync(argv);
         this.modules_to_load = (_a = args.require) !== null && _a !== void 0 ? _a : [];
     }
     async run() {

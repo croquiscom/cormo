@@ -3,24 +3,18 @@
   "private": true,
   "scripts": {
     "postinstall": "lerna bootstrap",
-    "doc": "./builddoc.sh"
+    "doc": "./builddoc.sh",
+    "prepare": "husky install"
   },
   "devDependencies": {
-    "@croquiscom/eslint-config": "^1.3.0",
-    "eslint": "^7.25.0",
-    "husky": "^4.3.0",
+    "@croquiscom/eslint-config": "^1.4.0",
+    "eslint": "^7.31.0",
+    "husky": "^7.0.0",
     "lerna": "^4.0.0",
-    "lint-staged": "^10.5.4",
-    "post-merge-install": "^0.4.0",
-    "typedoc": "^0.20.36",
-    "typescript": "^4.2.4"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "post-merge": "post-merge-install",
-      "post-rebase": "post-merge-install"
-    }
+    "lint-staged": "^11.1.1",
+    "post-merge-install": "^0.5.1",
+    "typedoc": "^0.21.4",
+    "typescript": "^4.3.5"
   },
   "lint-staged": {
     "packages/**/*.{js,ts,jsx,tsx}": "eslint"

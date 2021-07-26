@@ -14,7 +14,7 @@ export default class CommandCheckSchemas {
       .alias('r', 'require')
       .help('help')
       .alias('h', 'help')
-      .parse(argv);
+      .parseSync(argv);
     this.modules_to_load = args.require ?? [];
   }
 
