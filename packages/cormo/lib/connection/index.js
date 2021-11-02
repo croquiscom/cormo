@@ -432,7 +432,7 @@ class Connection extends events_1.EventEmitter {
         /**/
     }
     [util_1.inspect.custom]() {
-        return util_1.inspect(this.models);
+        return (0, util_1.inspect)(this.models);
     }
     /**
      * Manipulate data

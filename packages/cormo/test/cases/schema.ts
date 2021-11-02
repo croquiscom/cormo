@@ -46,7 +46,7 @@ export default function (db: any, db_config: any) {
       // can not add same age with unique index
       await User.create({ name: 'Jone Doe', age: 27 });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       // 'duplicated email' or 'duplicated'
       expect(error.message).to.match(/^duplicated( age)?$/);
     }

@@ -769,7 +769,7 @@ class BaseModel {
           for (let i = 0; i < value.length; i++) {
             value[i] = this._validateType(column, property.type_class, value[i]);
           }
-        } catch (error) {
+        } catch (error: any) {
           // TODO: detail message like 'array of types'
           throw new Error(`'${column}' is not an array`);
         }
@@ -834,7 +834,7 @@ class BaseModel {
     const data_array = records.map((record) => {
       try {
         return record._buildSaveData();
-      } catch (e) {
+      } catch (e: any) {
         error = e;
       }
     });
@@ -1139,7 +1139,7 @@ class BaseModel {
       }
       try {
         ctor._validateColumn(this, column, property);
-      } catch (error) {
+      } catch (error: any) {
         errors.push(error.message);
       }
     }
@@ -1151,7 +1151,7 @@ class BaseModel {
         } else if (typeof r === 'string') {
           errors.push(r);
         }
-      } catch (e) {
+      } catch (e: any) {
         errors.push(e.message);
       }
     });
@@ -1232,7 +1232,7 @@ class BaseModel {
     });
     try {
       await Promise.all(promises);
-    } catch (error) {
+    } catch (error: any) {
       //
     }
     return (this._prev_attributes = {});

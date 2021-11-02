@@ -4,7 +4,7 @@ let mongodb: any;
 
 try {
   mongodb = require('mongodb');
-} catch (error) {
+} catch (error: any) {
   //
 }
 
@@ -39,7 +39,7 @@ function _convertValueToObjectID(value: any, key: any) {
   }
   try {
     return new mongodb.ObjectID(value);
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(`'${key}' is not a valid id`);
   }
 }
@@ -366,7 +366,7 @@ export class MongoDBAdapter extends AdapterBase {
     }
     try {
       await collection.createIndex(index.columns, options);
-    } catch (error) {
+    } catch (error: any) {
       throw MongoDBAdapter.wrapError('unknown error', error);
     }
   }
@@ -377,7 +377,7 @@ export class MongoDBAdapter extends AdapterBase {
     delete this._collections[name];
     try {
       await this._db.dropCollection(_getMongoDBColName(name));
-    } catch (error) {
+    } catch (error: any) {
       // ignore not found error
       if (error && error.errmsg !== 'ns not found') {
         throw MongoDBAdapter.wrapError('unknown error', error);
@@ -411,10 +411,10 @@ export class MongoDBAdapter extends AdapterBase {
     let result: any;
     try {
       result = await this._collection(model).insertOne(data, { safe: true });
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(error);
     }
-    const id = _objectIdToString(result.ops[0]._id);
+    const id = _objectIdToString(result.insertedId);
     if (id) {
       delete data._id;
       return id;
@@ -441,15 +441,13 @@ export class MongoDBAdapter extends AdapterBase {
     let result: any;
     try {
       result = await this._collection(model).insertMany(data, { safe: true });
-    } catch (e) {
+    } catch (e: any) {
       throw _processSaveError(e);
     }
     let error;
-    const ids = result.ops.map((doc: any) => {
-      const id = _objectIdToString(doc._id);
-      if (id) {
-        delete doc._id;
-      } else {
+    const ids = Object.values(result.insertedIds).map((inserted_id: any) => {
+      const id = _objectIdToString(inserted_id);
+      if (!id) {
         error = new Error('unexpected result');
       }
       return id;
@@ -467,7 +465,7 @@ export class MongoDBAdapter extends AdapterBase {
     delete data.id;
     try {
       await this._collection(model).replaceOne({ _id: id }, data, { safe: true });
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(error);
     }
   }
@@ -501,8 +499,8 @@ export class MongoDBAdapter extends AdapterBase {
     }
     try {
       const result = await this._collection(model).updateMany(conditions, update_ops, { safe: true, multi: true });
-      return result.result.n;
-    } catch (error) {
+      return result.modifiedCount;
+    } catch (error: any) {
       throw _processSaveError(error);
     }
   }
@@ -539,7 +537,7 @@ export class MongoDBAdapter extends AdapterBase {
     }
     try {
       await this._collection(model).updateMany(conditions, update_ops, { safe: true, upsert: true });
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(error);
     }
   }
@@ -553,7 +551,7 @@ export class MongoDBAdapter extends AdapterBase {
     const fields = this._buildSelect(options.select);
     try {
       id = _convertValueToObjectID(id, 'id');
-    } catch (error) {
+    } catch (error: any) {
       throw new Error('not found');
     }
     const client_options: any = {};
@@ -567,7 +565,7 @@ export class MongoDBAdapter extends AdapterBase {
     let result: any;
     try {
       result = await this._collection(model).findOne({ _id: id }, client_options);
-    } catch (error) {
+    } catch (error: any) {
       throw MongoDBAdapter.wrapError('unknown error', error);
     }
     if (!result) {
@@ -608,7 +606,7 @@ export class MongoDBAdapter extends AdapterBase {
       try {
         const cursor = await this._collection(model_name).aggregate(pipeline);
         result = await cursor.toArray();
-      } catch (error) {
+      } catch (error: any) {
         throw MongoDBAdapter.wrapError('unknown error', error);
       }
       return result.map((record: any) => {
@@ -636,7 +634,7 @@ export class MongoDBAdapter extends AdapterBase {
           throw new Error('no cursor');
         }
         result = await cursor.toArray();
-      } catch (error) {
+      } catch (error: any) {
         throw MongoDBAdapter.wrapError('unknown error', error);
       }
       return result.map((record: any) => {
@@ -652,7 +650,7 @@ export class MongoDBAdapter extends AdapterBase {
     let client_options: any;
     try {
       [conditions, fields, orders, client_options] = this._buildConditionsForFind(model, conditions, options);
-    } catch (e) {
+    } catch (e: any) {
       const readable = new stream.Readable({ objectMode: true });
       readable._read = () => {
         readable.emit('error', e);
@@ -664,17 +662,16 @@ export class MongoDBAdapter extends AdapterBase {
       transformer.push(this._convertToModelInstance(model, record, options));
       callback();
     };
-    this._collection(model).find(conditions, client_options, (error: any, cursor: any) => {
-      if (error || !cursor) {
-        transformer.emit('error', MongoDBAdapter.wrapError('unknown error', error));
-        return;
-      }
+    try {
+      const cursor = this._collection(model).find(conditions, client_options).stream();
       cursor
         .on('error', (e: any) => {
           transformer.emit('error', e);
         })
         .pipe(transformer);
-    });
+    } catch (error: any) {
+      transformer.emit('error', MongoDBAdapter.wrapError('unknown error', error));
+    }
     return transformer;
   }
 
@@ -700,7 +697,7 @@ export class MongoDBAdapter extends AdapterBase {
         if (!result || result.length !== 1) {
           throw new Error('invalid result');
         }
-      } catch (error) {
+      } catch (error: any) {
         throw MongoDBAdapter.wrapError('unknown error', error);
       }
       return result[0].count;
@@ -708,7 +705,7 @@ export class MongoDBAdapter extends AdapterBase {
       try {
         const count = await this._collection(model_name).countDocuments(conditions);
         return count;
-      } catch (error) {
+      } catch (error: any) {
         throw MongoDBAdapter.wrapError('unknown error', error);
       }
     }
@@ -721,8 +718,8 @@ export class MongoDBAdapter extends AdapterBase {
     try {
       // console.log(JSON.stringify(conditions))
       const result = await this._collection(model).deleteMany(conditions, { safe: true });
-      return result.result.n;
-    } catch (error) {
+      return result.deletedCount;
+    } catch (error: any) {
       throw MongoDBAdapter.wrapError('unknown error', error);
     }
   }
@@ -746,7 +743,7 @@ export class MongoDBAdapter extends AdapterBase {
       const client = await mongodb.MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
       this._client = client;
       this._db = client.db(settings.database);
-    } catch (error) {
+    } catch (error: any) {
       throw MongoDBAdapter.wrapError('unknown error', error);
     }
   }

@@ -12,7 +12,7 @@ export default function (models: { Version: typeof VersionRef }) {
     try {
       await models.Version.create({ major: 1, minor: 1 });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       // 'duplicated email' or 'duplicated'
       expect(error.message).to.match(/^duplicated( major_minor)?$/);
       expect(error).to.exist;

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as cormo from 'cormo';
 import { graphql, GraphQLSchema, printSchema } from 'graphql';
-import sinon from 'sinon';
+import sinon, { createSandbox } from 'sinon';
 import { Column, createDefaultCrudSchema, Model } from '../..';
 import _g = require('../common');
 
@@ -45,7 +45,7 @@ describe('createDefaultCrudSchema (timestamp)', () => {
   });
 
   beforeEach(() => {
-    sandbox = sinon.createSandbox();
+    sandbox = createSandbox();
   });
 
   afterEach(async () => {

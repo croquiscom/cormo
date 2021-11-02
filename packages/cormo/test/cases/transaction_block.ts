@@ -26,7 +26,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         throw new Error('force fail');
       });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal('force fail');
     }
 
@@ -41,14 +41,14 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         tx = _tx;
         throw new Error('force fail');
       });
-    } catch (error) {
+    } catch (error: any) {
       //
     }
 
     try {
       await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.equal('transaction finished');
     }
@@ -65,7 +65,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         throw new Error('force fail');
       });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal('force fail');
     }
 
@@ -165,7 +165,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -180,7 +180,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -198,7 +198,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -213,7 +213,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -230,7 +230,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -247,7 +247,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -262,7 +262,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -281,7 +281,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -298,7 +298,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -315,7 +315,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -330,7 +330,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -347,7 +347,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -362,7 +362,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -379,7 +379,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -394,7 +394,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -411,7 +411,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -428,7 +428,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 

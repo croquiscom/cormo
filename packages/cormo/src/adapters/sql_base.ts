@@ -43,7 +43,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     if (Object.keys(update_data).length === 0) {
       try {
         return await this.create(model, insert_data, {});
-      } catch (error) {
+      } catch (error: any) {
         if (!/duplicated/.test(error.message)) {
           throw error;
         }
@@ -55,7 +55,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       }
       try {
         return await this.create(model, insert_data, {});
-      } catch (error) {
+      } catch (error: any) {
         if (!/duplicated/.test(error.message)) {
           throw error;
         }

@@ -36,7 +36,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
     try {
       user = await models.User.create({ name: 'Bill Simpson', age: 38, email: 'bill@foo.org' });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       // 'duplicated email' or 'duplicated'
       expect(error.message).to.match(/^duplicated( email)?$/);
       expect(user).to.not.exist;
@@ -49,7 +49,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
     try {
       await users[0].save();
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       // 'duplicated email' or 'duplicated'
       expect(error.message).to.match(/^duplicated( email)?$/);
     }
@@ -60,7 +60,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
     try {
       await models.User.find(users[0].id).update({ email: 'bill@foo.org' });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       // 'duplicated email' or 'duplicated'
       expect(error.message).to.match(/^duplicated( email)?$/);
     }
@@ -70,19 +70,19 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
     try {
       await models.User.create({ age: 10, email: 'test1@example.com' } as any);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal("'name' is required");
     }
     try {
       await models.User.create({ name: 'test', email: 'test2@example.com' } as any);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal("'age' is required");
     }
     try {
       await models.User.create({ name: 'test', age: 10 } as any);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal("'email' is required");
     }
   });
@@ -100,7 +100,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
     try {
       await users[0].save();
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal("'name' is required");
     }
   });
@@ -110,7 +110,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
     try {
       await models.User.find(users[0].id).update({ name: null });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal("'name' is required");
     }
   });
@@ -120,7 +120,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
     try {
       await models.Post.create({ title: 'first post', body: 'This is the 1st post.' } as any);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal("'user_id' is required");
     }
     await models.Post.create({ title: 'first post', body: 'This is the 1st post.', user_id: user.id });

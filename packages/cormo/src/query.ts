@@ -447,7 +447,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       try {
         // try cache
         return await this._model._loadFromCache(this._options.cache.key, this._options.cache.refresh);
-      } catch (error) {
+      } catch (error: any) {
         // no cache, execute query
         const records = await this._execAndInclude(options);
         // save result to cache
@@ -600,7 +600,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       let record;
       try {
         record = await this._adapter.findById(this._name, this._id, find_options);
-      } catch (error) {
+      } catch (error: any) {
         throw new Error('not found');
       }
       if (!record) {
@@ -754,7 +754,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       if (property) {
         try {
           model._validateColumn(updates, path + column, property, true);
-        } catch (error) {
+        } catch (error: any) {
           errors.push(error.message);
         }
         model._buildSaveDataColumn(data, updates, path + column, property, true);

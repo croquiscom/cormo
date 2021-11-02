@@ -5,13 +5,13 @@ let QueryStream: any;
 
 try {
   pg = require('pg');
-} catch (error) {
+} catch (error: any) {
   //
 }
 
 try {
   QueryStream = require('pg-query-stream');
-} catch (error) {
+} catch (error: any) {
   /**/
 }
 
@@ -159,7 +159,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const sql = `CREATE TABLE "${table_name}" ( ${column_sqls.join(',')} )`;
     try {
       await this._pool.query(sql);
-    } catch (error) {
+    } catch (error: any) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
   }
@@ -172,7 +172,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const sql = `ALTER TABLE "${table_name}" ADD COLUMN "${column_name}" ${_propertyToSQL(column_property)}`;
     try {
       await this._pool.query(sql);
-    } catch (error) {
+    } catch (error: any) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
   }
@@ -191,7 +191,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
     try {
       await this._pool.query(sql);
-    } catch (error) {
+    } catch (error: any) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
   }
@@ -216,7 +216,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
       REFERENCES "${references.table_name}"(id) ON DELETE ${action}`;
     try {
       await this._pool.query(sql);
-    } catch (error) {
+    } catch (error: any) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
   }
@@ -238,7 +238,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const table_name = this._connection.models[model].table_name;
     try {
       await this._pool.query(`DROP TABLE IF EXISTS "${table_name}"`);
-    } catch (error) {
+    } catch (error: any) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
   }
@@ -257,7 +257,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, values, options.transaction);
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(table_name, error);
     }
     const rows = result && result.rows;
@@ -283,7 +283,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, values, options.transaction);
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(table_name, error);
     }
     const ids = result && result.rows.map((row: any) => row.id);
@@ -303,7 +303,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const sql = `UPDATE "${table_name}" SET ${fields} WHERE id=$${values.length}`;
     try {
       await this.query(sql, values, options.transaction);
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(table_name, error);
     }
   }
@@ -325,7 +325,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, values, options.transaction);
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(table_name, error);
     }
     return result.rowCount;
@@ -346,7 +346,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, [id], options.transaction);
-    } catch (error) {
+    } catch (error: any) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
     const rows = result && result.rows;
@@ -368,7 +368,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, params, options.transaction);
-    } catch (error) {
+    } catch (error: any) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
     const rows = result && result.rows;
@@ -393,7 +393,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     let params: any;
     try {
       [sql, params] = this._buildSqlForFind(model, conditions, options);
-    } catch (error) {
+    } catch (error: any) {
       const readable = new stream.Readable({ objectMode: true });
       readable._read = () => readable.emit('error', error);
       return readable;
@@ -436,7 +436,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, params, options.transaction);
-    } catch (error) {
+    } catch (error: any) {
       throw PostgreSQLAdapter.wrapError('unknown error', error);
     }
     const rows = result && result.rows;
@@ -457,7 +457,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, params, options.transaction);
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === '23503') {
         throw new Error('rejected');
       }
@@ -486,7 +486,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
       const client = await pool.connect();
       client.release();
       this._pool = pool;
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === '3D000') {
         throw new Error('database does not exist');
       }

@@ -143,7 +143,7 @@ export default function (models: {
       users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
       _compareUser(users[0], { name: 'Bill Smith', age: 45 });
       _compareUser(users[1], { name: 'Daniel Smith', age: 8 });
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === 'regular expression is not supported') {
         return;
       }
@@ -159,7 +159,7 @@ export default function (models: {
       users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
       _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
       _compareUser(users[1], { name: 'Bill Smith', age: 45 });
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === 'regular expression is not supported') {
         return;
       }

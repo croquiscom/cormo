@@ -68,7 +68,7 @@ export default function (models: { User: typeof User }) {
     try {
       await models.User.find(id);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.equal('not found');
     }
@@ -79,7 +79,7 @@ export default function (models: { User: typeof User }) {
     try {
       await models.User.find(undefined as any);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.equal('not found');
     }
@@ -90,7 +90,7 @@ export default function (models: { User: typeof User }) {
     try {
       await models.User.find(undefined as any).where({ age: { $gt: 0 } });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.equal('not found');
     }
@@ -124,7 +124,7 @@ export default function (models: { User: typeof User }) {
     try {
       await models.User.find(user.id);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.equal('not found');
     }
@@ -142,7 +142,7 @@ export default function (models: { User: typeof User }) {
     try {
       (user as any).id = 1;
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.have.string("Cannot assign to read only property 'id' of object ");
     }
@@ -196,7 +196,7 @@ export default function (models: { User: typeof User }) {
     try {
       await models.User.find([users[2].id, users[1].id, _getInvalidID(users[0].id)]);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.equal('not found');
     }

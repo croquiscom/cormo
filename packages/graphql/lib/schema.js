@@ -119,7 +119,7 @@ function createListType(model_class, options, single_type) {
                             }
                         }
                     }
-                    return await query.select(crary_graphql_1.getFieldList(info));
+                    return await query.select((0, crary_graphql_1.getFieldList)(info));
                 },
                 type: new graphql_1.GraphQLNonNull(new graphql_1.GraphQLList(new graphql_1.GraphQLNonNull(single_type))),
             },
@@ -346,7 +346,7 @@ function createDefaultCrudSchema(model_class, options = {}) {
                         if (!has_query) {
                             return null;
                         }
-                        return await query.select(crary_graphql_1.getFieldList(info));
+                        return await query.select((0, crary_graphql_1.getFieldList)(info));
                     },
                     type: single_type,
                 },

@@ -8,10 +8,10 @@ import tls = require('tls');
 try {
   mysql = require('mysql2');
   is_mysql2 = true;
-} catch (error1) {
+} catch (error1: any) {
   try {
     mysql = require('mysql');
-  } catch (error2) {
+  } catch (error2: any) {
     //
   }
 }
@@ -111,10 +111,10 @@ async function _tryCreateConnection(config: any, count: number = 0): Promise<any
     client.queryAsync = util.promisify(client.query);
     await client.connectAsync();
     return client;
-  } catch (error) {
+  } catch (error: any) {
     try {
       client.end();
-    } catch (e) {
+    } catch (e: any) {
       // ignore error
     }
     if (error.errorno === 'ETIMEDOUT') {
@@ -233,7 +233,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     try {
       await this._client.queryAsync(query);
-    } catch (error) {
+    } catch (error: any) {
       throw this._wrapError('unknown error', error);
     }
   }
@@ -253,7 +253,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     try {
       await this._client.queryAsync(query);
-    } catch (error) {
+    } catch (error: any) {
       throw this._wrapError('unknown error', error);
     }
   }
@@ -277,7 +277,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     try {
       await this._client.queryAsync(query);
-    } catch (error) {
+    } catch (error: any) {
       throw this._wrapError('unknown error', error);
     }
   }
@@ -301,7 +301,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     try {
       await this._client.queryAsync(query);
-    } catch (error) {
+    } catch (error: any) {
       throw this._wrapError('unknown error', error);
     }
   }
@@ -328,7 +328,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     try {
       await this._client.queryAsync(query);
-    } catch (error) {
+    } catch (error: any) {
       throw this._wrapError('unknown error', error);
     }
   }
@@ -361,7 +361,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     try {
       await this._client.queryAsync(query);
-    } catch (error) {
+    } catch (error: any) {
       throw this._wrapError('unknown error', error);
     }
   }
@@ -375,7 +375,7 @@ export class MySQLAdapter extends SQLAdapterBase {
         try {
           try {
             await connection.queryAsync(`DELETE FROM \`${table_name}\``);
-          } catch (error) {
+          } catch (error: any) {
             // try again with ignoring foreign key constraints
             await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 0');
             await connection.queryAsync(`DELETE FROM \`${table_name}\``);
@@ -393,7 +393,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     const table_name = this._connection.models[model].table_name;
     try {
       await this._client.queryAsync(`DROP TABLE IF EXISTS \`${table_name}\``);
-    } catch (error) {
+    } catch (error: any) {
       throw this._wrapError('unknown error', error);
     }
   }
@@ -412,7 +412,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, values, { transaction: options.transaction });
-    } catch (error) {
+    } catch (error: any) {
       throw this._processSaveError(error);
     }
     const id = result && result.insertId;
@@ -438,7 +438,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, values, { transaction: options.transaction });
-    } catch (error) {
+    } catch (error: any) {
       throw this._processSaveError(error);
     }
     const id = result && result.insertId;
@@ -458,7 +458,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     const sql = `UPDATE \`${table_name}\` SET ${fields} WHERE id=?`;
     try {
       await this.query(sql, values, { transaction: options.transaction });
-    } catch (error) {
+    } catch (error: any) {
       throw this._processSaveError(error);
     }
   }
@@ -480,7 +480,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, values, { transaction: options.transaction });
-    } catch (error) {
+    } catch (error: any) {
       throw this._processSaveError(error);
     }
     if (result == null) {
@@ -526,7 +526,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     try {
       await this.query(sql, values, { transaction: options.transaction, node: options.node });
-    } catch (error) {
+    } catch (error: any) {
       throw this._processSaveError(error);
     }
   }
@@ -547,7 +547,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, id, { transaction: options.transaction, node: options.node });
-    } catch (error) {
+    } catch (error: any) {
       throw this._wrapError('unknown error', error);
     }
     if (result && result.length === 1) {
@@ -568,7 +568,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, params, { transaction: options.transaction, node: options.node });
-    } catch (error) {
+    } catch (error: any) {
       throw this._wrapError('unknown error', error);
     }
     if (options.group_fields) {
@@ -588,7 +588,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     let params;
     try {
       [sql, params] = this._buildSqlForFind(model, conditions, options);
-    } catch (error) {
+    } catch (error: any) {
       const readable = new stream.Readable({ objectMode: true });
       readable._read = () => readable.emit('error', error);
       return readable;
@@ -631,7 +631,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, params, { transaction: options.transaction, node: options.node });
-    } catch (error) {
+    } catch (error: any) {
       throw this._wrapError('unknown error', error);
     }
     if (result && result.length !== 1) {
@@ -651,7 +651,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     let result;
     try {
       result = await this.query(sql, params, { transaction: options.transaction });
-    } catch (error) {
+    } catch (error: any) {
       if (error && (error.code === 'ER_ROW_IS_REFERENCED_' || error.code === 'ER_ROW_IS_REFERENCED_2')) {
         throw new Error('rejected');
       }
@@ -685,7 +685,7 @@ export class MySQLAdapter extends SQLAdapterBase {
         ssl: settings.ssl,
         authPlugins: settings.authPlugins,
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === 'ER_ACCESS_DENIED_ERROR') {
         throw error;
       }
@@ -693,7 +693,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     try {
       await this._createDatabase(client);
-    } catch (error) {
+    } catch (error: any) {
       client.end();
       throw error;
     }
@@ -814,7 +814,7 @@ export class MySQLAdapter extends SQLAdapterBase {
       this._connection._logger.logQuery(`[${client._node_id}] ${text}`, values);
       try {
         return await client.queryAsync({ sql: text, values, timeout: this._query_timeout });
-      } catch (error) {
+      } catch (error: any) {
         if (this._settings?.reconnect_if_read_only && error.message.includes('read-only')) {
           // if failover occurred, connections will be reconnected.
           // But if connection is reconnected before DNS is changed (DNS cache can affect this),
@@ -869,7 +869,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     if (property.type_class === types.Object || property.array) {
       try {
         return JSON.parse(value);
-      } catch (error) {
+      } catch (error: any) {
         return null;
       }
     } else if (property.type_class === types.GeoPoint) {
@@ -1106,11 +1106,11 @@ export class MySQLAdapter extends SQLAdapterBase {
     try {
       // check database existence
       return await client.queryAsync(`USE \`${this._database}\``);
-    } catch (error1) {
+    } catch (error1: any) {
       if (error1.code === 'ER_BAD_DB_ERROR') {
         try {
           await client.queryAsync(`CREATE DATABASE \`${this._database}\``);
-        } catch (error2) {
+        } catch (error2: any) {
           throw this._wrapError('unknown error', error2);
         }
         return await this._createDatabase(client);
@@ -1128,7 +1128,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   private async _checkFeatures(client: any) {
     try {
       await client.queryAsync('CREATE TABLE _temp (date DATETIME(10))');
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === 'ER_PARSE_ERROR') {
         // MySQL 5.6.4 below does not support fractional seconds
         this.support_fractional_seconds = false;

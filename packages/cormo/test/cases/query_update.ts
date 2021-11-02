@@ -114,7 +114,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     try {
       await models.User.find(users[2].id).update({ name: { $inc: 4 } });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.exist;
       expect(error.message).to.equal("'name' is not a number type");
     }

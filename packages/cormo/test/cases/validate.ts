@@ -16,7 +16,7 @@ export default function (models: { User: typeof User; connection: cormo.Connecti
     try {
       await models.User.create({ name: 'John Doe', age: 10 });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.exist;
       expect(error.message).to.equal('too young');
     }
@@ -26,7 +26,7 @@ export default function (models: { User: typeof User; connection: cormo.Connecti
     try {
       await models.User.create({ name: 'John Doe', age: 27, email: 'invalid' });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.exist;
       expect(error.message).to.equal('invalid email');
     }
@@ -36,7 +36,7 @@ export default function (models: { User: typeof User; connection: cormo.Connecti
     try {
       await models.User.create({ name: 'John Doe', age: 10, email: 'invalid' });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.exist;
       if (error.message !== 'invalid email,too young') {
         expect(error.message).to.equal('too young,invalid email');

@@ -55,8 +55,6 @@ _dbs.forEach((db) => {
         models.User = _g.connection.model('User', {
           name: String,
           age: Number,
-          count: { type: Number, default_value: 5 },
-          date_created: { type: Date, default_value: Date.now },
         });
         models.Ledger = _g.connection.model('Ledger', {
           date_ymd: cormo.types.Integer,

@@ -19,7 +19,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     } finally {
       try {
         await tx.rollback();
-      } catch (error) {
+      } catch (error: any) {
         /**/
       }
     }
@@ -42,7 +42,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     } finally {
       try {
         await tx.rollback();
-      } catch (error) {
+      } catch (error: any) {
         /**/
       }
     }
@@ -58,7 +58,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     try {
       await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.equal('transaction finished');
     }
@@ -78,7 +78,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     } finally {
       try {
         await tx.rollback();
-      } catch (error) {
+      } catch (error: any) {
         /**/
       }
     }
@@ -118,12 +118,12 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx1.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
         try {
           await tx2.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -153,12 +153,12 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx1.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
         try {
           await tx2.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -201,12 +201,12 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx1.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
         try {
           await tx2.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -224,7 +224,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -242,7 +242,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -263,7 +263,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -281,7 +281,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -301,7 +301,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -321,7 +321,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -339,7 +339,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -357,7 +357,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -377,7 +377,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -397,7 +397,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -415,7 +415,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -435,7 +435,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -453,7 +453,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -473,7 +473,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -491,7 +491,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -511,7 +511,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }
@@ -531,7 +531,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error) {
+        } catch (error: any) {
           /**/
         }
       }

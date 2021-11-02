@@ -38,7 +38,7 @@ export default function (models: { User: typeof UserRef; Post: typeof PostRef; c
     try {
       await models.connection!.manipulate([{ create_account: { name: 'John Doe', age: 27 } }]);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.exist;
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.equal('model Account does not exist');
@@ -115,7 +115,7 @@ export default function (models: { User: typeof UserRef; Post: typeof PostRef; c
         { create_post: { title: 'first post', body: 'This is the 1st post.', user_id: 'user1' } },
       ]);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.exist;
       expect(error).to.be.an.instanceof(Error);
     }

@@ -54,7 +54,7 @@ export default function (models: { connection: cormo.Connection | null }) {
     } finally {
       try {
         await tx.rollback();
-      } catch (error) {
+      } catch (error: any) {
         /**/
       }
     }

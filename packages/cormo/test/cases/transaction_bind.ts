@@ -33,7 +33,7 @@ export default function (models: {
         throw new Error('force fail');
       });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal('force fail');
     }
 
@@ -48,14 +48,14 @@ export default function (models: {
         TxUser = _TxUser;
         throw new Error('force fail');
       });
-    } catch (error) {
+    } catch (error: any) {
       //
     }
 
     try {
       await TxUser.create({ name: 'John Doe', age: 27 });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.equal('transaction finished');
     }
@@ -72,7 +72,7 @@ export default function (models: {
         throw new Error('force fail');
       });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal('force fail');
     }
 
@@ -100,7 +100,7 @@ export default function (models: {
         },
       );
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error.message).to.equal('force fail');
     }
 
@@ -207,7 +207,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -222,7 +222,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -240,7 +240,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -255,7 +255,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -272,7 +272,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -289,7 +289,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -304,7 +304,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -319,7 +319,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -334,7 +334,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -349,7 +349,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -364,7 +364,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -379,7 +379,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -394,7 +394,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -409,7 +409,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -424,7 +424,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -441,7 +441,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 
@@ -458,7 +458,7 @@ export default function (models: {
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal('force fail');
       }
 

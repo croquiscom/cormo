@@ -199,7 +199,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     try {
       await models.User.find(users[0].id + 'a');
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.exist;
       expect(error.message).to.equal('not found');
     }
@@ -234,7 +234,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     try {
       await query.select(['name']);
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.be.an.instanceof(Error);
       expect(error.message).to.equal('Query object is already used');
     }

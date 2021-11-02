@@ -21,7 +21,7 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         expect(count).to.equal(1);
         type = await models.Type.find(type.id);
         expect(type.number).to.equal(item[1]);
-      } catch (error) {
+      } catch (error: any) {
         expect(error).to.exist;
         expect(error.message).to.equal("'number' is not a number");
       }
@@ -46,7 +46,7 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         expect(count).to.equal(1);
         type = await models.Type.find(type.id);
         expect(type.int_c).to.equal(item[1]);
-      } catch (error) {
+      } catch (error: any) {
         expect(error).to.exist;
         expect(error.message).to.equal("'int_c' is not an integer");
       }
@@ -73,7 +73,7 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         type = await models.Type.find(type.id);
         expect(type.date).to.be.an.instanceof(Date);
         expect(type.date!.getTime()).to.equal(item[1]);
-      } catch (error) {
+      } catch (error: any) {
         expect(error).to.exist;
         expect(error.message).to.equal("'date' is not a date");
       }
@@ -97,7 +97,7 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         expect(count).to.equal(1);
         type = await models.Type.find(type.id);
         expect(type.boolean).to.equal(item[1]);
-      } catch (error) {
+      } catch (error: any) {
         expect(error).to.exist;
         expect(error.message).to.equal("'boolean' is not a boolean");
       }
@@ -147,7 +147,7 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         expect(count).to.equal(1);
         type = await models.Type.find(type.id);
         expect(type.int_array).to.eql(item[1]);
-      } catch (error) {
+      } catch (error: any) {
         expect(error).to.exist;
         expect(error.message).to.equal("'int_array' is not an array");
       }

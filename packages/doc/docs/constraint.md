@@ -30,7 +30,7 @@ class User extends cormo.BaseModel {
 const user1 = await User.create({ name: 'Bill Smith', age: 45, email: 'bill@foo.org' });
 try {
   const user2 = await User.create({ name: 'Bill Simpson', age: 38, email: 'bill@foo.org' });
-} catch (error) {
+} catch (error: any) {
   // error.message will be 'duplicated email' or 'duplicated'
 }
 ```

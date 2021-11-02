@@ -4,7 +4,7 @@ let sqlite3: any;
 
 try {
   sqlite3 = require('sqlite3');
-} catch (error) {
+} catch (error: any) {
   //
 }
 
@@ -144,7 +144,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const sql = `CREATE TABLE "${table_name}" ( ${column_sqls.join(',')} )`;
     try {
       await this._client.runAsync(sql);
-    } catch (error) {
+    } catch (error: any) {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
   }
@@ -157,7 +157,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const sql = `ALTER TABLE "${table_name}" ADD COLUMN "${column_name}" ${_propertyToSQL(column_property)}`;
     try {
       await this._client.runAsync(sql);
-    } catch (error) {
+    } catch (error: any) {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
   }
@@ -176,7 +176,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
     try {
       await this._client.runAsync(sql);
-    } catch (error) {
+    } catch (error: any) {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
   }
@@ -198,7 +198,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const table_name = this._connection.models[model].table_name;
     try {
       await this._client.runAsync(`DROP TABLE IF EXISTS "${table_name}"`);
-    } catch (error) {
+    } catch (error: any) {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
   }
@@ -238,7 +238,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
           });
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(error);
     }
     return id;
@@ -267,7 +267,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
           }
         });
       });
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(error);
     }
     if (id) {
@@ -287,7 +287,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const sql = `UPDATE "${table_name}" SET ${fields} WHERE id=?`;
     try {
       await this._client.runAsync(sql, values);
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(error);
     }
   }
@@ -316,7 +316,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
           }
         });
       });
-    } catch (error) {
+    } catch (error: any) {
       throw _processSaveError(error);
     }
   }
@@ -336,7 +336,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     let result;
     try {
       result = await this._client.allAsync(sql, id);
-    } catch (error) {
+    } catch (error: any) {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
     if (result && result.length === 1) {
@@ -357,7 +357,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     let result;
     try {
       result = await this._client.allAsync(sql, params);
-    } catch (error) {
+    } catch (error: any) {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
     if (options.group_fields) {
@@ -377,7 +377,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     let params;
     try {
       [sql, params] = this._buildSqlForFind(model, conditions, options);
-    } catch (error) {
+    } catch (error: any) {
       const r = new stream.Readable({ objectMode: true });
       r._read = () => r.emit('error', error);
       return r;
@@ -422,7 +422,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     let result;
     try {
       result = await this._client.allAsync(sql, params);
-    } catch (error) {
+    } catch (error: any) {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
     if (result && result.length !== 1) {
@@ -449,7 +449,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
           }
         });
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === 'SQLITE_CONSTRAINT') {
         throw new Error('rejected');
       }
@@ -465,7 +465,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     try {
       this._settings = settings;
       this._client = await this._getClient();
-    } catch (error) {
+    } catch (error: any) {
       throw SQLite3Adapter.wrapError('failed to open', error);
     }
     await this._client.runAsync('PRAGMA foreign_keys=ON');
@@ -525,7 +525,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     if (property.type_class === types.Object || property.array) {
       try {
         return JSON.parse(value);
-      } catch (error1) {
+      } catch (error1: any) {
         return null;
       }
     } else if (property.type_class === types.Date) {

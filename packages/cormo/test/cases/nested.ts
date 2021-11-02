@@ -119,7 +119,7 @@ export default function (db: any, db_config: any) {
       // missing required field
       await (User as any).create({ name: { first: 'John', middle: 'F.' } });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.exist;
       expect(error).to.have.property('message', "'name.last' is required");
     }
@@ -191,7 +191,7 @@ export default function (db: any, db_config: any) {
     try {
       await User.find(user.id).update({ name: { last: null } });
       throw new Error('must throw an error.');
-    } catch (error) {
+    } catch (error: any) {
       expect(error).to.exist;
       expect(error).to.have.property('message', "'name.last' is required");
     }

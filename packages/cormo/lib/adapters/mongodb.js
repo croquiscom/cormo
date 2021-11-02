@@ -410,7 +410,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
         catch (error) {
             throw _processSaveError(error);
         }
-        const id = _objectIdToString(result.ops[0]._id);
+        const id = _objectIdToString(result.insertedId);
         if (id) {
             delete data._id;
             return id;
@@ -442,12 +442,9 @@ class MongoDBAdapter extends base_1.AdapterBase {
             throw _processSaveError(e);
         }
         let error;
-        const ids = result.ops.map((doc) => {
-            const id = _objectIdToString(doc._id);
-            if (id) {
-                delete doc._id;
-            }
-            else {
+        const ids = Object.values(result.insertedIds).map((inserted_id) => {
+            const id = _objectIdToString(inserted_id);
+            if (!id) {
                 error = new Error('unexpected result');
             }
             return id;
@@ -494,7 +491,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
         }
         try {
             const result = await this._collection(model).updateMany(conditions, update_ops, { safe: true, multi: true });
-            return result.result.n;
+            return result.modifiedCount;
         }
         catch (error) {
             throw _processSaveError(error);
@@ -658,17 +655,17 @@ class MongoDBAdapter extends base_1.AdapterBase {
             transformer.push(this._convertToModelInstance(model, record, options));
             callback();
         };
-        this._collection(model).find(conditions, client_options, (error, cursor) => {
-            if (error || !cursor) {
-                transformer.emit('error', MongoDBAdapter.wrapError('unknown error', error));
-                return;
-            }
+        try {
+            const cursor = this._collection(model).find(conditions, client_options).stream();
             cursor
                 .on('error', (e) => {
                 transformer.emit('error', e);
             })
                 .pipe(transformer);
-        });
+        }
+        catch (error) {
+            transformer.emit('error', MongoDBAdapter.wrapError('unknown error', error));
+        }
         return transformer;
     }
     /** @internal */
@@ -716,7 +713,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
         try {
             // console.log(JSON.stringify(conditions))
             const result = await this._collection(model).deleteMany(conditions, { safe: true });
-            return result.result.n;
+            return result.deletedCount;
         }
         catch (error) {
             throw MongoDBAdapter.wrapError('unknown error', error);

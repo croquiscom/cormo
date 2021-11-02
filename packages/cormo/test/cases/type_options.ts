@@ -16,13 +16,13 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
       let record;
       try {
         record = await TypeOptionsString1.create({ col: '0123456789' });
-      } catch (error) {
+      } catch (error: any) {
         return;
       }
       // MySQL non-strict mode accepts long string
       const result = await TypeOptionsString1.find(record.id);
       expect(result.col).to.eql('01234');
-    } catch (error) {
+    } catch (error: any) {
       // MongoDB, Sqlite3 does not support String type with length, just skip
       expect(error.message).to.eql('this adapter does not support String type with length');
       return;
@@ -41,13 +41,13 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
       let record;
       try {
         record = await TypeOptionsString2.create({ col: '0123456789' });
-      } catch (error) {
+      } catch (error: any) {
         return;
       }
       // MySQL non-strict mode accepts long string
       const result = await TypeOptionsString2.find(record.id);
       expect(result.col).to.eql('01234');
-    } catch (error) {
+    } catch (error: any) {
       // MongoDB, Sqlite3 does not support String type with length, just skip
       expect(error.message).to.eql('this adapter does not support String type with length');
       return;

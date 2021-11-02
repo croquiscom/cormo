@@ -37,11 +37,11 @@ export default class CommandCheckSchemas {
             }
           }
         }
-      } catch (error1) {
+      } catch (error1: any) {
         if (error1.code === 'MODULE_NOT_FOUND') {
           try {
             require(path.resolve(process.cwd(), 'node_modules', module_to_load));
-          } catch (error2) {
+          } catch (error2: any) {
             console.log(error2.toString());
           }
         } else {

@@ -24,7 +24,7 @@ const Toposort = require('toposort-class');
 
 try {
   redis = require('redis');
-} catch (error) {
+} catch (error: any) {
   /**/
 }
 
@@ -809,7 +809,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     M2 extends BaseModel,
     M3 extends BaseModel,
     M4 extends BaseModel,
-    M5 extends BaseModel
+    M5 extends BaseModel,
   >(
     options: {
       isolation_level?: IsolationLevel;
@@ -891,7 +891,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       const result = await block!(...args);
       await transaction.commit();
       return result;
-    } catch (error) {
+    } catch (error: any) {
       await transaction.rollback();
       throw error;
     }
@@ -937,7 +937,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     try {
       await this._adapter.connect(settings);
       this._connected = true;
-    } catch (error) {
+    } catch (error: any) {
       if (this._connection_retry_count && this._connection_retry_count <= count) {
         throw new Error('failed to connect');
       }
@@ -1020,7 +1020,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     const model_list = Object.keys(this.models).filter((key) => key !== '_Archive');
     try {
       await this.adapter.deleteAllIgnoringConstraint(model_list);
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === 'not implemented') {
         await Promise.all(model_list.map((model) => this.models[model].where().delete({ skip_log: true })));
         return;
@@ -1287,7 +1287,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
             }
           }
         });
-      } catch (error) {
+      } catch (error: any) {
         //
       }
     } else {
@@ -1310,7 +1310,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
           } else {
             Object.defineProperty(records, column, { enumerable: true, value: sub_record });
           }
-        } catch (error) {
+        } catch (error: any) {
           if (error && error.message !== 'not found') {
             throw error;
           }
@@ -1368,7 +1368,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
             }
           });
         });
-      } catch (error) {
+      } catch (error: any) {
         //
       }
     } else {
@@ -1392,7 +1392,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         sub_records.forEach((sub_record: any) => {
           return records[column].push(sub_record);
         });
-      } catch (error) {
+      } catch (error: any) {
         //
       }
     }

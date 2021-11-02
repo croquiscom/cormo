@@ -2,7 +2,7 @@ let redis: any;
 
 try {
   redis = require('redis');
-} catch (error) {
+} catch (error: any) {
   //
 }
 
@@ -76,12 +76,12 @@ export class RedisAdapter extends AdapterBase {
     let id;
     try {
       id = await this._client.incrAsync(`${tableize(model)}:_lastid`);
-    } catch (error) {
+    } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     try {
       await this._client.hmsetAsync(`${tableize(model)}:${id}`, data);
-    } catch (error) {
+    } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     return id;
@@ -100,7 +100,7 @@ export class RedisAdapter extends AdapterBase {
     let exists;
     try {
       exists = await this._client.existsAsync(key);
-    } catch (error) {
+    } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     if (!exists) {
@@ -108,12 +108,12 @@ export class RedisAdapter extends AdapterBase {
     }
     try {
       await this._client.delAsync(key);
-    } catch (error) {
+    } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     try {
       await this._client.hmsetAsync(key, data);
-    } catch (error) {
+    } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
   }
@@ -138,12 +138,12 @@ export class RedisAdapter extends AdapterBase {
       args.unshift(key);
       try {
         await this._client.hdelAsync(args);
-      } catch (error) {
+      } catch (error: any) {
         throw RedisAdapter.wrapError('unknown error', error);
       }
       try {
         await this._client.hmsetAsync(key, data);
-      } catch (error) {
+      } catch (error: any) {
         throw RedisAdapter.wrapError('unknown error', error);
       }
     }
@@ -164,7 +164,7 @@ export class RedisAdapter extends AdapterBase {
     let result;
     try {
       result = await this._client.hgetallAsync(`${tableize(model)}:${id}`);
-    } catch (error) {
+    } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     if (result) {
@@ -213,7 +213,7 @@ export class RedisAdapter extends AdapterBase {
     let count;
     try {
       count = await this._client.delAsync(keys);
-    } catch (error) {
+    } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     return count;

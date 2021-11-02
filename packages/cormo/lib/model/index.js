@@ -175,7 +175,7 @@ class BaseModel {
         Object.defineProperty(this, '_indexes', { value: [] });
         Object.defineProperty(this, '_integrities', { value: [] });
         if (!this.table_name) {
-            this.table_name = inflector_1.tableize(name);
+            this.table_name = (0, inflector_1.tableize)(name);
         }
         this.column('id', 'recordid');
     }
@@ -362,7 +362,7 @@ class BaseModel {
             throw new Error('error');
         }
         const redis = await this._connection._connectRedisCache();
-        key = 'CC.' + inflector_1.tableize(this._name) + ':' + key;
+        key = 'CC.' + (0, inflector_1.tableize)(this._name) + ':' + key;
         const value = await new Promise((resolve, reject) => {
             redis.get(key, (error, v) => {
                 if (error) {
@@ -379,7 +379,7 @@ class BaseModel {
     }
     static async _saveToCache(key, ttl, data) {
         const redis = await this._connection._connectRedisCache();
-        key = 'CC.' + inflector_1.tableize(this._name) + ':' + key;
+        key = 'CC.' + (0, inflector_1.tableize)(this._name) + ':' + key;
         await new Promise((resolve, reject) => {
             redis.setex(key, ttl, JSON.stringify(data), (error) => {
                 if (error) {
@@ -392,7 +392,7 @@ class BaseModel {
     }
     static async removeCache(key) {
         const redis = await this._connection._connectRedisCache();
-        key = 'CC.' + inflector_1.tableize(this._name) + ':' + key;
+        key = 'CC.' + (0, inflector_1.tableize)(this._name) + ':' + key;
         await new Promise((resolve) => {
             redis.del(key, () => {
                 resolve();
