@@ -1,0 +1,372 @@
+<!DOCTYPE html><html lang="ko"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>질의하기 · CORMO</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="질의를 위해서는 먼저 [BaseModel.query](/cormo/api/cormo/classes/basemodel.html#query)를 이용해 질의 객체를 만드세요."/><meta name="docsearch:language" content="ko"/><meta property="og:title" content="질의하기 · CORMO"/><meta property="og:type" content="website"/><meta property="og:url" content="https://croquiscom.github.io/cormo/"/><meta property="og:description" content="질의를 위해서는 먼저 [BaseModel.query](/cormo/api/cormo/classes/basemodel.html#query)를 이용해 질의 객체를 만드세요."/><meta name="twitter:card" content="summary"/><link rel="shortcut icon" href="/cormo/undefined"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/cormo/js/scrollSpy.js"></script><link rel="stylesheet" href="/cormo/css/main.css"/><script src="/cormo/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/cormo/ko"><h2 class="headerTitle">CORMO</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/cormo/docs/ko/getting-started" target="_self">문서</a></li><li class=""><a href="/cormo/api/cormo" target="_self">API</a></li><span><li><a id="languages-menu" href="#"><img class="languages-icon" src="/cormo/img/language.svg" alt="Languages icon"/>한국어</a><div id="languages-dropdown" class="hide"><ul id="languages-dropdown-items"><li><a href="/cormo/docs/en/query">English</a></li></ul></div></li><script>
+        const languagesMenuItem = document.getElementById("languages-menu");
+        const languagesDropDown = document.getElementById("languages-dropdown");
+        languagesMenuItem.addEventListener("click", function(event) {
+          event.preventDefault();
+
+          if (languagesDropDown.className == "hide") {
+            languagesDropDown.className = "visible";
+          } else {
+            languagesDropDown.className = "hide";
+          }
+        });
+      </script></span></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>시작하기</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">시작하기</h3><ul class=""><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/getting-started">시작하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/define-connection">연결 정의하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/define-models">모델 정의하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/create-records">레코드 생성하기</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/cormo/docs/ko/query">질의하기</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">고급</h3><ul class=""><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/aggregation">집계</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/constraint">제약</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/association">Association</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/callback">Callback</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/geospatial">Geospatial</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/miscellaneous">Miscellaneous</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/validation">Validation</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              var headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                var el = event.target;
+                while(el !== headings){
+                  if (el.tagName === 'A') {
+                    document.body.classList.remove('tocActive');
+                    break;
+                  } else{
+                    el = el.parentNode;
+                  }
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">질의하기</h1></header><article><div><span><p>질의를 위해서는 먼저 <a href="/cormo/api/cormo/classes/basemodel.html#query">BaseModel.query</a>를 이용해 질의 객체를 만드세요.
+그리고 메소드 연쇄를 통해 질의를 만들어 나간 후,
+<a href="/cormo/api/cormo/classes/query.html#exec">Query#exec</a>나
+<a href="/cormo/api/cormo/classes/query.html#count">Query#count</a>,
+<a href="/cormo/api/cormo/classes/query.html#update">Query#update</a>,
+<a href="/cormo/api/cormo/classes/query.html#delete">Query#delete</a>를 사용해 질의를 실행합니다.</p>
+<p>단순한 질의를 쉽게 실행하기 위해서 <a href="/cormo/api/cormo/classes/basemodel.html">BaseModel</a> 클래스는 <a href="/cormo/api/cormo/classes/query.html">Query</a>에서 일부 메소드를 빌려와 가지고 있습니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">const</span> users = <span class="hljs-keyword">await</span> User.query().where({ age: <span class="hljs-number">27</span> }).exec();
+
+<span class="hljs-comment">// 또는</span>
+
+<span class="hljs-keyword">const</span> users = <span class="hljs-keyword">await</span> User.where({ age: <span class="hljs-number">27</span> }).exec();
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="필터"></a><a href="#필터" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>필터</h2>
+<p><a href="/cormo/api/cormo/classes/query.html#where">Query#where</a>나 <a href="/cormo/api/cormo/classes/query.html#find">Query#find</a>를 사용해 레코드를 선택할 수 있습니다.
+<code>where</code>의 조건문은 MongoDB의 문법과 비슷합니다.
+<code>where</code>를 두개 이상 사용할 경우 논리곱(모두 참)을 의미합니다.</p>
+<table class='table table-bordered'><thead><tr>
+  <th>설명</th><th>CORMO</th><th>SQL</th><th>MongoDB</th>
+</tr></thead><tbody>
+<tr>
+<td>같음</td>
+<td>User.where({ age: 27 })</td>
+<td>SELECT * FROM users WHERE age=27</td>
+<td>db.users.find({ age: 27 })</td>
+</tr>
+<tr>
+<td rowspan='4'>논리곱(모두 참)</td>
+<td>{ name: 'John Doe', age: 27 }</td>
+<td rowspan='4'>name='John Doe' AND age=27</td>
+<td rowspan='4'>{ name: 'John Doe', age: 27 }</td>
+</tr>
+<tr>
+<td>.where({name: 'John Doe'}).where({age: 27})</td>
+</tr>
+<tr>
+<td>{ $and: [ { name: 'John Doe' }, { age: 27 } ] }</td>
+</tr>
+<tr>
+<td>[ { name: 'John Doe' }, { age: 27 } ]</td>
+</tr>
+<tr>
+<td>논리합(하나 이상 참)</td>
+<td>{ $or: [ { name: 'John Doe' }, { age: 27 } ] }</td>
+<td>name='John Doe' OR age=27</td>
+<td>{ $or: [ { name: 'John Doe' }, { age: 27 } ] }</td>
+</tr>
+<tr>
+<td>비교 ($lt, $gt, $lte, $gte)</td>
+<td>[ { age: { $gt: 30 } }, { age: { $lte: 45 } } ]</td>
+<td>age>30 AND age<=45</td>
+<td>{ $and: [ { age: { $gt: 30 } }, { age: { $lte: 45 } } ] }</td>
+</tr>
+<tr>
+<td rowspan='2'>대소문자 구분 없이 텍스트를 포함</td>
+<td>{ name: { $contains: 'smi' } }</td>
+<td>name LIKE '%smi%'</td>
+<td>{ name: /smi/i }</td>
+</tr>
+<tr>
+<td>{ name: { $contains: ['smi', 'doe'] } }</td>
+<td>name LIKE '%smi%' OR name LIKE '%doe%'</td>
+<td>{ name: { $in: [/smi/i, /doe/i] } }</td>
+</tr>
+<tr>
+<td>대소문자 구분 없이 텍스트로 시작</td>
+<td>{ name: { $startswith: 'smi' } }</td>
+<td>name LIKE 'smi%'</td>
+<td>{ name: /^smi/i }</td>
+</tr>
+<tr>
+<td>대소문자 구분 없이 텍스트로 끝남</td>
+<td>{ name: { $endswith: 'smi' } }</td>
+<td>name LIKE '%smi'</td>
+<td>{ name: /smi$/i }</td>
+</tr>
+<tr>
+<td rowspan='2'>정규표현식</td>
+<td>{ name: /smi/ }</td>
+<td>name REGEXP 'smi'</td>
+<td>{ name: /smi/i }</td>
+</tr>
+<tr>
+<td>{ name: /smi|doe/ }</td>
+<td>name REGEXP 'smi|doe'</td>
+<td>{ name: /smi|doe/i }</td>
+</tr>
+<tr>
+<td rowspan='2'>배열의 값 중 하나라도 일치</td>
+<td>{ age: { $in: [ 10, 20, 30 ] } }</td>
+<td rowspan='2'>age IN (10,20,30)</td>
+<td rowspan='2'>{ age: { $in: [ 10, 20, 30 ] } }</td>
+</tr>
+<tr>
+<td>{ age: [ 10, 20, 30 ] }</td>
+</tr>
+<tr>
+<td rowspan='7'>부정</td>
+<td>{ age: { $not: 27 } }</td>
+<td>NOT (age=27) OR age IS NULL</td>
+<td>{ age: { $ne: 27 } }</td>
+</tr>
+<tr>
+<td>{ age: { $not: { $lt: 27 } } }</td>
+<td>NOT (age<27) OR age IS NULL</td>
+<td>{ age: { $not: { $lt: 27 } } }</td>
+</tr>
+<tr>
+<td>{ name: { $not: { $contains: 'smi' } } }</td>
+<td>NOT (name LIKE '%smi%') OR name IS NULL</td>
+<td>{ name: { $not: /smi/i } }</td>
+</tr>
+<tr>
+<td>{ name: { $not: { $contains: ['smi', 'doe'] } } }</td>
+<td>NOT (name LIKE '%smi%' OR name LIKE '%doe%') OR name IS NULL</td>
+<td>{ name: { $nin: [/smi/i, /doe/i] } }</td>
+</tr>
+<tr>
+<td>{ age: { $not: { $in: [ 10, 20, 30 ] } } }</td>
+<td rowspan='2'>NOT (age IN (10,20,30)) OR age IS NULL</td>
+<td rowspan='2'>{ age: { $nin: [10,20,30] } }</td>
+</tr>
+<tr>
+<td>{ age: { $not: [ 10, 20, 30 ] } }</td>
+</tr>
+<tr>
+<td>{ name: { $not: null } }</td>
+<td>NOT name IS NULL</td>
+<td>{ age: { $ne: null } }</td>
+</tr>
+</tbody></table>
+<p>식별자에 기반해 레코드를 찾으려면 하나의 ID나 ID의 배열을 인자로 하는 <a href="/cormo/api/cormo/classes/query.html#find">Query#find</a>를 사용합니다.
+논리적으로는 <code>.where({ id: &lt;주어진 ID나 ID의 배열&gt; })</code>과 동일하지만, 해당 레코드가 없을 경우 <code>find</code>는 예외를 발생시키는데 반해, <code>where</code>는 빈 결과를 반환합니다.</p>
+<h3><a class="anchor" aria-hidden="true" id="조건부-활성화"></a><a href="#조건부-활성화" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>조건부 활성화</h3>
+<p>하나의 질의 연쇄에서 다른 조건을 적용하고 싶은 경우, <a href="/cormo/api/cormo/classes/query.html#if">Query#if</a>와 <a href="/cormo/api/cormo/classes/query.html#endif">Query#endif</a>를 사용할 수 있습니다.
+이를 이용해 질의 문장을 단순화할 수 있습니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOldUsers</span>(<span class="hljs-params">options: { limit?: <span class="hljs-built_in">number</span>; columns?: <span class="hljs-built_in">string</span>[] }</span>) </span>{
+  <span class="hljs-keyword">const</span> query = User.query();
+  query.where({ age: { $gt: <span class="hljs-number">30</span> } });
+  <span class="hljs-keyword">if</span> (options.limit) {
+    query.limit(options.limit);
+  }
+  <span class="hljs-keyword">if</span> (options.columns) {
+    query.select(options.columns <span class="hljs-keyword">as</span> <span class="hljs-built_in">any</span>);
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> query.exec();
+}
+
+<span class="hljs-comment">// 위 코드를 다음과 같이 작성할 수 있습니다.</span>
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOldUsers</span>(<span class="hljs-params">options: { limit?: <span class="hljs-built_in">number</span>; columns?: <span class="hljs-built_in">string</span>[] }</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> User.query()
+    .where({ age: { $gt: <span class="hljs-number">30</span> } })
+    .if(options.limit != <span class="hljs-literal">null</span>)
+    .limit(options.limit)
+    .endif()
+    .if(options.columns != <span class="hljs-literal">null</span>)
+    .select(options.columns <span class="hljs-keyword">as</span> <span class="hljs-built_in">any</span>)
+    .endif()
+    .exec();
+}
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="레코드-가져오기"></a><a href="#레코드-가져오기" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>레코드 가져오기</h2>
+<p><a href="/cormo/api/cormo/classes/query.html#exec">Query#exec</a>는 레코드를 가져옵니다.</p>
+<p>보통은 Model 인스턴스의 배열을 반환합니다.
+하지만 하나의 ID를 가지고 <a href="/cormo/api/cormo/classes/query.html#find">Query#find</a>를 호출한 경우에는 하나의 Model 인스턴스를 반환합니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> User.find(<span class="hljs-number">1</span>).exec();
+<span class="hljs-keyword">const</span> users = <span class="hljs-keyword">await</span> User.find([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>]).exec();
+</code></pre>
+<p><a href="/cormo/api/cormo/classes/query.html">Query</a>는 내부적으로 <code>exec</code>를 호출하는 <code>then</code> 메소드를 가지고 있습니다(즉 thenable). 따라서 <code>exec</code> 호출을 생략하고 단순히 <code>await</code>만 붙여줘도 됩니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">const</span> users = <span class="hljs-keyword">await</span> User.where({ age: <span class="hljs-number">30</span> });
+</code></pre>
+<p>찾지 못하는 ID가 있는 경우 <a href="/cormo/api/cormo/classes/query.html#find">Query#find</a>는 에러를 던집니다.
+<code>find</code>는 주어진 순서를 보정하지 않습니다. 순서를 보장하고 싶은 경우 대신 <a href="/cormo/api/cormo/classes/query.html#findpreserve">Query#findPreserve</a>를 사용하십시오.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">const</span> users = <span class="hljs-keyword">await</span> User.findPreserve([<span class="hljs-number">2</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>]).exec();
+<span class="hljs-comment">// users[0].id는 2, users[1].id는 1, users[2].id는 2, users[3].id는 3입니다.</span>
+</code></pre>
+<p>가져오기시 몇가지 옵션을 줄 수 있습니다.</p>
+<table class='table table-bordered'><thead><tr>
+  <th>설명</th><th>CORMO</th><th>SQL</th><th>MongoDB</th>
+</tr></thead><tbody>
+<tr>
+<td>컬럼 선택</td>
+<td>User.select(['id', 'name', 'age'])</td>
+<td>SELECT id,name,age FROM users</td>
+<td>db.users.find({}, { name: 1, age: 1 })</td>
+</tr>
+<tr>
+<td>정렬</td>
+<td>User.order('age -name')</td>
+<td>SELECT * FROM users ORDER BY age ASC, name DESC</td>
+<td>db.users.find().sort({ age: 1, name: -1 })</td>
+</tr>
+<tr>
+<td>제한</td>
+<td>User.query().limit(3)</td>
+<td>SELECT * FROM users LIMIT 3</td>
+<td>db.users.find().limit(3)</td>
+</tr>
+<tr>
+<td>건너뛰기</td>
+<td>User.query().skip(3)</td>
+<td>SELECT * FROM users LIMIT 2147483647 OFFSET 3</td>
+<td>db.users.find().skip(3)</td>
+</tr>
+</tbody></table>
+<h3><a class="anchor" aria-hidden="true" id="하나의-레코드만-요청하기"></a><a href="#하나의-레코드만-요청하기" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>하나의 레코드만 요청하기</h3>
+<p>하나의 결과만 있는 것을 알고 있다면 (예를 들어 유니크 컬럼으로 질의), <a href="/cormo/api/cormo/classes/query.html#one">Query#one</a>가 유용할 겁니다.
+인스턴스 배열을 반환하는 대신 하나의 인스턴스 (또는 null)을 반환하도록 만듭니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> User.where({ age: <span class="hljs-number">27</span> }).one();
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="하나의-컬럼만-선택하기"></a><a href="#하나의-컬럼만-선택하기" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>하나의 컬럼만 선택하기</h3>
+<p>하나의 컬럼에만 관심이 있다면 <a href="/cormo/api/cormo/classes/query.html#selectsingle">Query#selectSingle</a>를 사용할 수 있습니다.
+그러면 질의 객체는 Model 인스턴스 대신 하나의 값이나 값의 배열을 반환합니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">const</span> user_ids = <span class="hljs-keyword">await</span> User.where({ age: <span class="hljs-number">27</span> }).selectSingle(<span class="hljs-string">'id'</span>);
+<span class="hljs-keyword">const</span> user_name = <span class="hljs-keyword">await</span> User.find(<span class="hljs-number">1</span>).selectSingle(<span class="hljs-string">'name'</span>);
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="결과를-스트림-시키기"></a><a href="#결과를-스트림-시키기" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>결과를 스트림 시키기</h3>
+<p>결과가 아주 많은 레코드를 가지고 있는 경우, 메모리 사용량을 줄이기 위해 Node.js의 stream API를 사용할 수 있습니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">let</span> count = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+  <span class="hljs-keyword">const</span> stream = User.where({ age: <span class="hljs-number">27</span> }).stream();
+  stream.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">user</span>) </span>{
+    count++;
+  });
+  stream.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    resolve();
+  });
+});
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="레코드-수-새기"></a><a href="#레코드-수-새기" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>레코드 수 새기</h2>
+<p><a href="/cormo/api/cormo/classes/query.html#count">Query#count</a>는 레코드의 수를 반환합니다.</p>
+<table class='table table-bordered'><thead><tr>
+  <th>CORMO</th><th>SQL</th><th>MongoDB</th>
+</tr></thead><tbody>
+<tr>
+<td>User.count()</td>
+<td>SELECT COUNT(*) FROM users</td>
+<td>db.users.count()</td>
+</tr>
+<tr>
+<td>User.count({age: 27})</td>
+<td rowspan='2'>SELECT COUNT(*) FROM users WHERE age=27</td>
+<td rowspan='2'>db.users.find({age: 27}).count()</td>
+</tr>
+<tr>
+<td>User.where({age: 27}).count()</td>
+</tr>
+</tbody></table>
+<h2><a class="anchor" aria-hidden="true" id="레코드-갱신하기"></a><a href="#레코드-갱신하기" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>레코드 갱신하기</h2>
+<p>레코드를 갱신하기 위해 <a href="/cormo/api/cormo/classes/basemodel.html#save">BaseModel#save</a>와 <a href="/cormo/api/cormo/classes/query.html#update">Query#update</a>를 제공하고 있습니다.</p>
+<p><a href="/cormo/api/cormo/classes/basemodel.html#save">BaseModel#save</a>는 가져온 하나의 레코드를 갱신하기 위해 사용합니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> User.find(<span class="hljs-number">1</span>);
+user.age = <span class="hljs-number">30</span>;
+<span class="hljs-keyword">await</span> user.save();
+</code></pre>
+<p>한편, <a href="/cormo/api/cormo/classes/query.html#update">Query#update</a>는 필터된 레코드를 갱신합니다.</p>
+<table class='table table-bordered'><thead><tr>
+  <th>CORMO</th><th>SQL</th><th>MongoDB</th>
+</tr></thead><tbody>
+<tr>
+<td>User.update({ age: 10 }, { age: 27 })</td>
+<td rowspan='2'>UPDATE users SET age=10 WHERE age=27</td>
+<td rowspan='2'>db.users.update({age: 27}, {$set: {age: 10}}, {multi: true})</td>
+</tr>
+<tr>
+<td>User.where({ age: 27 }).update({ age:10 })</td>
+</tr>
+<tr>
+<td>User.find(1).update({ age: 10 })</td>
+<td>UPDATE users SET age=10 WHERE id=1</td>
+<td>db.users.update({_id: 1}, {$set: {age: 10}}, {multi: true})</td>
+</tr>
+<tr>
+<td>User.find(2).update({ age: { $inc: 3 } })</td>
+<td>UPDATE users SET age=age+3 WHERE id=2</td>
+<td>db.users.update({_id: 2}, {$inc: {age: 3}}, {multi: true})</td>
+</tr>
+</tbody></table>
+<p><a href="/cormo/api/cormo/classes/query.html#update">Query#update</a>는 갱신 명량만 데이터베이스 시스템에 전송하기 때문에 보통 더 빠릅니다.
+대신 수정된 객체를 얻을 수 없고, 갱신 콜백도 호출되지 않습니다.</p>
+<p>필요에 따라서 적절한 것을 사용하세요.</p>
+<p>In CORMO, Active Record 패턴(즉 <code>BaseModel#save</code>)은 운영환경에서 잘 검증되지 않았습니다. 그러므로 주의해서 사용해주세요.</p>
+<h2><a class="anchor" aria-hidden="true" id="레코드-삭제하기"></a><a href="#레코드-삭제하기" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>레코드 삭제하기</h2>
+<p><a href="/cormo/api/cormo/classes/query.html#delete">Query#delete</a>나 <a href="/cormo/api/cormo/classes/basemodel.html#destroy">BaseModel#destroy</a>는 레코드를 삭제합니다.</p>
+<p><a href="/cormo/api/cormo/classes/basemodel.html#destroy">BaseModel#destroy</a>는 <code>BaseModel#save</code>와 비슷하게 ID를 통해 하나의 레코드를 삭제합니다. 그리고 <a href="/cormo/api/cormo/classes/query.html#delete">Query#delete</a> 는 <code>Query#update</code>와 비슷하게 필터된 레코드를 삭제합니다.</p>
+<table class='table table-bordered'><thead><tr>
+  <th>CORMO</th><th>SQL</th><th>MongoDB</th>
+</tr></thead><tbody>
+<tr>
+<td>User.delete({age: 27})</td>
+<td rowspan='2'>DELETE FROM users WHERE age=27</td>
+<td rowspan='2'>db.users.remove({age: 27})</td>
+</tr>
+<tr>
+<td>User.where({age: 27}).delete()</td>
+</tr>
+<tr>
+<td>User.delete()</td>
+<td>DELETE FROM users</td>
+<td>db.users.remove()</td>
+</tr>
+</tbody></table>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/cormo/docs/ko/create-records"><span class="arrow-prev">← </span><span>레코드 생성하기</span></a><a class="docs-next button" href="/cormo/docs/ko/aggregation"><span>집계</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#필터">필터</a><ul class="toc-headings"><li><a href="#조건부-활성화">조건부 활성화</a></li></ul></li><li><a href="#레코드-가져오기">레코드 가져오기</a><ul class="toc-headings"><li><a href="#하나의-레코드만-요청하기">하나의 레코드만 요청하기</a></li><li><a href="#하나의-컬럼만-선택하기">하나의 컬럼만 선택하기</a></li><li><a href="#결과를-스트림-시키기">결과를 스트림 시키기</a></li></ul></li><li><a href="#레코드-수-새기">레코드 수 새기</a></li><li><a href="#레코드-갱신하기">레코드 갱신하기</a></li><li><a href="#레코드-삭제하기">레코드 삭제하기</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="copyright">Copyright © 2012-2020 Croquis inc.</section></footer></div></body></html>

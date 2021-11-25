@@ -1,0 +1,129 @@
+<!DOCTYPE html><html lang="ko"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>모델 정의하기 · CORMO</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="[BaseModel](/cormo/api/cormo/classes/basemodel.html)을 상속받거나 [Connection#models](/cormo/api/cormo/classes/connection.html#models) 메소드를 사용해서 모델을 정의할 수 있습니다."/><meta name="docsearch:language" content="ko"/><meta property="og:title" content="모델 정의하기 · CORMO"/><meta property="og:type" content="website"/><meta property="og:url" content="https://croquiscom.github.io/cormo/"/><meta property="og:description" content="[BaseModel](/cormo/api/cormo/classes/basemodel.html)을 상속받거나 [Connection#models](/cormo/api/cormo/classes/connection.html#models) 메소드를 사용해서 모델을 정의할 수 있습니다."/><meta name="twitter:card" content="summary"/><link rel="shortcut icon" href="/cormo/undefined"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/cormo/js/scrollSpy.js"></script><link rel="stylesheet" href="/cormo/css/main.css"/><script src="/cormo/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/cormo/ko"><h2 class="headerTitle">CORMO</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/cormo/docs/ko/getting-started" target="_self">문서</a></li><li class=""><a href="/cormo/api/cormo" target="_self">API</a></li><span><li><a id="languages-menu" href="#"><img class="languages-icon" src="/cormo/img/language.svg" alt="Languages icon"/>한국어</a><div id="languages-dropdown" class="hide"><ul id="languages-dropdown-items"><li><a href="/cormo/docs/en/define-models">English</a></li></ul></div></li><script>
+        const languagesMenuItem = document.getElementById("languages-menu");
+        const languagesDropDown = document.getElementById("languages-dropdown");
+        languagesMenuItem.addEventListener("click", function(event) {
+          event.preventDefault();
+
+          if (languagesDropDown.className == "hide") {
+            languagesDropDown.className = "visible";
+          } else {
+            languagesDropDown.className = "hide";
+          }
+        });
+      </script></span></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>시작하기</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">시작하기</h3><ul class=""><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/getting-started">시작하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/define-connection">연결 정의하기</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/cormo/docs/ko/define-models">모델 정의하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/create-records">레코드 생성하기</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/query">질의하기</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">고급</h3><ul class=""><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/aggregation">집계</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/constraint">제약</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/association">Association</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/callback">Callback</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/geospatial">Geospatial</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/miscellaneous">Miscellaneous</a></li><li class="navListItem"><a class="navItem" href="/cormo/docs/ko/validation">Validation</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              var headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                var el = event.target;
+                while(el !== headings){
+                  if (el.tagName === 'A') {
+                    document.body.classList.remove('tocActive');
+                    break;
+                  } else{
+                    el = el.parentNode;
+                  }
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">모델 정의하기</h1></header><article><div><span><p><a href="/cormo/api/cormo/classes/basemodel.html">BaseModel</a>을 상속받거나 <a href="/cormo/api/cormo/classes/connection.html#models">Connection#models</a> 메소드를 사용해서 모델을 정의할 수 있습니다.</p>
+<pre><code class="hljs css language-typescript"><span class="hljs-keyword">class</span> User <span class="hljs-keyword">extends</span> cormo.BaseModel {
+  name?: <span class="hljs-built_in">string</span>;
+  age?: <span class="hljs-built_in">number</span>;
+}
+
+User.column(<span class="hljs-string">'name'</span>, <span class="hljs-built_in">String</span>);
+User.column(<span class="hljs-string">'age'</span>, cormo.types.Integer);
+
+<span class="hljs-comment">// class 키워드를 사용하고 싶지 않은 경우</span>
+<span class="hljs-keyword">const</span> User = connection.model(<span class="hljs-string">'User'</span>, {
+  name: <span class="hljs-built_in">String</span>,
+  age: cormo.types.Integer,
+});
+
+<span class="hljs-comment">// TypeScript 데코레이터를 사용하고 싶은 경우</span>
+<span class="hljs-meta">@cormo</span>.Model()
+<span class="hljs-keyword">class</span> User <span class="hljs-keyword">extends</span> cormo.BaseModel {
+  <span class="hljs-meta">@cormo</span>.Column(<span class="hljs-built_in">String</span>)
+  name?: <span class="hljs-built_in">string</span>;
+
+  <span class="hljs-meta">@cormo</span>.Column(cormo.types.Integer)
+  age?: <span class="hljs-built_in">number</span>;
+}
+</code></pre>
+<p>타입 클래스 대신에 type 속성을 가진 객체를 넘길 수 있습니다.
+추가 옵션이 필요한 경우 이 형태를 사용하면 됩니다.</p>
+<pre><code class="hljs css language-typescript">User.column(<span class="hljs-string">'name'</span>, { <span class="hljs-keyword">type</span>: <span class="hljs-built_in">String</span>, required: <span class="hljs-literal">true</span> });
+User.column(<span class="hljs-string">'age'</span>, { <span class="hljs-keyword">type</span>: cormo.types.Integer, description: <span class="hljs-string">'사용자의 나이'</span> });
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="타입"></a><a href="#타입" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>타입</h2>
+<p>타입을 지정하기 위해서 CORMO의 타입 클래스(예, cormo.types.String)나 문자열(예, <code>'string'</code>), 또는 JavaScript 기본 함수(예, String)를 사용할 수 있습니다.</p>
+<p>현재 지원되는 타입은 다음과 같습니다.</p>
+<ul>
+<li><a href="/cormo/api/cormo/interfaces/cormotypesstring.html">types.String</a> ('string', String)</li>
+<li><a href="/cormo/api/cormo/interfaces/cormotypesnumber.html">types.Number</a> ('number', Number)</li>
+<li><a href="/cormo/api/cormo/interfaces/cormotypesboolean.html">types.Boolean</a> ('boolean', Boolean)</li>
+<li><a href="/cormo/api/cormo/interfaces/cormotypesinteger.html">types.Integer</a> ('integer')</li>
+<li><a href="/cormo/api/cormo/interfaces/cormotypesdate.html">types.Date</a> ('date', Date)</li>
+<li><a href="/cormo/api/cormo/interfaces/cormotypesgeopoint.html">types.GeoPoint</a> ('geopoint')
+<ul>
+<li>MySQL, MonogoDB, PostgreSQL 만 지원</li>
+</ul></li>
+<li><a href="/cormo/api/cormo/interfaces/cormotypesobject.html">types.Object</a> ('object', Object)
+<ul>
+<li>SQL 어댑터에서 객체는 JSON 문자열로 저장합니다.</li>
+</ul></li>
+<li><a href="/cormo/api/cormo/interfaces/cormotypestext.html">types.Text</a> ('text')
+<ul>
+<li>SQL 어댑터에서 긴 문자열을 저정할 때 사용합니다.</li>
+</ul></li>
+</ul>
+<h3><a class="anchor" aria-hidden="true" id="타입-옵션"></a><a href="#타입-옵션" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>타입 옵션</h3>
+<p>일부 어댑터는 타입에 옵션을 줄 수 있습니다.</p>
+<p>다음과 같이 하면 MySQL나 PostgreSQL에서 문자열 타입에 길이를 지정할 수 있습니다.</p>
+<pre><code class="hljs css language-typescript">Model.column(<span class="hljs-string">'method_1'</span>, cormo.types.String(<span class="hljs-number">50</span>));
+<span class="hljs-comment">// 또는</span>
+Model.column(<span class="hljs-string">'method_2'</span>, <span class="hljs-string">'string(50)'</span>);
+</code></pre>
+<p><code>String</code>이 아니라 <code>cormo.types.String</code>을 사용해야 한다는 점에 주의 하십시오.</p>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/cormo/docs/ko/define-connection"><span class="arrow-prev">← </span><span>연결 정의하기</span></a><a class="docs-next button" href="/cormo/docs/ko/create-records"><span>레코드 생성하기</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#타입">타입</a><ul class="toc-headings"><li><a href="#타입-옵션">타입 옵션</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="copyright">Copyright © 2012-2020 Croquis inc.</section></footer></div></body></html>
