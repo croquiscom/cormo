@@ -233,6 +233,7 @@ abstract class SQLAdapterBase extends AdapterBase {
   /** @internal */
   protected _buildWhereSingleJoin(
     schema: ModelSchemaInternal,
+    base_alias: string,
     join_schemas: Record<string, ModelSchemaInternal>,
     key: string,
     value: any,
@@ -245,12 +246,13 @@ abstract class SQLAdapterBase extends AdapterBase {
       const property = model_class[key.substring(model.length + 1)];
       return this._buildWhereSingle(model_class, property, key, `_${model}.`, value, params);
     }
-    return this._buildWhereSingle(schema, schema[key], key, '', value, params);
+    return this._buildWhereSingle(schema, schema[key], key, base_alias ? base_alias + '.' : '', value, params);
   }
 
   /** @internal */
   protected _buildWhere(
     schema: ModelSchemaInternal,
+    base_alias: string,
     join_schemas: Record<string, ModelSchemaInternal>,
     conditions: Array<Record<string, any>> | Record<string, any>,
     params: any[],
@@ -260,7 +262,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     let keys: string[];
     if (Array.isArray(conditions)) {
       subs = conditions.map((condition) => {
-        return this._buildWhere(schema, join_schemas, condition, params);
+        return this._buildWhere(schema, base_alias, join_schemas, condition, params);
       });
     } else if (typeof conditions === 'object') {
       keys = Object.keys(conditions);
@@ -272,16 +274,16 @@ abstract class SQLAdapterBase extends AdapterBase {
         if (key.substring(0, 1) === '$') {
           switch (key) {
             case '$and':
-              return this._buildWhere(schema, join_schemas, conditions[key], params, 'AND');
+              return this._buildWhere(schema, base_alias, join_schemas, conditions[key], params, 'AND');
             case '$or':
-              return this._buildWhere(schema, join_schemas, conditions[key], params, 'OR');
+              return this._buildWhere(schema, base_alias, join_schemas, conditions[key], params, 'OR');
           }
         } else {
-          return this._buildWhereSingleJoin(schema, join_schemas, key, conditions[key], params);
+          return this._buildWhereSingleJoin(schema, base_alias, join_schemas, key, conditions[key], params);
         }
       } else {
         subs = keys.map((key) => {
-          return this._buildWhereSingleJoin(schema, join_schemas, key, conditions[key], params);
+          return this._buildWhereSingleJoin(schema, base_alias, join_schemas, key, conditions[key], params);
         });
       }
     } else {
