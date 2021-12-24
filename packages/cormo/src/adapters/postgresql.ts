@@ -101,6 +101,12 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   public support_string_type_with_length = true;
 
   /** @internal */
+  public support_join = true;
+
+  /** @internal */
+  public support_distinct = true;
+
+  /** @internal */
   public native_integrity = true;
 
   /** @internal */
@@ -312,7 +318,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   public async updatePartial(
     model: string,
     data: any,
-    conditions: any,
+    conditions: Array<Record<string, any>>,
     options: { transaction?: Transaction },
   ): Promise<number> {
     const table_name = this._connection.models[model].table_name;
@@ -320,7 +326,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const [fields] = this._buildPartialUpdateSet(model, data, values);
     let sql = `UPDATE "${table_name}" SET ${fields}`;
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
+      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, values);
     }
     let result;
     try {
@@ -339,7 +345,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   ): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
     const table_name = this._connection.models[model].table_name;
-    const sql = `SELECT ${select} FROM "${table_name}" WHERE id=$1 LIMIT 1`;
+    const sql = `SELECT ${select} FROM "${table_name}" AS _Base WHERE id=$1 LIMIT 1`;
     if (options.explain) {
       return await this.query(`EXPLAIN ${sql}`, [id], options.transaction);
     }
@@ -360,7 +366,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any> {
+  public async find(model: string, conditions: Array<Record<string, any>>, options: AdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
       return await this.query(`EXPLAIN ${sql}`, params, options.transaction);
@@ -384,7 +390,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable {
+  public stream(model: any, conditions: Array<Record<string, any>>, options: AdapterFindOptions): stream.Readable {
     if (!QueryStream) {
       console.log('Install pg-query-stream module to use stream');
       process.exit(1);
@@ -418,18 +424,22 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async count(model: string, conditions: any, options: AdapterCountOptions): Promise<number> {
+  public async count(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterCountOptions,
+  ): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `SELECT COUNT(*) AS count FROM "${table_name}"`;
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, params);
     }
     if (options.group_by) {
       const escape_ch = this._escape_ch;
       sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
       if (options.conditions_of_group.length > 0) {
-        sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
+        sql += ' HAVING ' + this._buildWhere(options.group_fields, '', {}, options.conditions_of_group, params);
       }
       sql = `SELECT COUNT(*) AS count FROM (${sql}) _sub`;
     }
@@ -447,12 +457,16 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
+  public async delete(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `DELETE FROM "${table_name}"`;
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, params);
     }
     let result;
     try {
@@ -574,7 +588,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
       if (property.type_class === types.GeoPoint) {
         return `ARRAY[ST_X(${column}), ST_Y(${column})] AS ${column}`;
       } else {
-        return column;
+        return '_Base.' + column;
       }
     });
     return select.join(',');
@@ -745,7 +759,11 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model_name: string, conditions: any, options: AdapterFindOptions): [string, any[]] {
+  private _buildSqlForFind(
+    model_name: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): [string, any[]] {
     const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {
@@ -762,16 +780,25 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     }
     const params: any[] = [];
     const table_name = model_class.table_name;
-    let sql = `SELECT ${select} FROM "${table_name}"`;
+    const join_schemas: Record<string, ModelSchemaInternal> = {};
+    let sql = `SELECT ${options.distinct ? 'DISTINCT' : ''} ${select} FROM "${table_name}" as _Base`;
+    if (options.joins.length > 0) {
+      const escape_ch = this._escape_ch;
+      for (const join of options.joins) {
+        sql += ` ${join.type} ${this._connection.models[join.model_name].table_name} AS _${join.alias}`;
+        sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = _${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
+        join_schemas[join.alias] = this._connection.models[join.model_name]._schema;
+      }
+    }
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
+      sql += ' WHERE ' + this._buildWhere(model_class._schema, '_Base', join_schemas, conditions, params);
     }
     if (options.group_by) {
       const escape_ch = this._escape_ch;
       sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
     }
     if (options.conditions_of_group.length > 0) {
-      sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
+      sql += ' HAVING ' + this._buildWhere(options.group_fields, '_Base', {}, options.conditions_of_group, params);
     }
     if ((options && options.orders.length > 0) || order_by) {
       const schema = model_class._schema;

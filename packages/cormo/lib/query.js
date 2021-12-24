@@ -29,6 +29,7 @@ class Query {
             lean: model.lean_query,
             node: 'master',
             select_single: false,
+            joins: [],
         };
     }
     clone() {
@@ -142,6 +143,48 @@ class Query {
             this._options.group_by = group_by;
         }
         this._options.group_fields = fields;
+        return this;
+    }
+    /**
+     * (inner) join
+     */
+    join(model_class, options) {
+        if (!this._adapter.support_join) {
+            throw new Error('this adapter does not support join');
+        }
+        this._options.joins.push({
+            model_class,
+            type: 'INNER JOIN',
+            alias: options === null || options === void 0 ? void 0 : options.alias,
+            base_column: options === null || options === void 0 ? void 0 : options.base_column,
+            join_column: options === null || options === void 0 ? void 0 : options.join_column,
+        });
+        return this;
+    }
+    /**
+     * left outer join
+     */
+    left_outer_join(model_class, options) {
+        if (!this._adapter.support_join) {
+            throw new Error('this adapter does not support join');
+        }
+        this._options.joins.push({
+            model_class,
+            type: 'LEFT OUTER JOIN',
+            alias: options === null || options === void 0 ? void 0 : options.alias,
+            base_column: options === null || options === void 0 ? void 0 : options.base_column,
+            join_column: options === null || options === void 0 ? void 0 : options.join_column,
+        });
+        return this;
+    }
+    /**
+     * Returns distinct records
+     */
+    distinct() {
+        if (!this._adapter.support_join) {
+            throw new Error('this adapter does not support distinct');
+        }
+        this._options.distinct = true;
         return this;
     }
     /**
@@ -495,7 +538,52 @@ class Query {
                 }
             });
         }
-        return Object.assign({ conditions_of_group: this._options.conditions_of_group, explain: this._options.explain, group_by, group_fields: this._options.group_fields, lean: this._options.lean, limit: this._options.limit, near: this._options.near, node: this._options.node, index_hint: this._options.index_hint, orders, skip: this._options.skip, transaction: this._options.transaction }, (select_raw.length > 0 && { select, select_raw }));
+        const joins = [];
+        for (const join of this._options.joins) {
+            if (join.base_column) {
+                joins.push({
+                    model_name: join.model_class._name,
+                    type: join.type,
+                    alias: join.alias || join.model_class._name,
+                    base_column: join.base_column,
+                    join_column: join.join_column || 'id',
+                });
+            }
+            else if (join.join_column) {
+                joins.push({
+                    model_name: join.model_class._name,
+                    type: join.type,
+                    alias: join.alias || join.model_class._name,
+                    base_column: 'id',
+                    join_column: join.join_column,
+                });
+            }
+            else {
+                const child_integrities = this._model._integrities.filter((item) => item.child === join.model_class);
+                if (child_integrities.length === 1) {
+                    joins.push({
+                        model_name: join.model_class._name,
+                        type: join.type,
+                        alias: join.alias || join.model_class._name,
+                        base_column: 'id',
+                        join_column: child_integrities[0].column,
+                    });
+                }
+                else {
+                    const parent_integrities = this._model._integrities.filter((item) => item.parent === join.model_class);
+                    if (parent_integrities.length === 1) {
+                        joins.push({
+                            model_name: join.model_class._name,
+                            type: join.type,
+                            alias: join.alias || join.model_class._name,
+                            base_column: parent_integrities[0].column,
+                            join_column: 'id',
+                        });
+                    }
+                }
+            }
+        }
+        return Object.assign({ conditions_of_group: this._options.conditions_of_group, explain: this._options.explain, group_by, group_fields: this._options.group_fields, joins, lean: this._options.lean, limit: this._options.limit, near: this._options.near, node: this._options.node, index_hint: this._options.index_hint, orders, skip: this._options.skip, transaction: this._options.transaction, distinct: this._options.distinct }, (select_raw.length > 0 && { select, select_raw }));
     }
     async _execAndInclude(options) {
         const records = await this._exec(this._getAdapterFindOptions(), options);

@@ -20,7 +20,7 @@ abstract class SQLAdapterBase extends AdapterBase {
   protected _escape_ch = '"';
 
   /** @internal */
-  public async upsert(model: any, data: any, conditions: any, options: AdapterUpsertOptions) {
+  public async upsert(model: any, data: any, conditions: Array<Record<string, any>>, options: AdapterUpsertOptions) {
     const insert_data: any = {};
     const update_data: any = {};
     for (const key in data) {
@@ -91,7 +91,8 @@ abstract class SQLAdapterBase extends AdapterBase {
   protected _buildWhereSingle(
     schema: ModelSchemaInternal,
     property: ColumnPropertyInternal,
-    key: any,
+    key: string,
+    key_prefix: string,
     value: any,
     params: any,
   ): any {
@@ -109,7 +110,8 @@ abstract class SQLAdapterBase extends AdapterBase {
       // group field
       column = this._buildGroupExpr(schema, property);
     } else {
-      column = this._escape_ch + (property ? property._dbname_us : key.replace(/\./g, '_')) + this._escape_ch;
+      column =
+        key_prefix + this._escape_ch + (property ? property._dbname_us : key.replace(/\./g, '_')) + this._escape_ch;
     }
     let op = '=';
     if (Array.isArray(value)) {
@@ -129,7 +131,7 @@ abstract class SQLAdapterBase extends AdapterBase {
           if (value[sub_key] === null) {
             return `NOT ${column} IS NULL`;
           } else {
-            const sub_expr = this._buildWhereSingle(schema, property, key, value[sub_key], params);
+            const sub_expr = this._buildWhereSingle(schema, property, key, key_prefix, value[sub_key], params);
             return `(NOT (${sub_expr}) OR ${column} IS NULL)`;
           }
           break;
@@ -229,12 +231,38 @@ abstract class SQLAdapterBase extends AdapterBase {
   }
 
   /** @internal */
-  protected _buildWhere(schema: ModelSchemaInternal, conditions: any, params: any, conjunction = 'AND'): any {
-    let subs: any[] = [];
+  protected _buildWhereSingleJoin(
+    schema: ModelSchemaInternal,
+    base_alias: string,
+    join_schemas: Record<string, ModelSchemaInternal>,
+    key: string,
+    value: any,
+    params: any,
+  ): any {
+    const model = key.split('.', 1)[0];
+    if (join_schemas[model]) {
+      // if key is 'JoinModel.column'
+      const model_class = join_schemas[model];
+      const property = model_class[key.substring(model.length + 1)];
+      return this._buildWhereSingle(model_class, property, key, `_${model}.`, value, params);
+    }
+    return this._buildWhereSingle(schema, schema[key], key, base_alias ? base_alias + '.' : '', value, params);
+  }
+
+  /** @internal */
+  protected _buildWhere(
+    schema: ModelSchemaInternal,
+    base_alias: string,
+    join_schemas: Record<string, ModelSchemaInternal>,
+    conditions: Array<Record<string, any>> | Record<string, any>,
+    params: any[],
+    conjunction = 'AND',
+  ): string {
+    let subs: string[] = [];
     let keys: string[];
     if (Array.isArray(conditions)) {
       subs = conditions.map((condition) => {
-        return this._buildWhere(schema, condition, params);
+        return this._buildWhere(schema, base_alias, join_schemas, condition, params);
       });
     } else if (typeof conditions === 'object') {
       keys = Object.keys(conditions);
@@ -243,19 +271,19 @@ abstract class SQLAdapterBase extends AdapterBase {
       }
       if (keys.length === 1) {
         const key = keys[0];
-        if (key.substr(0, 1) === '$') {
+        if (key.substring(0, 1) === '$') {
           switch (key) {
             case '$and':
-              return this._buildWhere(schema, conditions[key], params, 'AND');
+              return this._buildWhere(schema, base_alias, join_schemas, conditions[key], params, 'AND');
             case '$or':
-              return this._buildWhere(schema, conditions[key], params, 'OR');
+              return this._buildWhere(schema, base_alias, join_schemas, conditions[key], params, 'OR');
           }
         } else {
-          return this._buildWhereSingle(schema, schema[key], key, conditions[key], params);
+          return this._buildWhereSingleJoin(schema, base_alias, join_schemas, key, conditions[key], params);
         }
       } else {
         subs = keys.map((key) => {
-          return this._buildWhereSingle(schema, schema[key], key, conditions[key], params);
+          return this._buildWhereSingleJoin(schema, base_alias, join_schemas, key, conditions[key], params);
         });
       }
     } else {
@@ -342,14 +370,14 @@ abstract class SQLAdapterBase extends AdapterBase {
   }
 
   /** @internal */
-  protected _buildSelect(model_class: any, select: any) {
+  protected _buildSelect(model_class: typeof BaseModel, select: any) {
     if (select) {
       const schema = model_class._schema;
       const escape_ch = this._escape_ch;
-      select = select.map((column: any) => `${escape_ch}${schema[column]._dbname_us}${escape_ch}`);
+      select = select.map((column: any) => `_Base.${escape_ch}${schema[column]._dbname_us}${escape_ch}`);
       return select.join(',');
     } else {
-      return '*';
+      return `_Base.*`;
     }
   }
 }

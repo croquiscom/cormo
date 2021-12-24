@@ -113,6 +113,10 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         /** @internal */
         this.support_string_type_with_length = true;
         /** @internal */
+        this.support_join = true;
+        /** @internal */
+        this.support_distinct = true;
+        /** @internal */
         this.native_integrity = true;
         /** @internal */
         this.support_isolation_level_read_uncommitted = false;
@@ -313,7 +317,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const [fields] = this._buildPartialUpdateSet(model, data, values);
         let sql = `UPDATE "${table_name}" SET ${fields}`;
         if (conditions.length > 0) {
-            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
+            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, values);
         }
         let result;
         try {
@@ -328,7 +332,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
     async findById(model, id, options) {
         const select = this._buildSelect(this._connection.models[model], options.select);
         const table_name = this._connection.models[model].table_name;
-        const sql = `SELECT ${select} FROM "${table_name}" WHERE id=$1 LIMIT 1`;
+        const sql = `SELECT ${select} FROM "${table_name}" AS _Base WHERE id=$1 LIMIT 1`;
         if (options.explain) {
             return await this.query(`EXPLAIN ${sql}`, [id], options.transaction);
         }
@@ -415,13 +419,13 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const table_name = this._connection.models[model].table_name;
         let sql = `SELECT COUNT(*) AS count FROM "${table_name}"`;
         if (conditions.length > 0) {
-            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, params);
         }
         if (options.group_by) {
             const escape_ch = this._escape_ch;
             sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
             if (options.conditions_of_group.length > 0) {
-                sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
+                sql += ' HAVING ' + this._buildWhere(options.group_fields, '', {}, options.conditions_of_group, params);
             }
             sql = `SELECT COUNT(*) AS count FROM (${sql}) _sub`;
         }
@@ -444,7 +448,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const table_name = this._connection.models[model].table_name;
         let sql = `DELETE FROM "${table_name}"`;
         if (conditions.length > 0) {
-            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, params);
         }
         let result;
         try {
@@ -559,7 +563,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
                 return `ARRAY[ST_X(${column}), ST_Y(${column})] AS ${column}`;
             }
             else {
-                return column;
+                return '_Base.' + column;
             }
         });
         return select.join(',');
@@ -737,16 +741,25 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         const params = [];
         const table_name = model_class.table_name;
-        let sql = `SELECT ${select} FROM "${table_name}"`;
+        const join_schemas = {};
+        let sql = `SELECT ${options.distinct ? 'DISTINCT' : ''} ${select} FROM "${table_name}" as _Base`;
+        if (options.joins.length > 0) {
+            const escape_ch = this._escape_ch;
+            for (const join of options.joins) {
+                sql += ` ${join.type} ${this._connection.models[join.model_name].table_name} AS _${join.alias}`;
+                sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = _${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
+                join_schemas[join.alias] = this._connection.models[join.model_name]._schema;
+            }
+        }
         if (conditions.length > 0) {
-            sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
+            sql += ' WHERE ' + this._buildWhere(model_class._schema, '_Base', join_schemas, conditions, params);
         }
         if (options.group_by) {
             const escape_ch = this._escape_ch;
             sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
         }
         if (options.conditions_of_group.length > 0) {
-            sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
+            sql += ' HAVING ' + this._buildWhere(options.group_fields, '_Base', {}, options.conditions_of_group, params);
         }
         if ((options && options.orders.length > 0) || order_by) {
             const schema = model_class._schema;

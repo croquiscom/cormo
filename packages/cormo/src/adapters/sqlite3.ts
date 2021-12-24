@@ -16,7 +16,7 @@ import stream from 'stream';
 import util from 'util';
 import _ from 'lodash';
 import { Connection } from '../connection';
-import { ColumnPropertyInternal, IndexProperty } from '../model';
+import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import { AdapterCountOptions, AdapterFindOptions, Schemas, AdapterBase, SchemasTable, SchemasIndex } from './base';
@@ -69,6 +69,12 @@ function _processSaveError(error: any) {
 // Adapter for SQLite3
 // @namespace adapter
 export class SQLite3Adapter extends SQLAdapterBase {
+  /** @internal */
+  public support_join = true;
+
+  /** @internal */
+  public support_distinct = true;
+
   /** @internal */
   public key_type: any = types.Integer;
 
@@ -296,7 +302,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   public async updatePartial(
     model: string,
     data: any,
-    conditions: any,
+    conditions: Array<Record<string, any>>,
     options: { transaction?: Transaction },
   ): Promise<number> {
     const table_name = this._connection.models[model].table_name;
@@ -304,7 +310,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const [fields] = this._buildPartialUpdateSet(model, data, values);
     let sql = `UPDATE "${table_name}" SET ${fields}`;
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
+      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, values);
     }
     try {
       return await new Promise<number>((resolve, reject) => {
@@ -329,7 +335,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   ): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
     const table_name = this._connection.models[model].table_name;
-    const sql = `SELECT ${select} FROM "${table_name}" WHERE id=? LIMIT 1`;
+    const sql = `SELECT ${select} FROM "${table_name}" AS _Base WHERE id=? LIMIT 1`;
     if (options.explain) {
       return await this._client.allAsync(`EXPLAIN QUERY PLAN ${sql}`, id);
     }
@@ -349,7 +355,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any> {
+  public async find(model: string, conditions: Array<Record<string, any>>, options: AdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
       return await this._client.allAsync(`EXPLAIN QUERY PLAN ${sql}`, params);
@@ -372,7 +378,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable {
+  public stream(model: any, conditions: Array<Record<string, any>>, options: AdapterFindOptions): stream.Readable {
     let sql;
     let params;
     try {
@@ -404,18 +410,22 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async count(model: string, conditions: any, options: AdapterCountOptions): Promise<number> {
+  public async count(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterCountOptions,
+  ): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `SELECT COUNT(*) AS count FROM "${table_name}"`;
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, params);
     }
     if (options.group_by) {
       const escape_ch = this._escape_ch;
       sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
       if (options.conditions_of_group.length > 0) {
-        sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
+        sql += ' HAVING ' + this._buildWhere(options.group_fields, '', {}, options.conditions_of_group, params);
       }
       sql = `SELECT COUNT(*) AS count FROM (${sql})`;
     }
@@ -432,12 +442,16 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
+  public async delete(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `DELETE FROM "${table_name}"`;
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, params);
     }
     try {
       return await new Promise<number>((resolve, reject) => {
@@ -683,7 +697,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model_name: string, conditions: any, options: AdapterFindOptions) {
+  private _buildSqlForFind(model_name: string, conditions: Array<Record<string, any>>, options: AdapterFindOptions) {
     const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {
@@ -691,18 +705,27 @@ export class SQLite3Adapter extends SQLAdapterBase {
     } else {
       select = this._buildSelect(model_class, options.select);
     }
-    const table_name = model_class.table_name;
     const params: any[] = [];
-    let sql = `SELECT ${select} FROM "${table_name}"`;
+    const table_name = model_class.table_name;
+    const join_schemas: Record<string, ModelSchemaInternal> = {};
+    let sql = `SELECT ${options.distinct ? 'DISTINCT' : ''} ${select} FROM "${table_name}" AS _Base`;
+    if (options.joins.length > 0) {
+      const escape_ch = this._escape_ch;
+      for (const join of options.joins) {
+        sql += ` ${join.type} ${this._connection.models[join.model_name].table_name} AS _${join.alias}`;
+        sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = _${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
+        join_schemas[join.alias] = this._connection.models[join.model_name]._schema;
+      }
+    }
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
+      sql += ' WHERE ' + this._buildWhere(model_class._schema, '_Base', join_schemas, conditions, params);
     }
     if (options.group_by) {
       const escape_ch = this._escape_ch;
       sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
     }
     if (options.conditions_of_group.length > 0) {
-      sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
+      sql += ' HAVING ' + this._buildWhere(options.group_fields, '_Base', {}, options.conditions_of_group, params);
     }
     if (options && options.orders.length > 0) {
       const schema = model_class._schema;

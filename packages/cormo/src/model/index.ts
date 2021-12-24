@@ -130,7 +130,12 @@ class BaseModel {
   /** @internal */
   public static _indexes: IndexProperty[];
 
-  public static _integrities: any[];
+  public static _integrities: Array<{
+    type: string;
+    column: string;
+    child?: typeof BaseModel;
+    parent?: typeof BaseModel;
+  }>;
 
   public static _associations: { [column: string]: any };
 

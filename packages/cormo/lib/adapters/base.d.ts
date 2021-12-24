@@ -36,6 +36,14 @@ export interface AdapterFindOptions {
     conditions_of_group: any[];
     group_fields?: any;
     group_by?: string[];
+    joins: Array<{
+        model_name: string;
+        type: string;
+        alias: string;
+        base_column: string;
+        join_column: string;
+    }>;
+    distinct?: boolean;
     limit?: number;
     skip?: number;
     explain?: boolean;

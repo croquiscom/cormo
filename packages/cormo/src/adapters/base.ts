@@ -39,6 +39,8 @@ export interface AdapterFindOptions {
   conditions_of_group: any[];
   group_fields?: any;
   group_by?: string[];
+  joins: Array<{ model_name: string; type: string; alias: string; base_column: string; join_column: string }>;
+  distinct?: boolean;
   limit?: number;
   skip?: number;
   explain?: boolean;
@@ -99,6 +101,12 @@ abstract class AdapterBase {
 
   /** @internal */
   public support_string_type_with_length = false;
+
+  /** @internal */
+  public support_join = false;
+
+  /** @internal */
+  public support_distinct = false;
 
   /** @internal */
   public key_type: any;
@@ -317,7 +325,7 @@ abstract class AdapterBase {
   public abstract updatePartial(
     model: string,
     data: any,
-    conditions: any,
+    conditions: Array<Record<string, any>>,
     options: { transaction?: Transaction },
   ): Promise<number>;
 
@@ -325,7 +333,12 @@ abstract class AdapterBase {
    * Updates some fields of records that match conditions or inserts a new record
    * @internal
    */
-  public abstract upsert(model: string, data: any, conditions: any, options: AdapterUpsertOptions): Promise<void>;
+  public abstract upsert(
+    model: string,
+    data: any,
+    conditions: Array<Record<string, any>>,
+    options: AdapterUpsertOptions,
+  ): Promise<void>;
 
   /**
    * Finds a record by id
@@ -343,28 +356,44 @@ abstract class AdapterBase {
    * @see Query::exec
    * @internal
    */
-  public abstract find(model: string, conditions: any, options: AdapterFindOptions): Promise<any>;
+  public abstract find(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): Promise<any>;
 
   /**
    * Streams matching records
    * @see Query::stream
    * @internal
    */
-  public abstract stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable;
+  public abstract stream(
+    model: any,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): stream.Readable;
 
   /**
    * Counts records
    * @see Query::count
    * @internal
    */
-  public abstract count(model: string, conditions: any, options: AdapterCountOptions): Promise<number>;
+  public abstract count(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterCountOptions,
+  ): Promise<number>;
 
   /**
    * Deletes records from the database
    * @see Query::delete
    * @internal
    */
-  public abstract delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number>;
+  public abstract delete(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: { transaction?: Transaction },
+  ): Promise<number>;
 
   /**
    * Closes connection
