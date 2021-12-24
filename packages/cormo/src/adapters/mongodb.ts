@@ -182,8 +182,12 @@ function _buildWhereSingle(property: ColumnPropertyInternal, key: any, value: an
   return _.zipObject([!property.primary_key ? property._dbname_dot : key], [value]);
 }
 
-function _buildWhere(schema: ModelSchemaInternal, conditions: any, conjunction = '$and'): any {
-  let subs: any;
+function _buildWhere(
+  schema: ModelSchemaInternal,
+  conditions: Array<Record<string, any>> | Record<string, any>,
+  conjunction = '$and',
+): Record<string, any> | undefined {
+  let subs: Array<Record<string, any> | undefined>;
   if (Array.isArray(conditions)) {
     subs = conditions.map((condition) => _buildWhere(schema, condition));
   } else if (typeof conditions === 'object') {
@@ -218,7 +222,7 @@ function _buildWhere(schema: ModelSchemaInternal, conditions: any, conjunction =
       const before_count = _.reduce(
         subs,
         (memo, sub) => {
-          return memo + Object.keys(sub).length;
+          return memo + Object.keys(sub || {}).length;
         },
         0,
       );
@@ -474,11 +478,11 @@ export class MongoDBAdapter extends AdapterBase {
   public async updatePartial(
     model: string,
     data: any,
-    conditions: any,
+    conditions_arg: Array<Record<string, any>>,
     options: { transaction?: Transaction },
   ): Promise<number> {
     const schema = this._connection.models[model]._schema;
-    conditions = _buildWhere(schema, conditions);
+    let conditions = _buildWhere(schema, conditions_arg);
     if (!conditions) {
       conditions = {};
     }
@@ -506,9 +510,14 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async upsert(model: any, data: any, conditions: any, options: AdapterUpsertOptions) {
+  public async upsert(
+    model: any,
+    data: any,
+    conditions_arg: Array<Record<string, any>>,
+    options: AdapterUpsertOptions,
+  ) {
     const schema = this._connection.models[model]._schema;
-    conditions = _buildWhere(schema, conditions);
+    let conditions = _buildWhere(schema, conditions_arg);
     if (!conditions) {
       conditions = {};
     }
@@ -576,7 +585,11 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async find(model_name: string, conditions: any, options: AdapterFindOptions): Promise<any> {
+  public async find(
+    model_name: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): Promise<any> {
     let fields: any;
     let orders: any;
     let client_options: any;
@@ -644,7 +657,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: AdapterFindOptions) {
+  public stream(model: any, conditions: Array<Record<string, any>>, options: AdapterFindOptions) {
     let fields: any;
     let orders: any;
     let client_options: any;
@@ -676,9 +689,13 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async count(model_name: string, conditions: any, options: AdapterCountOptions): Promise<number> {
+  public async count(
+    model_name: string,
+    conditions_arg: Array<Record<string, any>>,
+    options: AdapterCountOptions,
+  ): Promise<number> {
     const model_class = this._connection.models[model_name];
-    conditions = _buildWhere(model_class._schema, conditions);
+    const conditions = _buildWhere(model_class._schema, conditions_arg);
     // console.log(JSON.stringify(conditions))
     if (options.group_by || options.group_fields) {
       const pipeline = [];
@@ -712,9 +729,13 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
+  public async delete(
+    model: string,
+    conditions_arg: Array<Record<string, any>>,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const model_class = this._connection.models[model];
-    conditions = _buildWhere(model_class._schema, conditions);
+    const conditions = _buildWhere(model_class._schema, conditions_arg);
     try {
       // console.log(JSON.stringify(conditions))
       const result = await this._collection(model).deleteMany(conditions, { safe: true });
@@ -876,10 +897,10 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private _buildConditionsForFind(model: any, conditions: any, options: AdapterFindOptions) {
+  private _buildConditionsForFind(model: any, conditions_arg: Array<Record<string, any>>, options: AdapterFindOptions) {
     const fields = this._buildSelect(options.select);
     let orders: any;
-    conditions = _buildWhere(this._connection.models[model]._schema, conditions);
+    let conditions = _buildWhere(this._connection.models[model]._schema, conditions_arg);
     if (options.near != null && Object.keys(options.near)[0]) {
       const field = Object.keys(options.near)[0];
       let keys: any;
@@ -888,7 +909,7 @@ export class MongoDBAdapter extends AdapterBase {
         keys = Object.keys(conditions);
       }
       if (keys && (keys.length > 1 || keys[0].substr(0, 1) !== '$')) {
-        conditions[field] = { $near: options.near[field] };
+        conditions![field] = { $near: options.near[field] };
       } else {
         const obj: any = {};
         obj[field] = { $near: options.near[field] };

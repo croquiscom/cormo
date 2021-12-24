@@ -232,7 +232,7 @@ function _buildWhere(schema, conditions, conjunction = '$and') {
     else {
         if (conjunction === '$and') {
             const before_count = lodash_1.default.reduce(subs, (memo, sub) => {
-                return memo + Object.keys(sub).length;
+                return memo + Object.keys(sub || {}).length;
             }, 0);
             const obj = lodash_1.default.extend({}, ...subs);
             const keys = Object.keys(obj);
@@ -468,9 +468,9 @@ class MongoDBAdapter extends base_1.AdapterBase {
         }
     }
     /** @internal */
-    async updatePartial(model, data, conditions, options) {
+    async updatePartial(model, data, conditions_arg, options) {
         const schema = this._connection.models[model]._schema;
-        conditions = _buildWhere(schema, conditions);
+        let conditions = _buildWhere(schema, conditions_arg);
         if (!conditions) {
             conditions = {};
         }
@@ -498,9 +498,9 @@ class MongoDBAdapter extends base_1.AdapterBase {
         }
     }
     /** @internal */
-    async upsert(model, data, conditions, options) {
+    async upsert(model, data, conditions_arg, options) {
         const schema = this._connection.models[model]._schema;
-        conditions = _buildWhere(schema, conditions);
+        let conditions = _buildWhere(schema, conditions_arg);
         if (!conditions) {
             conditions = {};
         }
@@ -669,9 +669,9 @@ class MongoDBAdapter extends base_1.AdapterBase {
         return transformer;
     }
     /** @internal */
-    async count(model_name, conditions, options) {
+    async count(model_name, conditions_arg, options) {
         const model_class = this._connection.models[model_name];
-        conditions = _buildWhere(model_class._schema, conditions);
+        const conditions = _buildWhere(model_class._schema, conditions_arg);
         // console.log(JSON.stringify(conditions))
         if (options.group_by || options.group_fields) {
             const pipeline = [];
@@ -707,9 +707,9 @@ class MongoDBAdapter extends base_1.AdapterBase {
         }
     }
     /** @internal */
-    async delete(model, conditions, options) {
+    async delete(model, conditions_arg, options) {
         const model_class = this._connection.models[model];
-        conditions = _buildWhere(model_class._schema, conditions);
+        const conditions = _buildWhere(model_class._schema, conditions_arg);
         try {
             // console.log(JSON.stringify(conditions))
             const result = await this._collection(model).deleteMany(conditions, { safe: true });
@@ -863,10 +863,10 @@ class MongoDBAdapter extends base_1.AdapterBase {
         }
     }
     /** @internal */
-    _buildConditionsForFind(model, conditions, options) {
+    _buildConditionsForFind(model, conditions_arg, options) {
         const fields = this._buildSelect(options.select);
         let orders;
-        conditions = _buildWhere(this._connection.models[model]._schema, conditions);
+        let conditions = _buildWhere(this._connection.models[model]._schema, conditions_arg);
         if (options.near != null && Object.keys(options.near)[0]) {
             const field = Object.keys(options.near)[0];
             let keys;

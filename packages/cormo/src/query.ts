@@ -163,7 +163,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
   private _ifs: boolean[];
   private _current_if: boolean;
   private _options: QueryOptions;
-  private _conditions: any[];
+  private _conditions: Array<Record<string, any>>;
   private _includes: Array<{ column: string; select?: string }>;
   private _id: any;
   private _find_single_id = false;

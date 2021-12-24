@@ -122,7 +122,7 @@ export class RedisAdapter extends AdapterBase {
   public async updatePartial(
     model: string,
     data: any,
-    conditions: any,
+    conditions: Array<Record<string, any>>,
     options: { transaction?: Transaction },
   ): Promise<number> {
     const fields_to_del = Object.keys(data).filter((key) => data[key] == null);
@@ -151,7 +151,12 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async upsert(model: string, data: any, conditions: any, options: AdapterUpsertOptions): Promise<void> {
+  public async upsert(
+    model: string,
+    data: any,
+    conditions: Array<Record<string, any>>,
+    options: AdapterUpsertOptions,
+  ): Promise<void> {
     return Promise.reject(new Error('not implemented'));
   }
 
@@ -176,7 +181,7 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any> {
+  public async find(model: string, conditions: Array<Record<string, any>>, options: AdapterFindOptions): Promise<any> {
     const table = tableize(model);
     const keys = await this._getKeys(table, conditions);
     let records: any[] = await Promise.all(
@@ -195,17 +200,25 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable {
+  public stream(model: any, conditions: Array<Record<string, any>>, options: AdapterFindOptions): stream.Readable {
     throw new Error('not implemented');
   }
 
   /** @internal */
-  public async count(model: string, conditions: any, options: AdapterCountOptions): Promise<number> {
+  public async count(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterCountOptions,
+  ): Promise<number> {
     return Promise.reject(new Error('not implemented'));
   }
 
   /** @internal */
-  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
+  public async delete(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const keys = await this._getKeys(tableize(model), conditions);
     if (keys.length === 0) {
       return 0;
@@ -255,7 +268,7 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private async _getKeys(table: any, conditions: any) {
+  private async _getKeys(table: any, conditions: Array<Record<string, any>> | Record<string, any>) {
     if (Array.isArray(conditions)) {
       if (conditions.length === 0) {
         return await this._client.keysAsync(`${table}:*`);

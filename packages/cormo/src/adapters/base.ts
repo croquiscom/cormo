@@ -318,7 +318,7 @@ abstract class AdapterBase {
   public abstract updatePartial(
     model: string,
     data: any,
-    conditions: any,
+    conditions: Array<Record<string, any>>,
     options: { transaction?: Transaction },
   ): Promise<number>;
 
@@ -326,7 +326,12 @@ abstract class AdapterBase {
    * Updates some fields of records that match conditions or inserts a new record
    * @internal
    */
-  public abstract upsert(model: string, data: any, conditions: any, options: AdapterUpsertOptions): Promise<void>;
+  public abstract upsert(
+    model: string,
+    data: any,
+    conditions: Array<Record<string, any>>,
+    options: AdapterUpsertOptions,
+  ): Promise<void>;
 
   /**
    * Finds a record by id
@@ -344,28 +349,44 @@ abstract class AdapterBase {
    * @see Query::exec
    * @internal
    */
-  public abstract find(model: string, conditions: any, options: AdapterFindOptions): Promise<any>;
+  public abstract find(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): Promise<any>;
 
   /**
    * Streams matching records
    * @see Query::stream
    * @internal
    */
-  public abstract stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable;
+  public abstract stream(
+    model: any,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): stream.Readable;
 
   /**
    * Counts records
    * @see Query::count
    * @internal
    */
-  public abstract count(model: string, conditions: any, options: AdapterCountOptions): Promise<number>;
+  public abstract count(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterCountOptions,
+  ): Promise<number>;
 
   /**
    * Deletes records from the database
    * @see Query::delete
    * @internal
    */
-  public abstract delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number>;
+  public abstract delete(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: { transaction?: Transaction },
+  ): Promise<number>;
 
   /**
    * Closes connection

@@ -296,7 +296,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   public async updatePartial(
     model: string,
     data: any,
-    conditions: any,
+    conditions: Array<Record<string, any>>,
     options: { transaction?: Transaction },
   ): Promise<number> {
     const table_name = this._connection.models[model].table_name;
@@ -349,7 +349,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async find(model: string, conditions: any, options: AdapterFindOptions): Promise<any> {
+  public async find(model: string, conditions: Array<Record<string, any>>, options: AdapterFindOptions): Promise<any> {
     const [sql, params] = this._buildSqlForFind(model, conditions, options);
     if (options.explain) {
       return await this._client.allAsync(`EXPLAIN QUERY PLAN ${sql}`, params);
@@ -372,7 +372,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: any, options: AdapterFindOptions): stream.Readable {
+  public stream(model: any, conditions: Array<Record<string, any>>, options: AdapterFindOptions): stream.Readable {
     let sql;
     let params;
     try {
@@ -404,7 +404,11 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async count(model: string, conditions: any, options: AdapterCountOptions): Promise<number> {
+  public async count(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterCountOptions,
+  ): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `SELECT COUNT(*) AS count FROM "${table_name}"`;
@@ -432,7 +436,11 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async delete(model: string, conditions: any, options: { transaction?: Transaction }): Promise<number> {
+  public async delete(
+    model: string,
+    conditions: Array<Record<string, any>>,
+    options: { transaction?: Transaction },
+  ): Promise<number> {
     const params: any = [];
     const table_name = this._connection.models[model].table_name;
     let sql = `DELETE FROM "${table_name}"`;
@@ -683,7 +691,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model_name: string, conditions: any, options: AdapterFindOptions) {
+  private _buildSqlForFind(model_name: string, conditions: Array<Record<string, any>>, options: AdapterFindOptions) {
     const model_class = this._connection.models[model_name];
     let select;
     if (options.group_by || options.group_fields) {

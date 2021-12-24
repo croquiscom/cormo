@@ -20,7 +20,7 @@ abstract class SQLAdapterBase extends AdapterBase {
   protected _escape_ch = '"';
 
   /** @internal */
-  public async upsert(model: any, data: any, conditions: any, options: AdapterUpsertOptions) {
+  public async upsert(model: any, data: any, conditions: Array<Record<string, any>>, options: AdapterUpsertOptions) {
     const insert_data: any = {};
     const update_data: any = {};
     for (const key in data) {
@@ -229,8 +229,13 @@ abstract class SQLAdapterBase extends AdapterBase {
   }
 
   /** @internal */
-  protected _buildWhere(schema: ModelSchemaInternal, conditions: any, params: any, conjunction = 'AND'): any {
-    let subs: any[] = [];
+  protected _buildWhere(
+    schema: ModelSchemaInternal,
+    conditions: Array<Record<string, any>> | Record<string, any>,
+    params: any[],
+    conjunction = 'AND',
+  ): string {
+    let subs: string[] = [];
     let keys: string[];
     if (Array.isArray(conditions)) {
       subs = conditions.map((condition) => {
@@ -243,7 +248,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       }
       if (keys.length === 1) {
         const key = keys[0];
-        if (key.substr(0, 1) === '$') {
+        if (key.substring(0, 1) === '$') {
           switch (key) {
             case '$and':
               return this._buildWhere(schema, conditions[key], params, 'AND');

@@ -272,7 +272,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             }
             if (keys.length === 1) {
                 const key = keys[0];
-                if (key.substr(0, 1) === '$') {
+                if (key.substring(0, 1) === '$') {
                     switch (key) {
                         case '$and':
                             return this._buildWhere(schema, conditions[key], params, 'AND');
