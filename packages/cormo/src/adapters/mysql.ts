@@ -1060,6 +1060,13 @@ export class MySQLAdapter extends SQLAdapterBase {
     if (options.index_hint) {
       sql += ` ${options.index_hint}`;
     }
+    if (options.joins.length > 0) {
+      const escape_ch = this._escape_ch;
+      for (const join of options.joins) {
+        sql += ` INNER JOIN ${this._connection.models[join.model_name].table_name} AS ${join.alias}`;
+        sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = ${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
+      }
+    }
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
     }

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Query = void 0;
 const stream_1 = __importDefault(require("stream"));
 const lodash_1 = __importDefault(require("lodash"));
+const inflector_1 = require("./util/inflector");
 /**
  * Collects conditions to query
  */
@@ -29,6 +30,7 @@ class Query {
             lean: model.lean_query,
             node: 'master',
             select_single: false,
+            joins: [],
         };
     }
     clone() {
@@ -142,6 +144,10 @@ class Query {
             this._options.group_by = group_by;
         }
         this._options.group_fields = fields;
+        return this;
+    }
+    join(model_class) {
+        this._options.joins.push({ model_class });
         return this;
     }
     /**
@@ -495,7 +501,16 @@ class Query {
                 }
             });
         }
-        return Object.assign({ conditions_of_group: this._options.conditions_of_group, explain: this._options.explain, group_by, group_fields: this._options.group_fields, lean: this._options.lean, limit: this._options.limit, near: this._options.near, node: this._options.node, index_hint: this._options.index_hint, orders, skip: this._options.skip, transaction: this._options.transaction }, (select_raw.length > 0 && { select, select_raw }));
+        const joins = [];
+        for (const join of this._options.joins) {
+            joins.push({
+                model_name: join.model_class._name,
+                alias: '_' + join.model_class._name,
+                base_column: 'id',
+                join_column: (0, inflector_1.foreign_key)(this._model._name),
+            });
+        }
+        return Object.assign({ conditions_of_group: this._options.conditions_of_group, explain: this._options.explain, group_by, group_fields: this._options.group_fields, joins, lean: this._options.lean, limit: this._options.limit, near: this._options.near, node: this._options.node, index_hint: this._options.index_hint, orders, skip: this._options.skip, transaction: this._options.transaction }, (select_raw.length > 0 && { select, select_raw }));
     }
     async _execAndInclude(options) {
         const records = await this._exec(this._getAdapterFindOptions(), options);

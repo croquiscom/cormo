@@ -6,6 +6,7 @@ import { Connection } from './connection';
 import { BaseModel, ModelColumnNamesWithId } from './model';
 import { Transaction } from './transaction';
 import { RecordID } from './types';
+import { foreign_key } from './util/inflector';
 
 interface QueryOptions {
   lean: boolean;
@@ -16,6 +17,7 @@ interface QueryOptions {
   conditions_of_group: any[];
   group_fields?: any;
   group_by?: string[];
+  joins: Array<{ model_class: typeof BaseModel }>;
   limit?: number;
   skip?: number;
   one?: boolean;
@@ -47,6 +49,7 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
   ): QuerySingle<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F): QuerySingle<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QuerySingle<M, U>;
+  join(model: typeof BaseModel): QuerySingle<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QuerySingle<M, T>;
   skip(skip?: number): QuerySingle<M, T>;
@@ -85,6 +88,7 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
   ): QuerySingleNull<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F): QuerySingleNull<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QuerySingleNull<M, U>;
+  join(model: typeof BaseModel): QuerySingleNull<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QuerySingleNull<M, T>;
   skip(skip?: number): QuerySingleNull<M, T>;
@@ -123,6 +127,7 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
   ): QueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F): QueryArray<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QueryArray<M, U>;
+  join(model: typeof BaseModel): QueryArray<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QueryArray<M, T>;
   skip(skip?: number): QueryArray<M, T>;
@@ -179,6 +184,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       lean: model.lean_query,
       node: 'master',
       select_single: false,
+      joins: [],
     };
   }
 
@@ -319,6 +325,11 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
     }
     this._options.group_fields = fields;
     return this as any;
+  }
+
+  public join(model_class: typeof BaseModel): this {
+    this._options.joins.push({ model_class });
+    return this;
   }
 
   /**
@@ -704,11 +715,22 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       });
     }
 
+    const joins: Array<{ model_name: string; alias: string; base_column: string; join_column: string }> = [];
+    for (const join of this._options.joins) {
+      joins.push({
+        model_name: join.model_class._name,
+        alias: '_' + join.model_class._name,
+        base_column: 'id',
+        join_column: foreign_key(this._model._name),
+      });
+    }
+
     return {
       conditions_of_group: this._options.conditions_of_group,
       explain: this._options.explain,
       group_by,
       group_fields: this._options.group_fields,
+      joins,
       lean: this._options.lean,
       limit: this._options.limit,
       near: this._options.near,
