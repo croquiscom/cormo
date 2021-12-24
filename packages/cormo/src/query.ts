@@ -17,7 +17,7 @@ interface QueryOptions {
   conditions_of_group: any[];
   group_fields?: any;
   group_by?: string[];
-  joins: Array<{ model_class: typeof BaseModel }>;
+  joins: Array<{ model_class: typeof BaseModel; type: string }>;
   limit?: number;
   skip?: number;
   one?: boolean;
@@ -50,6 +50,7 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
   group<F>(group_by: null, fields?: F): QuerySingle<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QuerySingle<M, U>;
   join(model: typeof BaseModel): QuerySingle<M, T>;
+  left_outer_join(model: typeof BaseModel): QuerySingle<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QuerySingle<M, T>;
   skip(skip?: number): QuerySingle<M, T>;
@@ -89,6 +90,7 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
   group<F>(group_by: null, fields?: F): QuerySingleNull<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QuerySingleNull<M, U>;
   join(model: typeof BaseModel): QuerySingleNull<M, T>;
+  left_outer_join(model: typeof BaseModel): QuerySingleNull<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QuerySingleNull<M, T>;
   skip(skip?: number): QuerySingleNull<M, T>;
@@ -128,6 +130,7 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
   group<F>(group_by: null, fields?: F): QueryArray<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QueryArray<M, U>;
   join(model: typeof BaseModel): QueryArray<M, T>;
+  left_outer_join(model: typeof BaseModel): QueryArray<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QueryArray<M, T>;
   skip(skip?: number): QueryArray<M, T>;
@@ -327,8 +330,19 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
     return this as any;
   }
 
+  /**
+   * (inner) join
+   */
   public join(model_class: typeof BaseModel): this {
-    this._options.joins.push({ model_class });
+    this._options.joins.push({ model_class, type: 'INNER JOIN' });
+    return this;
+  }
+
+  /**
+   * left outer join
+   */
+  public left_outer_join(model_class: typeof BaseModel): this {
+    this._options.joins.push({ model_class, type: 'LEFT OUTER JOIN' });
     return this;
   }
 
@@ -715,10 +729,12 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       });
     }
 
-    const joins: Array<{ model_name: string; alias: string; base_column: string; join_column: string }> = [];
+    const joins: Array<{ model_name: string; type: string; alias: string; base_column: string; join_column: string }> =
+      [];
     for (const join of this._options.joins) {
       joins.push({
         model_name: join.model_class._name,
+        type: join.type,
         alias: '_' + join.model_class._name,
         base_column: 'id',
         join_column: foreign_key(this._model._name),

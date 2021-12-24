@@ -146,8 +146,18 @@ class Query {
         this._options.group_fields = fields;
         return this;
     }
+    /**
+     * (inner) join
+     */
     join(model_class) {
-        this._options.joins.push({ model_class });
+        this._options.joins.push({ model_class, type: 'INNER JOIN' });
+        return this;
+    }
+    /**
+     * left outer join
+     */
+    left_outer_join(model_class) {
+        this._options.joins.push({ model_class, type: 'LEFT OUTER JOIN' });
         return this;
     }
     /**
@@ -505,6 +515,7 @@ class Query {
         for (const join of this._options.joins) {
             joins.push({
                 model_name: join.model_class._name,
+                type: join.type,
                 alias: '_' + join.model_class._name,
                 base_column: 'id',
                 join_column: (0, inflector_1.foreign_key)(this._model._name),

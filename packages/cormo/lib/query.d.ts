@@ -14,6 +14,7 @@ interface QueryOptions {
     group_by?: string[];
     joins: Array<{
         model_class: typeof BaseModel;
+        type: string;
     }>;
     limit?: number;
     skip?: number;
@@ -47,6 +48,7 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
     }>;
     group<U>(group_by: string | null, fields?: object): QuerySingle<M, U>;
     join(model: typeof BaseModel): QuerySingle<M, T>;
+    left_outer_join(model: typeof BaseModel): QuerySingle<M, T>;
     one(): QuerySingleNull<M, T>;
     limit(limit?: number): QuerySingle<M, T>;
     skip(skip?: number): QuerySingle<M, T>;
@@ -89,6 +91,7 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
     }>;
     group<U>(group_by: string | null, fields?: object): QuerySingleNull<M, U>;
     join(model: typeof BaseModel): QuerySingleNull<M, T>;
+    left_outer_join(model: typeof BaseModel): QuerySingleNull<M, T>;
     one(): QuerySingleNull<M, T>;
     limit(limit?: number): QuerySingleNull<M, T>;
     skip(skip?: number): QuerySingleNull<M, T>;
@@ -131,6 +134,7 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
     }>;
     group<U>(group_by: string | null, fields?: object): QueryArray<M, U>;
     join(model: typeof BaseModel): QueryArray<M, T>;
+    left_outer_join(model: typeof BaseModel): QueryArray<M, T>;
     one(): QuerySingleNull<M, T>;
     limit(limit?: number): QueryArray<M, T>;
     skip(skip?: number): QueryArray<M, T>;
@@ -209,7 +213,14 @@ declare class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, Qu
      */
     group<U>(group_by: string | string[] | null, fields?: object): QuerySingle<M, U>;
     group<U>(group_by: string | string[] | null, fields?: object): QueryArray<M, U>;
+    /**
+     * (inner) join
+     */
     join(model_class: typeof BaseModel): this;
+    /**
+     * left outer join
+     */
+    left_outer_join(model_class: typeof BaseModel): this;
     /**
      * Returns only one record (or null if does not exists).
      *

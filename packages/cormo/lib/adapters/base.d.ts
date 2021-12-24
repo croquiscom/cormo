@@ -38,6 +38,7 @@ export interface AdapterFindOptions {
     group_by?: string[];
     joins: Array<{
         model_name: string;
+        type: string;
         alias: string;
         base_column: string;
         join_column: string;
