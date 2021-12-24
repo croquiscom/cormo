@@ -516,7 +516,7 @@ class Query {
             joins.push({
                 model_name: join.model_class._name,
                 type: join.type,
-                alias: '_' + join.model_class._name,
+                alias: join.model_class._name,
                 base_column: 'id',
                 join_column: (0, inflector_1.foreign_key)(this._model._name),
             });

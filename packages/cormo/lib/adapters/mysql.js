@@ -427,7 +427,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const [fields] = this._buildPartialUpdateSet(model, data, values);
         let sql = `UPDATE \`${table_name}\` SET ${fields}`;
         if (conditions.length > 0) {
-            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, values);
+            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, {}, conditions, values);
         }
         let result;
         try {
@@ -572,13 +572,13 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             sql += ` ${options.index_hint}`;
         }
         if (conditions.length > 0) {
-            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, {}, conditions, params);
         }
         if (options.group_by) {
             const escape_ch = this._escape_ch;
             sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
             if (options.conditions_of_group.length > 0) {
-                sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
+                sql += ' HAVING ' + this._buildWhere(options.group_fields, {}, options.conditions_of_group, params);
             }
             sql = `SELECT COUNT(*) AS count FROM (${sql}) _sub`;
         }
@@ -600,7 +600,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const table_name = this._connection.models[model].table_name;
         let sql = `DELETE FROM \`${table_name}\``;
         if (conditions.length > 0) {
-            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, conditions, params);
+            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, {}, conditions, params);
         }
         let result;
         try {
@@ -997,6 +997,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         const params = [];
         const table_name = model_class.table_name;
+        const join_schemas = {};
         let sql = `SELECT ${select} FROM \`${table_name}\` AS _Base`;
         if (options.index_hint) {
             sql += ` ${options.index_hint}`;
@@ -1004,19 +1005,20 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         if (options.joins.length > 0) {
             const escape_ch = this._escape_ch;
             for (const join of options.joins) {
-                sql += ` ${join.type} ${this._connection.models[join.model_name].table_name} AS ${join.alias}`;
-                sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = ${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
+                sql += ` ${join.type} ${this._connection.models[join.model_name].table_name} AS _${join.alias}`;
+                sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = _${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
+                join_schemas[join.alias] = this._connection.models[join.model_name]._schema;
             }
         }
         if (conditions.length > 0) {
-            sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
+            sql += ' WHERE ' + this._buildWhere(model_class._schema, join_schemas, conditions, params);
         }
         if (options.group_by) {
             const escape_ch = this._escape_ch;
             sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
         }
         if (options.conditions_of_group.length > 0) {
-            sql += ' HAVING ' + this._buildWhere(options.group_fields, options.conditions_of_group, params);
+            sql += ' HAVING ' + this._buildWhere(options.group_fields, {}, options.conditions_of_group, params);
         }
         if ((options && options.orders.length > 0) || order_by) {
             const schema = model_class._schema;

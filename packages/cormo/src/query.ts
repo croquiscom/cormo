@@ -735,7 +735,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       joins.push({
         model_name: join.model_class._name,
         type: join.type,
-        alias: '_' + join.model_class._name,
+        alias: join.model_class._name,
         base_column: 'id',
         join_column: foreign_key(this._model._name),
       });

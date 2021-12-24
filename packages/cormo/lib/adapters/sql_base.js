@@ -116,7 +116,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
         return value;
     }
     /** @internal */
-    _buildWhereSingle(schema, property, key, value, params) {
+    _buildWhereSingle(schema, property, key, key_prefix, value, params) {
         let property_type_class;
         if (key === 'id') {
             property_type_class = this.key_type;
@@ -133,7 +133,8 @@ class SQLAdapterBase extends base_1.AdapterBase {
             column = this._buildGroupExpr(schema, property);
         }
         else {
-            column = this._escape_ch + (property ? property._dbname_us : key.replace(/\./g, '_')) + this._escape_ch;
+            column =
+                key_prefix + this._escape_ch + (property ? property._dbname_us : key.replace(/\./g, '_')) + this._escape_ch;
         }
         let op = '=';
         if (Array.isArray(value)) {
@@ -155,7 +156,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
                         return `NOT ${column} IS NULL`;
                     }
                     else {
-                        const sub_expr = this._buildWhereSingle(schema, property, key, value[sub_key], params);
+                        const sub_expr = this._buildWhereSingle(schema, property, key, key_prefix, value[sub_key], params);
                         return `(NOT (${sub_expr}) OR ${column} IS NULL)`;
                     }
                     break;
@@ -257,12 +258,23 @@ class SQLAdapterBase extends base_1.AdapterBase {
         return column + op + this._param_place_holder(params.length);
     }
     /** @internal */
-    _buildWhere(schema, conditions, params, conjunction = 'AND') {
+    _buildWhereSingleJoin(schema, join_schemas, key, value, params) {
+        const model = key.split('.', 1)[0];
+        if (join_schemas[model]) {
+            // if key is 'JoinModel.column'
+            const model_class = join_schemas[model];
+            const property = model_class[key.substring(model.length + 1)];
+            return this._buildWhereSingle(model_class, property, key, `_${model}.`, value, params);
+        }
+        return this._buildWhereSingle(schema, schema[key], key, '', value, params);
+    }
+    /** @internal */
+    _buildWhere(schema, join_schemas, conditions, params, conjunction = 'AND') {
         let subs = [];
         let keys;
         if (Array.isArray(conditions)) {
             subs = conditions.map((condition) => {
-                return this._buildWhere(schema, condition, params);
+                return this._buildWhere(schema, join_schemas, condition, params);
             });
         }
         else if (typeof conditions === 'object') {
@@ -275,18 +287,18 @@ class SQLAdapterBase extends base_1.AdapterBase {
                 if (key.substring(0, 1) === '$') {
                     switch (key) {
                         case '$and':
-                            return this._buildWhere(schema, conditions[key], params, 'AND');
+                            return this._buildWhere(schema, join_schemas, conditions[key], params, 'AND');
                         case '$or':
-                            return this._buildWhere(schema, conditions[key], params, 'OR');
+                            return this._buildWhere(schema, join_schemas, conditions[key], params, 'OR');
                     }
                 }
                 else {
-                    return this._buildWhereSingle(schema, schema[key], key, conditions[key], params);
+                    return this._buildWhereSingleJoin(schema, join_schemas, key, conditions[key], params);
                 }
             }
             else {
                 subs = keys.map((key) => {
-                    return this._buildWhereSingle(schema, schema[key], key, conditions[key], params);
+                    return this._buildWhereSingleJoin(schema, join_schemas, key, conditions[key], params);
                 });
             }
         }
