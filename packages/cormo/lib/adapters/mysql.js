@@ -128,6 +128,10 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         /** @internal */
         this.support_string_type_with_length = true;
         /** @internal */
+        this.support_join = true;
+        /** @internal */
+        this.support_distinct = true;
+        /** @internal */
         this.native_integrity = true;
         /** @internal */
         this.support_isolation_level_read_uncommitted = true;
@@ -998,7 +1002,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const params = [];
         const table_name = model_class.table_name;
         const join_schemas = {};
-        let sql = `SELECT ${select} FROM \`${table_name}\` AS _Base`;
+        let sql = `SELECT ${options.distinct ? 'DISTINCT' : ''} ${select} FROM \`${table_name}\` AS _Base`;
         if (options.index_hint) {
             sql += ` ${options.index_hint}`;
         }

@@ -149,6 +149,9 @@ class Query {
      * (inner) join
      */
     join(model_class, options) {
+        if (!this._adapter.support_join) {
+            throw new Error('this adapter does not support join');
+        }
         this._options.joins.push({
             model_class,
             type: 'INNER JOIN',
@@ -162,6 +165,9 @@ class Query {
      * left outer join
      */
     left_outer_join(model_class, options) {
+        if (!this._adapter.support_join) {
+            throw new Error('this adapter does not support join');
+        }
         this._options.joins.push({
             model_class,
             type: 'LEFT OUTER JOIN',
@@ -169,6 +175,16 @@ class Query {
             base_column: options === null || options === void 0 ? void 0 : options.base_column,
             join_column: options === null || options === void 0 ? void 0 : options.join_column,
         });
+        return this;
+    }
+    /**
+     * Returns distinct records
+     */
+    distinct() {
+        if (!this._adapter.support_join) {
+            throw new Error('this adapter does not support distinct');
+        }
+        this._options.distinct = true;
         return this;
     }
     /**
@@ -567,7 +583,7 @@ class Query {
                 }
             }
         }
-        return Object.assign({ conditions_of_group: this._options.conditions_of_group, explain: this._options.explain, group_by, group_fields: this._options.group_fields, joins, lean: this._options.lean, limit: this._options.limit, near: this._options.near, node: this._options.node, index_hint: this._options.index_hint, orders, skip: this._options.skip, transaction: this._options.transaction }, (select_raw.length > 0 && { select, select_raw }));
+        return Object.assign({ conditions_of_group: this._options.conditions_of_group, explain: this._options.explain, group_by, group_fields: this._options.group_fields, joins, lean: this._options.lean, limit: this._options.limit, near: this._options.near, node: this._options.node, index_hint: this._options.index_hint, orders, skip: this._options.skip, transaction: this._options.transaction, distinct: this._options.distinct }, (select_raw.length > 0 && { select, select_raw }));
     }
     async _execAndInclude(options) {
         const records = await this._exec(this._getAdapterFindOptions(), options);

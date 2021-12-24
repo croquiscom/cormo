@@ -40,6 +40,7 @@ export interface AdapterFindOptions {
   group_fields?: any;
   group_by?: string[];
   joins: Array<{ model_name: string; type: string; alias: string; base_column: string; join_column: string }>;
+  distinct?: boolean;
   limit?: number;
   skip?: number;
   explain?: boolean;
@@ -100,6 +101,12 @@ abstract class AdapterBase {
 
   /** @internal */
   public support_string_type_with_length = false;
+
+  /** @internal */
+  public support_join = false;
+
+  /** @internal */
+  public support_distinct = false;
 
   /** @internal */
   public key_type: any;

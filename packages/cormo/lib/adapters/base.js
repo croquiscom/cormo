@@ -43,6 +43,10 @@ class AdapterBase {
         /** @internal */
         this.support_string_type_with_length = false;
         /** @internal */
+        this.support_join = false;
+        /** @internal */
+        this.support_distinct = false;
+        /** @internal */
         this.native_integrity = false;
     }
     /**

@@ -70,6 +70,12 @@ function _processSaveError(error: any) {
 // @namespace adapter
 export class SQLite3Adapter extends SQLAdapterBase {
   /** @internal */
+  public support_join = true;
+
+  /** @internal */
+  public support_distinct = true;
+
+  /** @internal */
   public key_type: any = types.Integer;
 
   /** @internal */
@@ -702,7 +708,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const params: any[] = [];
     const table_name = model_class.table_name;
     const join_schemas: Record<string, ModelSchemaInternal> = {};
-    let sql = `SELECT ${select} FROM "${table_name}" AS _Base`;
+    let sql = `SELECT ${options.distinct ? 'DISTINCT' : ''} ${select} FROM "${table_name}" AS _Base`;
     if (options.joins.length > 0) {
       const escape_ch = this._escape_ch;
       for (const join of options.joins) {

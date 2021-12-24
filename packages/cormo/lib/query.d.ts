@@ -19,6 +19,7 @@ interface QueryOptions {
         base_column?: string;
         join_column?: string;
     }>;
+    distinct?: boolean;
     limit?: number;
     skip?: number;
     one?: boolean;
@@ -60,6 +61,7 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
         base_column?: string;
         join_column?: string;
     }): QuerySingle<M, T>;
+    distinct(): QuerySingle<M, T>;
     one(): QuerySingleNull<M, T>;
     limit(limit?: number): QuerySingle<M, T>;
     skip(skip?: number): QuerySingle<M, T>;
@@ -111,6 +113,7 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
         base_column?: string;
         join_column?: string;
     }): QuerySingleNull<M, T>;
+    distinct(): QuerySingleNull<M, T>;
     one(): QuerySingleNull<M, T>;
     limit(limit?: number): QuerySingleNull<M, T>;
     skip(skip?: number): QuerySingleNull<M, T>;
@@ -162,6 +165,7 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
         base_column?: string;
         join_column?: string;
     }): QueryArray<M, T>;
+    distinct(): QueryArray<M, T>;
     one(): QuerySingleNull<M, T>;
     limit(limit?: number): QueryArray<M, T>;
     skip(skip?: number): QueryArray<M, T>;
@@ -256,6 +260,10 @@ declare class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, Qu
         base_column?: string;
         join_column?: string;
     }): this;
+    /**
+     * Returns distinct records
+     */
+    distinct(): this;
     /**
      * Returns only one record (or null if does not exists).
      *

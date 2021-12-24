@@ -89,6 +89,10 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
     constructor(connection) {
         super();
         /** @internal */
+        this.support_join = true;
+        /** @internal */
+        this.support_distinct = true;
+        /** @internal */
         this.key_type = types.Integer;
         /** @internal */
         this.native_integrity = true;
@@ -674,7 +678,7 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
         const params = [];
         const table_name = model_class.table_name;
         const join_schemas = {};
-        let sql = `SELECT ${select} FROM "${table_name}" AS _Base`;
+        let sql = `SELECT ${options.distinct ? 'DISTINCT' : ''} ${select} FROM "${table_name}" AS _Base`;
         if (options.joins.length > 0) {
             const escape_ch = this._escape_ch;
             for (const join of options.joins) {

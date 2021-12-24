@@ -6,7 +6,6 @@ import { Connection } from './connection';
 import { BaseModel, ModelColumnNamesWithId } from './model';
 import { Transaction } from './transaction';
 import { RecordID } from './types';
-import { foreign_key } from './util/inflector';
 
 interface QueryOptions {
   lean: boolean;
@@ -24,6 +23,7 @@ interface QueryOptions {
     base_column?: string;
     join_column?: string;
   }>;
+  distinct?: boolean;
   limit?: number;
   skip?: number;
   one?: boolean;
@@ -63,6 +63,7 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
     model: typeof BaseModel,
     options?: { alias?: string; base_column?: string; join_column?: string },
   ): QuerySingle<M, T>;
+  distinct(): QuerySingle<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QuerySingle<M, T>;
   skip(skip?: number): QuerySingle<M, T>;
@@ -109,6 +110,7 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
     model: typeof BaseModel,
     options?: { alias?: string; base_column?: string; join_column?: string },
   ): QuerySingleNull<M, T>;
+  distinct(): QuerySingleNull<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QuerySingleNull<M, T>;
   skip(skip?: number): QuerySingleNull<M, T>;
@@ -155,6 +157,7 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
     model: typeof BaseModel,
     options?: { alias?: string; base_column?: string; join_column?: string },
   ): QueryArray<M, T>;
+  distinct(): QueryArray<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QueryArray<M, T>;
   skip(skip?: number): QueryArray<M, T>;
@@ -361,6 +364,9 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
     model_class: typeof BaseModel,
     options?: { alias?: string; base_column?: string; join_column?: string },
   ): this {
+    if (!this._adapter.support_join) {
+      throw new Error('this adapter does not support join');
+    }
     this._options.joins.push({
       model_class,
       type: 'INNER JOIN',
@@ -378,6 +384,9 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
     model_class: typeof BaseModel,
     options?: { alias?: string; base_column?: string; join_column?: string },
   ): this {
+    if (!this._adapter.support_join) {
+      throw new Error('this adapter does not support join');
+    }
     this._options.joins.push({
       model_class,
       type: 'LEFT OUTER JOIN',
@@ -385,6 +394,17 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       base_column: options?.base_column,
       join_column: options?.join_column,
     });
+    return this;
+  }
+
+  /**
+   * Returns distinct records
+   */
+  public distinct(): this {
+    if (!this._adapter.support_join) {
+      throw new Error('this adapter does not support distinct');
+    }
+    this._options.distinct = true;
     return this;
   }
 
@@ -829,6 +849,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       orders,
       skip: this._options.skip,
       transaction: this._options.transaction,
+      distinct: this._options.distinct,
       ...(select_raw.length > 0 && { select, select_raw }),
     };
   }

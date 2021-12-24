@@ -252,4 +252,24 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       { id: null, name: 'John Doe' },
     ]);
   });
+
+  it('distinct', async () => {
+    try {
+      await _createUsers(models.User);
+      const records = await models.User.where({ age: { $gt: 10 } })
+        .select(['age'])
+        .order('age')
+        .distinct();
+      expect(records).to.eql([
+        { id: null, age: 27 },
+        { id: null, age: 32 },
+        { id: null, age: 45 },
+      ]);
+    } catch (error: any) {
+      if (error.message === 'this adapter does not support distinct') {
+        return;
+      }
+      throw error;
+    }
+  });
 }

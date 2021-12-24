@@ -43,6 +43,7 @@ export interface AdapterFindOptions {
         base_column: string;
         join_column: string;
     }>;
+    distinct?: boolean;
     limit?: number;
     skip?: number;
     explain?: boolean;

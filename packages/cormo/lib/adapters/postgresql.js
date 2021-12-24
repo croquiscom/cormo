@@ -113,6 +113,10 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         /** @internal */
         this.support_string_type_with_length = true;
         /** @internal */
+        this.support_join = true;
+        /** @internal */
+        this.support_distinct = true;
+        /** @internal */
         this.native_integrity = true;
         /** @internal */
         this.support_isolation_level_read_uncommitted = false;
@@ -738,7 +742,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const params = [];
         const table_name = model_class.table_name;
         const join_schemas = {};
-        let sql = `SELECT ${select} FROM "${table_name}" as _Base`;
+        let sql = `SELECT ${options.distinct ? 'DISTINCT' : ''} ${select} FROM "${table_name}" as _Base`;
         if (options.joins.length > 0) {
             const escape_ch = this._escape_ch;
             for (const join of options.joins) {

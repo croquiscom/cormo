@@ -144,6 +144,12 @@ export class MySQLAdapter extends SQLAdapterBase {
   public support_string_type_with_length = true;
 
   /** @internal */
+  public support_join = true;
+
+  /** @internal */
+  public support_distinct = true;
+
+  /** @internal */
   public native_integrity = true;
 
   /** @internal */
@@ -1069,7 +1075,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     const params: any[] = [];
     const table_name = model_class.table_name;
     const join_schemas: Record<string, ModelSchemaInternal> = {};
-    let sql = `SELECT ${select} FROM \`${table_name}\` AS _Base`;
+    let sql = `SELECT ${options.distinct ? 'DISTINCT' : ''} ${select} FROM \`${table_name}\` AS _Base`;
     if (options.index_hint) {
       sql += ` ${options.index_hint}`;
     }
