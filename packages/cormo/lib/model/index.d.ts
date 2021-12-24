@@ -71,7 +71,12 @@ declare class BaseModel {
         column: string;
         klass: any;
     }>;
-    static _integrities: any[];
+    static _integrities: Array<{
+        type: string;
+        column: string;
+        child?: typeof BaseModel;
+        parent?: typeof BaseModel;
+    }>;
     static _associations: {
         [column: string]: any;
     };

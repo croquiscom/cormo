@@ -732,13 +732,27 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
     const joins: Array<{ model_name: string; type: string; alias: string; base_column: string; join_column: string }> =
       [];
     for (const join of this._options.joins) {
-      joins.push({
-        model_name: join.model_class._name,
-        type: join.type,
-        alias: join.model_class._name,
-        base_column: 'id',
-        join_column: foreign_key(this._model._name),
-      });
+      const child_integrities = this._model._integrities.filter((item) => item.child === join.model_class);
+      if (child_integrities.length === 1) {
+        joins.push({
+          model_name: join.model_class._name,
+          type: join.type,
+          alias: join.model_class._name,
+          base_column: 'id',
+          join_column: child_integrities[0].column,
+        });
+      } else {
+        const parent_integrities = this._model._integrities.filter((item) => item.parent === join.model_class);
+        if (parent_integrities.length === 1) {
+          joins.push({
+            model_name: join.model_class._name,
+            type: join.type,
+            alias: join.model_class._name,
+            base_column: parent_integrities[0].column,
+            join_column: 'id',
+          });
+        }
+      }
     }
 
     return {
@@ -831,7 +845,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
   private async _doArchiveAndIntegrity(options: any) {
     const need_archive = this._model.archive;
     const integrities = this._model._integrities.filter((integrity) => integrity.type.substr(0, 7) === 'parent_');
-    const need_child_archive = integrities.some((integrity) => integrity.child.archive);
+    const need_child_archive = integrities.some((integrity) => integrity.child!.archive);
     const need_integrity = need_child_archive || (integrities.length > 0 && !this._adapter.native_integrity);
     if (!need_archive && !need_integrity) {
       return;

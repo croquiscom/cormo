@@ -370,13 +370,13 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
                 current.foreign_keys &&
                 current.foreign_keys[modelClass.table_name] &&
                 current.foreign_keys[modelClass.table_name][integrity.column];
-              if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name)) {
+              if (!(current_foreign_key && current_foreign_key === integrity.parent!.table_name)) {
                 if (options.verbose) {
                   const table_name = modelClass.table_name;
-                  const parent_table_name = integrity.parent.table_name;
+                  const parent_table_name = integrity.parent!.table_name;
                   console.log(`Adding foreign key ${table_name}.${integrity.column} to ${parent_table_name}`);
                 }
-                await this._adapter.createForeignKey(model, integrity.column, type, integrity.parent, options.verbose);
+                await this._adapter.createForeignKey(model, integrity.column, type, integrity.parent!, options.verbose);
               }
             }
           }
@@ -547,13 +547,13 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
             current.foreign_keys[modelClass.table_name] &&
             current.foreign_keys[modelClass.table_name][integrity.column];
           if (
-            !(current_foreign_key && current_foreign_key === integrity.parent.table_name) &&
+            !(current_foreign_key && current_foreign_key === integrity.parent!.table_name) &&
             this._adapter.native_integrity
           ) {
             const table_name = modelClass.table_name;
-            const parent_table_name = integrity.parent.table_name;
+            const parent_table_name = integrity.parent!.table_name;
             changes.push({ message: `Add foreign key ${table_name}.${integrity.column} to ${parent_table_name}` });
-            const query = this._adapter.getCreateForeignKeyQuery(model, integrity.column, type, integrity.parent);
+            const query = this._adapter.getCreateForeignKeyQuery(model, integrity.column, type, integrity.parent!);
             if (query) {
               changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
             }
@@ -669,15 +669,15 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         let records = await modelClass.select('').exec();
         const ids = records.map((record: any) => record.id);
         const sub_promises = integrities.map(async (integrity) => {
-          const query = integrity.child.select('');
+          const query = integrity.child!.select('');
           query.where(_.zipObject([integrity.column], [{ $not: { $in: ids } }]));
-          const property = integrity.child._schema[integrity.column];
+          const property = integrity.child!._schema[integrity.column];
           if (!property.required) {
             query.where(_.zipObject([integrity.column], [{ $not: null }]));
           }
           records = await query.exec();
           if (records.length > 0) {
-            const array = result[integrity.child._name] || (result[integrity.child._name] = []);
+            const array = result[integrity.child!._name] || (result[integrity.child!._name] = []);
             array.push(...records.map((record: any) => record.id));
             _.uniq(array);
           }
