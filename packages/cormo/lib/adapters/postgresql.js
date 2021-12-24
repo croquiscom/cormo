@@ -328,7 +328,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
     async findById(model, id, options) {
         const select = this._buildSelect(this._connection.models[model], options.select);
         const table_name = this._connection.models[model].table_name;
-        const sql = `SELECT ${select} FROM "${table_name}" WHERE id=$1 LIMIT 1`;
+        const sql = `SELECT ${select} FROM "${table_name}" AS _Base WHERE id=$1 LIMIT 1`;
         if (options.explain) {
             return await this.query(`EXPLAIN ${sql}`, [id], options.transaction);
         }
@@ -559,7 +559,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
                 return `ARRAY[ST_X(${column}), ST_Y(${column})] AS ${column}`;
             }
             else {
-                return column;
+                return '_Base.' + column;
             }
         });
         return select.join(',');
@@ -737,7 +737,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         const params = [];
         const table_name = model_class.table_name;
-        let sql = `SELECT ${select} FROM "${table_name}"`;
+        let sql = `SELECT ${select} FROM "${table_name}" as _Base`;
         if (conditions.length > 0) {
             sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
         }

@@ -342,14 +342,14 @@ abstract class SQLAdapterBase extends AdapterBase {
   }
 
   /** @internal */
-  protected _buildSelect(model_class: any, select: any) {
+  protected _buildSelect(model_class: typeof BaseModel, select: any) {
     if (select) {
       const schema = model_class._schema;
       const escape_ch = this._escape_ch;
-      select = select.map((column: any) => `${escape_ch}${schema[column]._dbname_us}${escape_ch}`);
+      select = select.map((column: any) => `_Base.${escape_ch}${schema[column]._dbname_us}${escape_ch}`);
       return select.join(',');
     } else {
-      return '*';
+      return `_Base.*`;
     }
   }
 }

@@ -388,11 +388,11 @@ class SQLAdapterBase extends base_1.AdapterBase {
         if (select) {
             const schema = model_class._schema;
             const escape_ch = this._escape_ch;
-            select = select.map((column) => `${escape_ch}${schema[column]._dbname_us}${escape_ch}`);
+            select = select.map((column) => `_Base.${escape_ch}${schema[column]._dbname_us}${escape_ch}`);
             return select.join(',');
         }
         else {
-            return '*';
+            return `_Base.*`;
         }
     }
 }

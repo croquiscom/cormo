@@ -491,7 +491,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         id = this._convertValueType(id, this.key_type);
         const select = this._buildSelect(this._connection.models[model], options.select);
         const table_name = this._connection.models[model].table_name;
-        const sql = `SELECT ${select} FROM \`${table_name}\` WHERE id=? LIMIT 1`;
+        const sql = `SELECT ${select} FROM \`${table_name}\` AS _Base WHERE id=? LIMIT 1`;
         if (options.explain) {
             return await this.query(`EXPLAIN ${sql}`, id, { transaction: options.transaction, node: options.node });
         }
@@ -997,7 +997,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         const params = [];
         const table_name = model_class.table_name;
-        let sql = `SELECT ${select} FROM \`${table_name}\``;
+        let sql = `SELECT ${select} FROM \`${table_name}\` AS _Base`;
         if (options.index_hint) {
             sql += ` ${options.index_hint}`;
         }

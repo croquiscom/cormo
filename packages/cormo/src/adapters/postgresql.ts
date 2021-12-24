@@ -339,7 +339,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   ): Promise<any> {
     const select = this._buildSelect(this._connection.models[model], options.select);
     const table_name = this._connection.models[model].table_name;
-    const sql = `SELECT ${select} FROM "${table_name}" WHERE id=$1 LIMIT 1`;
+    const sql = `SELECT ${select} FROM "${table_name}" AS _Base WHERE id=$1 LIMIT 1`;
     if (options.explain) {
       return await this.query(`EXPLAIN ${sql}`, [id], options.transaction);
     }
@@ -574,7 +574,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
       if (property.type_class === types.GeoPoint) {
         return `ARRAY[ST_X(${column}), ST_Y(${column})] AS ${column}`;
       } else {
-        return column;
+        return '_Base.' + column;
       }
     });
     return select.join(',');
@@ -762,7 +762,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     }
     const params: any[] = [];
     const table_name = model_class.table_name;
-    let sql = `SELECT ${select} FROM "${table_name}"`;
+    let sql = `SELECT ${select} FROM "${table_name}" as _Base`;
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(model_class._schema, conditions, params);
     }
