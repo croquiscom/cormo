@@ -137,4 +137,34 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       },
     ]);
   });
+
+  it('specify key', async () => {
+    const post1 = await models.Post.create({ title: 'first post', body: 'This is the 1st post.' });
+    const post2 = await models.Post.create({ title: 'second post', body: 'This is the 2nd post.' });
+    const comment1 = await models.Post.create({
+      body: 'This is the 1st comment.',
+      parent_post_id: post1.id,
+      title: 'first comment',
+    });
+    const comment2 = await models.Post.create({
+      body: 'This is the 2nd comment.',
+      parent_post_id: post1.id,
+      title: 'second comment',
+    });
+    const records = await models.Post.query()
+      .left_outer_join(models.Post, { alias: 'Comment', join_column: 'parent_post_id' })
+      .where({ parent_post_id: null })
+      .where({ 'Comment.id': null });
+    expect(records).to.have.length(1);
+    expect(records[0]).to.be.an.instanceof(models.Post);
+    expect(records).to.eql([
+      {
+        id: post2.id,
+        title: post2.title,
+        body: post2.body,
+        user_id: post2.user_id,
+        parent_post_id: post2.parent_post_id,
+      },
+    ]);
+  });
 }

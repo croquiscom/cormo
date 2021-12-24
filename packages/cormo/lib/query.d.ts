@@ -15,6 +15,9 @@ interface QueryOptions {
     joins: Array<{
         model_class: typeof BaseModel;
         type: string;
+        alias?: string;
+        base_column?: string;
+        join_column?: string;
     }>;
     limit?: number;
     skip?: number;
@@ -47,8 +50,16 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
         [field in keyof F]: number;
     }>;
     group<U>(group_by: string | null, fields?: object): QuerySingle<M, U>;
-    join(model: typeof BaseModel): QuerySingle<M, T>;
-    left_outer_join(model: typeof BaseModel): QuerySingle<M, T>;
+    join(model: typeof BaseModel, options?: {
+        alias?: string;
+        base_column?: string;
+        join_column?: string;
+    }): QuerySingle<M, T>;
+    left_outer_join(model: typeof BaseModel, options?: {
+        alias?: string;
+        base_column?: string;
+        join_column?: string;
+    }): QuerySingle<M, T>;
     one(): QuerySingleNull<M, T>;
     limit(limit?: number): QuerySingle<M, T>;
     skip(skip?: number): QuerySingle<M, T>;
@@ -90,8 +101,16 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
         [field in keyof F]: number;
     }>;
     group<U>(group_by: string | null, fields?: object): QuerySingleNull<M, U>;
-    join(model: typeof BaseModel): QuerySingleNull<M, T>;
-    left_outer_join(model: typeof BaseModel): QuerySingleNull<M, T>;
+    join(model: typeof BaseModel, options?: {
+        alias?: string;
+        base_column?: string;
+        join_column?: string;
+    }): QuerySingleNull<M, T>;
+    left_outer_join(model: typeof BaseModel, options?: {
+        alias?: string;
+        base_column?: string;
+        join_column?: string;
+    }): QuerySingleNull<M, T>;
     one(): QuerySingleNull<M, T>;
     limit(limit?: number): QuerySingleNull<M, T>;
     skip(skip?: number): QuerySingleNull<M, T>;
@@ -133,8 +152,16 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
         [field in keyof F]: number;
     }>;
     group<U>(group_by: string | null, fields?: object): QueryArray<M, U>;
-    join(model: typeof BaseModel): QueryArray<M, T>;
-    left_outer_join(model: typeof BaseModel): QueryArray<M, T>;
+    join(model: typeof BaseModel, options?: {
+        alias?: string;
+        base_column?: string;
+        join_column?: string;
+    }): QueryArray<M, T>;
+    left_outer_join(model: typeof BaseModel, options?: {
+        alias?: string;
+        base_column?: string;
+        join_column?: string;
+    }): QueryArray<M, T>;
     one(): QuerySingleNull<M, T>;
     limit(limit?: number): QueryArray<M, T>;
     skip(skip?: number): QueryArray<M, T>;
@@ -216,11 +243,19 @@ declare class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, Qu
     /**
      * (inner) join
      */
-    join(model_class: typeof BaseModel): this;
+    join(model_class: typeof BaseModel, options?: {
+        alias?: string;
+        base_column?: string;
+        join_column?: string;
+    }): this;
     /**
      * left outer join
      */
-    left_outer_join(model_class: typeof BaseModel): this;
+    left_outer_join(model_class: typeof BaseModel, options?: {
+        alias?: string;
+        base_column?: string;
+        join_column?: string;
+    }): this;
     /**
      * Returns only one record (or null if does not exists).
      *

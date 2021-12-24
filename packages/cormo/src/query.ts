@@ -17,7 +17,13 @@ interface QueryOptions {
   conditions_of_group: any[];
   group_fields?: any;
   group_by?: string[];
-  joins: Array<{ model_class: typeof BaseModel; type: string }>;
+  joins: Array<{
+    model_class: typeof BaseModel;
+    type: string;
+    alias?: string;
+    base_column?: string;
+    join_column?: string;
+  }>;
   limit?: number;
   skip?: number;
   one?: boolean;
@@ -49,8 +55,14 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
   ): QuerySingle<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F): QuerySingle<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QuerySingle<M, U>;
-  join(model: typeof BaseModel): QuerySingle<M, T>;
-  left_outer_join(model: typeof BaseModel): QuerySingle<M, T>;
+  join(
+    model: typeof BaseModel,
+    options?: { alias?: string; base_column?: string; join_column?: string },
+  ): QuerySingle<M, T>;
+  left_outer_join(
+    model: typeof BaseModel,
+    options?: { alias?: string; base_column?: string; join_column?: string },
+  ): QuerySingle<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QuerySingle<M, T>;
   skip(skip?: number): QuerySingle<M, T>;
@@ -89,8 +101,14 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
   ): QuerySingleNull<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F): QuerySingleNull<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QuerySingleNull<M, U>;
-  join(model: typeof BaseModel): QuerySingleNull<M, T>;
-  left_outer_join(model: typeof BaseModel): QuerySingleNull<M, T>;
+  join(
+    model: typeof BaseModel,
+    options?: { alias?: string; base_column?: string; join_column?: string },
+  ): QuerySingleNull<M, T>;
+  left_outer_join(
+    model: typeof BaseModel,
+    options?: { alias?: string; base_column?: string; join_column?: string },
+  ): QuerySingleNull<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QuerySingleNull<M, T>;
   skip(skip?: number): QuerySingleNull<M, T>;
@@ -129,8 +147,14 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
   ): QueryArray<M, { [field in keyof F]: number } & Pick<M, G>>;
   group<F>(group_by: null, fields?: F): QueryArray<M, { [field in keyof F]: number }>;
   group<U>(group_by: string | null, fields?: object): QueryArray<M, U>;
-  join(model: typeof BaseModel): QueryArray<M, T>;
-  left_outer_join(model: typeof BaseModel): QueryArray<M, T>;
+  join(
+    model: typeof BaseModel,
+    options?: { alias?: string; base_column?: string; join_column?: string },
+  ): QueryArray<M, T>;
+  left_outer_join(
+    model: typeof BaseModel,
+    options?: { alias?: string; base_column?: string; join_column?: string },
+  ): QueryArray<M, T>;
   one(): QuerySingleNull<M, T>;
   limit(limit?: number): QueryArray<M, T>;
   skip(skip?: number): QueryArray<M, T>;
@@ -333,16 +357,34 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
   /**
    * (inner) join
    */
-  public join(model_class: typeof BaseModel): this {
-    this._options.joins.push({ model_class, type: 'INNER JOIN' });
+  public join(
+    model_class: typeof BaseModel,
+    options?: { alias?: string; base_column?: string; join_column?: string },
+  ): this {
+    this._options.joins.push({
+      model_class,
+      type: 'INNER JOIN',
+      alias: options?.alias,
+      base_column: options?.base_column,
+      join_column: options?.join_column,
+    });
     return this;
   }
 
   /**
    * left outer join
    */
-  public left_outer_join(model_class: typeof BaseModel): this {
-    this._options.joins.push({ model_class, type: 'LEFT OUTER JOIN' });
+  public left_outer_join(
+    model_class: typeof BaseModel,
+    options?: { alias?: string; base_column?: string; join_column?: string },
+  ): this {
+    this._options.joins.push({
+      model_class,
+      type: 'LEFT OUTER JOIN',
+      alias: options?.alias,
+      base_column: options?.base_column,
+      join_column: options?.join_column,
+    });
     return this;
   }
 
@@ -732,25 +774,43 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
     const joins: Array<{ model_name: string; type: string; alias: string; base_column: string; join_column: string }> =
       [];
     for (const join of this._options.joins) {
-      const child_integrities = this._model._integrities.filter((item) => item.child === join.model_class);
-      if (child_integrities.length === 1) {
+      if (join.base_column) {
         joins.push({
           model_name: join.model_class._name,
           type: join.type,
-          alias: join.model_class._name,
+          alias: join.alias || join.model_class._name,
+          base_column: join.base_column,
+          join_column: join.join_column || 'id',
+        });
+      } else if (join.join_column) {
+        joins.push({
+          model_name: join.model_class._name,
+          type: join.type,
+          alias: join.alias || join.model_class._name,
           base_column: 'id',
-          join_column: child_integrities[0].column,
+          join_column: join.join_column,
         });
       } else {
-        const parent_integrities = this._model._integrities.filter((item) => item.parent === join.model_class);
-        if (parent_integrities.length === 1) {
+        const child_integrities = this._model._integrities.filter((item) => item.child === join.model_class);
+        if (child_integrities.length === 1) {
           joins.push({
             model_name: join.model_class._name,
             type: join.type,
-            alias: join.model_class._name,
-            base_column: parent_integrities[0].column,
-            join_column: 'id',
+            alias: join.alias || join.model_class._name,
+            base_column: 'id',
+            join_column: child_integrities[0].column,
           });
+        } else {
+          const parent_integrities = this._model._integrities.filter((item) => item.parent === join.model_class);
+          if (parent_integrities.length === 1) {
+            joins.push({
+              model_name: join.model_class._name,
+              type: join.type,
+              alias: join.alias || join.model_class._name,
+              base_column: parent_integrities[0].column,
+              join_column: 'id',
+            });
+          }
         }
       }
     }

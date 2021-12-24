@@ -148,15 +148,27 @@ class Query {
     /**
      * (inner) join
      */
-    join(model_class) {
-        this._options.joins.push({ model_class, type: 'INNER JOIN' });
+    join(model_class, options) {
+        this._options.joins.push({
+            model_class,
+            type: 'INNER JOIN',
+            alias: options === null || options === void 0 ? void 0 : options.alias,
+            base_column: options === null || options === void 0 ? void 0 : options.base_column,
+            join_column: options === null || options === void 0 ? void 0 : options.join_column,
+        });
         return this;
     }
     /**
      * left outer join
      */
-    left_outer_join(model_class) {
-        this._options.joins.push({ model_class, type: 'LEFT OUTER JOIN' });
+    left_outer_join(model_class, options) {
+        this._options.joins.push({
+            model_class,
+            type: 'LEFT OUTER JOIN',
+            alias: options === null || options === void 0 ? void 0 : options.alias,
+            base_column: options === null || options === void 0 ? void 0 : options.base_column,
+            join_column: options === null || options === void 0 ? void 0 : options.join_column,
+        });
         return this;
     }
     /**
@@ -512,26 +524,46 @@ class Query {
         }
         const joins = [];
         for (const join of this._options.joins) {
-            const child_integrities = this._model._integrities.filter((item) => item.child === join.model_class);
-            if (child_integrities.length === 1) {
+            if (join.base_column) {
                 joins.push({
                     model_name: join.model_class._name,
                     type: join.type,
-                    alias: join.model_class._name,
+                    alias: join.alias || join.model_class._name,
+                    base_column: join.base_column,
+                    join_column: join.join_column || 'id',
+                });
+            }
+            else if (join.join_column) {
+                joins.push({
+                    model_name: join.model_class._name,
+                    type: join.type,
+                    alias: join.alias || join.model_class._name,
                     base_column: 'id',
-                    join_column: child_integrities[0].column,
+                    join_column: join.join_column,
                 });
             }
             else {
-                const parent_integrities = this._model._integrities.filter((item) => item.parent === join.model_class);
-                if (parent_integrities.length === 1) {
+                const child_integrities = this._model._integrities.filter((item) => item.child === join.model_class);
+                if (child_integrities.length === 1) {
                     joins.push({
                         model_name: join.model_class._name,
                         type: join.type,
-                        alias: join.model_class._name,
-                        base_column: parent_integrities[0].column,
-                        join_column: 'id',
+                        alias: join.alias || join.model_class._name,
+                        base_column: 'id',
+                        join_column: child_integrities[0].column,
                     });
+                }
+                else {
+                    const parent_integrities = this._model._integrities.filter((item) => item.parent === join.model_class);
+                    if (parent_integrities.length === 1) {
+                        joins.push({
+                            model_name: join.model_class._name,
+                            type: join.type,
+                            alias: join.alias || join.model_class._name,
+                            base_column: parent_integrities[0].column,
+                            join_column: 'id',
+                        });
+                    }
                 }
             }
         }
