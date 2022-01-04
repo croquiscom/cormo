@@ -265,6 +265,13 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         { id: null, age: 32 },
         { id: null, age: 45 },
       ]);
+
+      const count = await models.User.where({ age: { $gt: 10 } })
+        .select(['age'])
+        .order('age')
+        .distinct()
+        .count();
+      expect(count).to.eql(3);
     } catch (error: any) {
       if (error.message === 'this adapter does not support distinct') {
         return;

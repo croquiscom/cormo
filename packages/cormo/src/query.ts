@@ -608,7 +608,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       this._conditions.push({ id: this._id });
       delete this._id;
     }
-    return await this._adapter.count(this._name, this._conditions, this._options);
+    return await this._adapter.count(this._name, this._conditions, this._getAdapterFindOptions());
   }
 
   /**

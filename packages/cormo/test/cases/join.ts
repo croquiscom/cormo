@@ -43,6 +43,9 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { id: users[0].id, name: users[0].name, age: users[0].age },
       { id: users[1].id, name: users[1].name, age: users[1].age },
     ]);
+
+    const count = await models.User.query().join(models.Post).count();
+    expect(count).to.eql(3);
   });
 
   it('left outer join', async () => {
@@ -65,6 +68,9 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { id: users[1].id, name: users[1].name, age: users[1].age },
       { id: users[2].id, name: users[2].name, age: users[2].age },
     ]);
+
+    const count = await models.User.query().left_outer_join(models.Post).count();
+    expect(count).to.eql(4);
   });
 
   it('condition', async () => {
@@ -85,6 +91,9 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { id: users[0].id, name: users[0].name, age: users[0].age },
       { id: users[1].id, name: users[1].name, age: users[1].age },
     ]);
+
+    const count = await models.User.query().join(models.Computer).where({ 'Computer.brand': 'Maple' }).count();
+    expect(count).to.eql(2);
   });
 
   it('condition with base table', async () => {
@@ -104,6 +113,12 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
     expect(records).to.have.length(1);
     expect(records[0]).to.be.an.instanceof(models.User);
     expect(records).to.eql([{ id: users[0].id, name: users[0].name, age: users[0].age }]);
+
+    const count = await models.User.query()
+      .join(models.Computer)
+      .where({ 'Computer.brand': { $ceq: '$name' } })
+      .count();
+    expect(count).to.eql(1);
   });
 
   it('belongsTo', async () => {
@@ -136,6 +151,9 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
         parent_post_id: posts[1].parent_post_id,
       },
     ]);
+
+    const count = await models.Post.query().join(models.User).where({ 'User.age': 27 }).count();
+    expect(count).to.eql(2);
   });
 
   it('specify key', async () => {
@@ -166,6 +184,13 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
         parent_post_id: post2.parent_post_id,
       },
     ]);
+
+    const count = await models.Post.query()
+      .left_outer_join(models.Post, { alias: 'Comment', join_column: 'parent_post_id' })
+      .where({ parent_post_id: null })
+      .where({ 'Comment.id': null })
+      .count();
+    expect(count).to.eql(1);
   });
 
   it('distinct', async () => {
@@ -186,5 +211,8 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { id: users[0].id, name: users[0].name, age: users[0].age },
       { id: users[1].id, name: users[1].name, age: users[1].age },
     ]);
+
+    const count = await models.User.query().join(models.Post).distinct().count();
+    expect(count).to.eql(2);
   });
 }

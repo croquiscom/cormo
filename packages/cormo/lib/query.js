@@ -360,7 +360,7 @@ class Query {
             this._conditions.push({ id: this._id });
             delete this._id;
         }
-        return await this._adapter.count(this._name, this._conditions, this._options);
+        return await this._adapter.count(this._name, this._conditions, this._getAdapterFindOptions());
     }
     /**
      * Executes the query as a update operation
