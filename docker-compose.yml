@@ -2,6 +2,7 @@ version: '3'
 
 services:
   mysql:
+    platform: linux/amd64
     image: mysql:5.7
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
@@ -11,7 +12,7 @@ services:
     ports:
       - 21860:3306
   mongo:
-    image: mongo:3.4-jessie
+    image: mongo:3.4-xenial
     ports:
       - 21861:27017
   postgres:
