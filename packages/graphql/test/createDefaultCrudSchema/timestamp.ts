@@ -131,8 +131,7 @@ input UpdateUserInput {
 input DeleteUserInput {
   """primary key"""
   id: ID!
-}
-`);
+}`);
   });
 
   describe('create', () => {
@@ -141,8 +140,8 @@ input DeleteUserInput {
       sandbox.useFakeTimers(now);
       const query = 'mutation($input: CreateUserInput!) { createUser(input: $input) { id name age } }';
       const variables = { input: { name: 'Test', age: 15 } };
-      const result = await graphql(schema, query, null, null, variables);
-      const id = result.data!.createUser.id;
+      const result = await graphql({ schema, source: query, variableValues: variables });
+      const id = (result.data as any).createUser.id;
       expect(result).to.eql({
         data: {
           createUser: { id, name: 'Test', age: 15 },
@@ -172,7 +171,7 @@ input DeleteUserInput {
       const id = id_to_record_map.user.id;
       const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
       const variables = { input: { id: String(id), name: 'Sample', age: 30 } };
-      const result = await graphql(schema, query, null, null, variables);
+      const result = await graphql({ schema, source: query, variableValues: variables });
       expect(result).to.eql({
         data: {
           updateUser: { id: String(id), name: 'Sample', age: 30 },

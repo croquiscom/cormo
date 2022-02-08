@@ -100,11 +100,11 @@ function createListType(
               } else if (field.endsWith('_lt')) {
                 query.where({ [field.replace(/_lt$/, '')]: { $lt: value } });
               } else if (field === 'order') {
-                query.order(value);
+                query.order(value as string);
               } else if (field === 'limit_count') {
-                query.limit(value);
+                query.limit(value as number);
               } else if (field === 'skip_count') {
-                query.skip(value);
+                query.skip(value as number);
               } else {
                 query.where({ [field]: value });
               }

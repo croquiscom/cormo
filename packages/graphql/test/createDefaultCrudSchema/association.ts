@@ -109,8 +109,7 @@ input UpdatePostInput {
 
 input DeletePostInput {
   id: ID!
-}
-`);
+}`);
   });
 
   describe('list query', () => {
@@ -125,7 +124,7 @@ input DeletePostInput {
         ]);
         const query = 'query($user_id: ID) { post_list(user_id: $user_id) { item_list { id } } }';
         const variables = { user_id: String(id_to_record_map.user1.id) };
-        const result = await graphql(schema, query, null, null, variables);
+        const result = await graphql({ schema, source: query, variableValues: variables });
         expect(result).to.eql({
           data: {
             post_list: {

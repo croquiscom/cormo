@@ -107,15 +107,14 @@ input UpdateUserInput {
 input DeleteUserInput {
   """primary key"""
   id: ID!
-}
-`);
+}`);
   });
 
   describe('single query', () => {
     it('no argument returns null', async () => {
       const id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const query = '{ user { id } }';
-      const result = await graphql(schema, query);
+      const result = await graphql({ schema, source: query });
       expect(result).to.eql({
         data: {
           user: null,
@@ -127,7 +126,7 @@ input DeleteUserInput {
       const id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const query = 'query($id: ID) { user(id: $id) { id } }';
       const variables = { id: String(id_to_record_map.user.id) };
-      const result = await graphql(schema, query, null, null, variables);
+      const result = await graphql({ schema, source: query, variableValues: variables });
       expect(result).to.eql({
         data: {
           user: {
@@ -140,7 +139,7 @@ input DeleteUserInput {
     it('id is not found', async () => {
       const query = 'query($id: ID) { user(id: $id) { id } }';
       const variables = { id: '1' };
-      const result = await graphql(schema, query, null, null, variables);
+      const result = await graphql({ schema, source: query, variableValues: variables });
       expect(result).to.eql({
         data: {
           user: null,
@@ -152,7 +151,7 @@ input DeleteUserInput {
       const id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const query = 'query($id: ID) { user(id: $id) { id name age } }';
       const variables = { id: String(id_to_record_map.user.id) };
-      const result = await graphql(schema, query, null, null, variables);
+      const result = await graphql({ schema, source: query, variableValues: variables });
       expect(result).to.eql({
         data: {
           user: { id: String(id_to_record_map.user.id), name: 'Test', age: 15 },
@@ -169,7 +168,7 @@ input DeleteUserInput {
         { create_user: { id: 'user3', name: 'Doe', age: 18 } },
       ]);
       const query = '{ user_list { item_list { id } } }';
-      const result = await graphql(schema, query);
+      const result = await graphql({ schema, source: query });
       expect(result).to.eql({
         data: {
           user_list: {
@@ -193,7 +192,7 @@ input DeleteUserInput {
       const variables = {
         id_list: [String(id_to_record_map.user1.id), String(id_to_record_map.user3.id)],
       };
-      const result = await graphql(schema, query, null, null, variables);
+      const result = await graphql({ schema, source: query, variableValues: variables });
       expect(result).to.eql({
         data: {
           user_list: {
@@ -213,7 +212,7 @@ input DeleteUserInput {
       const variables = {
         id_list: [String(id_to_record_map.user1.id), String(id_to_record_map.user3.id + 100)],
       };
-      const result = await graphql(schema, query, null, null, variables);
+      const result = await graphql({ schema, source: query, variableValues: variables });
       expect(result).to.eql({
         data: {
           user_list: {
@@ -233,7 +232,7 @@ input DeleteUserInput {
       const variables = {
         id_list: [String(id_to_record_map.user1.id), String(id_to_record_map.user3.id)],
       };
-      const result = await graphql(schema, query, null, null, variables);
+      const result = await graphql({ schema, source: query, variableValues: variables });
       expect(result).to.eql({
         data: {
           user_list: {
@@ -254,7 +253,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
         ]);
         const query = '{ user_list(name: "Test") { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -271,7 +270,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
         ]);
         const query = '{ user_list(name_istartswith: "Te") { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -288,7 +287,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe', age: 18 } },
         ]);
         const query = '{ user_list(name_icontains: "s") { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -305,7 +304,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
         ]);
         const query = '{ user_list(age: 30) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -322,7 +321,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
         ]);
         const query = '{ user_list(age_gte: 18) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -339,7 +338,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
         ]);
         const query = '{ user_list(age_gt: 15) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -356,7 +355,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
         ]);
         const query = '{ user_list(age_lte: 18) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -373,7 +372,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe Test', age: 18 } },
         ]);
         const query = '{ user_list(age_lt: 30) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -393,7 +392,7 @@ input DeleteUserInput {
         const variables = {
           id_list: [String(id_to_record_map.user1.id), String(id_to_record_map.user3.id)],
         };
-        const result = await graphql(schema, query, null, null, variables);
+        const result = await graphql({ schema, source: query, variableValues: variables });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -413,7 +412,7 @@ input DeleteUserInput {
         const variables = {
           id_list: [String(id_to_record_map.user1.id), String(id_to_record_map.user3.id)],
         };
-        const result = await graphql(schema, query, null, null, variables);
+        const result = await graphql({ schema, source: query, variableValues: variables });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -432,7 +431,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe', age: 18 } },
         ]);
         const query = '{ user_list(order: ID_ASC) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -453,7 +452,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe', age: 18 } },
         ]);
         const query = '{ user_list(order: ID_DESC) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -474,7 +473,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe', age: 18 } },
         ]);
         const query = '{ user_list(order: NAME_ASC) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -495,7 +494,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe', age: 18 } },
         ]);
         const query = '{ user_list(order: NAME_DESC) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -516,7 +515,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe', age: 18 } },
         ]);
         const query = '{ user_list(order: AGE_ASC) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -537,7 +536,7 @@ input DeleteUserInput {
           { create_user: { id: 'user3', name: 'Doe', age: 18 } },
         ]);
         const query = '{ user_list(order: AGE_DESC) { item_list { id } } }';
-        const result = await graphql(schema, query);
+        const result = await graphql({ schema, source: query });
         expect(result).to.eql({
           data: {
             user_list: {
@@ -557,8 +556,8 @@ input DeleteUserInput {
     it('create one', async () => {
       const query = 'mutation($input: CreateUserInput!) { createUser(input: $input) { id name age } }';
       const variables = { input: { name: 'Test', age: 15 } };
-      const result = await graphql(schema, query, null, null, variables);
-      const id = result.data!.createUser.id;
+      const result = await graphql({ schema, source: query, variableValues: variables });
+      const id = (result.data as any).createUser.id;
       expect(result).to.eql({
         data: {
           createUser: { id, name: 'Test', age: 15 },
@@ -570,8 +569,8 @@ input DeleteUserInput {
     it('optional field', async () => {
       const query = 'mutation($input: CreateUserInput!) { createUser(input: $input) { id name age } }';
       const variables = { input: { name: 'Test', age: null } };
-      const result = await graphql(schema, query, null, null, variables);
-      const id = result.data!.createUser.id;
+      const result = await graphql({ schema, source: query, variableValues: variables });
+      const id = (result.data as any).createUser.id;
       expect(result).to.eql({
         data: {
           createUser: { id, name: 'Test', age: null },
@@ -587,7 +586,7 @@ input DeleteUserInput {
       const id = id_to_record_map.user.id;
       const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
       const variables = { input: { id: String(id), name: 'Sample', age: 30 } };
-      const result = await graphql(schema, query, null, null, variables);
+      const result = await graphql({ schema, source: query, variableValues: variables });
       expect(result).to.eql({
         data: {
           updateUser: { id: String(id), name: 'Sample', age: 30 },
@@ -601,7 +600,7 @@ input DeleteUserInput {
       const id = id_to_record_map.user.id;
       const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
       const variables = { input: { id: String(id), name: 'Sample' } };
-      const result = await graphql(schema, query, null, null, variables);
+      const result = await graphql({ schema, source: query, variableValues: variables });
       expect(result).to.eql({
         data: {
           updateUser: { id: String(id), name: 'Sample', age: 15 },
@@ -613,8 +612,8 @@ input DeleteUserInput {
     it('record not found', async () => {
       const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
       const variables = { input: { id: '1', name: 'Sample' } };
-      const result = await graphql(schema, query, null, null, variables);
-      expect(result).to.eql({
+      const result = await graphql({ schema, source: query, variableValues: variables });
+      expect(JSON.parse(JSON.stringify(result))).to.eql({
         data: null,
         errors: [
           {
@@ -633,7 +632,7 @@ input DeleteUserInput {
       const id = id_to_record_map.user.id;
       const query = 'mutation($input: DeleteUserInput!) { deleteUser(input: $input) }';
       const variables = { input: { id: String(id) } };
-      const result = await graphql(schema, query, null, null, variables);
+      const result = await graphql({ schema, source: query, variableValues: variables });
       expect(result).to.eql({
         data: {
           deleteUser: true,
@@ -645,8 +644,8 @@ input DeleteUserInput {
     it('record not found', async () => {
       const query = 'mutation($input: DeleteUserInput!) { deleteUser(input: $input) }';
       const variables = { input: { id: '1' } };
-      const result = await graphql(schema, query, null, null, variables);
-      expect(result).to.eql({
+      const result = await graphql({ schema, source: query, variableValues: variables });
+      expect(JSON.parse(JSON.stringify(result))).to.eql({
         data: null,
         errors: [
           {
