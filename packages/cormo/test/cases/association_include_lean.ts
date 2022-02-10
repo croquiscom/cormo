@@ -43,7 +43,7 @@ function _checkUser(
   expect(user).to.have.property('name', name);
   expect(user).to.have.property('posts');
   expect(user.posts).to.have.length(post_ids.length);
-  ((user.posts as any) as PostRef[]).forEach((post, i) => {
+  (user.posts as any as PostRef[]).forEach((post, i) => {
     expect(post).to.not.be.an.instanceof(Post);
     if (!has_post_body) {
       expect(post).to.have.keys('id', 'user_id', 'title');

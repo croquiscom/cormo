@@ -10,10 +10,7 @@
       "name": "Test: cormo",
       "cwd": "${workspaceRoot}/packages/cormo",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run-script",
-        "test:debug"
-      ],
+      "runtimeArgs": ["run-script", "test:debug"],
       "port": 30000
     },
     {
@@ -22,10 +19,7 @@
       "name": "Test: graphql",
       "cwd": "${workspaceRoot}/packages/graphql",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run-script",
-        "test:debug"
-      ],
+      "runtimeArgs": ["run-script", "test:debug"],
       "port": 30000
     }
   ]
