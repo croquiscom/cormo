@@ -359,7 +359,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     if (group_by) {
       const escape_ch = this._escape_ch;
       for (const column of group_by) {
-        selects.push(`${escape_ch}${column}${escape_ch}`);
+        selects.push(`_Base.${escape_ch}${column}${escape_ch}`);
       }
     }
     for (const field in group_fields) {

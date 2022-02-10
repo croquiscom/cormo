@@ -215,4 +215,31 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
     const count = await models.User.query().join(models.Post).distinct().count();
     expect(count).to.eql(2);
   });
+
+  it('group by', async () => {
+    const users = await models.User.createBulk([
+      { name: 'John Doe', age: 27 },
+      { name: 'Bill Smith', age: 45 },
+      { name: 'Alice Jackson', age: 27 },
+    ]);
+    const posts = await models.Post.createBulk([
+      { title: 'first post', body: 'This is the 1st post.', user_id: users[0].id },
+      { title: 'second post', body: 'This is the 2nd post.', user_id: users[0].id },
+      { title: 'third post', body: 'This is the 3rd post.', user_id: users[1].id },
+    ]);
+    const records = await models.User.query()
+      .join(models.Post)
+      .group('id', { count: { $sum: 1 } });
+    expect(records).to.have.length(2);
+    expect(records).to.eql([
+      { id: users[0].id, count: 2 },
+      { id: users[1].id, count: 1 },
+    ]);
+
+    const count = await models.User.query()
+      .join(models.Post)
+      .group('id', { count: { $sum: 1 } })
+      .count();
+    expect(count).to.eql(2);
+  });
 }

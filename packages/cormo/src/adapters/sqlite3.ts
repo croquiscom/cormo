@@ -437,7 +437,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
     if (options.group_by) {
       const escape_ch = this._escape_ch;
-      sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
+      sql += ' GROUP BY ' + options.group_by.map((column) => `_Base.${escape_ch}${column}${escape_ch}`).join(',');
       if (options.conditions_of_group.length > 0) {
         sql += ' HAVING ' + this._buildWhere(options.group_fields, '_Base', {}, options.conditions_of_group, params);
       }
@@ -739,7 +739,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
     if (options.group_by) {
       const escape_ch = this._escape_ch;
-      sql += ' GROUP BY ' + options.group_by.map((column) => `${escape_ch}${column}${escape_ch}`).join(',');
+      sql += ' GROUP BY ' + options.group_by.map((column) => `_Base.${escape_ch}${column}${escape_ch}`).join(',');
     }
     if (options.conditions_of_group.length > 0) {
       sql += ' HAVING ' + this._buildWhere(options.group_fields, '_Base', {}, options.conditions_of_group, params);
