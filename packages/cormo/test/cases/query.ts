@@ -110,6 +110,12 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     expect(count).to.equal(2);
   });
 
+  it('select must ignored for count', async () => {
+    await _createUsers(models.User);
+    const count = await models.User.where({ age: 27 }).select(['id', 'name', 'age']).count();
+    expect(count).to.equal(2);
+  });
+
   it('delete all', async () => {
     await _createUsers(models.User);
     const count = await models.User.delete();

@@ -629,7 +629,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     let sql =
       options.distinct && !options.select
         ? `SELECT DISTINCT _Base.* FROM \`${table_name}\` AS _Base`
-        : `SELECT COUNT(${options.distinct ? 'DISTINCT' : ''} ${select}) AS count FROM \`${table_name}\` AS _Base`;
+        : `SELECT COUNT(${options.distinct ? `DISTINCT ${select}` : '*'}) AS count FROM \`${table_name}\` AS _Base`;
     if (options.index_hint) {
       sql += ` ${options.index_hint}`;
     }
