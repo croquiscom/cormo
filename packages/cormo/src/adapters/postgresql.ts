@@ -45,6 +45,8 @@ function _typeToSQL(property: ColumnPropertyInternal) {
       return 'BOOLEAN';
     case types.Integer:
       return 'INTEGER';
+    case types.BigInteger:
+      return 'BIGINT';
     case types.GeoPoint:
       return 'GEOMETRY(POINT)';
     case types.Date:
@@ -581,6 +583,9 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   protected valueToModel(value: any, property: any) {
+    if (property.type_class === types.BigInteger) {
+      return Number(value);
+    }
     return value;
   }
 
@@ -652,6 +657,8 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
           ? new types.Boolean()
           : column.data_type === 'integer'
           ? new types.Integer()
+          : column.data_type === 'bigint'
+          ? new types.BigInteger()
           : column.data_type === 'USER-DEFINED' && column.udt_schema === 'public' && column.udt_name === 'geometry'
           ? new types.GeoPoint()
           : column.data_type === 'timestamp without time zone'

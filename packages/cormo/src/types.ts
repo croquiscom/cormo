@@ -91,6 +91,27 @@ const CormoTypesInteger: CormoTypesIntegerConstructor = function (this: CormoTyp
 } as CormoTypesIntegerConstructor;
 
 /**
+ * Represents a 54bit(JS limit) integer, used in model schemas.
+ * @namespace types
+ * @class BigInteger
+ */
+export interface CormoTypesBigInteger {
+  _type: 'biginteger';
+}
+
+interface CormoTypesBigIntegerConstructor {
+  new (): CormoTypesBigInteger;
+  (): CormoTypesBigInteger;
+}
+
+const CormoTypesBigInteger: CormoTypesBigIntegerConstructor = function (this: CormoTypesBigInteger): void {
+  if (!(this instanceof CormoTypesBigInteger)) {
+    return new (CormoTypesBigInteger as any)();
+  }
+  this.toString = () => 'biginteger';
+} as CormoTypesBigIntegerConstructor;
+
+/**
  * Represents a two-dimensional point, used in model schemas.
  *
  * This type is supported only in MongoDB and MySQL.
@@ -207,6 +228,7 @@ export type ColumnTypeInternal =
   | CormoTypesDate
   | CormoTypesObject
   | CormoTypesInteger
+  | CormoTypesBigInteger
   | CormoTypesGeoPoint
   | CormoTypesRecordID
   | CormoTypesText;
@@ -218,6 +240,7 @@ export type ColumnTypeInternalConstructor =
   | CormoTypesDateConstructor
   | CormoTypesObjectConstructor
   | CormoTypesIntegerConstructor
+  | CormoTypesBigIntegerConstructor
   | CormoTypesGeoPointConstructor
   | CormoTypesRecordIDConstructor
   | CormoTypesTextConstructor;
@@ -236,6 +259,7 @@ type ColumnTypeString =
   | 'date'
   | 'object'
   | 'integer'
+  | 'biginteger'
   | 'geopoint'
   | 'recordid'
   | 'text';
@@ -265,6 +289,8 @@ function _toCORMOType(type: ColumnType): ColumnTypeInternal {
         return new CormoTypesBoolean();
       case 'integer':
         return new CormoTypesInteger();
+      case 'biginteger':
+        return new CormoTypesBigInteger();
       case 'geopoint':
         return new CormoTypesGeoPoint();
       case 'date':
@@ -299,6 +325,7 @@ export {
   CormoTypesNumber as Number,
   CormoTypesBoolean as Boolean,
   CormoTypesInteger as Integer,
+  CormoTypesBigInteger as BigInteger,
   CormoTypesGeoPoint as GeoPoint,
   CormoTypesDate as Date,
   CormoTypesObject as Object,
@@ -323,6 +350,12 @@ export type RecordID = string | number;
  * @namespace ptypes
  */
 export type Integer = number;
+
+/**
+ * A pseudo type represents an big integer
+ * @namespace ptypes
+ */
+export type BigInteger = number;
 
 /**
  * A pseudo type represents a two - dimensional point

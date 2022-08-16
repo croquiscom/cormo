@@ -781,7 +781,11 @@ class BaseModel {
       } else {
         if (value.$inc != null) {
           if (for_update) {
-            if (property.type_class === types.Number || property.type_class === types.Integer) {
+            if (
+              property.type_class === types.Number ||
+              property.type_class === types.Integer ||
+              property.type_class === types.BigInteger
+            ) {
               obj[last] = { $inc: this._validateType(column, property.type_class, value.$inc) };
             } else {
               throw new Error(`'${column}' is not a number type`);
@@ -877,6 +881,12 @@ class BaseModel {
         // value>>0 checkes integer and 32bit
         if (isNaN(value) || value >> 0 !== value) {
           throw new Error(`'${column}' is not an integer`);
+        }
+        break;
+      case types.BigInteger:
+        value = Number(value);
+        if (isNaN(value) || !Number.isSafeInteger(value)) {
+          throw new Error(`'${column}' is not a big integer`);
         }
         break;
       case types.GeoPoint:

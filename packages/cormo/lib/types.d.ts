@@ -57,6 +57,19 @@ interface CormoTypesIntegerConstructor {
 }
 declare const CormoTypesInteger: CormoTypesIntegerConstructor;
 /**
+ * Represents a 54bit(JS limit) integer, used in model schemas.
+ * @namespace types
+ * @class BigInteger
+ */
+export interface CormoTypesBigInteger {
+    _type: 'biginteger';
+}
+interface CormoTypesBigIntegerConstructor {
+    new (): CormoTypesBigInteger;
+    (): CormoTypesBigInteger;
+}
+declare const CormoTypesBigInteger: CormoTypesBigIntegerConstructor;
+/**
  * Represents a two-dimensional point, used in model schemas.
  *
  * This type is supported only in MongoDB and MySQL.
@@ -126,17 +139,17 @@ interface CormoTypesTextConstructor {
     (): CormoTypesText;
 }
 declare const CormoTypesText: CormoTypesTextConstructor;
-export declare type ColumnTypeInternal = CormoTypesString | CormoTypesNumber | CormoTypesBoolean | CormoTypesDate | CormoTypesObject | CormoTypesInteger | CormoTypesGeoPoint | CormoTypesRecordID | CormoTypesText;
-export declare type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor | CormoTypesBooleanConstructor | CormoTypesDateConstructor | CormoTypesObjectConstructor | CormoTypesIntegerConstructor | CormoTypesGeoPointConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor;
+export declare type ColumnTypeInternal = CormoTypesString | CormoTypesNumber | CormoTypesBoolean | CormoTypesDate | CormoTypesObject | CormoTypesInteger | CormoTypesBigInteger | CormoTypesGeoPoint | CormoTypesRecordID | CormoTypesText;
+export declare type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor | CormoTypesBooleanConstructor | CormoTypesDateConstructor | CormoTypesObjectConstructor | CormoTypesIntegerConstructor | CormoTypesBigIntegerConstructor | CormoTypesGeoPointConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor;
 declare type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor | BooleanConstructor | DateConstructor | ObjectConstructor;
-declare type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'geopoint' | 'recordid' | 'text';
+declare type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'biginteger' | 'geopoint' | 'recordid' | 'text';
 export declare type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor | ColumnTypeNativeConstructor | ColumnTypeString;
 /**
  * Converts JavaScript built-in class to CORMO type
  * @private
  */
 declare function _toCORMOType(type: ColumnType): ColumnTypeInternal;
-export { CormoTypesString as String, CormoTypesNumber as Number, CormoTypesBoolean as Boolean, CormoTypesInteger as Integer, CormoTypesGeoPoint as GeoPoint, CormoTypesDate as Date, CormoTypesObject as Object, CormoTypesRecordID as RecordID, CormoTypesText as Text, _toCORMOType, };
+export { CormoTypesString as String, CormoTypesNumber as Number, CormoTypesBoolean as Boolean, CormoTypesInteger as Integer, CormoTypesBigInteger as BigInteger, CormoTypesGeoPoint as GeoPoint, CormoTypesDate as Date, CormoTypesObject as Object, CormoTypesRecordID as RecordID, CormoTypesText as Text, _toCORMOType, };
 /**
  * A pseudo type represents a record's unique identifier.
  *
@@ -152,6 +165,11 @@ export declare type RecordID = string | number;
  * @namespace ptypes
  */
 export declare type Integer = number;
+/**
+ * A pseudo type represents an big integer
+ * @namespace ptypes
+ */
+export declare type BigInteger = number;
 /**
  * A pseudo type represents a two - dimensional point
  * @namespace ptypes

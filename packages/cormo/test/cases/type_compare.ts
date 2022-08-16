@@ -30,6 +30,25 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
     expect(records[1].int_c).to.equal(10);
   });
 
+  it('compare biginteger', async () => {
+    const LARGE_INT = Math.pow(2, 40);
+    const data = [
+      { bigint_c: LARGE_INT + 10 },
+      { bigint_c: LARGE_INT + 15 },
+      { bigint_c: LARGE_INT - 8 },
+      { bigint_c: LARGE_INT + 28 },
+    ];
+    await models.Type.createBulk(data);
+    let records = await models.Type.where({ bigint_c: LARGE_INT + 15 });
+    expect(records).to.have.length(1);
+    expect(records[0].bigint_c).to.equal(LARGE_INT + 15);
+    records = await models.Type.where({ bigint_c: { $lt: LARGE_INT + 12 } });
+    expect(records).to.have.length(2);
+    records.sort((a, b) => (a.bigint_c! < b.bigint_c! ? -1 : 1));
+    expect(records[0].bigint_c).to.equal(LARGE_INT - 8);
+    expect(records[1].bigint_c).to.equal(LARGE_INT + 10);
+  });
+
   it('compare date', async () => {
     const data: any = [
       { date: '2012/10/12 21:32:54' },

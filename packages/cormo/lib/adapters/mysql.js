@@ -56,6 +56,8 @@ function _typeToSQL(property, support_fractional_seconds) {
             return 'TINYINT(1)';
         case types.Integer:
             return 'INT(11)';
+        case types.BigInteger:
+            return 'BIGINT(20)';
         case types.GeoPoint:
             return 'POINT';
         case types.Date:
@@ -897,13 +899,15 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                         ? new types.Boolean()
                         : /^int/i.test(column.Type)
                             ? new types.Integer()
-                            : /^point/i.test(column.Type)
-                                ? new types.GeoPoint()
-                                : /^datetime/i.test(column.Type)
-                                    ? new types.Date()
-                                    : /^text/i.test(column.Type)
-                                        ? new types.Text()
-                                        : undefined;
+                            : /^bigint/i.test(column.Type)
+                                ? new types.BigInteger()
+                                : /^point/i.test(column.Type)
+                                    ? new types.GeoPoint()
+                                    : /^datetime/i.test(column.Type)
+                                        ? new types.Date()
+                                        : /^text/i.test(column.Type)
+                                            ? new types.Text()
+                                            : undefined;
             schema.columns[column.Field] = {
                 required: column.Null === 'NO',
                 type,

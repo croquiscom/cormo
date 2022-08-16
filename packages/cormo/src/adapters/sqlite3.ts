@@ -35,6 +35,8 @@ function _typeToSQL(property: ColumnPropertyInternal) {
       return 'TINYINT';
     case types.Integer:
       return 'INTEGER';
+    case types.BigInteger:
+      return 'BIGINT';
     case types.Date:
       return 'REAL';
     case types.Object:
@@ -613,6 +615,8 @@ export class SQLite3Adapter extends SQLAdapterBase {
         ? new types.Boolean()
         : /^int/i.test(column.type)
         ? new types.Integer()
+        : /^bigint/i.test(column.type)
+        ? new types.BigInteger()
         : /^real/i.test(column.type)
         ? new types.Date()
         : /^text/i.test(column.type)

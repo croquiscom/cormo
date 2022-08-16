@@ -50,6 +50,8 @@ function _typeToSQL(property) {
             return 'TINYINT';
         case types.Integer:
             return 'INTEGER';
+        case types.BigInteger:
+            return 'BIGINT';
         case types.Date:
             return 'REAL';
         case types.Object:
@@ -591,11 +593,13 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
                         ? new types.Boolean()
                         : /^int/i.test(column.type)
                             ? new types.Integer()
-                            : /^real/i.test(column.type)
-                                ? new types.Date()
-                                : /^text/i.test(column.type)
-                                    ? new types.Text()
-                                    : undefined;
+                            : /^bigint/i.test(column.type)
+                                ? new types.BigInteger()
+                                : /^real/i.test(column.type)
+                                    ? new types.Date()
+                                    : /^text/i.test(column.type)
+                                        ? new types.Text()
+                                        : undefined;
             schema.columns[column.name] = {
                 required: column.notnull === 1,
                 type,

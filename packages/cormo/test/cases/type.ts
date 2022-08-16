@@ -4,6 +4,7 @@ import * as cormo from '../..';
 export class Type extends cormo.BaseModel {
   public number?: number;
   public int_c?: number;
+  public bigint_c?: number;
   public date?: Date;
   public boolean?: boolean;
   public object?: object;
@@ -57,6 +58,30 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
       } catch (error: any) {
         expect(error).to.exist;
         expect(error.message).to.equal("'int_c' is not an integer");
+      }
+    }
+  });
+
+  it('biginteger', async () => {
+    const data = [
+      ['30', 30],
+      ['9876543210', 9876543210],
+      ['12.8', null],
+      ['8a', null],
+      ['abc', null],
+    ];
+    for (const item of data) {
+      try {
+        let type = await models.Type.create({ bigint_c: item[0] as any });
+        if (item[1] === null) {
+          throw new Error('must throw an error.');
+        }
+        expect(type.bigint_c).to.equal(item[1]);
+        type = await models.Type.find(type.id);
+        expect(type.bigint_c).to.equal(item[1]);
+      } catch (error: any) {
+        expect(error).to.exist;
+        expect(error.message).to.equal("'bigint_c' is not a big integer");
       }
     }
   });

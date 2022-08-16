@@ -53,6 +53,31 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
     }
   });
 
+  it('biginteger on Model.update', async () => {
+    const data = [
+      ['30', 30],
+      ['9876543210', 9876543210],
+      ['12.8', null],
+      ['8a', null],
+      ['abc', null],
+    ];
+    for (const item of data) {
+      let type = await models.Type.create();
+      try {
+        const count = await models.Type.find(type.id).update({ bigint_c: item[0] });
+        if (item[1] === null) {
+          throw new Error('must throw an error.');
+        }
+        expect(count).to.equal(1);
+        type = await models.Type.find(type.id);
+        expect(type.bigint_c).to.equal(item[1]);
+      } catch (error: any) {
+        expect(error).to.exist;
+        expect(error.message).to.equal("'bigint_c' is not a big integer");
+      }
+    }
+  });
+
   it('date on Model.update', async () => {
     const data = [
       ['2012/10/12 21:32:54', new Date('2012/10/12 21:32:54').getTime()],

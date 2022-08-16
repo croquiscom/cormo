@@ -30,6 +30,9 @@ _dbs.forEach((db) => {
           @cormo.Column('integer')
           public int_c?: number;
 
+          @cormo.Column('biginteger')
+          public bigint_c?: number;
+
           @cormo.Column('date')
           public date?: Date;
 
@@ -58,6 +61,7 @@ _dbs.forEach((db) => {
           date: Date,
           int_array: [_g.cormo.types.Integer],
           int_c: _g.cormo.types.Integer,
+          bigint_c: _g.cormo.types.BigInteger,
           number: Number,
           object: Object,
           recordid_array: [_g.cormo.types.RecordID],

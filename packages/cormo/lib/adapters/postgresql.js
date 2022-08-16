@@ -56,6 +56,8 @@ function _typeToSQL(property) {
             return 'BOOLEAN';
         case types.Integer:
             return 'INTEGER';
+        case types.BigInteger:
+            return 'BIGINT';
         case types.GeoPoint:
             return 'GEOMETRY(POINT)';
         case types.Date:
@@ -556,6 +558,9 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     valueToModel(value, property) {
+        if (property.type_class === types.BigInteger) {
+            return Number(value);
+        }
         return value;
     }
     /** @internal */
@@ -624,15 +629,17 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
                         ? new types.Boolean()
                         : column.data_type === 'integer'
                             ? new types.Integer()
-                            : column.data_type === 'USER-DEFINED' && column.udt_schema === 'public' && column.udt_name === 'geometry'
-                                ? new types.GeoPoint()
-                                : column.data_type === 'timestamp without time zone'
-                                    ? new types.Date()
-                                    : column.data_type === 'json'
-                                        ? new types.Object()
-                                        : column.data_type === 'text'
-                                            ? new types.Text()
-                                            : undefined;
+                            : column.data_type === 'bigint'
+                                ? new types.BigInteger()
+                                : column.data_type === 'USER-DEFINED' && column.udt_schema === 'public' && column.udt_name === 'geometry'
+                                    ? new types.GeoPoint()
+                                    : column.data_type === 'timestamp without time zone'
+                                        ? new types.Date()
+                                        : column.data_type === 'json'
+                                            ? new types.Object()
+                                            : column.data_type === 'text'
+                                                ? new types.Text()
+                                                : undefined;
             let adapter_type_string = column.data_type.toUpperCase();
             if (column.data_type === 'character varying') {
                 adapter_type_string += `(${column.character_maximum_length || 255})`;

@@ -83,6 +83,11 @@ abstract class SQLAdapterBase extends AdapterBase {
       if (isNaN(value) || value >> 0 !== value) {
         value = -2147483648;
       }
+    } else if (property_type_class === types.BigInteger) {
+      value = Number(value);
+      if (isNaN(value) || !Number.isSafeInteger(value)) {
+        value = -9007199254740991;
+      }
     }
     return value;
   }

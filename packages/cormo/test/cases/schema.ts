@@ -597,6 +597,7 @@ export default function (db: any, db_config: any) {
       date: Date,
       int_array: [cormo.types.Integer],
       int_c: cormo.types.Integer,
+      bigint_c: cormo.types.BigInteger,
       number: Number,
       object: Object,
       recordid_array: [cormo.types.RecordID],
