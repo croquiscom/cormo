@@ -137,7 +137,7 @@ async function _tryCreateConnection(config: any, count: number = 0): Promise<any
 // @namespace adapter
 export class MySQLAdapter extends SQLAdapterBase {
   /** @internal */
-  public key_type: any = types.Integer;
+  public key_type: any = types.BigInteger;
 
   /** @internal */
   public support_geopoint = true;
@@ -213,7 +213,7 @@ export class MySQLAdapter extends SQLAdapterBase {
     for (const column in model_class._schema) {
       const property = model_class._schema[column];
       if (property.primary_key) {
-        column_sqls.push(`\`${property._dbname_us}\` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
+        column_sqls.push(`\`${property._dbname_us}\` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
       } else {
         let column_sql = _propertyToSQL(property, this.support_fractional_seconds);
         if (column_sql) {

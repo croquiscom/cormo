@@ -91,7 +91,7 @@ export default function (db: any, db_config: any) {
         ? [
             {
               message:
-                '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL,`age` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+                '  (CREATE TABLE `users` ( `id` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL,`age` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
               is_query: true,
               ignorable: true,
             },
@@ -149,7 +149,7 @@ export default function (db: any, db_config: any) {
         ? [
             {
               message:
-                '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL,`age` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+                '  (CREATE TABLE `users` ( `id` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL,`age` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
               is_query: true,
               ignorable: true,
             },
@@ -212,7 +212,7 @@ export default function (db: any, db_config: any) {
         ? [
             {
               message:
-                '  (CREATE TABLE `people` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+                '  (CREATE TABLE `people` ( `id` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
               is_query: true,
               ignorable: true,
             },
@@ -223,7 +223,7 @@ export default function (db: any, db_config: any) {
         ? [
             {
               message:
-                '  (CREATE TABLE `User` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+                '  (CREATE TABLE `User` ( `id` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
               is_query: true,
               ignorable: true,
             },
@@ -234,7 +234,7 @@ export default function (db: any, db_config: any) {
         ? [
             {
               message:
-                '  (CREATE TABLE `Guest` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+                '  (CREATE TABLE `Guest` ( `id` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
               is_query: true,
               ignorable: true,
             },
@@ -268,7 +268,7 @@ export default function (db: any, db_config: any) {
         ? [
             {
               message:
-                '  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`n` VARCHAR(255) NULL,`a` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
+                '  (CREATE TABLE `users` ( `id` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`n` VARCHAR(255) NULL,`a` DOUBLE NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)',
               is_query: true,
               ignorable: true,
             },

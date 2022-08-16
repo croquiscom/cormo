@@ -204,6 +204,28 @@ export default function (models: { connection: cormo.Connection<cormo.MySQLAdapt
       const c = new cormo.MySQLConnection(_g.db_configs.mysql);
       await c.adapter.query('SELECT 1');
     });
+
+    it('bigint id', async () => {
+      const c = new cormo.MySQLConnection(_g.db_configs.mysql);
+      try {
+        @cormo.Model({ connection: c })
+        class User extends cormo.BaseModel {
+          @cormo.Column(String)
+          public name?: string;
+        }
+        await User.create({ name: 'user 1' });
+        await c.adapter.query('ALTER TABLE users AUTO_INCREMENT = 17179869184');
+        await User.create({ name: 'user 2' });
+        const users = await User.where();
+        expect(users).to.eql([
+          { id: 1, name: 'user 1' },
+          { id: 17179869184, name: 'user 2' },
+        ]);
+      } catch (error) {
+        await c.adapter.query('DROP TABLE users');
+        throw error;
+      }
+    });
   });
 
   describe('query', () => {

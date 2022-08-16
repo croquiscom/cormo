@@ -39,7 +39,7 @@ export default function (db: any, db_config: any) {
         ? [
             {
               message:
-                "  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='User model')",
+                "  (CREATE TABLE `users` ( `id` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='User model')",
               is_query: true,
               ignorable: true,
             },
@@ -50,7 +50,7 @@ export default function (db: any, db_config: any) {
         ? [
             {
               message:
-                "  (CREATE TABLE `guests` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Guest model')",
+                "  (CREATE TABLE `guests` ( `id` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Guest model')",
               is_query: true,
               ignorable: true,
             },
@@ -121,7 +121,7 @@ export default function (db: any, db_config: any) {
         ? [
             {
               message:
-                "  (CREATE TABLE `users` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL COMMENT 'user name' ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)",
+                "  (CREATE TABLE `users` ( `id` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL COMMENT 'user name' ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)",
               is_query: true,
               ignorable: true,
             },
@@ -132,7 +132,7 @@ export default function (db: any, db_config: any) {
         ? [
             {
               message:
-                "  (CREATE TABLE `guests` ( `id` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL COMMENT 'user name' ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)",
+                "  (CREATE TABLE `guests` ( `id` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,`name` VARCHAR(255) NULL COMMENT 'user name' ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci)",
               is_query: true,
               ignorable: true,
             },

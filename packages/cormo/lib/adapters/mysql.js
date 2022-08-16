@@ -124,7 +124,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     constructor(connection) {
         super();
         /** @internal */
-        this.key_type = types.Integer;
+        this.key_type = types.BigInteger;
         /** @internal */
         this.support_geopoint = true;
         /** @internal */
@@ -172,7 +172,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         for (const column in model_class._schema) {
             const property = model_class._schema[column];
             if (property.primary_key) {
-                column_sqls.push(`\`${property._dbname_us}\` INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
+                column_sqls.push(`\`${property._dbname_us}\` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
             }
             else {
                 let column_sql = _propertyToSQL(property, this.support_fractional_seconds);
