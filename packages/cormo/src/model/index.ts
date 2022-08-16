@@ -874,8 +874,7 @@ class BaseModel {
         break;
       case types.Integer:
         value = Number(value);
-        // value>>0 checkes integer and 32bit
-        if (isNaN(value) || value >> 0 !== value) {
+        if (isNaN(value) || !Number.isSafeInteger(value)) {
           throw new Error(`'${column}' is not an integer`);
         }
         break;
