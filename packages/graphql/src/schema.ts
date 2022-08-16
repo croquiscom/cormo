@@ -185,7 +185,12 @@ function createDeleteInputType(model_class: typeof cormo.BaseModel, options: Opt
 function createOrderType(model_class: typeof cormo.BaseModel, options: Options) {
   const values: GraphQLEnumValueConfigMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
-    if (column === 'id' || property.type_class === cormo.types.String || property.type_class === cormo.types.Integer) {
+    if (
+      column === 'id' ||
+      property.type_class === cormo.types.String ||
+      property.type_class === cormo.types.Integer ||
+      property.type_class === cormo.types.BigInteger
+    ) {
       values[column.toUpperCase() + '_ASC'] = {
         value: column,
       };
