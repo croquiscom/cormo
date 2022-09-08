@@ -544,6 +544,9 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
      * Exposes pg module's query method
      */
     async query(text, values, transaction) {
+        if (!this._pool) {
+            await this._connection._promise_connection;
+        }
         if (transaction && transaction._adapter_connection) {
             transaction.checkFinished();
             return await transaction._adapter_connection.query(text, values);
