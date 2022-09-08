@@ -568,13 +568,13 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
    * Exposes pg module's query method
    */
   public async query(text: string, values?: any[], transaction?: Transaction) {
+    if (!this._pool) {
+      await this._connection._promise_connection;
+    }
     if (transaction && transaction._adapter_connection) {
       transaction.checkFinished();
       return await transaction._adapter_connection.query(text, values);
     } else {
-      if (!this._pool) {
-        await this._connection._promise_connection;
-      }
       return await this._pool.query(text, values);
     }
   }
