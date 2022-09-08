@@ -549,6 +549,9 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
             return await transaction._adapter_connection.query(text, values);
         }
         else {
+            if (!this._pool) {
+                await this._connection._promise_connection;
+            }
             return await this._pool.query(text, values);
         }
     }
