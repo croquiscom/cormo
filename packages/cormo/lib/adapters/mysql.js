@@ -43,7 +43,7 @@ const util_1 = __importDefault(require("util"));
 const lodash_1 = __importDefault(require("lodash"));
 const types = __importStar(require("../types"));
 const sql_base_1 = require("./sql_base");
-function _typeToSQL(property, support_fractional_seconds) {
+function _typeToSQL(property, support_fractional_seconds, major_version) {
     if (property.array) {
         return 'TEXT';
     }
@@ -55,9 +55,9 @@ function _typeToSQL(property, support_fractional_seconds) {
         case types.Boolean:
             return 'TINYINT(1)';
         case types.Integer:
-            return 'INT(11)';
+            return major_version < 6 ? 'INT(11)' : 'INT';
         case types.BigInteger:
-            return 'BIGINT(20)';
+            return major_version < 6 ? 'BIGINT(20)' : 'BIGINT';
         case types.GeoPoint:
             return 'POINT';
         case types.Date:
@@ -74,8 +74,8 @@ function _typeToSQL(property, support_fractional_seconds) {
             return 'TEXT';
     }
 }
-function _propertyToSQL(property, support_fractional_seconds) {
-    let type = _typeToSQL(property, support_fractional_seconds);
+function _propertyToSQL(property, support_fractional_seconds, major_version) {
+    let type = _typeToSQL(property, support_fractional_seconds, major_version);
     if (type) {
         if (property.required) {
             type += ' NOT NULL';
@@ -145,6 +145,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         this._read_clients = [];
         /** @internal */
         this._read_client_index = -1;
+        /** @internal */
+        this._version = { major: 0, minor: 0 };
         this._connection = connection;
         this._query_timeout = 60000;
     }
@@ -175,7 +177,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 column_sqls.push(`\`${property._dbname_us}\` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
             }
             else {
-                let column_sql = _propertyToSQL(property, this.support_fractional_seconds);
+                let column_sql = _propertyToSQL(property, this.support_fractional_seconds, this._version.major);
                 if (column_sql) {
                     if (property.description) {
                         column_sql += ` COMMENT ${mysql.escape(property.description)}`;
@@ -229,7 +231,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     getAddColumnQuery(model, column_property) {
         const model_class = this._connection.models[model];
         const table_name = model_class.table_name;
-        let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+        let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds, this._version.major);
         if (column_property.description) {
             column_sql += ` COMMENT ${mysql.escape(column_property.description)}`;
         }
@@ -252,7 +254,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     getUpdateColumnDescriptionQuery(model, column_property) {
         const model_class = this._connection.models[model];
         const table_name = model_class.table_name;
-        let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds);
+        let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds, this._version.major);
         if (column_property.description) {
             column_sql += ` COMMENT ${mysql.escape(column_property.description)}`;
         }
@@ -362,7 +364,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     getAdapterTypeString(column_property) {
-        return _typeToSQL(column_property, this.support_fractional_seconds);
+        return _typeToSQL(column_property, this.support_fractional_seconds, this._version.major);
     }
     /** @internal */
     async create(model, data, options) {
@@ -1044,7 +1046,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             const field = Object.keys(options.near)[0];
             order_by = `\`${field}_distance\``;
             const location = options.near[field];
-            select += `,GLENGTH(LINESTRING(\`${field}\`,POINT(${location[0]},${location[1]}))) AS \`${field}_distance\``;
+            select += `,ST_Length(LINESTRING(\`${field}\`,POINT(${location[0]},${location[1]}))) AS \`${field}_distance\``;
         }
         const params = [];
         const table_name = model_class.table_name;
@@ -1144,6 +1146,17 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 throw error;
             }
         }
+        try {
+            const result = await client.queryAsync('SELECT VERSION() AS version');
+            const version = result[0].version;
+            const match = version.match(/(\d+)\.(\d+)\.(\d+)/);
+            if (match) {
+                this._version = { major: Number(match[1]), minor: Number(match[2]) };
+            }
+        }
+        catch (error) {
+            // ignore
+        }
     }
     /** @internal */
     _processSaveError(error) {
@@ -1152,7 +1165,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         else if (error.code === 'ER_DUP_ENTRY') {
             const key = error.message.match(/for key '([^']*)'/);
-            return new Error('duplicated ' + (key && key[1]));
+            return new Error('duplicated ' + (key && key[1].replace(/[^.]*\./, '')));
         }
         else if (error.code === 'ER_BAD_NULL_ERROR') {
             const key = error.message.match(/Column '([^']*)'/);
