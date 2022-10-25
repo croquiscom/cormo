@@ -707,12 +707,19 @@ class MongoDBAdapter extends base_1.AdapterBase {
         }
     }
     /** @internal */
-    async delete(model, conditions_arg, options) {
-        const model_class = this._connection.models[model];
+    async delete(model_name, conditions_arg, options) {
+        const model_class = this._connection.models[model_name];
+        if (options && (options.orders.length > 0 || options.limit || options.skip)) {
+            const [conditions_find, fields, orders, client_options] = this._buildConditionsForFind(model_name, conditions_arg, Object.assign(Object.assign({}, options), { lean: true, joins: [], conditions_of_group: [] }));
+            const cursor = await this._collection(model_name).find(conditions_find, Object.assign(Object.assign({}, client_options), { projection: { _id: 1 } }));
+            const records = await cursor.toArray();
+            const ids = records.map(this._getModelID);
+            conditions_arg = [{ id: { $in: ids } }];
+        }
         const conditions = _buildWhere(model_class._schema, conditions_arg);
         try {
             // console.log(JSON.stringify(conditions))
-            const result = await this._collection(model).deleteMany(conditions, { safe: true });
+            const result = await this._collection(model_name).deleteMany(conditions, { safe: true });
             return result.deletedCount;
         }
         catch (error) {

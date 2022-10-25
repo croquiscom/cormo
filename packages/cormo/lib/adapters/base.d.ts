@@ -73,6 +73,12 @@ export interface AdapterUpsertOptions {
     node?: 'master' | 'read';
     ignore_on_update?: string[];
 }
+export interface AdapterDeleteOptions {
+    orders: any[];
+    limit?: number;
+    skip?: number;
+    transaction?: Transaction;
+}
 /**
  * Base class for adapters
  * @namespace adapter

@@ -461,12 +461,46 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         return Number(rows[0].count);
     }
     /** @internal */
-    async delete(model, conditions, options) {
+    async delete(model_name, conditions, options) {
+        const model_class = this._connection.models[model_name];
+        const nested = options && (options.orders.length > 0 || options.limit || options.skip);
         const params = [];
-        const table_name = this._connection.models[model].table_name;
+        const table_name = model_class.table_name;
         let sql = `DELETE FROM "${table_name}"`;
+        if (nested) {
+            sql += ` WHERE id IN (SELECT id FROM "${table_name}"`;
+        }
         if (conditions.length > 0) {
-            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, params);
+            sql += ' WHERE ' + this._buildWhere(model_class._schema, '', {}, conditions, params);
+        }
+        if (options && options.orders.length > 0) {
+            const schema = model_class._schema;
+            const orders = options.orders.map((order) => {
+                let column;
+                if (order[0] === '-') {
+                    column = order.slice(1);
+                    order = 'DESC';
+                }
+                else {
+                    column = order;
+                    order = 'ASC';
+                }
+                column = (schema[column] && schema[column]._dbname_us) || column;
+                return `"${column}" ${order}`;
+            });
+            sql += ' ORDER BY ' + orders.join(',');
+        }
+        if (options && options.limit) {
+            sql += ' LIMIT ' + options.limit;
+            if (options && options.skip) {
+                sql += ' OFFSET ' + options.skip;
+            }
+        }
+        else if (options && options.skip) {
+            sql += ' LIMIT ALL OFFSET ' + options.skip;
+        }
+        if (nested) {
+            sql += ')';
         }
         let result;
         try {

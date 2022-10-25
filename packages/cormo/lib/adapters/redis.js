@@ -50,7 +50,7 @@ class RedisAdapter extends base_1.AdapterBase {
     }
     /** @internal */
     async drop(model) {
-        await this.delete(model, [], {});
+        await this.delete(model, [], { orders: [] });
     }
     /** @internal */
     valueToDB(value, column, property) {

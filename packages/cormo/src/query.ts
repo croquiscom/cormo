@@ -1,7 +1,7 @@
 import stream from 'stream';
 import _ from 'lodash';
 
-import { AdapterBase, AdapterFindOptions } from './adapters/base';
+import { AdapterBase, AdapterDeleteOptions, AdapterFindOptions } from './adapters/base';
 import { Connection } from './connection';
 import { BaseModel, ModelColumnNamesWithId } from './model';
 import { Transaction } from './transaction';
@@ -673,7 +673,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       this._connection.log(this._name, 'delete', { conditions: this._conditions });
     }
     await this._doArchiveAndIntegrity(options);
-    return await this._adapter.delete(this._name, this._conditions, { transaction: this._options.transaction });
+    return await this._adapter.delete(this._name, this._conditions, this._getAdapterDeleteOptions());
   }
 
   private async _exec(find_options: AdapterFindOptions, options?: { skip_log?: boolean }) {
@@ -851,6 +851,34 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       transaction: this._options.transaction,
       distinct: this._options.distinct,
       ...(select_raw.length > 0 && { select, select_raw }),
+    };
+  }
+
+  private _getAdapterDeleteOptions(): AdapterDeleteOptions {
+    const orders: string[] = [];
+    if (typeof this._options.orders === 'string') {
+      const avaliable_columns = ['id'];
+      avaliable_columns.push(...Object.keys(this._model._schema));
+      if (this._options.group_fields) {
+        avaliable_columns.push(...Object.keys(this._options.group_fields));
+      }
+      this._options.orders.split(/\s+/).forEach((order) => {
+        let asc = true;
+        if (order.startsWith('-')) {
+          asc = false;
+          order = order.slice(1);
+        }
+        if (avaliable_columns.indexOf(order) >= 0) {
+          orders.push(asc ? order : '-' + order);
+        }
+      });
+    }
+
+    return {
+      orders,
+      limit: this._options.limit,
+      skip: this._options.skip,
+      transaction: this._options.transaction,
     };
   }
 

@@ -356,6 +356,7 @@ declare class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, Qu
     delete(options?: any): Promise<number>;
     private _exec;
     private _getAdapterFindOptions;
+    private _getAdapterDeleteOptions;
     private _execAndInclude;
     private _validateAndBuildSaveData;
     private _doIntegrityActions;

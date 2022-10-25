@@ -19,7 +19,13 @@ import { Connection } from '../connection';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 import { tableize } from '../util/inflector';
-import { AdapterBase, AdapterCountOptions, AdapterFindOptions, AdapterUpsertOptions } from './base';
+import {
+  AdapterBase,
+  AdapterCountOptions,
+  AdapterDeleteOptions,
+  AdapterFindOptions,
+  AdapterUpsertOptions,
+} from './base';
 
 // Adapter for Redis
 // @namespace adapter
@@ -42,7 +48,7 @@ export class RedisAdapter extends AdapterBase {
 
   /** @internal */
   public async drop(model: string) {
-    await this.delete(model, [], {});
+    await this.delete(model, [], { orders: [] });
   }
 
   /** @internal */
@@ -217,7 +223,7 @@ export class RedisAdapter extends AdapterBase {
   public async delete(
     model: string,
     conditions: Array<Record<string, any>>,
-    options: { transaction?: Transaction },
+    options: AdapterDeleteOptions,
   ): Promise<number> {
     const keys = await this._getKeys(tableize(model), conditions);
     if (keys.length === 0) {

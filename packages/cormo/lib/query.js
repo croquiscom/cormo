@@ -420,7 +420,7 @@ class Query {
             this._connection.log(this._name, 'delete', { conditions: this._conditions });
         }
         await this._doArchiveAndIntegrity(options);
-        return await this._adapter.delete(this._name, this._conditions, { transaction: this._options.transaction });
+        return await this._adapter.delete(this._name, this._conditions, this._getAdapterDeleteOptions());
     }
     async _exec(find_options, options) {
         if (this._find_single_id && this._conditions.length === 0) {
@@ -584,6 +584,32 @@ class Query {
             }
         }
         return Object.assign({ conditions_of_group: this._options.conditions_of_group, explain: this._options.explain, group_by, group_fields: this._options.group_fields, joins, lean: this._options.lean, limit: this._options.limit, near: this._options.near, node: this._options.node, index_hint: this._options.index_hint, orders, skip: this._options.skip, transaction: this._options.transaction, distinct: this._options.distinct }, (select_raw.length > 0 && { select, select_raw }));
+    }
+    _getAdapterDeleteOptions() {
+        const orders = [];
+        if (typeof this._options.orders === 'string') {
+            const avaliable_columns = ['id'];
+            avaliable_columns.push(...Object.keys(this._model._schema));
+            if (this._options.group_fields) {
+                avaliable_columns.push(...Object.keys(this._options.group_fields));
+            }
+            this._options.orders.split(/\s+/).forEach((order) => {
+                let asc = true;
+                if (order.startsWith('-')) {
+                    asc = false;
+                    order = order.slice(1);
+                }
+                if (avaliable_columns.indexOf(order) >= 0) {
+                    orders.push(asc ? order : '-' + order);
+                }
+            });
+        }
+        return {
+            orders,
+            limit: this._options.limit,
+            skip: this._options.skip,
+            transaction: this._options.transaction,
+        };
     }
     async _execAndInclude(options) {
         const records = await this._exec(this._getAdapterFindOptions(), options);

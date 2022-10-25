@@ -158,6 +158,30 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     }
   });
 
+  it('delete limit', async () => {
+    await _createUsers(models.User);
+    const count = await models.User.where({ age: { $lt: 40 } })
+      .limit(2)
+      .delete();
+    expect(count).to.equal(2);
+    const users = await models.User.where().order('name');
+    expect(users).to.have.length(3);
+  });
+
+  it('delete limit with order', async () => {
+    await _createUsers(models.User);
+    const count = await models.User.where({ age: { $lt: 40 } })
+      .order('age name')
+      .limit(2)
+      .delete();
+    expect(count).to.equal(2);
+    const users = await models.User.where().order('name');
+    expect(users).to.have.length(3);
+    _compareUser(users[0], { name: 'Bill Smith', age: 45 });
+    _compareUser(users[1], { name: 'Gina Baker', age: 32 });
+    _compareUser(users[2], { name: 'John Doe', age: 27 });
+  });
+
   it('one', async () => {
     await _createUsers(models.User);
     let user = (await models.User.where({ age: { $lt: 40 } }).one())!;

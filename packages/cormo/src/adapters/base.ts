@@ -67,6 +67,13 @@ export interface AdapterUpsertOptions {
   ignore_on_update?: string[];
 }
 
+export interface AdapterDeleteOptions {
+  orders: any[];
+  limit?: number;
+  skip?: number;
+  transaction?: Transaction;
+}
+
 /**
  * Base class for adapters
  * @namespace adapter
@@ -395,7 +402,7 @@ abstract class AdapterBase {
   public abstract delete(
     model: string,
     conditions: Array<Record<string, any>>,
-    options: { transaction?: Transaction },
+    options: AdapterDeleteOptions,
   ): Promise<number>;
 
   /**
