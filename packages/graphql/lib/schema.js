@@ -58,6 +58,9 @@ function getGraphQlType(property) {
 function createSingleType(model_class, options) {
     const fields = {};
     for (const [column, property] of Object.entries(model_class._schema)) {
+        if (!property) {
+            continue;
+        }
         const graphql_type = getGraphQlType(property);
         if (graphql_type) {
             const description = column === 'id' ? options.id_description : property.description;
@@ -130,6 +133,9 @@ function createListType(model_class, options, single_type) {
 function createCreateInputType(model_class, options) {
     const fields = {};
     for (const [column, property] of Object.entries(model_class._schema)) {
+        if (!property) {
+            continue;
+        }
         if (column === 'id') {
             continue;
         }
@@ -156,6 +162,9 @@ function createCreateInputType(model_class, options) {
 function createUpdateInputType(model_class, options) {
     const fields = {};
     for (const [column, property] of Object.entries(model_class._schema)) {
+        if (!property) {
+            continue;
+        }
         if (column === options.created_at_column) {
             continue;
         }
@@ -187,9 +196,12 @@ function createDeleteInputType(model_class, options) {
         name: `Delete${model_class.name}Input`,
     });
 }
-function createOrderType(model_class, options) {
+function createOrderType(model_class, _options) {
     const values = {};
     for (const [column, property] of Object.entries(model_class._schema)) {
+        if (!property) {
+            continue;
+        }
         if (column === 'id' ||
             property.type_class === cormo.types.String ||
             property.type_class === cormo.types.Integer ||
@@ -210,6 +222,9 @@ function createOrderType(model_class, options) {
 function buildListQueryArgs(model_class, options) {
     const list_query_args = {};
     for (const [column, property] of Object.entries(model_class._schema)) {
+        if (!property) {
+            continue;
+        }
         if (column === 'id') {
             list_query_args[column + '_list'] = {
                 type: new graphql_1.GraphQLList(new graphql_1.GraphQLNonNull(graphql_1.GraphQLID)),
@@ -284,7 +299,7 @@ function createDefaultCrudSchema(model_class, options = {}) {
                             type: create_input_type,
                         },
                     },
-                    async resolve(source, args, context, info) {
+                    async resolve(source, args) {
                         const data = args.input;
                         const date = Date.now();
                         if (options.created_at_column) {
@@ -303,7 +318,7 @@ function createDefaultCrudSchema(model_class, options = {}) {
                             type: update_input_type,
                         },
                     },
-                    async resolve(source, args, context, info) {
+                    async resolve(_source, args) {
                         const data = args.input;
                         const date = Date.now();
                         if (options.updated_at_column) {
@@ -320,7 +335,7 @@ function createDefaultCrudSchema(model_class, options = {}) {
                             type: delete_input_type,
                         },
                     },
-                    async resolve(source, args, context, info) {
+                    async resolve(source, args) {
                         const delete_count = await model_class.find(args.input.id).delete();
                         if (delete_count === 0) {
                             throw new Error('not found');
@@ -356,7 +371,7 @@ function createDefaultCrudSchema(model_class, options = {}) {
                 [snake_name + '_list']: {
                     args: list_query_args,
                     description: `List query for ${camel_name}`,
-                    resolve(source, args, context, info) {
+                    resolve(source, args) {
                         return { __args: args };
                     },
                     type: new graphql_1.GraphQLNonNull(list_type),

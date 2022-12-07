@@ -28,7 +28,7 @@ interface Options {
   updated_at_column?: string;
 }
 
-function getGraphQlType(property: typeof cormo.BaseModel['_schema']['path']) {
+function getGraphQlType(property: NonNullable<typeof cormo.BaseModel['_schema']['path']>) {
   let graphql_type: GraphQLScalarType | undefined;
   if (property.record_id) {
     return new GraphQLNonNull(GraphQLID);
@@ -54,6 +54,9 @@ function getGraphQlType(property: typeof cormo.BaseModel['_schema']['path']) {
 function createSingleType(model_class: typeof cormo.BaseModel, options: Options): GraphQLObjectType {
   const fields: GraphQLFieldConfigMap<any, any> = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
+    if (!property) {
+      continue;
+    }
     const graphql_type = getGraphQlType(property);
     if (graphql_type) {
       const description = column === 'id' ? options.id_description : property.description;
@@ -122,6 +125,9 @@ function createListType(
 function createCreateInputType(model_class: typeof cormo.BaseModel, options: Options) {
   const fields: GraphQLInputFieldConfigMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
+    if (!property) {
+      continue;
+    }
     if (column === 'id') {
       continue;
     }
@@ -149,6 +155,9 @@ function createCreateInputType(model_class: typeof cormo.BaseModel, options: Opt
 function createUpdateInputType(model_class: typeof cormo.BaseModel, options: Options) {
   const fields: GraphQLInputFieldConfigMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
+    if (!property) {
+      continue;
+    }
     if (column === options.created_at_column) {
       continue;
     }
@@ -185,6 +194,9 @@ function createDeleteInputType(model_class: typeof cormo.BaseModel, options: Opt
 function createOrderType(model_class: typeof cormo.BaseModel, _options: Options) {
   const values: GraphQLEnumValueConfigMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
+    if (!property) {
+      continue;
+    }
     if (
       column === 'id' ||
       property.type_class === cormo.types.String ||
@@ -208,6 +220,9 @@ function createOrderType(model_class: typeof cormo.BaseModel, _options: Options)
 function buildListQueryArgs(model_class: typeof cormo.BaseModel, options: Options) {
   const list_query_args: GraphQLFieldConfigArgumentMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
+    if (!property) {
+      continue;
+    }
     if (column === 'id') {
       list_query_args[column + '_list'] = {
         type: new GraphQLList(new GraphQLNonNull(GraphQLID)),
