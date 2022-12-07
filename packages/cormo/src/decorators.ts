@@ -102,6 +102,9 @@ export function Index(columns: { [column: string]: 1 | -1 }, options?: { name?: 
     if (ctor._initialize_called) {
       ctor.index(columns, options);
     } else {
+      if (!ctor._property_decorators) {
+        ctor._property_decorators = [];
+      }
       ctor._property_decorators.push({ type: 'index', columns, options });
     }
   };

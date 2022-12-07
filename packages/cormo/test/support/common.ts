@@ -52,7 +52,7 @@ const db_configs: { [db: string]: any } = {
   },
 };
 
-async function deleteAllRecords(models: Array<typeof cormo.BaseModel>) {
+async function deleteAllRecords(models: Array<typeof cormo.BaseModel | undefined>) {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   await _g.connection!.applySchemas();
   for (const model of models) {

@@ -9,7 +9,7 @@ export interface SchemasColumn {
 }
 export interface SchemasTable {
     columns: {
-        [column_name: string]: SchemasColumn;
+        [column_name: string]: SchemasColumn | undefined;
     };
     description?: string;
 }
@@ -18,10 +18,10 @@ export interface SchemasIndex {
 }
 export interface Schemas {
     tables: {
-        [table_name: string]: SchemasTable | 'NO SCHEMA';
+        [table_name: string]: SchemasTable | 'NO SCHEMA' | undefined;
     };
     indexes?: {
-        [table_name: string]: SchemasIndex;
+        [table_name: string]: SchemasIndex | undefined;
     };
     foreign_keys?: {
         [table_name: string]: any;

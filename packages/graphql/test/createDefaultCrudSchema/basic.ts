@@ -112,7 +112,7 @@ input DeleteUserInput {
 
   describe('single query', () => {
     it('no argument returns null', async () => {
-      const id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
+      const _id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const query = '{ user { id } }';
       const result = await graphql({ schema, source: query });
       expect(result).to.eql({

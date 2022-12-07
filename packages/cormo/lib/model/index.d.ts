@@ -37,7 +37,7 @@ export interface ModelSchema {
     [path: string]: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty;
 }
 export interface ModelSchemaInternal {
-    [path: string]: ColumnPropertyInternal;
+    [path: string]: ColumnPropertyInternal | undefined;
 }
 /**
  * Base class for models
@@ -67,7 +67,7 @@ declare class BaseModel {
     static _adapter: AdapterBase;
     static _name: string;
     static _schema: ModelSchemaInternal;
-    static _object_column_classes: Array<{
+    static _object_column_classes?: Array<{
         column: string;
         klass: any;
     }>;
@@ -82,7 +82,7 @@ declare class BaseModel {
     };
     static _initialize_called: boolean;
     static _intermediate_paths: any;
-    static _property_decorators: any[];
+    static _property_decorators?: any[];
     static initialize(): void;
     /**
      * Returns a new model class extending BaseModel
@@ -118,7 +118,7 @@ declare class BaseModel {
      * Creates a record.
      * 'Model.build(data)' is the same as 'new Model(data)'
      */
-    static build<M extends BaseModel>(this: new (data?: any) => M, data?: ModelValueObject<M>): M;
+    static build<M extends BaseModel>(this: new (data_arg?: any) => M, data?: ModelValueObject<M>): M;
     /**
      * Deletes all records from the database
      */
@@ -135,7 +135,7 @@ declare class BaseModel {
      * Adds a belongs-to association
      */
     static belongsTo(target_model_or_column: string | typeof BaseModel, options?: AssociationBelongsToOptions): void;
-    static [inspect.custom](depth: number): string;
+    static [inspect.custom](_depth: number): string;
     static _getKeyType(target_connection?: Connection<AdapterBase>): any;
     /**
      * Set nested object null if all children are null
@@ -196,14 +196,14 @@ declare class BaseModel {
      * Creates a record and saves it to the database
      * 'Model.create(data)' is the same as 'Model.build(data).save()'
      */
-    static create<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, data?: ModelValueObject<M>, options?: {
+    static create<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data?: ModelValueObject<M>, options?: {
         transaction?: Transaction;
         skip_log?: boolean;
     }): Promise<M>;
     /**
      * Creates multiple records and saves them to the database.
      */
-    static createBulk<M extends BaseModel>(this: (new (data?: any) => M) & typeof BaseModel, data?: Array<ModelValueObject<M>>, options?: {
+    static createBulk<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data?: Array<ModelValueObject<M>>, options?: {
         transaction?: Transaction;
     }): Promise<M[]>;
     /**
@@ -296,7 +296,7 @@ declare class BaseModel {
     static _buildSaveDataColumn(data: any, model: any, column: string, property: ColumnPropertyInternal, allow_null?: boolean): void;
     static _validateColumn(data: any, column: string, property: ColumnPropertyInternal, for_update?: boolean): void;
     private static _validators;
-    private static _callbacks_map;
+    private static _callbacks_map?;
     /**
      * Adds a callback
      */

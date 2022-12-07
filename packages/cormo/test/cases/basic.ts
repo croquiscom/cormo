@@ -75,7 +75,7 @@ export default function (models: { User: typeof User }) {
   });
 
   it('find undefined', async () => {
-    const user = await models.User.create({ name: 'John Doe', age: 27 });
+    const _user = await models.User.create({ name: 'John Doe', age: 27 });
     try {
       await models.User.find(undefined as any);
       throw new Error('must throw an error.');
@@ -86,7 +86,7 @@ export default function (models: { User: typeof User }) {
   });
 
   it('find undefined with condition', async () => {
-    const user = await models.User.create({ name: 'John Doe', age: 27 });
+    const _user = await models.User.create({ name: 'John Doe', age: 27 });
     try {
       await models.User.find(undefined as any).where({ age: { $gt: 0 } });
       throw new Error('must throw an error.');

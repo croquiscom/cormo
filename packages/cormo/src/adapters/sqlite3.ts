@@ -132,12 +132,18 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createTable(model: string) {
-    const model_class = this._connection.models[model];
+  public async createTable(model_name: string) {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return;
+    }
     const table_name = model_class.table_name;
     const column_sqls: any[] = [];
     for (const column in model_class._schema) {
       const property = model_class._schema[column];
+      if (!property) {
+        continue;
+      }
       if (property.primary_key) {
         column_sqls.push(`"${property._dbname_us}" INTEGER PRIMARY KEY AUTOINCREMENT`);
       } else {
@@ -166,8 +172,11 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async addColumn(model: string, column_property: ColumnPropertyInternal) {
-    const model_class = this._connection.models[model];
+  public async addColumn(model_name: string, column_property: ColumnPropertyInternal) {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return;
+    }
     const table_name = model_class.table_name;
     const column_name = column_property._dbname_us;
     const sql = `ALTER TABLE "${table_name}" ADD COLUMN "${column_name}" ${_propertyToSQL(column_property)}`;
@@ -181,12 +190,15 @@ export class SQLite3Adapter extends SQLAdapterBase {
   /** @internal */
   public async createIndex(model_name: string, index: IndexProperty) {
     const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return;
+    }
     const schema = model_class._schema;
     const table_name = model_class.table_name;
     const columns = [];
     for (const column in index.columns) {
       const order = index.columns[column];
-      columns.push(`"${(schema[column] && schema[column]._dbname_us) || column}" ${order === -1 ? 'DESC' : 'ASC'}`);
+      columns.push(`"${schema[column]?._dbname_us || column}" ${order === -1 ? 'DESC' : 'ASC'}`);
     }
     const unique = index.options.unique ? 'UNIQUE ' : '';
     const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
@@ -201,8 +213,12 @@ export class SQLite3Adapter extends SQLAdapterBase {
   public async deleteAllIgnoringConstraint(model_list: string[]): Promise<void> {
     await this._client.runAsync('PRAGMA foreign_keys=OFF');
     await Promise.all(
-      model_list.map(async (model) => {
-        const table_name = this._connection.models[model].table_name;
+      model_list.map(async (model_name) => {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+          return;
+        }
+        const table_name = model_class.table_name;
         await this._client.runAsync(`DELETE FROM \`${table_name}\``);
       }),
     );
@@ -210,8 +226,12 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async drop(model: string) {
-    const table_name = this._connection.models[model].table_name;
+  public async drop(model_name: string) {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return;
+    }
+    const table_name = model_class.table_name;
     try {
       await this._client.runAsync(`DROP TABLE IF EXISTS "${table_name}"`);
     } catch (error: any) {
@@ -225,10 +245,14 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
-    const table_name = this._connection.models[model].table_name;
+  public async create(model_name: string, data: any, options: { transaction?: Transaction }): Promise<any> {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return;
+    }
+    const table_name = model_class.table_name;
     const values: any[] = [];
-    const [fields, places] = this._buildUpdateSet(model, data, values, true);
+    const [fields, places] = this._buildUpdateSet(model_name, data, values, true);
     const sql = `INSERT INTO "${table_name}" (${fields}) VALUES (${places})`;
     let id;
     try {
@@ -261,14 +285,18 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
-    const table_name = this._connection.models[model].table_name;
+  public async createBulk(model_name: string, data: any[], _options: { transaction?: Transaction }): Promise<any[]> {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      throw new Error('model not found');
+    }
+    const table_name = model_class.table_name;
     const values: any[] = [];
     let fields: any;
     const places: any[] = [];
     data.forEach((item) => {
       let places_sub;
-      [fields, places_sub] = this._buildUpdateSet(model, item, values, true);
+      [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true);
       return places.push('(' + places_sub + ')');
     });
     const sql = `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')}`;
@@ -295,10 +323,14 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async update(model: string, data: any, options: { transaction?: Transaction }) {
-    const table_name = this._connection.models[model].table_name;
+  public async update(model_name: string, data: any, _options: { transaction?: Transaction }) {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return;
+    }
+    const table_name = model_class.table_name;
     const values: any[] = [];
-    const [fields] = this._buildUpdateSet(model, data, values);
+    const [fields] = this._buildUpdateSet(model_name, data, values);
     values.push(data.id);
     const sql = `UPDATE "${table_name}" SET ${fields} WHERE id=?`;
     try {
@@ -310,17 +342,21 @@ export class SQLite3Adapter extends SQLAdapterBase {
 
   /** @internal */
   public async updatePartial(
-    model: string,
+    model_name: string,
     data: any,
     conditions: Array<Record<string, any>>,
-    options: { transaction?: Transaction },
+    _options: { transaction?: Transaction },
   ): Promise<number> {
-    const table_name = this._connection.models[model].table_name;
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return 0;
+    }
+    const table_name = model_class.table_name;
     const values: any[] = [];
-    const [fields] = this._buildPartialUpdateSet(model, data, values);
+    const [fields] = this._buildPartialUpdateSet(model_name, data, values);
     let sql = `UPDATE "${table_name}" SET ${fields}`;
     if (conditions.length > 0) {
-      sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, values);
+      sql += ' WHERE ' + this._buildWhere(model_class._schema, '', {}, conditions, values);
     }
     try {
       return await new Promise<number>((resolve, reject) => {
@@ -339,12 +375,16 @@ export class SQLite3Adapter extends SQLAdapterBase {
 
   /** @internal */
   public async findById(
-    model: string,
+    model_name: string,
     id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
-    const select = this._buildSelect(this._connection.models[model], options.select);
-    const table_name = this._connection.models[model].table_name;
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      throw new Error('model not found');
+    }
+    const select = this._buildSelect(model_class, options.select);
+    const table_name = model_class.table_name;
     const sql = `SELECT ${select} FROM "${table_name}" AS _Base WHERE id=? LIMIT 1`;
     if (options.explain) {
       return await this._client.allAsync(`EXPLAIN QUERY PLAN ${sql}`, id);
@@ -356,7 +396,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
     if (result && result.length === 1) {
-      return this._convertToModelInstance(model, result[0], options);
+      return this._convertToModelInstance(model_name, result[0], options);
     } else if (result && result.length > 1) {
       throw new Error('unknown error');
     } else {
@@ -365,8 +405,12 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async find(model: string, conditions: Array<Record<string, any>>, options: AdapterFindOptions): Promise<any> {
-    const [sql, params] = this._buildSqlForFind(model, conditions, options);
+  public async find(
+    model_name: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): Promise<any> {
+    const [sql, params] = this._buildSqlForFind(model_name, conditions, options);
     if (options.explain) {
       return await this._client.allAsync(`EXPLAIN QUERY PLAN ${sql}`, params);
     }
@@ -378,21 +422,25 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
     if (options.group_fields) {
       return result.map((record: any) => {
-        return this._convertToGroupInstance(model, record, options.group_by, options.group_fields);
+        return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields);
       });
     } else {
       return result.map((record: any) => {
-        return this._convertToModelInstance(model, record, options);
+        return this._convertToModelInstance(model_name, record, options);
       });
     }
   }
 
   /** @internal */
-  public stream(model: any, conditions: Array<Record<string, any>>, options: AdapterFindOptions): stream.Readable {
+  public stream(
+    model_name: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): stream.Readable {
     let sql;
     let params;
     try {
-      [sql, params] = this._buildSqlForFind(model, conditions, options);
+      [sql, params] = this._buildSqlForFind(model_name, conditions, options);
     } catch (error: any) {
       const r = new stream.Readable({ objectMode: true });
       r._read = () => r.emit('error', error);
@@ -410,7 +458,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
           readable.emit('error', error);
           return;
         }
-        readable.push(this._convertToModelInstance(model, record, options));
+        readable.push(this._convertToModelInstance(model_name, record, options));
       },
       () => {
         readable.push(null);
@@ -426,6 +474,9 @@ export class SQLite3Adapter extends SQLAdapterBase {
     options: AdapterCountOptions,
   ): Promise<number> {
     const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return 0;
+    }
     const select = options.select ? this._buildSelect(model_class, options.select) : '*';
     const params: any = [];
     const table_name = model_class.table_name;
@@ -437,9 +488,13 @@ export class SQLite3Adapter extends SQLAdapterBase {
     if (options.joins.length > 0) {
       const escape_ch = this._escape_ch;
       for (const join of options.joins) {
-        sql += ` ${join.type} ${this._connection.models[join.model_name].table_name} AS _${join.alias}`;
+        const join_model_class = this._connection.models[join.model_name];
+        if (!join_model_class) {
+          continue;
+        }
+        sql += ` ${join.type} ${join_model_class.table_name} AS _${join.alias}`;
         sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = _${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
-        join_schemas[join.alias] = this._connection.models[join.model_name]._schema;
+        join_schemas[join.alias] = join_model_class._schema;
       }
     }
     if (conditions.length > 0) {
@@ -475,7 +530,10 @@ export class SQLite3Adapter extends SQLAdapterBase {
     options: AdapterDeleteOptions,
   ): Promise<number> {
     const model_class = this._connection.models[model_name];
-    const nested = options && (options.orders.length > 0 || options.limit || options.skip);
+    if (!model_class) {
+      return 0;
+    }
+    const nested = options.orders.length > 0 || options.limit || options.skip;
     const params: any = [];
     const table_name = model_class.table_name;
     let sql = `DELETE FROM "${table_name}"`;
@@ -485,7 +543,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(model_class._schema, '', {}, conditions, params);
     }
-    if (options && options.orders.length > 0) {
+    if (options.orders.length > 0) {
       const schema = model_class._schema;
       const orders = options.orders.map((order: any) => {
         let column;
@@ -496,17 +554,17 @@ export class SQLite3Adapter extends SQLAdapterBase {
           column = order;
           order = 'ASC';
         }
-        column = (schema[column] && schema[column]._dbname_us) || column;
+        column = schema[column]?._dbname_us || column;
         return `"${column}" ${order}`;
       });
       sql += ' ORDER BY ' + orders.join(',');
     }
-    if (options && options.limit) {
+    if (options.limit) {
       sql += ' LIMIT ' + options.limit;
-      if (options && options.skip) {
+      if (options.skip) {
         sql += ' OFFSET ' + options.skip;
       }
-    } else if (options && options.skip) {
+    } else if (options.skip) {
       sql += ' LIMIT 2147483647 OFFSET ' + options.skip;
     }
     if (nested) {
@@ -565,7 +623,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async startTransaction(adapter_connection: any, isolation_level?: IsolationLevel): Promise<void> {
+  public async startTransaction(adapter_connection: any, _isolation_level?: IsolationLevel): Promise<void> {
     await adapter_connection.allAsync('BEGIN TRANSACTION');
   }
 
@@ -672,16 +730,17 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private async _getIndexes(table: string): Promise<{ [table_name: string]: SchemasIndex }> {
+  private async _getIndexes(table: string): Promise<{ [table_name: string]: SchemasIndex | undefined }> {
     const rows = await this._client.allAsync(`PRAGMA index_list(\`${table}\`)`);
-    const indexes: { [table_name: string]: SchemasIndex } = {};
+    const indexes: { [table_name: string]: SchemasIndex | undefined } = {};
     for (const row of rows) {
-      if (!indexes[row.name]) {
-        indexes[row.name] = {};
+      let index = indexes[row.name];
+      if (!index) {
+        index = indexes[row.name] = {};
       }
       const columns = await this._client.allAsync(`PRAGMA index_info(\`${row.name}\`)`);
       for (const column of columns) {
-        indexes[row.name][column.name] = 1;
+        index[column.name] = 1;
       }
     }
     return indexes;
@@ -727,13 +786,17 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildUpdateSet(model: string, data: any, values: any, insert: boolean = false) {
-    const schema = this._connection.models[model]._schema;
+  private _buildUpdateSet(model_name: string, data: any, values: any, insert: boolean = false) {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return ['', ''];
+    }
+    const schema = model_class._schema;
     const fields: any[] = [];
     const places: any[] = [];
     for (const column in schema) {
       const property = schema[column];
-      if (property.primary_key) {
+      if (property?.primary_key) {
         continue;
       }
       this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
@@ -742,13 +805,16 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildPartialUpdateSet(model: string, data: any, values: any[]) {
-    const schema = this._connection.models[model]._schema;
+  private _buildPartialUpdateSet(model_name: string, data: any, values: any[]) {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return ['', ''];
+    }
+    const schema = model_class._schema;
     const fields: any[] = [];
     const places: any[] = [];
     for (const column in data) {
-      const value = data[column];
-      const property = _.find(schema, (item) => item._dbname_us === column);
+      const property = _.find(schema, (item) => item?._dbname_us === column);
       if (!property || property.primary_key) {
         continue;
       }
@@ -758,8 +824,15 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildSqlForFind(model_name: string, conditions: Array<Record<string, any>>, options: AdapterFindOptions) {
+  private _buildSqlForFind(
+    model_name: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): [string, any[]] {
     const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return ['', []];
+    }
     let select;
     if (options.group_by || options.group_fields) {
       select = this._buildGroupFields(model_class, options.group_by, options.group_fields);
@@ -773,9 +846,13 @@ export class SQLite3Adapter extends SQLAdapterBase {
     if (options.joins.length > 0) {
       const escape_ch = this._escape_ch;
       for (const join of options.joins) {
-        sql += ` ${join.type} ${this._connection.models[join.model_name].table_name} AS _${join.alias}`;
+        const join_model_class = this._connection.models[join.model_name];
+        if (!join_model_class) {
+          continue;
+        }
+        sql += ` ${join.type} ${join_model_class.table_name} AS _${join.alias}`;
         sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = _${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
-        join_schemas[join.alias] = this._connection.models[join.model_name]._schema;
+        join_schemas[join.alias] = join_model_class._schema;
       }
     }
     if (conditions.length > 0) {
@@ -788,7 +865,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     if (options.conditions_of_group.length > 0) {
       sql += ' HAVING ' + this._buildWhere(options.group_fields, '_Base', {}, options.conditions_of_group, params);
     }
-    if (options && options.orders.length > 0) {
+    if (options.orders.length > 0) {
       const schema = model_class._schema;
       const orders = options.orders.map((order: any) => {
         let column;
@@ -799,17 +876,17 @@ export class SQLite3Adapter extends SQLAdapterBase {
           column = order;
           order = 'ASC';
         }
-        column = (schema[column] && schema[column]._dbname_us) || column;
+        column = schema[column]?._dbname_us || column;
         return `"${column}" ${order}`;
       });
       sql += ' ORDER BY ' + orders.join(',');
     }
-    if (options && options.limit) {
+    if (options.limit) {
       sql += ' LIMIT ' + options.limit;
-      if (options && options.skip) {
+      if (options.skip) {
         sql += ' OFFSET ' + options.skip;
       }
-    } else if (options && options.skip) {
+    } else if (options.skip) {
       sql += ' LIMIT 2147483647 OFFSET ' + options.skip;
     }
     return [sql, params];

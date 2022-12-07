@@ -9,7 +9,7 @@
  * e.g.) (obj, 'a.b.c') -> [ obj.a.b, 'c' ]
  * @memberOf util
  */
-export declare function getLeafOfPath(obj: object, path: string | string[], create_object?: boolean): [object | undefined, string | undefined];
+export declare function getLeafOfPath(obj: object | undefined, path: string | string[], create_object?: boolean): [object | undefined, string | undefined];
 /**
  * Gets a value of object by path
  * @memberOf util

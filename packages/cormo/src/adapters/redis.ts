@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 let redis: any;
 
 try {
@@ -47,8 +49,8 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async drop(model: string) {
-    await this.delete(model, [], { orders: [] });
+  public async drop(model_name: string) {
+    await this.delete(model_name, [], { orders: [] });
   }
 
   /** @internal */
@@ -77,16 +79,16 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async create(model: string, data: any, options: { transaction?: Transaction }): Promise<any> {
+  public async create(model_name: string, data: any, options: { transaction?: Transaction }): Promise<any> {
     data.$_$ = ''; // ensure that there is one argument(one field) at least
     let id;
     try {
-      id = await this._client.incrAsync(`${tableize(model)}:_lastid`);
+      id = await this._client.incrAsync(`${tableize(model_name)}:_lastid`);
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     try {
-      await this._client.hmsetAsync(`${tableize(model)}:${id}`, data);
+      await this._client.hmsetAsync(`${tableize(model_name)}:${id}`, data);
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
@@ -94,13 +96,13 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
-    return await this._createBulkDefault(model, data, options);
+  public async createBulk(model_name: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
+    return await this._createBulkDefault(model_name, data, options);
   }
 
   /** @internal */
-  public async update(model: string, data: any, options: { transaction?: Transaction }) {
-    const key = `${tableize(model)}:${data.id}`;
+  public async update(model_name: string, data: any, options: { transaction?: Transaction }) {
+    const key = `${tableize(model_name)}:${data.id}`;
     delete data.id;
     data.$_$ = ''; // ensure that there is one argument(one field) at least
     let exists;
@@ -126,7 +128,7 @@ export class RedisAdapter extends AdapterBase {
 
   /** @internal */
   public async updatePartial(
-    model: string,
+    model_name: string,
     data: any,
     conditions: Array<Record<string, any>>,
     options: { transaction?: Transaction },
@@ -136,7 +138,7 @@ export class RedisAdapter extends AdapterBase {
       return delete data[key];
     });
     fields_to_del.push('$_$'); // ensure that there is one argument at least
-    const table = tableize(model);
+    const table = tableize(model_name);
     data.$_$ = ''; // ensure that there is one argument(one field) at least
     const keys = await this._getKeys(table, conditions);
     for (const key of keys) {
@@ -158,7 +160,7 @@ export class RedisAdapter extends AdapterBase {
 
   /** @internal */
   public async upsert(
-    model: string,
+    model_name: string,
     data: any,
     conditions: Array<Record<string, any>>,
     options: AdapterUpsertOptions,
@@ -168,27 +170,31 @@ export class RedisAdapter extends AdapterBase {
 
   /** @internal */
   public async findById(
-    model: string,
+    model_name: string,
     id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
     let result;
     try {
-      result = await this._client.hgetallAsync(`${tableize(model)}:${id}`);
+      result = await this._client.hgetallAsync(`${tableize(model_name)}:${id}`);
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     if (result) {
       result.id = id;
-      return this._convertToModelInstance(model, result, options);
+      return this._convertToModelInstance(model_name, result, options);
     } else {
       throw new Error('not found');
     }
   }
 
   /** @internal */
-  public async find(model: string, conditions: Array<Record<string, any>>, options: AdapterFindOptions): Promise<any> {
-    const table = tableize(model);
+  public async find(
+    model_name: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): Promise<any> {
+    const table = tableize(model_name);
     const keys = await this._getKeys(table, conditions);
     let records: any[] = await Promise.all(
       keys.map(async (key: any) => {
@@ -201,18 +207,22 @@ export class RedisAdapter extends AdapterBase {
     );
     records = records.filter((record) => record != null);
     return records.map((record) => {
-      return this._convertToModelInstance(model, record, options);
+      return this._convertToModelInstance(model_name, record, options);
     });
   }
 
   /** @internal */
-  public stream(model: any, conditions: Array<Record<string, any>>, options: AdapterFindOptions): stream.Readable {
+  public stream(
+    model_name: string,
+    conditions: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): stream.Readable {
     throw new Error('not implemented');
   }
 
   /** @internal */
   public async count(
-    model: string,
+    model_name: string,
     conditions: Array<Record<string, any>>,
     options: AdapterCountOptions,
   ): Promise<number> {
@@ -221,11 +231,11 @@ export class RedisAdapter extends AdapterBase {
 
   /** @internal */
   public async delete(
-    model: string,
+    model_name: string,
     conditions: Array<Record<string, any>>,
     options: AdapterDeleteOptions,
   ): Promise<number> {
-    const keys = await this._getKeys(tableize(model), conditions);
+    const keys = await this._getKeys(tableize(model_name), conditions);
     if (keys.length === 0) {
       return 0;
     }

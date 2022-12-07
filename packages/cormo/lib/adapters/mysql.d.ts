@@ -1,5 +1,8 @@
 /// <reference types="node" />
 import tls = require('tls');
+import { Connection } from '../connection';
+import { Transaction } from '../transaction';
+import { SQLAdapterBase } from './sql_base';
 export interface AdapterSettingsMySQL {
     host?: string;
     port?: number;
@@ -32,9 +35,6 @@ export interface AdapterSettingsMySQL {
     reconnect_if_read_only?: boolean;
     hide_unknown_error?: boolean;
 }
-import { Connection } from '../connection';
-import { Transaction } from '../transaction';
-import { SQLAdapterBase } from './sql_base';
 export declare class MySQLAdapter extends SQLAdapterBase {
     /**
      * Exposes mysql module's query method

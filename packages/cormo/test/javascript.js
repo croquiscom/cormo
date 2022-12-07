@@ -11,6 +11,7 @@ _dbs.forEach(function (db) {
     before(async function () {
       _g.connection = new _g.Connection(db, _g.db_configs[db]);
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const User = _g.connection.model('User', { name: String, age: Number });
 
       await _g.connection.dropAllModels();

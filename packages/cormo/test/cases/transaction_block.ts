@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as cormo from '../..';
 
-import { UserRef, UserRefVO } from './transaction';
+import { UserRef } from './transaction';
 
 export default function (models: { User: typeof UserRef; connection: cormo.Connection | null }) {
   it('transaction success', async () => {
@@ -21,8 +21,8 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
   it('transaction fail', async () => {
     try {
       await models.connection!.transaction(async (tx) => {
-        const user1 = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx });
+        const _user1 = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+        const _user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx });
         throw new Error('force fail');
       });
       throw new Error('must throw an error.');
@@ -58,10 +58,10 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     let user3_id;
     try {
       await models.connection!.transaction(async (tx) => {
-        const user1 = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+        const _user1 = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
         const user3 = await models.User.create({ name: 'Alice Jackson', age: 27 });
         user3_id = user3.id;
-        const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx });
+        const _user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx });
         throw new Error('force fail');
       });
       throw new Error('must throw an error.');
@@ -208,7 +208,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     it('Model.count', async () => {
       try {
         await models.connection!.transaction(async (tx) => {
-          const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+          const _user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
           expect(await models.User.count(undefined, { transaction: tx })).to.eql(1);
           throw new Error('force fail');
         });
@@ -357,7 +357,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     it('Model.group', async () => {
       try {
         await models.connection!.transaction(async (tx) => {
-          const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+          const _user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
           expect(await models.User.group(null, { sum: { $sum: '$age' } }, { transaction: tx })).to.eql([{ sum: 27 }]);
           throw new Error('force fail');
         });
@@ -389,7 +389,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     it('Query::count', async () => {
       try {
         await models.connection!.transaction(async (tx) => {
-          const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
+          const _user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
           expect(await models.User.query({ transaction: tx }).count()).to.eql(1);
           throw new Error('force fail');
         });

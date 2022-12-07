@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as cormo from '../..';
 
-import { UserExtraRef, UserRef, UserRefVO } from './transaction';
+import { UserExtraRef, UserRef } from './transaction';
 
 export default function (models: {
   User: typeof UserRef;
@@ -28,8 +28,8 @@ export default function (models: {
   it('transaction fail', async () => {
     try {
       await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
-        const user1 = await TxUser.create({ name: 'John Doe', age: 27 });
-        const user2 = await TxUser.create({ name: 'Bill Smith', age: 45 });
+        const _user1 = await TxUser.create({ name: 'John Doe', age: 27 });
+        const _user2 = await TxUser.create({ name: 'Bill Smith', age: 45 });
         throw new Error('force fail');
       });
       throw new Error('must throw an error.');
@@ -65,10 +65,10 @@ export default function (models: {
     let user3_id;
     try {
       await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
-        const user1 = await TxUser.create({ name: 'John Doe', age: 27 });
+        const _user1 = await TxUser.create({ name: 'John Doe', age: 27 });
         const user3 = await models.User.create({ name: 'Alice Jackson', age: 27 });
         user3_id = user3.id;
-        const user2 = await TxUser.create({ name: 'Bill Smith', age: 45 });
+        const _user2 = await TxUser.create({ name: 'Bill Smith', age: 45 });
         throw new Error('force fail');
       });
       throw new Error('must throw an error.');
@@ -250,7 +250,7 @@ export default function (models: {
     it('Model.count', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
-          const user = await TxUser.create({ name: 'John Doe', age: 27 });
+          const _user = await TxUser.create({ name: 'John Doe', age: 27 });
           expect(await TxUser.count()).to.eql(1);
           throw new Error('force fail');
         });
@@ -389,7 +389,7 @@ export default function (models: {
     it('Model.group', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
-          const user = await TxUser.create({ name: 'John Doe', age: 27 });
+          const _user = await TxUser.create({ name: 'John Doe', age: 27 });
           expect(await TxUser.group(null, { sum: { $sum: '$age' } })).to.eql([{ sum: 27 }]);
           throw new Error('force fail');
         });
@@ -419,7 +419,7 @@ export default function (models: {
     it('Query::count', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
-          const user = await TxUser.create({ name: 'John Doe', age: 27 });
+          const _user = await TxUser.create({ name: 'John Doe', age: 27 });
           expect(await TxUser.query().count()).to.eql(1);
           throw new Error('force fail');
         });

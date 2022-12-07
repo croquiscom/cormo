@@ -44,7 +44,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
         this._escape_ch = '"';
     }
     /** @internal */
-    async upsert(model, data, conditions, options) {
+    async upsert(model_name, data, conditions, options) {
         var _a;
         const insert_data = {};
         const update_data = {};
@@ -68,7 +68,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
         }
         if (Object.keys(update_data).length === 0) {
             try {
-                return await this.create(model, insert_data, {});
+                return await this.create(model_name, insert_data, {});
             }
             catch (error) {
                 if (!/duplicated/.test(error.message)) {
@@ -77,23 +77,23 @@ class SQLAdapterBase extends base_1.AdapterBase {
             }
         }
         else {
-            const count = await this.updatePartial(model, update_data, conditions, options);
+            const count = await this.updatePartial(model_name, update_data, conditions, options);
             if (count > 0) {
                 return;
             }
             try {
-                return await this.create(model, insert_data, {});
+                return await this.create(model_name, insert_data, {});
             }
             catch (error) {
                 if (!/duplicated/.test(error.message)) {
                     throw error;
                 }
-                return await this.updatePartial(model, update_data, conditions, options);
+                return await this.updatePartial(model_name, update_data, conditions, options);
             }
         }
     }
     /** @internal */
-    _param_place_holder(pos) {
+    _param_place_holder(_pos) {
         return '?';
     }
     /** @internal */
@@ -123,6 +123,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
     }
     /** @internal */
     _buildWhereSingle(schema, property, key, key_prefix, value, params) {
+        var _a;
         let property_type_class;
         if (key === 'id') {
             property_type_class = this.key_type;
@@ -202,7 +203,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
                     const sub_expr = value[sub_key];
                     if (sub_expr.substr(0, 1) === '$') {
                         let compare_column = sub_expr.substr(1);
-                        compare_column = (schema[compare_column] && schema[compare_column]._dbname_us) || compare_column;
+                        compare_column = ((_a = schema[compare_column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || compare_column;
                         op =
                             sub_key === '$cgt'
                                 ? '>'
@@ -266,11 +267,11 @@ class SQLAdapterBase extends base_1.AdapterBase {
     /** @internal */
     _buildWhereSingleJoin(schema, base_alias, join_schemas, key, value, params) {
         const model = key.split('.', 1)[0];
-        if (join_schemas[model]) {
+        const join_model_class = join_schemas[model];
+        if (join_model_class) {
             // if key is 'JoinModel.column'
-            const model_class = join_schemas[model];
-            const property = model_class[key.substring(model.length + 1)];
-            return this._buildWhereSingle(model_class, property, key, `_${model}.`, value, params);
+            const property = join_model_class[key.substring(model.length + 1)];
+            return this._buildWhereSingle(join_model_class, property, key, `_${model}.`, value, params);
         }
         return this._buildWhereSingle(schema, schema[key], key, base_alias ? base_alias + '.' : '', value, params);
     }
@@ -323,6 +324,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
     }
     /** @internal */
     _buildGroupExpr(schema, group_expr) {
+        var _a, _b, _c, _d, _e;
         const op = Object.keys(group_expr)[0];
         if (op === '$sum') {
             const sub_expr = group_expr[op];
@@ -331,7 +333,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             }
             else if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
-                column = (schema[column] && schema[column]._dbname_us) || column;
+                column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
                 return `SUM(${this._escape_ch}${column}${this._escape_ch})`;
             }
             else {
@@ -342,7 +344,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             const sub_expr = group_expr[op];
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
-                column = (schema[column] && schema[column]._dbname_us) || column;
+                column = ((_b = schema[column]) === null || _b === void 0 ? void 0 : _b._dbname_us) || column;
                 return `MIN(${this._escape_ch}${column}${this._escape_ch})`;
             }
             else {
@@ -353,7 +355,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             const sub_expr = group_expr[op];
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
-                column = (schema[column] && schema[column]._dbname_us) || column;
+                column = ((_c = schema[column]) === null || _c === void 0 ? void 0 : _c._dbname_us) || column;
                 return `MAX(${this._escape_ch}${column}${this._escape_ch})`;
             }
             else {
@@ -364,7 +366,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             const sub_expr = group_expr[op];
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
-                column = (schema[column] && schema[column]._dbname_us) || column;
+                column = ((_d = schema[column]) === null || _d === void 0 ? void 0 : _d._dbname_us) || column;
                 return `AVG(${this._escape_ch}${column}${this._escape_ch})`;
             }
             else {
@@ -375,7 +377,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
             const sub_expr = group_expr[op];
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
-                column = (schema[column] && schema[column]._dbname_us) || column;
+                column = ((_e = schema[column]) === null || _e === void 0 ? void 0 : _e._dbname_us) || column;
                 return `${this._escape_ch}${column}${this._escape_ch}`;
             }
             else {
@@ -406,7 +408,7 @@ class SQLAdapterBase extends base_1.AdapterBase {
         if (select) {
             const schema = model_class._schema;
             const escape_ch = this._escape_ch;
-            select = select.map((column) => `_Base.${escape_ch}${schema[column]._dbname_us}${escape_ch}`);
+            select = select.map((column) => { var _a; return `_Base.${escape_ch}${(_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us}${escape_ch}`; });
             return select.join(',');
         }
         else {

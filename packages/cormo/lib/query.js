@@ -514,11 +514,10 @@ class Query {
         }
         let group_by;
         if (this._options.group_by) {
-            group_by = this._options.group_by
-                .map((column) => {
-                return this._model._schema[column]._dbname_us;
-            })
-                .filter((column) => column != null);
+            group_by = lodash_1.default.compact(this._options.group_by.map((column) => {
+                var _a;
+                return (_a = this._model._schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us;
+            }));
         }
         const orders = [];
         if (typeof this._options.orders === 'string') {
@@ -683,6 +682,7 @@ class Query {
         await Promise.all(promises);
     }
     async _doArchiveAndIntegrity(options) {
+        var _a;
         const need_archive = this._model.archive;
         const integrities = this._model._integrities.filter((integrity) => integrity.type.substr(0, 7) === 'parent_');
         const need_child_archive = integrities.some((integrity) => integrity.child.archive);
@@ -701,7 +701,7 @@ class Query {
             const archive_records = records.map((record) => {
                 return { model: this._name, data: record };
             });
-            await this._connection.models._Archive.createBulk(archive_records);
+            await ((_a = this._connection.models._Archive) === null || _a === void 0 ? void 0 : _a.createBulk(archive_records));
         }
         if (!need_integrity) {
             return;

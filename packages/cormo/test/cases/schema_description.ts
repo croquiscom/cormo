@@ -28,6 +28,7 @@ export default function (db: any, db_config: any) {
 
     // using Decorator
     @cormo.Model({ description: 'Guest model' })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class Guest extends cormo.BaseModel {
       @cormo.Column(String)
       public name!: string;
@@ -110,6 +111,7 @@ export default function (db: any, db_config: any) {
 
     // using Decorator
     @cormo.Model()
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class Guest extends cormo.BaseModel {
       @cormo.Column({ type: String, description: 'user name' })
       public name!: string;
@@ -179,7 +181,7 @@ export default function (db: any, db_config: any) {
 
     await connection.applySchemas();
 
-    User._schema.name.description = 'Name of user';
+    User._schema.name!.description = 'Name of user';
     connection._schema_changed = true;
 
     expect(await connection.getSchemaChanges()).to.eql([

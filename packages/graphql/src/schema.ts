@@ -182,7 +182,7 @@ function createDeleteInputType(model_class: typeof cormo.BaseModel, options: Opt
   });
 }
 
-function createOrderType(model_class: typeof cormo.BaseModel, options: Options) {
+function createOrderType(model_class: typeof cormo.BaseModel, _options: Options) {
   const values: GraphQLEnumValueConfigMap = {};
   for (const [column, property] of Object.entries(model_class._schema)) {
     if (
@@ -281,7 +281,7 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
               type: create_input_type,
             },
           },
-          async resolve(source, args, context, info) {
+          async resolve(source, args) {
             const data = args.input;
             const date = Date.now();
             if (options.created_at_column) {
@@ -300,7 +300,7 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
               type: update_input_type,
             },
           },
-          async resolve(source, args, context, info) {
+          async resolve(_source, args) {
             const data = args.input;
             const date = Date.now();
             if (options.updated_at_column) {
@@ -317,7 +317,7 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
               type: delete_input_type,
             },
           },
-          async resolve(source, args, context, info) {
+          async resolve(source, args) {
             const delete_count = await model_class.find(args.input.id).delete();
             if (delete_count === 0) {
               throw new Error('not found');
@@ -353,7 +353,7 @@ export function createDefaultCrudSchema(model_class: typeof cormo.BaseModel, opt
         [snake_name + '_list']: {
           args: list_query_args,
           description: `List query for ${camel_name}`,
-          resolve(source, args, context, info) {
+          resolve(source, args) {
             return { __args: args };
           },
           type: new GraphQLNonNull(list_type),

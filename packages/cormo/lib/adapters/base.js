@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -81,7 +82,7 @@ class AdapterBase {
      * @see Connection::applySchemas
      * @internal
      */
-    getCreateTableQuery(model) {
+    getCreateTableQuery(model_name) {
         return null;
     }
     /**
@@ -90,7 +91,7 @@ class AdapterBase {
      * @see Connection::applySchemas
      * @internal
      */
-    async createTable(model, verbose = false) {
+    async createTable(model_name, verbose = false) {
         return Promise.resolve();
     }
     /** Get query for updating a table description
@@ -98,7 +99,7 @@ class AdapterBase {
      * @see Connection::applySchemas
      * @internal
      */
-    getUpdateTableDescriptionQuery(model) {
+    getUpdateTableDescriptionQuery(model_name) {
         return null;
     }
     /**
@@ -107,7 +108,7 @@ class AdapterBase {
      * @see Connection::applySchemas
      * @internal
      */
-    async updateTableDescription(model, verbose = false) {
+    async updateTableDescription(model_name, verbose = false) {
         return Promise.resolve();
     }
     /** Get query for adding a column
@@ -115,7 +116,7 @@ class AdapterBase {
      * @see Connection::applySchemas
      * @internal
      */
-    getAddColumnQuery(model, column_property) {
+    getAddColumnQuery(model_name, column_property) {
         return null;
     }
     /** Adds a column to a table
@@ -123,7 +124,7 @@ class AdapterBase {
      * @see Connection::applySchemas
      * @internal
      */
-    async addColumn(model, column_property, verbose = false) {
+    async addColumn(model_name, column_property, verbose = false) {
         return Promise.resolve();
     }
     /** Get query for updating a column description
@@ -131,7 +132,7 @@ class AdapterBase {
      * @see Connection::applySchemas
      * @internal
      */
-    getUpdateColumnDescriptionQuery(model, column_property) {
+    getUpdateColumnDescriptionQuery(model_name, column_property) {
         return null;
     }
     /**
@@ -140,7 +141,7 @@ class AdapterBase {
      * @see Connection::applySchemas
      * @internal
      */
-    async updateColumnDescription(model, column_property, verbose = false) {
+    async updateColumnDescription(model_name, column_property, verbose = false) {
         return Promise.resolve();
     }
     /** Get query for creating an index
@@ -164,7 +165,7 @@ class AdapterBase {
      * @see Connection::applySchemas
      * @internal
      */
-    getCreateForeignKeyQuery(model, column, type, references) {
+    getCreateForeignKeyQuery(model_name, column, type, references) {
         return null;
     }
     /** Creates a foreign key.
@@ -172,7 +173,7 @@ class AdapterBase {
      * @see Connection::applySchemas
      * @internal
      */
-    async createForeignKey(model, column, type, references, verbose = false) {
+    async createForeignKey(model_name, column, type, references, verbose = false) {
         return Promise.resolve();
     }
     /**
@@ -190,7 +191,7 @@ class AdapterBase {
      * @see BaseModel.drop
      * @internal
      */
-    async drop(model) {
+    async drop(model_name) {
         return Promise.reject(new Error('not implemented'));
     }
     /** @internal */
@@ -264,12 +265,15 @@ class AdapterBase {
         }
     }
     /** @internal */
-    _convertToModelInstance(model, data, options) {
+    _convertToModelInstance(model_name, data, options) {
         if (options.lean) {
-            model = this._connection.models[model];
+            const model_class = this._connection.models[model_name];
+            if (!model_class) {
+                return null;
+            }
             const instance = {};
-            this.setValuesFromDB(instance, data, model._schema, options.select);
-            model._collapseNestedNulls(instance, options.select_raw, null);
+            this.setValuesFromDB(instance, data, model_class._schema, options.select);
+            model_class._collapseNestedNulls(instance, options.select_raw, null);
             const id = this._getModelID(data);
             if (id) {
                 instance.id = id;
@@ -278,17 +282,21 @@ class AdapterBase {
         }
         else {
             const id = this._getModelID(data);
-            const modelClass = this._connection.models[model];
-            return new modelClass(data, id, options.select, options.select_raw);
+            const model_class = this._connection.models[model_name];
+            return new model_class(data, id, options.select, options.select_raw);
         }
     }
     /** @internal */
     _convertToGroupInstance(model_name, data, group_by, group_fields) {
         const instance = {};
         if (group_by) {
-            const schema = this._connection.models[model_name]._schema;
+            const model_class = this._connection.models[model_name];
+            if (!model_class) {
+                return;
+            }
+            const schema = model_class._schema;
             for (const field of group_by) {
-                const property = lodash_1.default.find(schema, (item) => item._dbname_us === field);
+                const property = lodash_1.default.find(schema, (item) => (item === null || item === void 0 ? void 0 : item._dbname_us) === field);
                 if (property) {
                     util.setPropertyOfPath(instance, property._parts, this.valueToModel(data[field], property));
                 }
@@ -307,16 +315,16 @@ class AdapterBase {
         return instance;
     }
     /** @internal */
-    async _createBulkDefault(model, data, options) {
+    async _createBulkDefault(model_name, data, options) {
         return await Promise.all(data.map((item) => {
-            return this.create(model, item, options);
+            return this.create(model_name, item, options);
         }));
     }
 }
 exports.AdapterBase = AdapterBase;
 if (process.env.NODE_ENV === 'test') {
     AdapterBase.wrapError = (msg, cause) => {
-        if (msg === 'unknown error' && cause && cause.message === 'transaction finished') {
+        if (msg === 'unknown error' && cause.message === 'transaction finished') {
             return cause;
         }
         return new Error(msg + ' caused by ' + cause.toString());

@@ -765,11 +765,11 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
 
     let group_by: string[] | undefined;
     if (this._options.group_by) {
-      group_by = this._options.group_by
-        .map((column) => {
-          return this._model._schema[column]._dbname_us;
-        })
-        .filter((column) => column != null);
+      group_by = _.compact(
+        this._options.group_by.map((column) => {
+          return this._model._schema[column]?._dbname_us;
+        }),
+      );
     }
 
     const orders: string[] = [];
@@ -970,7 +970,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       const archive_records: any[] = records.map((record) => {
         return { model: this._name, data: record };
       });
-      await this._connection.models._Archive.createBulk(archive_records);
+      await this._connection.models._Archive?.createBulk(archive_records);
     }
     if (!need_integrity) {
       return;

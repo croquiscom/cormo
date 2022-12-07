@@ -1,7 +1,7 @@
 import { Logger } from './Logger';
 
 export class EmptyLogger implements Logger {
-  public logQuery(text: string, values?: any[]): void {
+  public logQuery(_text: string, _values?: any[]): void {
     //
   }
 }

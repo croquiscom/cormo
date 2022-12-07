@@ -20,7 +20,12 @@ abstract class SQLAdapterBase extends AdapterBase {
   protected _escape_ch = '"';
 
   /** @internal */
-  public async upsert(model: any, data: any, conditions: Array<Record<string, any>>, options: AdapterUpsertOptions) {
+  public async upsert(
+    model_name: string,
+    data: any,
+    conditions: Array<Record<string, any>>,
+    options: AdapterUpsertOptions,
+  ) {
     const insert_data: any = {};
     const update_data: any = {};
     for (const key in data) {
@@ -42,30 +47,30 @@ abstract class SQLAdapterBase extends AdapterBase {
     }
     if (Object.keys(update_data).length === 0) {
       try {
-        return await this.create(model, insert_data, {});
+        return await this.create(model_name, insert_data, {});
       } catch (error: any) {
         if (!/duplicated/.test(error.message)) {
           throw error;
         }
       }
     } else {
-      const count = await this.updatePartial(model, update_data, conditions, options);
+      const count = await this.updatePartial(model_name, update_data, conditions, options);
       if (count > 0) {
         return;
       }
       try {
-        return await this.create(model, insert_data, {});
+        return await this.create(model_name, insert_data, {});
       } catch (error: any) {
         if (!/duplicated/.test(error.message)) {
           throw error;
         }
-        return await this.updatePartial(model, update_data, conditions, options);
+        return await this.updatePartial(model_name, update_data, conditions, options);
       }
     }
   }
 
   /** @internal */
-  protected _param_place_holder(pos: any) {
+  protected _param_place_holder(_pos: any) {
     return '?';
   }
 
@@ -95,7 +100,7 @@ abstract class SQLAdapterBase extends AdapterBase {
   /** @internal */
   protected _buildWhereSingle(
     schema: ModelSchemaInternal,
-    property: ColumnPropertyInternal,
+    property: ColumnPropertyInternal | undefined,
     key: string,
     key_prefix: string,
     value: any,
@@ -176,7 +181,7 @@ abstract class SQLAdapterBase extends AdapterBase {
           const sub_expr = value[sub_key];
           if (sub_expr.substr(0, 1) === '$') {
             let compare_column = sub_expr.substr(1);
-            compare_column = (schema[compare_column] && schema[compare_column]._dbname_us) || compare_column;
+            compare_column = schema[compare_column]?._dbname_us || compare_column;
             op =
               sub_key === '$cgt'
                 ? '>'
@@ -239,17 +244,17 @@ abstract class SQLAdapterBase extends AdapterBase {
   protected _buildWhereSingleJoin(
     schema: ModelSchemaInternal,
     base_alias: string,
-    join_schemas: Record<string, ModelSchemaInternal>,
+    join_schemas: Record<string, ModelSchemaInternal | undefined>,
     key: string,
     value: any,
     params: any,
   ): any {
     const model = key.split('.', 1)[0];
-    if (join_schemas[model]) {
+    const join_model_class = join_schemas[model];
+    if (join_model_class) {
       // if key is 'JoinModel.column'
-      const model_class = join_schemas[model];
-      const property = model_class[key.substring(model.length + 1)];
-      return this._buildWhereSingle(model_class, property, key, `_${model}.`, value, params);
+      const property = join_model_class[key.substring(model.length + 1)];
+      return this._buildWhereSingle(join_model_class, property, key, `_${model}.`, value, params);
     }
     return this._buildWhereSingle(schema, schema[key], key, base_alias ? base_alias + '.' : '', value, params);
   }
@@ -312,7 +317,7 @@ abstract class SQLAdapterBase extends AdapterBase {
         return 'COUNT(*)';
       } else if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = (schema[column] && schema[column]._dbname_us) || column;
+        column = schema[column]?._dbname_us || column;
         return `SUM(${this._escape_ch}${column}${this._escape_ch})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -321,7 +326,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = (schema[column] && schema[column]._dbname_us) || column;
+        column = schema[column]?._dbname_us || column;
         return `MIN(${this._escape_ch}${column}${this._escape_ch})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -330,7 +335,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = (schema[column] && schema[column]._dbname_us) || column;
+        column = schema[column]?._dbname_us || column;
         return `MAX(${this._escape_ch}${column}${this._escape_ch})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -339,7 +344,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = (schema[column] && schema[column]._dbname_us) || column;
+        column = schema[column]?._dbname_us || column;
         return `AVG(${this._escape_ch}${column}${this._escape_ch})`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -348,7 +353,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       const sub_expr = group_expr[op];
       if (sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = (schema[column] && schema[column]._dbname_us) || column;
+        column = schema[column]?._dbname_us || column;
         return `${this._escape_ch}${column}${this._escape_ch}`;
       } else {
         throw new Error(`unknown expression '${JSON.stringify(op)}'`);
@@ -379,7 +384,7 @@ abstract class SQLAdapterBase extends AdapterBase {
     if (select) {
       const schema = model_class._schema;
       const escape_ch = this._escape_ch;
-      select = select.map((column: any) => `_Base.${escape_ch}${schema[column]._dbname_us}${escape_ch}`);
+      select = select.map((column: any) => `_Base.${escape_ch}${schema[column]?._dbname_us}${escape_ch}`);
       return select.join(',');
     } else {
       return `_Base.*`;

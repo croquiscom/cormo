@@ -26,6 +26,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createAdapter = exports.MySQLAdapter = void 0;
 let mysql;
 let is_mysql2 = false;
+const stream_1 = __importDefault(require("stream"));
+const util_1 = __importDefault(require("util"));
+const lodash_1 = __importDefault(require("lodash"));
+const types = __importStar(require("../types"));
+const sql_base_1 = require("./sql_base");
 try {
     mysql = require('mysql2');
     is_mysql2 = true;
@@ -38,11 +43,6 @@ catch (error1) {
         //
     }
 }
-const stream_1 = __importDefault(require("stream"));
-const util_1 = __importDefault(require("util"));
-const lodash_1 = __importDefault(require("lodash"));
-const types = __importStar(require("../types"));
-const sql_base_1 = require("./sql_base");
 function _typeToSQL(property, support_fractional_seconds, major_version) {
     if (property.array) {
         return 'TEXT';
@@ -167,12 +167,18 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         };
     }
     /** @internal */
-    getCreateTableQuery(model) {
-        const model_class = this._connection.models[model];
+    getCreateTableQuery(model_name) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return '';
+        }
         const table_name = model_class.table_name;
         const column_sqls = [];
         for (const column in model_class._schema) {
             const property = model_class._schema[column];
+            if (!property) {
+                continue;
+            }
             if (property.primary_key) {
                 column_sqls.push(`\`${property._dbname_us}\` BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY`);
             }
@@ -195,8 +201,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         return query;
     }
     /** @internal */
-    async createTable(model, verbose = false) {
-        const query = this.getCreateTableQuery(model);
+    async createTable(model_name, verbose = false) {
+        const query = this.getCreateTableQuery(model_name);
         if (verbose) {
             console.log(`  (${query})`);
         }
@@ -208,15 +214,18 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    getUpdateTableDescriptionQuery(model) {
+    getUpdateTableDescriptionQuery(model_name) {
         var _a;
-        const model_class = this._connection.models[model];
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return '';
+        }
         const table_name = model_class.table_name;
         return `ALTER TABLE ${table_name} COMMENT ${mysql.escape((_a = model_class.description) !== null && _a !== void 0 ? _a : '')}`;
     }
     /** @internal */
-    async updateTableDescription(model, verbose = false) {
-        const query = this.getUpdateTableDescriptionQuery(model);
+    async updateTableDescription(model_name, verbose = false) {
+        const query = this.getUpdateTableDescriptionQuery(model_name);
         if (verbose) {
             console.log(`  (${query})`);
         }
@@ -228,8 +237,11 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    getAddColumnQuery(model, column_property) {
-        const model_class = this._connection.models[model];
+    getAddColumnQuery(model_name, column_property) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return '';
+        }
         const table_name = model_class.table_name;
         let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds, this._version.major);
         if (column_property.description) {
@@ -238,8 +250,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         return `ALTER TABLE \`${table_name}\` ADD COLUMN \`${column_property._dbname_us}\` ${column_sql}`;
     }
     /** @internal */
-    async addColumn(model, column_property, verbose = false) {
-        const query = this.getAddColumnQuery(model, column_property);
+    async addColumn(model_name, column_property, verbose = false) {
+        const query = this.getAddColumnQuery(model_name, column_property);
         if (verbose) {
             console.log(`  (${query})`);
         }
@@ -251,8 +263,11 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    getUpdateColumnDescriptionQuery(model, column_property) {
-        const model_class = this._connection.models[model];
+    getUpdateColumnDescriptionQuery(model_name, column_property) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return '';
+        }
         const table_name = model_class.table_name;
         let column_sql = _propertyToSQL(column_property, this.support_fractional_seconds, this._version.major);
         if (column_property.description) {
@@ -261,8 +276,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         return `ALTER TABLE \`${table_name}\` CHANGE COLUMN \`${column_property._dbname_us}\` \`${column_property._dbname_us}\` ${column_sql}`;
     }
     /** @internal */
-    async updateColumnDescription(model, column_property, verbose = false) {
-        const query = this.getUpdateColumnDescriptionQuery(model, column_property);
+    async updateColumnDescription(model_name, column_property, verbose = false) {
+        const query = this.getUpdateColumnDescriptionQuery(model_name, column_property);
         if (verbose) {
             console.log(`  (${query})`);
         }
@@ -275,13 +290,17 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     getCreateIndexQuery(model_name, index) {
+        var _a;
         const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return '';
+        }
         const schema = model_class._schema;
         const table_name = model_class.table_name;
         const columns = [];
         for (const column in index.columns) {
             const order = index.columns[column];
-            columns.push(`\`${(schema[column] && schema[column]._dbname_us) || column}\` ${order === -1 ? 'DESC' : 'ASC'}`);
+            columns.push(`\`${((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column}\` ${order === -1 ? 'DESC' : 'ASC'}`);
         }
         const unique = index.options.unique ? 'UNIQUE ' : '';
         return `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${table_name}\` (${columns.join(',')})`;
@@ -300,8 +319,11 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    getCreateForeignKeyQuery(model, column, type, references) {
-        const model_class = this._connection.models[model];
+    getCreateForeignKeyQuery(model_name, column, type, references) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return '';
+        }
         const table_name = model_class.table_name;
         let action = '';
         switch (type) {
@@ -319,8 +341,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
       REFERENCES \`${references.table_name}\`(id) ON DELETE ${action}`;
     }
     /** @internal */
-    async createForeignKey(model, column, type, references, verbose = false) {
-        const query = this.getCreateForeignKeyQuery(model, column, type, references);
+    async createForeignKey(model_name, column, type, references, verbose = false) {
+        const query = this.getCreateForeignKeyQuery(model_name, column, type, references);
         if (verbose) {
             console.log(`  (${query})`);
         }
@@ -333,8 +355,12 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     async deleteAllIgnoringConstraint(model_list) {
-        await Promise.all(model_list.map(async (model) => {
-            const table_name = this._connection.models[model].table_name;
+        await Promise.all(model_list.map(async (model_name) => {
+            const model_class = this._connection.models[model_name];
+            if (!model_class) {
+                return;
+            }
+            const table_name = model_class.table_name;
             const connection = await this.getConnection();
             try {
                 try {
@@ -353,8 +379,12 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }));
     }
     /** @internal */
-    async drop(model) {
-        const table_name = this._connection.models[model].table_name;
+    async drop(model_name) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return;
+        }
+        const table_name = model_class.table_name;
         try {
             await this._client.queryAsync(`DROP TABLE IF EXISTS \`${table_name}\``);
         }
@@ -367,10 +397,14 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         return _typeToSQL(column_property, this.support_fractional_seconds, this._version.major);
     }
     /** @internal */
-    async create(model, data, options) {
-        const table_name = this._connection.models[model].table_name;
+    async create(model_name, data, options) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            throw new Error('model not found');
+        }
+        const table_name = model_class.table_name;
         const values = [];
-        const [fields, places] = this._buildUpdateSet(model, data, values, true);
+        const [fields, places] = this._buildUpdateSet(model_name, data, values, true);
         const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
         let result;
         try {
@@ -388,14 +422,18 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    async createBulk(model, data, options) {
-        const table_name = this._connection.models[model].table_name;
+    async createBulk(model_name, data, options) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            throw new Error('model not found');
+        }
+        const table_name = model_class.table_name;
         const values = [];
         let fields;
         const places = [];
         data.forEach((item) => {
             let places_sub;
-            [fields, places_sub] = this._buildUpdateSet(model, item, values, true);
+            [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true);
             places.push('(' + places_sub + ')');
         });
         const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES ${places.join(',')}`;
@@ -415,10 +453,14 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    async update(model, data, options) {
-        const table_name = this._connection.models[model].table_name;
+    async update(model_name, data, options) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return;
+        }
+        const table_name = model_class.table_name;
         const values = [];
-        const [fields] = this._buildUpdateSet(model, data, values);
+        const [fields] = this._buildUpdateSet(model_name, data, values);
         values.push(data.id);
         const sql = `UPDATE \`${table_name}\` SET ${fields} WHERE id=?`;
         try {
@@ -429,13 +471,17 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    async updatePartial(model, data, conditions, options) {
-        const table_name = this._connection.models[model].table_name;
+    async updatePartial(model_name, data, conditions, options) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return 0;
+        }
+        const table_name = model_class.table_name;
         const values = [];
-        const [fields] = this._buildPartialUpdateSet(model, data, values);
+        const [fields] = this._buildPartialUpdateSet(model_name, data, values);
         let sql = `UPDATE \`${table_name}\` SET ${fields}`;
         if (conditions.length > 0) {
-            sql += ' WHERE ' + this._buildWhere(this._connection.models[model]._schema, '', {}, conditions, values);
+            sql += ' WHERE ' + this._buildWhere(model_class._schema, '', {}, conditions, values);
         }
         let result;
         try {
@@ -450,9 +496,13 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         return result.affectedRows;
     }
     /** @internal */
-    async upsert(model, data, conditions, options) {
+    async upsert(model_name, data, conditions, options) {
         var _a;
-        const table_name = this._connection.models[model].table_name;
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return;
+        }
+        const table_name = model_class.table_name;
         const insert_data = {};
         const update_data = {};
         for (const key in data) {
@@ -478,13 +528,13 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         let places = '';
         let sql = '';
         if (Object.keys(update_data).length === 0) {
-            [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
+            [fields, places] = this._buildUpdateSet(model_name, insert_data, values, true);
             sql = `INSERT IGNORE \`${table_name}\` (${fields}) VALUES (${places})`;
         }
         else {
-            [fields, places] = this._buildUpdateSet(model, insert_data, values, true);
+            [fields, places] = this._buildUpdateSet(model_name, insert_data, values, true);
             sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
-            [fields] = this._buildPartialUpdateSet(model, update_data, values);
+            [fields] = this._buildPartialUpdateSet(model_name, update_data, values);
             sql += ` ON DUPLICATE KEY UPDATE ${fields}`;
         }
         try {
@@ -495,10 +545,14 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    async findById(model, id, options) {
+    async findById(model_name, id, options) {
         id = this._convertValueType(id, this.key_type);
-        const select = this._buildSelect(this._connection.models[model], options.select);
-        const table_name = this._connection.models[model].table_name;
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            throw new Error('model not found');
+        }
+        const select = this._buildSelect(model_class, options.select);
+        const table_name = model_class.table_name;
         const sql = `SELECT ${select} FROM \`${table_name}\` AS _Base WHERE id=? LIMIT 1`;
         if (options.explain) {
             return await this.query(`EXPLAIN ${sql}`, id, { transaction: options.transaction, node: options.node });
@@ -511,7 +565,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             throw this._wrapError('unknown error', error);
         }
         if (result && result.length === 1) {
-            return this._convertToModelInstance(model, result[0], options);
+            return this._convertToModelInstance(model_name, result[0], options);
         }
         else if (result && result.length > 1) {
             throw new Error('unknown error');
@@ -521,8 +575,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    async find(model, conditions, options) {
-        const [sql, params] = this._buildSqlForFind(model, conditions, options);
+    async find(model_name, conditions, options) {
+        const [sql, params] = this._buildSqlForFind(model_name, conditions, options);
         if (options.explain) {
             return await this.query(`EXPLAIN ${sql}`, params, { transaction: options.transaction, node: options.node });
         }
@@ -535,21 +589,21 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         if (options.group_fields) {
             return result.map((record) => {
-                return this._convertToGroupInstance(model, record, options.group_by, options.group_fields);
+                return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields);
             });
         }
         else {
             return result.map((record) => {
-                return this._convertToModelInstance(model, record, options);
+                return this._convertToModelInstance(model_name, record, options);
             });
         }
     }
     /** @internal */
-    stream(model, conditions, options) {
+    stream(model_name, conditions, options) {
         let sql;
         let params;
         try {
-            [sql, params] = this._buildSqlForFind(model, conditions, options);
+            [sql, params] = this._buildSqlForFind(model_name, conditions, options);
         }
         catch (error) {
             const readable = new stream_1.default.Readable({ objectMode: true });
@@ -558,7 +612,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         const transformer = new stream_1.default.Transform({ objectMode: true });
         transformer._transform = (record, encoding, callback) => {
-            transformer.push(this._convertToModelInstance(model, record, options));
+            transformer.push(this._convertToModelInstance(model_name, record, options));
             callback();
         };
         this._connection._logger.logQuery(sql, params);
@@ -574,6 +628,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     /** @internal */
     async count(model_name, conditions, options) {
         const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return 0;
+        }
         const select = options.select ? this._buildSelect(model_class, options.select) : '*';
         const params = [];
         const table_name = model_class.table_name;
@@ -587,9 +644,13 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         if (options.joins.length > 0) {
             const escape_ch = this._escape_ch;
             for (const join of options.joins) {
-                sql += ` ${join.type} ${this._connection.models[join.model_name].table_name} AS _${join.alias}`;
+                const join_model_class = this._connection.models[join.model_name];
+                if (!join_model_class) {
+                    continue;
+                }
+                sql += ` ${join.type} ${join_model_class.table_name} AS _${join.alias}`;
                 sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = _${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
-                join_schemas[join.alias] = this._connection.models[join.model_name]._schema;
+                join_schemas[join.alias] = join_model_class._schema;
             }
         }
         if (conditions.length > 0) {
@@ -621,15 +682,19 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     /** @internal */
     async delete(model_name, conditions, options) {
         const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return 0;
+        }
         const params = [];
         const table_name = model_class.table_name;
         let sql = `DELETE FROM \`${table_name}\``;
         if (conditions.length > 0) {
             sql += ' WHERE ' + this._buildWhere(model_class._schema, '', {}, conditions, params);
         }
-        if (options && options.orders.length > 0) {
+        if (options.orders.length > 0) {
             const schema = model_class._schema;
             const orders = options.orders.map((order) => {
+                var _a;
                 let column;
                 if (order[0] === '-') {
                     column = order.slice(1);
@@ -639,18 +704,18 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                     column = order;
                     order = 'ASC';
                 }
-                column = (schema[column] && schema[column]._dbname_us) || column;
+                column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
                 return `\`${column}\` ${order}`;
             });
             sql += ' ORDER BY ' + orders.join(',');
         }
-        if (options && options.limit) {
+        if (options.limit) {
             sql += ' LIMIT ' + options.limit;
-            if (options && options.skip) {
+            if (options.skip) {
                 sql += ' OFFSET ' + options.skip;
             }
         }
-        else if (options && options.skip) {
+        else if (options.skip) {
             sql += ' LIMIT 2147483647 OFFSET ' + options.skip;
         }
         let result;
@@ -891,12 +956,13 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     _buildGroupExpr(schema, group_expr) {
+        var _a;
         const op = Object.keys(group_expr)[0];
         if (op === '$any') {
             const sub_expr = group_expr[op];
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
-                column = (schema[column] && schema[column]._dbname_us) || column;
+                column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
                 return `ANY_VALUE(${column})`;
             }
             else {
@@ -1003,13 +1069,17 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    _buildUpdateSet(model, data, values, insert = false) {
-        const schema = this._connection.models[model]._schema;
+    _buildUpdateSet(model_name, data, values, insert = false) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return ['', ''];
+        }
+        const schema = model_class._schema;
         const fields = [];
         const places = [];
         for (const column in schema) {
             const property = schema[column];
-            if (property.primary_key) {
+            if (property === null || property === void 0 ? void 0 : property.primary_key) {
                 continue;
             }
             this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
@@ -1017,13 +1087,16 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         return [fields.join(','), places.join(',')];
     }
     /** @internal */
-    _buildPartialUpdateSet(model, data, values) {
-        const schema = this._connection.models[model]._schema;
+    _buildPartialUpdateSet(model_name, data, values) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return ['', ''];
+        }
+        const schema = model_class._schema;
         const fields = [];
         const places = [];
         for (const column in data) {
-            const value = data[column];
-            const property = lodash_1.default.find(schema, (item) => item._dbname_us === column);
+            const property = lodash_1.default.find(schema, (item) => (item === null || item === void 0 ? void 0 : item._dbname_us) === column);
             if (!property || property.primary_key) {
                 continue;
             }
@@ -1034,6 +1107,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     /** @internal */
     _buildSqlForFind(model_name, conditions, options) {
         const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return ['', []];
+        }
         let select;
         if (options.group_by || options.group_fields) {
             select = this._buildGroupFields(model_class, options.group_by, options.group_fields);
@@ -1058,9 +1134,13 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         if (options.joins.length > 0) {
             const escape_ch = this._escape_ch;
             for (const join of options.joins) {
-                sql += ` ${join.type} ${this._connection.models[join.model_name].table_name} AS _${join.alias}`;
+                const join_model_class = this._connection.models[join.model_name];
+                if (!join_model_class) {
+                    continue;
+                }
+                sql += ` ${join.type} ${join_model_class.table_name} AS _${join.alias}`;
                 sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = _${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
-                join_schemas[join.alias] = this._connection.models[join.model_name]._schema;
+                join_schemas[join.alias] = join_model_class._schema;
             }
         }
         if (conditions.length > 0) {
@@ -1073,9 +1153,10 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         if (options.conditions_of_group.length > 0) {
             sql += ' HAVING ' + this._buildWhere(options.group_fields, '_Base', {}, options.conditions_of_group, params);
         }
-        if ((options && options.orders.length > 0) || order_by) {
+        if (options.orders.length > 0 || order_by) {
             const schema = model_class._schema;
             const orders = options.orders.map((order) => {
+                var _a;
                 let column;
                 if (order[0] === '-') {
                     column = order.slice(1);
@@ -1085,7 +1166,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                     column = order;
                     order = 'ASC';
                 }
-                column = (schema[column] && schema[column]._dbname_us) || column;
+                column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
                 return `\`${column}\` ${order}`;
             });
             if (order_by) {
@@ -1093,13 +1174,13 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             }
             sql += ' ORDER BY ' + orders.join(',');
         }
-        if (options && options.limit) {
+        if (options.limit) {
             sql += ' LIMIT ' + options.limit;
-            if (options && options.skip) {
+            if (options.skip) {
                 sql += ' OFFSET ' + options.skip;
             }
         }
-        else if (options && options.skip) {
+        else if (options.skip) {
             sql += ' LIMIT 2147483647 OFFSET ' + options.skip;
         }
         return [sql, params];

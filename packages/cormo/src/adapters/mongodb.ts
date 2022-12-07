@@ -49,7 +49,7 @@ function _objectIdToString(oid: any) {
   return oid.toString();
 }
 
-function _buildWhereSingle(property: ColumnPropertyInternal, key: any, value: any, not_op?: any): any {
+function _buildWhereSingle(property: ColumnPropertyInternal | undefined, key: any, value: any, not_op?: any): any {
   if (property == null) {
     throw new Error(`unknown column '${key}'`);
   }
@@ -246,7 +246,7 @@ function _buildGroupExpr(schema: ModelSchemaInternal, group_expr: any) {
   }
   if (typeof sub_expr === 'string' && sub_expr.substr(0, 1) === '$') {
     let column = sub_expr.substr(1);
-    column = (schema[column] && schema[column]._dbname_us) || column;
+    column = schema[column]?._dbname_us || column;
     return { [op]: `$${column}` };
   } else {
     return { [op]: sub_expr };
@@ -339,9 +339,12 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async createTable(model: string) {
-    const collection = this._collection(model);
-    const model_class = this._connection.models[model];
+  public async createTable(model_name: string) {
+    const collection = this._collection(model_name);
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return;
+    }
     const schema = model_class._schema;
 
     await this._db.createCollection(_getMongoDBColName(model_class.table_name));
@@ -349,7 +352,7 @@ export class MongoDBAdapter extends AdapterBase {
     const indexes: any[] = [];
     for (const column in schema) {
       const property = schema[column];
-      if (property.type_class === types.GeoPoint) {
+      if (property?.type_class === types.GeoPoint) {
         indexes.push([_.zipObject([column], ['2d'])]);
       }
     }
@@ -377,8 +380,12 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async drop(model: any) {
-    const name = this._connection.models[model].table_name;
+  public async drop(model_name: string) {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return;
+    }
+    const name = model_class.table_name;
     delete this._collections[name];
     try {
       await this._db.dropCollection(_getMongoDBColName(name));
@@ -412,10 +419,10 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async create(model: string, data: any, options: { transaction?: Transaction }) {
+  public async create(model_name: string, data: any, _options: { transaction?: Transaction }) {
     let result: any;
     try {
-      result = await this._collection(model).insertOne(data, { safe: true });
+      result = await this._collection(model_name).insertOne(data, { safe: true });
     } catch (error: any) {
       throw _processSaveError(error);
     }
@@ -429,7 +436,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async createBulk(model: string, data: any[], options: { transaction?: Transaction }) {
+  public async createBulk(model_name: string, data: any[], options: { transaction?: Transaction }) {
     if (data.length > 1000) {
       const chunks = [];
       let i = 0;
@@ -439,17 +446,17 @@ export class MongoDBAdapter extends AdapterBase {
       }
       const ids_all: any = [];
       for (const chunk of chunks) {
-        [].push.apply(ids_all, await this.createBulk(model, chunk, options));
+        [].push.apply(ids_all, await this.createBulk(model_name, chunk, options));
       }
       return ids_all;
     }
     let result: any;
     try {
-      result = await this._collection(model).insertMany(data, { safe: true });
+      result = await this._collection(model_name).insertMany(data, { safe: true });
     } catch (e: any) {
       throw _processSaveError(e);
     }
-    let error;
+    let error: Error | undefined;
     const ids = Object.values(result.insertedIds).map((inserted_id: any) => {
       const id = _objectIdToString(inserted_id);
       if (!id) {
@@ -465,11 +472,11 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async update(model: any, data: any, options: { transaction?: Transaction }) {
+  public async update(model_name: string, data: any, _options: { transaction?: Transaction }) {
     const id = data.id;
     delete data.id;
     try {
-      await this._collection(model).replaceOne({ _id: id }, data, { safe: true });
+      await this._collection(model_name).replaceOne({ _id: id }, data, { safe: true });
     } catch (error: any) {
       throw _processSaveError(error);
     }
@@ -477,12 +484,16 @@ export class MongoDBAdapter extends AdapterBase {
 
   /** @internal */
   public async updatePartial(
-    model: string,
+    model_name: string,
     data: any,
     conditions_arg: Array<Record<string, any>>,
-    options: { transaction?: Transaction },
+    _options: { transaction?: Transaction },
   ): Promise<number> {
-    const schema = this._connection.models[model]._schema;
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return 0;
+    }
+    const schema = model_class._schema;
     let conditions = _buildWhere(schema, conditions_arg);
     if (!conditions) {
       conditions = {};
@@ -503,7 +514,7 @@ export class MongoDBAdapter extends AdapterBase {
       delete update_ops.$inc;
     }
     try {
-      const result = await this._collection(model).updateMany(conditions, update_ops, { safe: true, multi: true });
+      const result = await this._collection(model_name).updateMany(conditions, update_ops, { safe: true, multi: true });
       return result.modifiedCount;
     } catch (error: any) {
       throw _processSaveError(error);
@@ -512,12 +523,16 @@ export class MongoDBAdapter extends AdapterBase {
 
   /** @internal */
   public async upsert(
-    model: any,
+    model_name: string,
     data: any,
     conditions_arg: Array<Record<string, any>>,
     options: AdapterUpsertOptions,
   ) {
-    const schema = this._connection.models[model]._schema;
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return;
+    }
+    const schema = model_class._schema;
     let conditions = _buildWhere(schema, conditions_arg);
     if (!conditions) {
       conditions = {};
@@ -546,7 +561,7 @@ export class MongoDBAdapter extends AdapterBase {
       delete update_ops.$inc;
     }
     try {
-      await this._collection(model).updateMany(conditions, update_ops, { safe: true, upsert: true });
+      await this._collection(model_name).updateMany(conditions, update_ops, { safe: true, upsert: true });
     } catch (error: any) {
       throw _processSaveError(error);
     }
@@ -554,7 +569,7 @@ export class MongoDBAdapter extends AdapterBase {
 
   /** @internal */
   public async findById(
-    model: string,
+    model_name: string,
     id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction },
   ): Promise<any> {
@@ -570,11 +585,11 @@ export class MongoDBAdapter extends AdapterBase {
     }
     if (options.explain) {
       client_options.explain = true;
-      return await this._collection(model).findOne({ _id: id }, client_options);
+      return await this._collection(model_name).findOne({ _id: id }, client_options);
     }
     let result: any;
     try {
-      result = await this._collection(model).findOne({ _id: id }, client_options);
+      result = await this._collection(model_name).findOne({ _id: id }, client_options);
     } catch (error: any) {
       throw MongoDBAdapter.wrapError('unknown error', error);
     }
@@ -582,22 +597,22 @@ export class MongoDBAdapter extends AdapterBase {
       throw new Error('not found');
       return;
     }
-    return this._convertToModelInstance(model, result, options);
+    return this._convertToModelInstance(model_name, result, options);
   }
 
   /** @internal */
   public async find(
     model_name: string,
-    conditions: Array<Record<string, any>>,
+    conditions_arg: Array<Record<string, any>>,
     options: AdapterFindOptions,
   ): Promise<any> {
-    let fields: any;
-    let orders: any;
-    let client_options: any;
-    [conditions, fields, orders, client_options] = this._buildConditionsForFind(model_name, conditions, options);
+    const [conditions, , orders, client_options] = this._buildConditionsForFind(model_name, conditions_arg, options);
     // console.log(JSON.stringify(conditions));
     if (options.group_by || options.group_fields) {
       const model_class = this._connection.models[model_name];
+      if (!model_class) {
+        throw new Error('model not found');
+      }
       const pipeline: any[] = [];
       if (conditions) {
         pipeline.push({ $match: conditions });
@@ -658,12 +673,25 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public stream(model: any, conditions: Array<Record<string, any>>, options: AdapterFindOptions) {
-    let fields: any;
-    let orders: any;
-    let client_options: any;
+  public stream(model_name: string, conditions_arg: Array<Record<string, any>>, options: AdapterFindOptions) {
     try {
-      [conditions, fields, orders, client_options] = this._buildConditionsForFind(model, conditions, options);
+      const [conditions, , , client_options] = this._buildConditionsForFind(model_name, conditions_arg, options);
+      const transformer = new stream.Transform({ objectMode: true });
+      transformer._transform = (record, encoding, callback) => {
+        transformer.push(this._convertToModelInstance(model_name, record, options));
+        callback();
+      };
+      try {
+        const cursor = this._collection(model_name).find(conditions, client_options).stream();
+        cursor
+          .on('error', (e: any) => {
+            transformer.emit('error', e);
+          })
+          .pipe(transformer);
+      } catch (error: any) {
+        transformer.emit('error', MongoDBAdapter.wrapError('unknown error', error));
+      }
+      return transformer;
     } catch (e: any) {
       const readable = new stream.Readable({ objectMode: true });
       readable._read = () => {
@@ -671,22 +699,6 @@ export class MongoDBAdapter extends AdapterBase {
       };
       return readable;
     }
-    const transformer = new stream.Transform({ objectMode: true });
-    transformer._transform = (record, encoding, callback) => {
-      transformer.push(this._convertToModelInstance(model, record, options));
-      callback();
-    };
-    try {
-      const cursor = this._collection(model).find(conditions, client_options).stream();
-      cursor
-        .on('error', (e: any) => {
-          transformer.emit('error', e);
-        })
-        .pipe(transformer);
-    } catch (error: any) {
-      transformer.emit('error', MongoDBAdapter.wrapError('unknown error', error));
-    }
-    return transformer;
   }
 
   /** @internal */
@@ -696,6 +708,9 @@ export class MongoDBAdapter extends AdapterBase {
     options: AdapterCountOptions,
   ): Promise<number> {
     const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return 0;
+    }
     const conditions = _buildWhere(model_class._schema, conditions_arg);
     // console.log(JSON.stringify(conditions))
     if (options.group_by || options.group_fields) {
@@ -736,17 +751,16 @@ export class MongoDBAdapter extends AdapterBase {
     options: AdapterDeleteOptions,
   ): Promise<number> {
     const model_class = this._connection.models[model_name];
-    if (options && (options.orders.length > 0 || options.limit || options.skip)) {
-      const [conditions_find, fields, orders, client_options] = this._buildConditionsForFind(
-        model_name,
-        conditions_arg,
-        {
-          ...options,
-          lean: true,
-          joins: [],
-          conditions_of_group: [],
-        },
-      );
+    if (!model_class) {
+      return 0;
+    }
+    if (options.orders.length > 0 || options.limit || options.skip) {
+      const [conditions_find, , , client_options] = this._buildConditionsForFind(model_name, conditions_arg, {
+        ...options,
+        lean: true,
+        joins: [],
+        conditions_of_group: [],
+      });
       const cursor = await this._collection(model_name).find(conditions_find, {
         ...client_options,
         projection: { _id: 1 },
@@ -801,8 +815,8 @@ export class MongoDBAdapter extends AdapterBase {
   /**
    * Exposes mongodb module's a collection object
    */
-  public collection(model: any) {
-    return this._collection(model);
+  public collection(model_name: string) {
+    return this._collection(model_name);
   }
 
   /** @internal */
@@ -843,8 +857,12 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private _collection(model: any): any {
-    const name = this._connection.models[model].table_name;
+  private _collection(model_name: string): any {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return;
+    }
+    const name = model_class.table_name;
     if (!this._collections[name]) {
       return (this._collections[name] = this._db.collection(_getMongoDBColName(name)));
     } else {
@@ -860,7 +878,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private async _getSchema(table: string): Promise<'NO SCHEMA'> {
+  private async _getSchema(_table: string): Promise<'NO SCHEMA'> {
     return Promise.resolve('NO SCHEMA');
   }
 
@@ -917,10 +935,18 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  private _buildConditionsForFind(model: any, conditions_arg: Array<Record<string, any>>, options: AdapterFindOptions) {
+  private _buildConditionsForFind(
+    model_name: string,
+    conditions_arg: Array<Record<string, any>>,
+    options: AdapterFindOptions,
+  ): [Record<string, any> | undefined, any, any, any] {
     const fields = this._buildSelect(options.select);
     let orders: any;
-    let conditions = _buildWhere(this._connection.models[model]._schema, conditions_arg);
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return [undefined, undefined, undefined, {}];
+    }
+    let conditions = _buildWhere(model_class._schema, conditions_arg);
     if (options.near != null && Object.keys(options.near)[0]) {
       const field = Object.keys(options.near)[0];
       let keys: any;

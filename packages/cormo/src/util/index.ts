@@ -11,7 +11,7 @@
  * @memberOf util
  */
 export function getLeafOfPath(
-  obj: object,
+  obj: object | undefined,
   path: string | string[],
   create_object = true,
 ): [object | undefined, string | undefined] {

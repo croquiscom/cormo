@@ -112,9 +112,9 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
      * Maps from model name to model class
      * @see Connection::constructor
      */
-    models: {
+    models: Partial<{
         [name: string]: typeof BaseModel;
-    };
+    }>;
     [name: string]: any;
     /**
      * Creates a connection
@@ -163,7 +163,7 @@ declare class Connection<AdapterType extends AdapterBase = AdapterBase> extends 
     /**
      * Logs
      */
-    log(model: string, type: string, data: object): void;
+    log(model_name: string, type: string, data: object): void;
     [inspect.custom](): string;
     /**
      * Manipulate data

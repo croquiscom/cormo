@@ -30,7 +30,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { name: 'Bill Smith', age: 45 },
       { name: 'Alice Jackson', age: 27 },
     ]);
-    const posts = await models.Post.createBulk([
+    const _posts = await models.Post.createBulk([
       { title: 'first post', body: 'This is the 1st post.', user_id: users[0].id },
       { title: 'second post', body: 'This is the 2nd post.', user_id: users[0].id },
       { title: 'third post', body: 'This is the 3rd post.', user_id: users[1].id },
@@ -54,7 +54,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { name: 'Bill Smith', age: 45 },
       { name: 'Alice Jackson', age: 27 },
     ]);
-    const posts = await models.Post.createBulk([
+    const _posts = await models.Post.createBulk([
       { title: 'first post', body: 'This is the 1st post.', user_id: users[0].id },
       { title: 'second post', body: 'This is the 2nd post.', user_id: users[0].id },
       { title: 'third post', body: 'This is the 3rd post.', user_id: users[1].id },
@@ -79,7 +79,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { name: 'Bill Smith', age: 45 },
       { name: 'Alice Jackson', age: 27 },
     ]);
-    const computers = await models.Computer.createBulk([
+    const _computers = await models.Computer.createBulk([
       { brand: 'Maple', user_id: users[0].id },
       { brand: 'Antel', user_id: users[0].id },
       { brand: 'Maple', user_id: users[1].id },
@@ -102,7 +102,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { name: 'Bill Smith', age: 45 },
       { name: 'Alice Jackson', age: 27 },
     ]);
-    const computers = await models.Computer.createBulk([
+    const _computers = await models.Computer.createBulk([
       { brand: 'Maple', user_id: users[0].id },
       { brand: 'Antel', user_id: users[0].id },
       { brand: 'Maple', user_id: users[1].id },
@@ -159,12 +159,12 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
   it('specify key', async () => {
     const post1 = await models.Post.create({ title: 'first post', body: 'This is the 1st post.' });
     const post2 = await models.Post.create({ title: 'second post', body: 'This is the 2nd post.' });
-    const comment1 = await models.Post.create({
+    const _comment1 = await models.Post.create({
       body: 'This is the 1st comment.',
       parent_post_id: post1.id,
       title: 'first comment',
     });
-    const comment2 = await models.Post.create({
+    const _comment2 = await models.Post.create({
       body: 'This is the 2nd comment.',
       parent_post_id: post1.id,
       title: 'second comment',
@@ -199,7 +199,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { name: 'Bill Smith', age: 45 },
       { name: 'Alice Jackson', age: 27 },
     ]);
-    const posts = await models.Post.createBulk([
+    const _posts = await models.Post.createBulk([
       { title: 'first post', body: 'This is the 1st post.', user_id: users[0].id },
       { title: 'second post', body: 'This is the 2nd post.', user_id: users[0].id },
       { title: 'third post', body: 'This is the 3rd post.', user_id: users[1].id },
@@ -222,7 +222,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { name: 'Bill Smith', age: 45 },
       { name: 'Alice Jackson', age: 27 },
     ]);
-    const posts = await models.Post.createBulk([
+    const _posts = await models.Post.createBulk([
       { title: 'first post', body: 'This is the 1st post.', user_id: users[0].id },
       { title: 'second post', body: 'This is the 2nd post.', user_id: users[0].id },
       { title: 'third post', body: 'This is the 3rd post.', user_id: users[1].id },

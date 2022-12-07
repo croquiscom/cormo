@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import stream from 'stream';
 import _ from 'lodash';
 import { Connection } from '../connection';
@@ -14,9 +16,7 @@ export interface SchemasColumn {
 }
 
 export interface SchemasTable {
-  columns: {
-    [column_name: string]: SchemasColumn;
-  };
+  columns: { [column_name: string]: SchemasColumn | undefined };
   description?: string;
 }
 
@@ -25,8 +25,8 @@ export interface SchemasIndex {
 }
 
 export interface Schemas {
-  tables: { [table_name: string]: SchemasTable | 'NO SCHEMA' };
-  indexes?: { [table_name: string]: SchemasIndex };
+  tables: { [table_name: string]: SchemasTable | 'NO SCHEMA' | undefined };
+  indexes?: { [table_name: string]: SchemasIndex | undefined };
   foreign_keys?: { [table_name: string]: any };
 }
 
@@ -146,7 +146,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public getCreateTableQuery(model: string): string | null {
+  public getCreateTableQuery(model_name: string): string | null {
     return null;
   }
 
@@ -156,7 +156,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async createTable(model: string, verbose = false) {
+  public async createTable(model_name: string, verbose = false) {
     return Promise.resolve();
   }
 
@@ -165,7 +165,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public getUpdateTableDescriptionQuery(model: string): string | null {
+  public getUpdateTableDescriptionQuery(model_name: string): string | null {
     return null;
   }
 
@@ -175,7 +175,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async updateTableDescription(model: string, verbose = false) {
+  public async updateTableDescription(model_name: string, verbose = false) {
     return Promise.resolve();
   }
 
@@ -184,7 +184,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public getAddColumnQuery(model: string, column_property: ColumnPropertyInternal): string | null {
+  public getAddColumnQuery(model_name: string, column_property: ColumnPropertyInternal): string | null {
     return null;
   }
 
@@ -193,7 +193,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async addColumn(model: string, column_property: ColumnPropertyInternal, verbose = false) {
+  public async addColumn(model_name: string, column_property: ColumnPropertyInternal, verbose = false) {
     return Promise.resolve();
   }
 
@@ -202,7 +202,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public getUpdateColumnDescriptionQuery(model: string, column_property: ColumnPropertyInternal): string | null {
+  public getUpdateColumnDescriptionQuery(model_name: string, column_property: ColumnPropertyInternal): string | null {
     return null;
   }
 
@@ -212,7 +212,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async updateColumnDescription(model: string, column_property: ColumnPropertyInternal, verbose = false) {
+  public async updateColumnDescription(model_name: string, column_property: ColumnPropertyInternal, verbose = false) {
     return Promise.resolve();
   }
 
@@ -239,7 +239,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public getCreateForeignKeyQuery(model: string, column: string, type: string, references: {}): string | null {
+  public getCreateForeignKeyQuery(model_name: string, column: string, type: string, references: {}): string | null {
     return null;
   }
 
@@ -248,7 +248,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async createForeignKey(model: string, column: string, type: string, references: {}, verbose = false) {
+  public async createForeignKey(model_name: string, column: string, type: string, references: {}, verbose = false) {
     return Promise.resolve();
   }
 
@@ -268,7 +268,7 @@ abstract class AdapterBase {
    * @see BaseModel.drop
    * @internal
    */
-  public async drop(model: string): Promise<void> {
+  public async drop(model_name: string): Promise<void> {
     return Promise.reject(new Error('not implemented'));
   }
 
@@ -314,26 +314,26 @@ abstract class AdapterBase {
    * Creates a record
    * @internal
    */
-  public abstract create(model: string, data: any, options: { transaction?: Transaction }): Promise<any>;
+  public abstract create(model_name: string, data: any, options: { transaction?: Transaction }): Promise<any>;
 
   /**
    * Creates records
    * @internal
    */
-  public abstract createBulk(model: string, data: any[], options: { transaction?: Transaction }): Promise<any[]>;
+  public abstract createBulk(model_name: string, data: any[], options: { transaction?: Transaction }): Promise<any[]>;
 
   /**
    * Updates a record
    * @internal
    */
-  public abstract update(model: string, data: any, options: { transaction?: Transaction }): Promise<void>;
+  public abstract update(model_name: string, data: any, options: { transaction?: Transaction }): Promise<void>;
 
   /**
    * Updates some fields of records that match conditions
    * @internal
    */
   public abstract updatePartial(
-    model: string,
+    model_name: string,
     data: any,
     conditions: Array<Record<string, any>>,
     options: { transaction?: Transaction },
@@ -344,7 +344,7 @@ abstract class AdapterBase {
    * @internal
    */
   public abstract upsert(
-    model: string,
+    model_name: string,
     data: any,
     conditions: Array<Record<string, any>>,
     options: AdapterUpsertOptions,
@@ -356,7 +356,7 @@ abstract class AdapterBase {
    * @internal
    */
   public abstract findById(
-    model: string,
+    model_name: string,
     id: any,
     options: { select?: string[]; explain?: boolean; transaction?: Transaction; node?: 'master' | 'read' },
   ): Promise<any>;
@@ -367,7 +367,7 @@ abstract class AdapterBase {
    * @internal
    */
   public abstract find(
-    model: string,
+    model_name: string,
     conditions: Array<Record<string, any>>,
     options: AdapterFindOptions,
   ): Promise<any>;
@@ -378,7 +378,7 @@ abstract class AdapterBase {
    * @internal
    */
   public abstract stream(
-    model: any,
+    model_name: string,
     conditions: Array<Record<string, any>>,
     options: AdapterFindOptions,
   ): stream.Readable;
@@ -389,7 +389,7 @@ abstract class AdapterBase {
    * @internal
    */
   public abstract count(
-    model: string,
+    model_name: string,
     conditions: Array<Record<string, any>>,
     options: AdapterCountOptions,
   ): Promise<number>;
@@ -400,7 +400,7 @@ abstract class AdapterBase {
    * @internal
    */
   public abstract delete(
-    model: string,
+    model_name: string,
     conditions: Array<Record<string, any>>,
     options: AdapterDeleteOptions,
   ): Promise<number>;
@@ -451,12 +451,15 @@ abstract class AdapterBase {
   }
 
   /** @internal */
-  protected _convertToModelInstance(model: any, data: any, options: any) {
+  protected _convertToModelInstance(model_name: string, data: any, options: any) {
     if (options.lean) {
-      model = this._connection.models[model];
+      const model_class = this._connection.models[model_name];
+      if (!model_class) {
+        return null;
+      }
       const instance: any = {};
-      this.setValuesFromDB(instance, data, model._schema, options.select);
-      model._collapseNestedNulls(instance, options.select_raw, null);
+      this.setValuesFromDB(instance, data, model_class._schema, options.select);
+      model_class._collapseNestedNulls(instance, options.select_raw, null);
       const id = this._getModelID(data);
       if (id) {
         instance.id = id;
@@ -464,8 +467,8 @@ abstract class AdapterBase {
       return instance;
     } else {
       const id = this._getModelID(data);
-      const modelClass: any = this._connection.models[model];
-      return new modelClass(data, id, options.select, options.select_raw);
+      const model_class: any = this._connection.models[model_name];
+      return new model_class(data, id, options.select, options.select_raw);
     }
   }
 
@@ -473,9 +476,13 @@ abstract class AdapterBase {
   protected _convertToGroupInstance(model_name: string, data: any, group_by: any, group_fields: any) {
     const instance: any = {};
     if (group_by) {
-      const schema = this._connection.models[model_name]._schema;
+      const model_class = this._connection.models[model_name];
+      if (!model_class) {
+        return;
+      }
+      const schema = model_class._schema;
       for (const field of group_by) {
-        const property = _.find(schema, (item) => item._dbname_us === field);
+        const property = _.find(schema, (item) => item?._dbname_us === field);
         if (property) {
           util.setPropertyOfPath(instance, property._parts, this.valueToModel(data[field], property));
         }
@@ -494,10 +501,10 @@ abstract class AdapterBase {
   }
 
   /** @internal */
-  protected async _createBulkDefault(model: string, data: any[], options: { transaction?: Transaction }) {
+  protected async _createBulkDefault(model_name: string, data: any[], options: { transaction?: Transaction }) {
     return await Promise.all(
       data.map((item: any) => {
-        return this.create(model, item, options);
+        return this.create(model_name, item, options);
       }),
     );
   }
@@ -507,7 +514,7 @@ export { AdapterBase };
 
 if (process.env.NODE_ENV === 'test') {
   (AdapterBase as any).wrapError = (msg: string, cause: Error): Error => {
-    if (msg === 'unknown error' && cause && cause.message === 'transaction finished') {
+    if (msg === 'unknown error' && cause.message === 'transaction finished') {
       return cause;
     }
     return new Error(msg + ' caused by ' + cause.toString());

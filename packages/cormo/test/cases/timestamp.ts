@@ -22,7 +22,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
   it('updated_at', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const created_at = user.created_at;
-    await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve) => {
       return setTimeout(function () {
         return resolve();
       }, 50);

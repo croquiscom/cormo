@@ -11,6 +11,6 @@ export declare class MongoDBAdapter extends AdapterBase {
     /**
      * Exposes mongodb module's a collection object
      */
-    collection(model: any): any;
+    collection(model_name: string): any;
 }
 export declare function createAdapter(connection: Connection): MongoDBAdapter;

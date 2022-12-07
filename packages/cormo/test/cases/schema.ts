@@ -23,7 +23,7 @@ export default function (db: any, db_config: any) {
     User.column('age', Number);
 
     // can add same age without unique index
-    const user1 = await User.create({ name: 'John Doe', age: 27 });
+    const _user1 = await User.create({ name: 'John Doe', age: 27 });
     const user2 = await User.create({ name: 'John Doe', age: 27 });
 
     await user2.destroy();
@@ -64,6 +64,7 @@ export default function (db: any, db_config: any) {
 
     @cormo.Model()
     @cormo.Index({ user_id: 1 })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class Post extends cormo.BaseModel {
       @cormo.Column(String)
       public title?: string | null;
@@ -202,6 +203,7 @@ export default function (db: any, db_config: any) {
 
     // using Decorator
     @cormo.Model({ name: 'Guest' })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class Guest extends cormo.BaseModel {
       @cormo.Column(String)
       public name!: string;
@@ -347,6 +349,7 @@ export default function (db: any, db_config: any) {
   it('column name alias for indexed column', async () => {
     @cormo.Model()
     @cormo.Index({ name: 1 })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class User extends cormo.BaseModel {
       @cormo.Column({ type: String, name: 'n' })
       public name!: string;
@@ -543,8 +546,8 @@ export default function (db: any, db_config: any) {
     User.column('address', String);
 
     await connection.applySchemas();
-    User._schema.name.required = false;
-    User._schema.address.required = true;
+    User._schema.name!.required = false;
+    User._schema.address!.required = true;
 
     if (db !== 'mongodb') {
       expect(await connection.getSchemaChanges()).to.eql([
@@ -592,6 +595,7 @@ export default function (db: any, db_config: any) {
   });
 
   it('check schema changes of type', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const Type = connection.model('Type', {
       boolean: Boolean,
       date: Date,

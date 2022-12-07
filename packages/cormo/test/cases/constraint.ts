@@ -31,7 +31,7 @@ async function _createUsers(User: typeof UserRef, data?: Array<cormo.ModelValueO
 
 export default function (models: { Post: typeof PostRef; User: typeof UserRef }) {
   it('unique', async () => {
-    const users = await _createUsers(models.User);
+    const _users = await _createUsers(models.User);
     let user;
     try {
       user = await models.User.create({ name: 'Bill Simpson', age: 38, email: 'bill@foo.org' });

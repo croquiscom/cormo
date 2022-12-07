@@ -145,17 +145,23 @@ class Connection extends events_1.EventEmitter {
             try {
                 const current = await this._adapter.getSchemas();
                 for (const model in this.models) {
-                    const modelClass = this.models[model];
-                    const current_table = current.tables && current.tables[modelClass.table_name];
+                    const model_class = this.models[model];
+                    if (!model_class) {
+                        continue;
+                    }
+                    const current_table = current.tables[model_class.table_name];
                     if (!current_table || current_table === 'NO SCHEMA') {
                         continue;
                     }
-                    for (const column in modelClass._schema) {
-                        const property = modelClass._schema[column];
+                    for (const column in model_class._schema) {
+                        const property = model_class._schema[column];
+                        if (!property) {
+                            continue;
+                        }
                         const current_column = current_table.columns[property._dbname_us];
                         if (!current_column) {
                             if (options.verbose) {
-                                console.log(`Adding column ${property._dbname_us} to ${modelClass.table_name}`);
+                                console.log(`Adding column ${property._dbname_us} to ${model_class.table_name}`);
                             }
                             await this._adapter.addColumn(model, property, options.verbose);
                             continue;
@@ -178,7 +184,7 @@ class Connection extends events_1.EventEmitter {
                             if (!type_changed) {
                                 if (options.apply_description_change) {
                                     if (options.verbose) {
-                                        console.log(`Changing ${modelClass.table_name}.${column}'s description to '${property.description}'`);
+                                        console.log(`Changing ${model_class.table_name}.${column}'s description to '${property.description}'`);
                                     }
                                     await this._adapter.updateColumnDescription(model, property, options.verbose);
                                 }
@@ -190,38 +196,47 @@ class Connection extends events_1.EventEmitter {
                     }
                 }
                 for (const model in this.models) {
-                    const modelClass = this.models[model];
-                    const current_table = current.tables[modelClass.table_name];
+                    const model_class = this.models[model];
+                    if (!model_class) {
+                        continue;
+                    }
+                    const current_table = current.tables[model_class.table_name];
                     if (!current_table) {
                         if (options.verbose) {
-                            console.log(`Creating table ${modelClass.table_name}`);
+                            console.log(`Creating table ${model_class.table_name}`);
                         }
                         await this._adapter.createTable(model, options.verbose);
                     }
                     else if (current_table !== 'NO SCHEMA' &&
-                        ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = modelClass.description) !== null && _d !== void 0 ? _d : '')) {
+                        ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = model_class.description) !== null && _d !== void 0 ? _d : '')) {
                         if (options.apply_description_change) {
                             if (options.verbose) {
-                                console.log(`Changing table ${modelClass.table_name}'s description to '${modelClass.description}'`);
+                                console.log(`Changing table ${model_class.table_name}'s description to '${model_class.description}'`);
                             }
                             await this._adapter.updateTableDescription(model, options.verbose);
                         }
                     }
                 }
                 for (const model_name in this.models) {
-                    const modelClass = this.models[model_name];
-                    for (const index of modelClass._indexes) {
-                        if (!((_f = (_e = current.indexes) === null || _e === void 0 ? void 0 : _e[modelClass.table_name]) === null || _f === void 0 ? void 0 : _f[(_g = index.options.name) !== null && _g !== void 0 ? _g : ''])) {
+                    const model_class = this.models[model_name];
+                    if (!model_class) {
+                        continue;
+                    }
+                    for (const index of model_class._indexes) {
+                        if (!((_f = (_e = current.indexes) === null || _e === void 0 ? void 0 : _e[model_class.table_name]) === null || _f === void 0 ? void 0 : _f[(_g = index.options.name) !== null && _g !== void 0 ? _g : ''])) {
                             if (options.verbose) {
-                                console.log(`Creating index on ${modelClass.table_name} ${Object.keys(index.columns)}`);
+                                console.log(`Creating index on ${model_class.table_name} ${Object.keys(index.columns)}`);
                             }
                             await this._adapter.createIndex(model_name, index, options.verbose);
                         }
                     }
                 }
                 for (const model in this.models) {
-                    const modelClass = this.models[model];
-                    for (const integrity of modelClass._integrities) {
+                    const model_class = this.models[model];
+                    if (!model_class) {
+                        continue;
+                    }
+                    for (const integrity of model_class._integrities) {
                         let type = '';
                         if (integrity.type === 'child_nullify') {
                             type = 'nullify';
@@ -234,11 +249,11 @@ class Connection extends events_1.EventEmitter {
                         }
                         if (type) {
                             const current_foreign_key = current.foreign_keys &&
-                                current.foreign_keys[modelClass.table_name] &&
-                                current.foreign_keys[modelClass.table_name][integrity.column];
+                                current.foreign_keys[model_class.table_name] &&
+                                current.foreign_keys[model_class.table_name][integrity.column];
                             if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name)) {
                                 if (options.verbose) {
-                                    const table_name = modelClass.table_name;
+                                    const table_name = model_class.table_name;
                                     const parent_table_name = integrity.parent.table_name;
                                     console.log(`Adding foreign key ${table_name}.${integrity.column} to ${parent_table_name}`);
                                 }
@@ -275,16 +290,22 @@ class Connection extends events_1.EventEmitter {
         const changes = [];
         const current = await this._adapter.getSchemas();
         for (const model in this.models) {
-            const modelClass = this.models[model];
-            const current_table = current.tables && current.tables[modelClass.table_name];
+            const model_class = this.models[model];
+            if (!model_class) {
+                continue;
+            }
+            const current_table = current.tables[model_class.table_name];
             if (!current_table || current_table === 'NO SCHEMA') {
                 continue;
             }
-            for (const column in modelClass._schema) {
-                const property = modelClass._schema[column];
+            for (const column in model_class._schema) {
+                const property = model_class._schema[column];
+                if (!property) {
+                    continue;
+                }
                 const current_column = current_table.columns[property._dbname_us];
                 if (!current_column) {
-                    changes.push({ message: `Add column ${property._dbname_us} to ${modelClass.table_name}` });
+                    changes.push({ message: `Add column ${property._dbname_us} to ${model_class.table_name}` });
                     const query = this._adapter.getAddColumnQuery(model, property);
                     if (query) {
                         changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
@@ -296,13 +317,13 @@ class Connection extends events_1.EventEmitter {
                     if (property.required && !current_column.required) {
                         type_changed = true;
                         changes.push({
-                            message: `Change ${modelClass.table_name}.${property._dbname_us} to required`,
+                            message: `Change ${model_class.table_name}.${property._dbname_us} to required`,
                             ignorable: true,
                         });
                     }
                     else if (!property.required && current_column.required) {
                         type_changed = true;
-                        changes.push({ message: `Change ${modelClass.table_name}.${column} to optional`, ignorable: true });
+                        changes.push({ message: `Change ${model_class.table_name}.${column} to optional`, ignorable: true });
                     }
                 }
                 const expected_type = this._adapter.getAdapterTypeString(property);
@@ -310,14 +331,14 @@ class Connection extends events_1.EventEmitter {
                 if (expected_type !== real_type) {
                     type_changed = true;
                     changes.push({
-                        message: `Type different ${modelClass.table_name}.${column}: expected=${expected_type}, real=${real_type}`,
+                        message: `Type different ${model_class.table_name}.${column}: expected=${expected_type}, real=${real_type}`,
                         ignorable: true,
                     });
                 }
                 if (((_a = current_column.description) !== null && _a !== void 0 ? _a : '') !== ((_b = property.description) !== null && _b !== void 0 ? _b : '')) {
                     if (!type_changed) {
                         changes.push({
-                            message: `Change ${modelClass.table_name}.${column}'s description to '${property.description}'`,
+                            message: `Change ${model_class.table_name}.${column}'s description to '${property.description}'`,
                             ignorable: true,
                         });
                         const query = this._adapter.getUpdateColumnDescriptionQuery(model, property);
@@ -327,32 +348,35 @@ class Connection extends events_1.EventEmitter {
                     }
                     else {
                         changes.push({
-                            message: `(Skip) Change ${modelClass.table_name}.${column}'s description to '${property.description}'`,
+                            message: `(Skip) Change ${model_class.table_name}.${column}'s description to '${property.description}'`,
                             ignorable: true,
                         });
                     }
                 }
             }
             for (const column in current_table.columns) {
-                if (!lodash_1.default.find(modelClass._schema, { _dbname_us: column })) {
-                    changes.push({ message: `Remove column ${column} from ${modelClass.table_name}`, ignorable: true });
+                if (!lodash_1.default.find(model_class._schema, { _dbname_us: column })) {
+                    changes.push({ message: `Remove column ${column} from ${model_class.table_name}`, ignorable: true });
                 }
             }
         }
         for (const model in this.models) {
-            const modelClass = this.models[model];
-            const current_table = current.tables[modelClass.table_name];
+            const model_class = this.models[model];
+            if (!model_class) {
+                continue;
+            }
+            const current_table = current.tables[model_class.table_name];
             if (!current_table) {
-                changes.push({ message: `Add table ${modelClass.table_name}` });
+                changes.push({ message: `Add table ${model_class.table_name}` });
                 const query = this._adapter.getCreateTableQuery(model);
                 if (query) {
                     changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
                 }
             }
             else if (current_table !== 'NO SCHEMA' &&
-                ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = modelClass.description) !== null && _d !== void 0 ? _d : '')) {
+                ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = model_class.description) !== null && _d !== void 0 ? _d : '')) {
                 changes.push({
-                    message: `Change table ${modelClass.table_name}'s description to '${modelClass.description}'`,
+                    message: `Change table ${model_class.table_name}'s description to '${model_class.description}'`,
                     ignorable: true,
                 });
                 const query = this._adapter.getUpdateTableDescriptionQuery(model);
@@ -367,27 +391,33 @@ class Connection extends events_1.EventEmitter {
             }
         }
         for (const model_name in this.models) {
-            const modelClass = this.models[model_name];
-            for (const index of modelClass._indexes) {
-                if (!((_f = (_e = current.indexes) === null || _e === void 0 ? void 0 : _e[modelClass.table_name]) === null || _f === void 0 ? void 0 : _f[(_g = index.options.name) !== null && _g !== void 0 ? _g : ''])) {
-                    changes.push({ message: `Add index on ${modelClass.table_name} ${Object.keys(index.columns)}` });
+            const model_class = this.models[model_name];
+            if (!model_class) {
+                continue;
+            }
+            for (const index of model_class._indexes) {
+                if (!((_f = (_e = current.indexes) === null || _e === void 0 ? void 0 : _e[model_class.table_name]) === null || _f === void 0 ? void 0 : _f[(_g = index.options.name) !== null && _g !== void 0 ? _g : ''])) {
+                    changes.push({ message: `Add index on ${model_class.table_name} ${Object.keys(index.columns)}` });
                     const query = this._adapter.getCreateIndexQuery(model_name, index);
                     if (query) {
                         changes.push({ message: `  (${query})`, is_query: true, ignorable: true });
                     }
                 }
             }
-            for (const index in (_h = current.indexes) === null || _h === void 0 ? void 0 : _h[modelClass.table_name]) {
+            for (const index in (_h = current.indexes) === null || _h === void 0 ? void 0 : _h[model_class.table_name]) {
                 // MySQL add index for foreign key, so does not need to remove if the index is defined in integrities
-                if (!lodash_1.default.find(modelClass._indexes, (item) => item.options.name === index) &&
-                    !lodash_1.default.find(modelClass._integrities, (item) => item.column === index)) {
-                    changes.push({ message: `Remove index on ${modelClass.table_name} ${index}`, ignorable: true });
+                if (!lodash_1.default.find(model_class._indexes, (item) => item.options.name === index) &&
+                    !lodash_1.default.find(model_class._integrities, (item) => item.column === index)) {
+                    changes.push({ message: `Remove index on ${model_class.table_name} ${index}`, ignorable: true });
                 }
             }
         }
         for (const model in this.models) {
-            const modelClass = this.models[model];
-            for (const integrity of modelClass._integrities) {
+            const model_class = this.models[model];
+            if (!model_class) {
+                continue;
+            }
+            for (const integrity of model_class._integrities) {
                 let type = '';
                 if (integrity.type === 'child_nullify') {
                     type = 'nullify';
@@ -400,11 +430,11 @@ class Connection extends events_1.EventEmitter {
                 }
                 if (type) {
                     const current_foreign_key = current.foreign_keys &&
-                        current.foreign_keys[modelClass.table_name] &&
-                        current.foreign_keys[modelClass.table_name][integrity.column];
+                        current.foreign_keys[model_class.table_name] &&
+                        current.foreign_keys[model_class.table_name][integrity.column];
                     if (!(current_foreign_key && current_foreign_key === integrity.parent.table_name) &&
                         this._adapter.native_integrity) {
-                        const table_name = modelClass.table_name;
+                        const table_name = model_class.table_name;
                         const parent_table_name = integrity.parent.table_name;
                         changes.push({ message: `Add foreign key ${table_name}.${integrity.column} to ${parent_table_name}` });
                         const query = this._adapter.getCreateForeignKeyQuery(model, integrity.column, type, integrity.parent);
@@ -421,14 +451,16 @@ class Connection extends events_1.EventEmitter {
      * Drops all model tables
      */
     async dropAllModels() {
-        for (const model of this._getModelNamesByAssociationOrder()) {
-            await this.models[model].drop();
+        var _a;
+        for (const model_name of this._getModelNamesByAssociationOrder()) {
+            await ((_a = this.models[model_name]) === null || _a === void 0 ? void 0 : _a.drop());
         }
     }
     /**
      * Logs
      */
-    log(model, type, data) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    log(model_name, type, data) {
         /**/
     }
     [util_1.inspect.custom]() {
@@ -464,37 +496,37 @@ class Connection extends events_1.EventEmitter {
                 throw new Error('invalid command: ' + JSON.stringify(command));
             }
             else if (key.substr(0, 7) === 'create_') {
-                const model = key.substr(7);
+                const model_name = key.substr(7);
                 const id = data.id;
                 delete data.id;
-                this._manipulateConvertIds(id_to_record_map, model, data);
-                const record = await this._manipulateCreate(model, data);
+                this._manipulateConvertIds(id_to_record_map, model_name, data);
+                const record = await this._manipulateCreate(model_name, data);
                 if (id) {
                     id_to_record_map[id] = record;
                 }
             }
             else if (key.substr(0, 7) === 'delete_') {
-                const model = key.substr(7);
-                await this._manipulateDelete(model, data);
+                const model_name = key.substr(7);
+                await this._manipulateDelete(model_name, data);
             }
             else if (key === 'deleteAll') {
                 await this._manipulateDeleteAllModels();
             }
             else if (key.substr(0, 5) === 'drop_') {
-                const model = key.substr(5);
-                await this._manipulateDropModel(model);
+                const model_name = key.substr(5);
+                await this._manipulateDropModel(model_name);
             }
             else if (key === 'dropAll') {
                 await this._manipulateDropAllModels();
             }
             else if (key.substr(0, 5) === 'find_') {
-                const model = key.substr(5);
+                const model_name = key.substr(5);
                 const id = data.id;
                 delete data.id;
                 if (!id) {
                     continue;
                 }
-                const records = await this._manipulateFind(model, data);
+                const records = await this._manipulateFind(model_name, data);
                 id_to_record_map[id] = records;
             }
             else {
@@ -518,17 +550,20 @@ class Connection extends events_1.EventEmitter {
     async getInconsistencies() {
         await this._checkSchemaApplied();
         const result = {};
-        const promises = Object.keys(this.models).map(async (model) => {
-            const modelClass = this.models[model];
-            const integrities = modelClass._integrities.filter((integrity) => integrity.type.substr(0, 7) === 'parent_');
+        const promises = Object.keys(this.models).map(async (model_name) => {
+            const model_class = this.models[model_name];
+            if (!model_class) {
+                return;
+            }
+            const integrities = model_class._integrities.filter((integrity) => integrity.type.substr(0, 7) === 'parent_');
             if (integrities.length > 0) {
-                let records = await modelClass.select('').exec();
+                let records = await model_class.select('').exec();
                 const ids = records.map((record) => record.id);
                 const sub_promises = integrities.map(async (integrity) => {
                     const query = integrity.child.select('');
                     query.where(lodash_1.default.zipObject([integrity.column], [{ $not: { $in: ids } }]));
                     const property = integrity.child._schema[integrity.column];
-                    if (!property.required) {
+                    if (!(property === null || property === void 0 ? void 0 : property.required)) {
                         query.where(lodash_1.default.zipObject([integrity.column], [{ $not: null }]));
                     }
                     records = await query.exec();
@@ -562,7 +597,7 @@ class Connection extends events_1.EventEmitter {
         }
         let association;
         if (options.model) {
-            association = options.model._associations && options.model._associations[column];
+            association = options.model._associations[column];
         }
         else {
             association = record.constructor._associations && record.constructor._associations[column];
@@ -608,10 +643,11 @@ class Connection extends events_1.EventEmitter {
                 else {
                     target_model_name = inflector.classify(item.target_model_or_column);
                 }
-                if (!models[target_model_name]) {
+                const model = models[target_model_name];
+                if (!model) {
                     throw new Error(`model ${target_model_name} does not exist`);
                 }
-                target_model = models[target_model_name];
+                target_model = model;
             }
             else {
                 target_model = item.target_model_or_column;
@@ -636,7 +672,7 @@ class Connection extends events_1.EventEmitter {
             options = options_or_block;
         }
         const transaction = new transaction_1.Transaction(this);
-        await transaction.setup(options && options.isolation_level);
+        await transaction.setup(options.isolation_level);
         try {
             const args = (options.models || []).map((model) => {
                 const txModel = function (data) {
@@ -726,9 +762,6 @@ class Connection extends events_1.EventEmitter {
         }
     }
     async _connect(settings, count = 0) {
-        if (!this._adapter) {
-            return;
-        }
         try {
             await this._adapter.connect(settings);
             this._connected = true;
@@ -746,22 +779,28 @@ class Connection extends events_1.EventEmitter {
         }
     }
     _initializeModels() {
-        for (const model in this.models) {
-            const modelClass = this.models[model];
-            if (modelClass.initialize && !modelClass._initialize_called) {
-                modelClass.initialize();
-                modelClass._initialize_called = true;
+        for (const model_name in this.models) {
+            const model_class = this.models[model_name];
+            if (!model_class) {
+                continue;
             }
-            modelClass._completeSchema();
+            if (!model_class._initialize_called) {
+                model_class.initialize();
+                model_class._initialize_called = true;
+            }
+            model_class._completeSchema();
         }
     }
     _checkArchive() {
-        for (const model in this.models) {
-            const modelClass = this.models[model];
-            if (modelClass.archive && !Object.prototype.hasOwnProperty.call(modelClass._connection.models, '_Archive')) {
+        for (const model_name in this.models) {
+            const model_class = this.models[model_name];
+            if (!model_class) {
+                continue;
+            }
+            if (model_class.archive && !Object.prototype.hasOwnProperty.call(model_class._connection.models, '_Archive')) {
                 const _Archive = class extends model_1.BaseModel {
                 };
-                _Archive.connection(modelClass._connection);
+                _Archive.connection(model_class._connection);
                 _Archive.archive = false;
                 _Archive.column('model', String);
                 _Archive.column('data', Object);
@@ -770,43 +809,48 @@ class Connection extends events_1.EventEmitter {
     }
     _getModelNamesByAssociationOrder() {
         const t = new Toposort();
-        for (const model in this.models) {
-            const modelClass = this.models[model];
-            t.add(model, []);
-            for (const name in modelClass._associations) {
-                const association = modelClass._associations[name];
+        for (const model_name in this.models) {
+            const model_class = this.models[model_name];
+            if (!model_class) {
+                continue;
+            }
+            t.add(model_name, []);
+            for (const name in model_class._associations) {
+                const association = model_class._associations[name];
                 // ignore association with models of other connection
                 if (association.target_model._connection !== this) {
                     continue;
                 }
                 // ignore self association
-                if (association.target_model === modelClass) {
+                if (association.target_model === model_class) {
                     continue;
                 }
                 const type = association.type;
                 if (type === 'hasMany' || type === 'hasOne') {
-                    t.add(association.target_model._name, model);
+                    t.add(association.target_model._name, model_name);
                 }
                 else if (type === 'belongsTo') {
-                    t.add(model, association.target_model._name);
+                    t.add(model_name, association.target_model._name);
                 }
             }
         }
         return t.sort();
     }
-    async _manipulateCreate(model, data) {
-        model = inflector.camelize(model);
-        if (!this.models[model]) {
-            throw new Error(`model ${model} does not exist`);
+    async _manipulateCreate(model_name, data) {
+        model_name = inflector.camelize(model_name);
+        const model_class = this.models[model_name];
+        if (!model_class) {
+            throw new Error(`model ${model_name} does not exist`);
         }
-        return await this.models[model].create(data, { skip_log: true });
+        return await model_class.create(data, { skip_log: true });
     }
-    async _manipulateDelete(model, data) {
-        model = inflector.camelize(model);
-        if (!this.models[model]) {
-            throw new Error(`model ${model} does not exist`);
+    async _manipulateDelete(model_name, data) {
+        model_name = inflector.camelize(model_name);
+        const model_class = this.models[model_name];
+        if (!model_class) {
+            throw new Error(`model ${model_name} does not exist`);
         }
-        await this.models[model].where(data).delete({ skip_log: true });
+        await model_class.where(data).delete({ skip_log: true });
     }
     async _manipulateDeleteAllModels() {
         const model_list = Object.keys(this.models).filter((key) => key !== '_Archive');
@@ -815,37 +859,40 @@ class Connection extends events_1.EventEmitter {
         }
         catch (error) {
             if (error.message === 'not implemented') {
-                await Promise.all(model_list.map((model) => this.models[model].where().delete({ skip_log: true })));
+                await Promise.all(model_list.map((model_name) => { var _a; return (_a = this.models[model_name]) === null || _a === void 0 ? void 0 : _a.where().delete({ skip_log: true }); }));
                 return;
             }
             throw error;
         }
     }
-    async _manipulateDropModel(model) {
-        model = inflector.camelize(model);
-        if (!this.models[model]) {
-            throw new Error(`model ${model} does not exist`);
+    async _manipulateDropModel(model_name) {
+        model_name = inflector.camelize(model_name);
+        const model_class = this.models[model_name];
+        if (!model_class) {
+            throw new Error(`model ${model_name} does not exist`);
         }
-        await this.models[model].drop();
+        await model_class.drop();
     }
     async _manipulateDropAllModels() {
         await this.dropAllModels();
     }
-    async _manipulateFind(model, data) {
-        model = inflector.camelize(inflector.singularize(model));
-        if (!this.models[model]) {
-            throw new Error(`model ${model} does not exist`);
+    async _manipulateFind(model_name, data) {
+        model_name = inflector.camelize(inflector.singularize(model_name));
+        const model_class = this.models[model_name];
+        if (!model_class) {
+            throw new Error(`model ${model_name} does not exist`);
         }
-        return await this.models[model].where(data).exec({ skip_log: true });
+        return await model_class.where(data).exec({ skip_log: true });
     }
-    _manipulateConvertIds(id_to_record_map, model, data) {
-        model = inflector.camelize(model);
-        if (!this.models[model]) {
+    _manipulateConvertIds(id_to_record_map, model_name, data) {
+        model_name = inflector.camelize(model_name);
+        const model_class = this.models[model_name];
+        if (!model_class) {
             return;
         }
-        for (const column in this.models[model]._schema) {
-            const property = this.models[model]._schema[column];
-            if (property.record_id && Object.prototype.hasOwnProperty.call(data, column)) {
+        for (const column in model_class._schema) {
+            const property = model_class._schema[column];
+            if (property && property.record_id && Object.prototype.hasOwnProperty.call(data, column)) {
                 if (property.array && Array.isArray(data[column])) {
                     data[column] = data[column].map((value) => {
                         const record = id_to_record_map[value];

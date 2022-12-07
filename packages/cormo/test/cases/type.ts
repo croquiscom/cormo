@@ -117,7 +117,7 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
     if (!(models.connection!.adapter as any).support_fractional_seconds) {
       return;
     }
-    const data = [
+    const data: Array<[string, number | null]> = [
       ['2012/10/12 21:32:54.123', new Date('2012/10/12 21:32:54.123').getTime()],
       ['2012/10/12 21:32:54.619', new Date('2012/10/12 21:32:54.619').getTime()],
     ];

@@ -31,7 +31,7 @@ async function _createUserUniques(User: typeof UserRef, data?: UserRefVO[]) {
   return await User.createBulk(data);
 }
 
-export default function (models: { connection: cormo.Connection | null }) {
+export default function (_models: { connection: cormo.Connection | null }) {
   let sandbox: sinon.SinonSandbox;
   let User: typeof UserRef;
 

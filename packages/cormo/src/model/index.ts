@@ -85,7 +85,7 @@ export interface ModelSchema {
 }
 
 export interface ModelSchemaInternal {
-  [path: string]: ColumnPropertyInternal;
+  [path: string]: ColumnPropertyInternal | undefined;
 }
 
 /**
@@ -125,7 +125,7 @@ class BaseModel {
 
   public static _schema: ModelSchemaInternal;
 
-  public static _object_column_classes: Array<{ column: string; klass: any }>;
+  public static _object_column_classes?: Array<{ column: string; klass: any }>;
 
   /** @internal */
   public static _indexes: IndexProperty[];
@@ -143,7 +143,7 @@ class BaseModel {
 
   public static _intermediate_paths: any;
 
-  public static _property_decorators: any[];
+  public static _property_decorators?: any[];
 
   public static initialize() {
     /**/
@@ -226,8 +226,9 @@ class BaseModel {
     if (Object.prototype.hasOwnProperty.call(this._schema, path)) {
       // if using association, a column may be defined more than twice (by hasMany and belongsTo, for example)
       // overwrite some properties if given later
-      if (type_or_property && type_or_property.required) {
-        this._schema[path].required = type_or_property.required;
+      const column = this._schema[path];
+      if (column && type_or_property && type_or_property.required) {
+        column.required = type_or_property.required;
       }
       return;
     }
@@ -308,7 +309,7 @@ class BaseModel {
    * Creates a record.
    * 'Model.build(data)' is the same as 'new Model(data)'
    */
-  public static build<M extends BaseModel>(this: new (data?: any) => M, data?: ModelValueObject<M>): M {
+  public static build<M extends BaseModel>(this: new (data_arg?: any) => M, data?: ModelValueObject<M>): M {
     return new this(data);
   }
 
@@ -343,10 +344,10 @@ class BaseModel {
     this._connection.addAssociation({ type: 'belongsTo', this_model: this, target_model_or_column, options });
   }
 
-  public static [inspect.custom](depth: number) {
-    const schema = Object.keys(this._schema || {})
+  public static [inspect.custom](_depth: number) {
+    const schema = Object.keys(this._schema)
       .sort()
-      .map((column) => `${column}: ${this._schema[column].type}`)
+      .map((column) => `${column}: ${this._schema[column]?.type}`)
       .join(', ');
     return '\u001b[36m' + `[Model: ${this.name}(` + '\u001b[90m' + schema + '\u001b[36m' + ')]' + '\u001b[39m';
   }
@@ -394,8 +395,8 @@ class BaseModel {
     }
     const redis = await this._connection._connectRedisCache();
     key = 'CC.' + tableize(this._name) + ':' + key;
-    const value = await new Promise<string>((resolve, reject) => {
-      redis.get(key, (error: Error, v: string) => {
+    const value = await new Promise<string | undefined>((resolve, reject) => {
+      redis.get(key, (error: Error | undefined, v: string) => {
         if (error) {
           reject(error);
           return;
@@ -413,7 +414,7 @@ class BaseModel {
     const redis = await this._connection._connectRedisCache();
     key = 'CC.' + tableize(this._name) + ':' + key;
     await new Promise<void>((resolve, reject) => {
-      redis.setex(key, ttl, JSON.stringify(data), (error: Error) => {
+      redis.setex(key, ttl, JSON.stringify(data), (error: Error | undefined) => {
         if (error) {
           reject(error);
           return;
@@ -522,7 +523,7 @@ class BaseModel {
    * 'Model.create(data)' is the same as 'Model.build(data).save()'
    */
   public static async create<M extends BaseModel>(
-    this: (new (data?: any) => M) & typeof BaseModel,
+    this: (new (data_arg?: any) => M) & typeof BaseModel,
     data?: ModelValueObject<M>,
     options?: { transaction?: Transaction; skip_log?: boolean },
   ): Promise<M> {
@@ -534,7 +535,7 @@ class BaseModel {
    * Creates multiple records and saves them to the database.
    */
   public static async createBulk<M extends BaseModel>(
-    this: (new (data?: any) => M) & typeof BaseModel,
+    this: (new (data_arg?: any) => M) & typeof BaseModel,
     data?: Array<ModelValueObject<M>>,
     options?: { transaction?: Transaction },
   ): Promise<M[]> {
@@ -809,7 +810,7 @@ class BaseModel {
     for (const index of this._indexes) {
       if (!index.options.name) {
         const column_names = Object.keys(index.columns).map((column_name) => {
-          return (this._schema[column_name] && this._schema[column_name]._dbname_us) || column_name;
+          return this._schema[column_name]?._dbname_us || column_name;
         });
         index.options.name = column_names.join('_');
       }
@@ -818,7 +819,7 @@ class BaseModel {
 
   private static _validators: any[];
 
-  private static _callbacks_map: {
+  private static _callbacks_map?: {
     [key in ModelCallbackName]?: Array<{
       type: ModelCallbackType;
       method: ModelCallbackMethod;
@@ -830,16 +831,13 @@ class BaseModel {
    */
   private static addCallback(type: ModelCallbackType, name: ModelCallbackName, method: ModelCallbackMethod) {
     this._checkConnection();
-    if (!(type === 'before' || type === 'after') || !name) {
-      return;
-    }
     const callbacks_map = this._callbacks_map || (this._callbacks_map = {});
     const callbacks = callbacks_map[name] || (callbacks_map[name] = []);
     return callbacks.push({ type, method });
   }
 
   private static async _createBulk(records: any[], options: { transaction?: Transaction } = {}) {
-    let error;
+    let error: Error | undefined;
     const data_array = records.map((record) => {
       try {
         return record._buildSaveData();
@@ -936,7 +934,7 @@ class BaseModel {
       }
       for (const column in schema) {
         const property = schema[column];
-        if (property.primary_key) {
+        if (!property || property.primary_key) {
           continue;
         }
         const [obj, last] = util.getLeafOfPath(this, property._parts);
@@ -979,7 +977,7 @@ class BaseModel {
     } else {
       for (const column in schema) {
         const property = schema[column];
-        if (property.primary_key) {
+        if (!property || property.primary_key) {
           continue;
         }
         const parts = property._parts;
@@ -1149,7 +1147,7 @@ class BaseModel {
     const schema = ctor._schema;
     for (const column in schema) {
       const property = schema[column];
-      if (property.primary_key) {
+      if (!property || property.primary_key) {
         continue;
       }
       try {
@@ -1206,7 +1204,7 @@ class BaseModel {
     const schema = ctor._schema;
     for (const column in schema) {
       const property = schema[column];
-      if (property.primary_key) {
+      if (!property || property.primary_key) {
         continue;
       }
       ctor._buildSaveDataColumn(data, this, column, property);
@@ -1220,7 +1218,7 @@ class BaseModel {
   private async _create(options: { transaction?: Transaction; skip_log?: boolean }) {
     const data = this._buildSaveData();
     const ctor = this.constructor as typeof BaseModel;
-    if (!(options && options.skip_log)) {
+    if (!options.skip_log) {
       ctor._connection.log(ctor._name, 'create', data);
     }
     const id = await ctor._adapter.create(ctor._name, data, { transaction: options.transaction || this._transaction });
@@ -1264,9 +1262,12 @@ class BaseModel {
       const adapter = ctor._adapter;
       const schema = ctor._schema;
       for (const path in this._prev_attributes) {
-        ctor._buildSaveDataColumn(data, this._attributes, path, schema[path], true);
+        const property = schema[path];
+        if (property) {
+          ctor._buildSaveDataColumn(data, this._attributes, path, property, true);
+        }
       }
-      if (!(options && options.skip_log)) {
+      if (!options.skip_log) {
         ctor._connection.log(ctor._name, 'update', data);
       }
       await adapter.updatePartial(ctor._name, data, [{ id: this.id }], {});
@@ -1274,7 +1275,7 @@ class BaseModel {
     } else {
       // update all
       const data = this._buildSaveData();
-      if (!(options && options.skip_log)) {
+      if (!options.skip_log) {
         ctor._connection.log(ctor._name, 'update', data);
       }
       await ctor._adapter.update(ctor._name, data, { transaction: options.transaction || this._transaction });
@@ -1286,7 +1287,7 @@ class BaseModel {
     const applied_columns: string[] = [];
     for (const column in this._schema) {
       const property = this._schema[column];
-      if (property.primary_key || property.default_value == null) {
+      if (!property || property.primary_key || property.default_value == null) {
         continue;
       }
       const value = util.getPropertyOfPath(obj, property._parts);
