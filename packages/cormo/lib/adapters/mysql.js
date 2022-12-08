@@ -2,7 +2,11 @@
 /* eslint-disable indent */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -90,7 +94,7 @@ async function _tryCreateConnection(config, count = 0) {
     count++;
     let client;
     try {
-        client = mysql.createConnection(Object.assign(Object.assign({}, config), { connectTimeout: 2000 }));
+        client = mysql.createConnection({ ...config, connectTimeout: 2000 });
         client.connectAsync = util_1.default.promisify(client.connect);
         client.queryAsync = util_1.default.promisify(client.query);
         await client.connectAsync();
@@ -215,13 +219,12 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     getUpdateTableDescriptionQuery(model_name) {
-        var _a;
         const model_class = this._connection.models[model_name];
         if (!model_class) {
             return '';
         }
         const table_name = model_class.table_name;
-        return `ALTER TABLE ${table_name} COMMENT ${mysql.escape((_a = model_class.description) !== null && _a !== void 0 ? _a : '')}`;
+        return `ALTER TABLE ${table_name} COMMENT ${mysql.escape(model_class.description ?? '')}`;
     }
     /** @internal */
     async updateTableDescription(model_name, verbose = false) {
@@ -290,7 +293,6 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     getCreateIndexQuery(model_name, index) {
-        var _a;
         const model_class = this._connection.models[model_name];
         if (!model_class) {
             return '';
@@ -300,7 +302,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const columns = [];
         for (const column in index.columns) {
             const order = index.columns[column];
-            columns.push(`\`${((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column}\` ${order === -1 ? 'DESC' : 'ASC'}`);
+            columns.push(`\`${schema[column]?._dbname_us || column}\` ${order === -1 ? 'DESC' : 'ASC'}`);
         }
         const unique = index.options.unique ? 'UNIQUE ' : '';
         return `CREATE ${unique}INDEX \`${index.options.name}\` ON \`${table_name}\` (${columns.join(',')})`;
@@ -497,7 +499,6 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     async upsert(model_name, data, conditions, options) {
-        var _a;
         const model_class = this._connection.models[model_name];
         if (!model_class) {
             return;
@@ -513,7 +514,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             else {
                 insert_data[key] = value;
             }
-            if (!((_a = options.ignore_on_update) === null || _a === void 0 ? void 0 : _a.includes(key))) {
+            if (!options.ignore_on_update?.includes(key)) {
                 update_data[key] = value;
             }
         }
@@ -694,7 +695,6 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         if (options.orders.length > 0) {
             const schema = model_class._schema;
             const orders = options.orders.map((order) => {
-                var _a;
                 let column;
                 if (order[0] === '-') {
                     column = order.slice(1);
@@ -704,7 +704,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                     column = order;
                     order = 'ASC';
                 }
-                column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
+                column = schema[column]?._dbname_us || column;
                 return `\`${column}\` ${order}`;
             });
             sql += ' ORDER BY ' + orders.join(',');
@@ -854,7 +854,6 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
      * Exposes mysql module's query method
      */
     async query(text, values, options) {
-        var _a;
         if (!this._client) {
             await this._connection._promise_connection;
         }
@@ -881,7 +880,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 return await client.queryAsync({ sql: text, values, timeout: this._query_timeout });
             }
             catch (error) {
-                if (((_a = this._settings) === null || _a === void 0 ? void 0 : _a.reconnect_if_read_only) && error.message.includes('read-only')) {
+                if (this._settings?.reconnect_if_read_only && error.message.includes('read-only')) {
                     // if failover occurred, connections will be reconnected.
                     // But if connection is reconnected before DNS is changed (DNS cache can affect this),
                     // connection may be to the wrong node.
@@ -956,13 +955,12 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     _buildGroupExpr(schema, group_expr) {
-        var _a;
         const op = Object.keys(group_expr)[0];
         if (op === '$any') {
             const sub_expr = group_expr[op];
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
-                column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
+                column = schema[column]?._dbname_us || column;
                 return `ANY_VALUE(${column})`;
             }
             else {
@@ -1079,7 +1077,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const places = [];
         for (const column in schema) {
             const property = schema[column];
-            if (property === null || property === void 0 ? void 0 : property.primary_key) {
+            if (property?.primary_key) {
                 continue;
             }
             this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
@@ -1096,7 +1094,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const fields = [];
         const places = [];
         for (const column in data) {
-            const property = lodash_1.default.find(schema, (item) => (item === null || item === void 0 ? void 0 : item._dbname_us) === column);
+            const property = lodash_1.default.find(schema, (item) => item?._dbname_us === column);
             if (!property || property.primary_key) {
                 continue;
             }
@@ -1156,7 +1154,6 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         if (options.orders.length > 0 || order_by) {
             const schema = model_class._schema;
             const orders = options.orders.map((order) => {
-                var _a;
                 let column;
                 if (order[0] === '-') {
                     column = order.slice(1);
@@ -1166,7 +1163,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                     column = order;
                     order = 'ASC';
                 }
-                column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
+                column = schema[column]?._dbname_us || column;
                 return `\`${column}\` ${order}`;
             });
             if (order_by) {
@@ -1258,8 +1255,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     _wrapError(msg, cause) {
-        var _a;
-        if (!((_a = this._settings) === null || _a === void 0 ? void 0 : _a.hide_unknown_error) && msg === 'unknown error' && cause) {
+        if (!this._settings?.hide_unknown_error && msg === 'unknown error' && cause) {
             return cause;
         }
         return MySQLAdapter.wrapError(msg, cause);

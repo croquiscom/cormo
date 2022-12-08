@@ -2,7 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -26,12 +30,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createAdapter = exports.RedisAdapter = void 0;
 let redis;
 try {
-    redis = require('redis');
+    redis = require('ioredis');
 }
 catch (error) {
     //
 }
-const util_1 = __importDefault(require("util"));
 const lodash_1 = __importDefault(require("lodash"));
 const types = __importStar(require("../types"));
 const inflector_1 = require("../util/inflector");
@@ -83,13 +86,13 @@ class RedisAdapter extends base_1.AdapterBase {
         data.$_$ = ''; // ensure that there is one argument(one field) at least
         let id;
         try {
-            id = await this._client.incrAsync(`${(0, inflector_1.tableize)(model_name)}:_lastid`);
+            id = await this._client.incr(`${(0, inflector_1.tableize)(model_name)}:_lastid`);
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);
         }
         try {
-            await this._client.hmsetAsync(`${(0, inflector_1.tableize)(model_name)}:${id}`, data);
+            await this._client.hmset(`${(0, inflector_1.tableize)(model_name)}:${id}`, data);
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);
@@ -107,7 +110,7 @@ class RedisAdapter extends base_1.AdapterBase {
         data.$_$ = ''; // ensure that there is one argument(one field) at least
         let exists;
         try {
-            exists = await this._client.existsAsync(key);
+            exists = await this._client.exists(key);
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);
@@ -116,13 +119,13 @@ class RedisAdapter extends base_1.AdapterBase {
             return;
         }
         try {
-            await this._client.delAsync(key);
+            await this._client.del(key);
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);
         }
         try {
-            await this._client.hmsetAsync(key, data);
+            await this._client.hmset(key, data);
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);
@@ -142,13 +145,13 @@ class RedisAdapter extends base_1.AdapterBase {
             const args = lodash_1.default.clone(fields_to_del);
             args.unshift(key);
             try {
-                await this._client.hdelAsync(args);
+                await this._client.hdel(args);
             }
             catch (error) {
                 throw RedisAdapter.wrapError('unknown error', error);
             }
             try {
-                await this._client.hmsetAsync(key, data);
+                await this._client.hmset(key, data);
             }
             catch (error) {
                 throw RedisAdapter.wrapError('unknown error', error);
@@ -164,7 +167,10 @@ class RedisAdapter extends base_1.AdapterBase {
     async findById(model_name, id, options) {
         let result;
         try {
-            result = await this._client.hgetallAsync(`${(0, inflector_1.tableize)(model_name)}:${id}`);
+            const key = `${(0, inflector_1.tableize)(model_name)}:${id}`;
+            if (await this._client.exists(key)) {
+                result = await this._client.hgetall(key);
+            }
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);
@@ -182,7 +188,7 @@ class RedisAdapter extends base_1.AdapterBase {
         const table = (0, inflector_1.tableize)(model_name);
         const keys = await this._getKeys(table, conditions);
         let records = await Promise.all(keys.map(async (key) => {
-            const result = await this._client.hgetallAsync(key);
+            const result = (await this._client.exists(key)) ? await this._client.hgetall(key) : undefined;
             if (result) {
                 result.id = Number(key.substr(table.length + 1));
             }
@@ -209,7 +215,7 @@ class RedisAdapter extends base_1.AdapterBase {
         }
         let count;
         try {
-            count = await this._client.delAsync(keys);
+            count = await this._client.del(keys);
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);
@@ -227,10 +233,7 @@ class RedisAdapter extends base_1.AdapterBase {
     async connect(settings) {
         const methods = ['del', 'exists', 'hdel', 'hgetall', 'hmset', 'incr', 'keys', 'select'];
         this._client = redis.createClient(settings.port || 6379, settings.host || '127.0.0.1');
-        for (const method of methods) {
-            this._client[method + 'Async'] = util_1.default.promisify(this._client[method]);
-        }
-        return await this._client.selectAsync(settings.database || 0);
+        return await this._client.select(settings.database || 0);
     }
     /** @internal */
     valueToModel(value, property) {
@@ -252,7 +255,7 @@ class RedisAdapter extends base_1.AdapterBase {
     async _getKeys(table, conditions) {
         if (Array.isArray(conditions)) {
             if (conditions.length === 0) {
-                return await this._client.keysAsync(`${table}:*`);
+                return await this._client.keys(`${table}:*`);
             }
             const all_keys = [];
             await Promise.all(conditions.map(async (condition) => {

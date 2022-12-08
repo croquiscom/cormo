@@ -137,7 +137,7 @@ input DeleteUserInput {
   describe('create', () => {
     it('create one', async () => {
       const now = new Date(2019, 6, 21, 5);
-      sandbox.useFakeTimers(now);
+      sandbox.useFakeTimers({ now, toFake: ['Date'] });
       const query = 'mutation($input: CreateUserInput!) { createUser(input: $input) { id name age } }';
       const variables = { input: { name: 'Test', age: 15 } };
       const result = await graphql({ schema, source: query, variableValues: variables });
@@ -156,7 +156,7 @@ input DeleteUserInput {
   describe('update', () => {
     it('update one', async () => {
       const now = new Date(2019, 6, 21, 5);
-      sandbox.useFakeTimers(now);
+      sandbox.useFakeTimers({ now, toFake: ['Date'] });
       const id_to_record_map = await connection.manipulate([
         {
           create_user: {

@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { EventEmitter } from 'events';
 import { inspect } from 'util';
 import { AdapterBase } from '../adapters/base';
@@ -11,7 +12,7 @@ import { BaseModel, ModelSchema, ModelColumnNamesWithId, ModelValueObject } from
 import { QueryArray, QuerySingle } from '../query';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
-declare type ManipulateCommand = string | {
+type ManipulateCommand = string | {
     [key: string]: any;
 };
 interface RedisCacheSettings {
@@ -35,7 +36,7 @@ export interface PostgreSQLConnectionSettings extends ConnectionSettings, Adapte
 }
 export interface SQLite3ConnectionSettings extends ConnectionSettings, AdapterSettingsSQLite3 {
 }
-declare type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
+type AssociationIntegrityType = 'ignore' | 'nullify' | 'restrict' | 'delete';
 export interface AssociationHasManyOptions {
     connection?: Connection;
     type?: string;

@@ -361,7 +361,7 @@ export default function (db: any, db_config: any) {
   });
 
   it('default value', async () => {
-    sandbox.useFakeTimers(new Date(2018, 8, 21, 17, 13));
+    sandbox.useFakeTimers({ now: new Date(2018, 8, 21, 17, 13), toFake: ['Date'] });
 
     @cormo.Model()
     class User extends cormo.BaseModel {
@@ -392,7 +392,7 @@ export default function (db: any, db_config: any) {
   });
 
   it('default value', async () => {
-    sandbox.useFakeTimers(new Date(2018, 8, 21, 17, 13));
+    sandbox.useFakeTimers({ now: new Date(2018, 8, 21, 17, 13), toFake: ['Date'] });
 
     @cormo.Model()
     class User extends cormo.BaseModel {
@@ -423,7 +423,7 @@ export default function (db: any, db_config: any) {
   });
 
   it('default value with createBulk', async () => {
-    sandbox.useFakeTimers(new Date(2018, 8, 21, 17, 13));
+    sandbox.useFakeTimers({ now: new Date(2018, 8, 21, 17, 13), toFake: ['Date'] });
 
     @cormo.Model()
     class User extends cormo.BaseModel {

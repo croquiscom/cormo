@@ -10,10 +10,12 @@ services:
       MYSQL_PASSWORD: cormo_test
     ports:
       - 21860:3306
+
   mongo:
-    image: mongo:3.4-xenial
+    image: mongo:3.6-xenial
     ports:
       - 21861:27017
+
   postgres:
     image: mdillon/postgis:9.6-alpine
     environment:
@@ -22,6 +24,7 @@ services:
       POSTGRES_PASSWORD: cormo_test
     ports:
       - 21862:5432
+
   redis:
     image: redis:4-alpine
     ports:

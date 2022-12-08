@@ -139,11 +139,11 @@ interface CormoTypesTextConstructor {
     (): CormoTypesText;
 }
 declare const CormoTypesText: CormoTypesTextConstructor;
-export declare type ColumnTypeInternal = CormoTypesString | CormoTypesNumber | CormoTypesBoolean | CormoTypesDate | CormoTypesObject | CormoTypesInteger | CormoTypesBigInteger | CormoTypesGeoPoint | CormoTypesRecordID | CormoTypesText;
-export declare type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor | CormoTypesBooleanConstructor | CormoTypesDateConstructor | CormoTypesObjectConstructor | CormoTypesIntegerConstructor | CormoTypesBigIntegerConstructor | CormoTypesGeoPointConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor;
-declare type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor | BooleanConstructor | DateConstructor | ObjectConstructor;
-declare type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'biginteger' | 'geopoint' | 'recordid' | 'text';
-export declare type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor | ColumnTypeNativeConstructor | ColumnTypeString;
+export type ColumnTypeInternal = CormoTypesString | CormoTypesNumber | CormoTypesBoolean | CormoTypesDate | CormoTypesObject | CormoTypesInteger | CormoTypesBigInteger | CormoTypesGeoPoint | CormoTypesRecordID | CormoTypesText;
+export type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor | CormoTypesBooleanConstructor | CormoTypesDateConstructor | CormoTypesObjectConstructor | CormoTypesIntegerConstructor | CormoTypesBigIntegerConstructor | CormoTypesGeoPointConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor;
+type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor | BooleanConstructor | DateConstructor | ObjectConstructor;
+type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'biginteger' | 'geopoint' | 'recordid' | 'text';
+export type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor | ColumnTypeNativeConstructor | ColumnTypeString;
 /**
  * Converts JavaScript built-in class to CORMO type
  * @private
@@ -159,19 +159,19 @@ export { CormoTypesString as String, CormoTypesNumber as Number, CormoTypesBoole
  * * Integer for MySQL, SQLite3, PostegreSQL
  * @namespace ptypes
  */
-export declare type RecordID = string | number;
+export type RecordID = string | number;
 /**
  * A pseudo type represents an integer
  * @namespace ptypes
  */
-export declare type Integer = number;
+export type Integer = number;
 /**
  * A pseudo type represents an big integer
  * @namespace ptypes
  */
-export declare type BigInteger = number;
+export type BigInteger = number;
 /**
  * A pseudo type represents a two - dimensional point
  * @namespace ptypes
  */
-export declare type GeoPoint = [number, number];
+export type GeoPoint = [number, number];

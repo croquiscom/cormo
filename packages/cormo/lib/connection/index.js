@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -39,7 +43,7 @@ const inflector = __importStar(require("../util/inflector"));
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
 try {
-    redis = require('redis');
+    redis = require('ioredis');
 }
 catch (error) {
     /**/
@@ -48,8 +52,10 @@ catch (error) {
  * Manages connection to a database
  */
 class Connection extends events_1.EventEmitter {
+    get adapter() {
+        return this._adapter;
+    }
     constructor(adapter, settings) {
-        var _a, _b;
         super();
         /** @internal */
         this._schema_changed = false;
@@ -64,8 +70,8 @@ class Connection extends events_1.EventEmitter {
         if (settings.is_default !== false) {
             Connection.defaultConnection = this;
         }
-        this._implicit_apply_schemas = (_a = settings.implicit_apply_schemas) !== null && _a !== void 0 ? _a : false;
-        this._connection_retry_count = (_b = settings.connection_retry_count) !== null && _b !== void 0 ? _b : 99999;
+        this._implicit_apply_schemas = settings.implicit_apply_schemas ?? false;
+        this._connection_retry_count = settings.connection_retry_count ?? 99999;
         const redis_cache = settings.redis_cache || {};
         this._redis_cache_settings = redis_cache;
         this.models = {};
@@ -79,9 +85,6 @@ class Connection extends events_1.EventEmitter {
         }
         this._promise_connection = this._connect(settings);
         this.setLogger(settings.logger);
-    }
-    get adapter() {
-        return this._adapter;
     }
     /**
      * Set logger
@@ -141,7 +144,6 @@ class Connection extends events_1.EventEmitter {
             console.log('Applying schemas');
         }
         this._promise_schema_applied = this._promise_connection.then(async () => {
-            var _a, _b, _c, _d, _e, _f, _g;
             try {
                 const current = await this._adapter.getSchemas();
                 for (const model in this.models) {
@@ -180,7 +182,7 @@ class Connection extends events_1.EventEmitter {
                         if (expected_type !== real_type) {
                             type_changed = true;
                         }
-                        if (((_a = current_column.description) !== null && _a !== void 0 ? _a : '') !== ((_b = property.description) !== null && _b !== void 0 ? _b : '')) {
+                        if ((current_column.description ?? '') !== (property.description ?? '')) {
                             if (!type_changed) {
                                 if (options.apply_description_change) {
                                     if (options.verbose) {
@@ -208,7 +210,7 @@ class Connection extends events_1.EventEmitter {
                         await this._adapter.createTable(model, options.verbose);
                     }
                     else if (current_table !== 'NO SCHEMA' &&
-                        ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = model_class.description) !== null && _d !== void 0 ? _d : '')) {
+                        (current_table.description ?? '') !== (model_class.description ?? '')) {
                         if (options.apply_description_change) {
                             if (options.verbose) {
                                 console.log(`Changing table ${model_class.table_name}'s description to '${model_class.description}'`);
@@ -223,7 +225,7 @@ class Connection extends events_1.EventEmitter {
                         continue;
                     }
                     for (const index of model_class._indexes) {
-                        if (!((_f = (_e = current.indexes) === null || _e === void 0 ? void 0 : _e[model_class.table_name]) === null || _f === void 0 ? void 0 : _f[(_g = index.options.name) !== null && _g !== void 0 ? _g : ''])) {
+                        if (!current.indexes?.[model_class.table_name]?.[index.options.name ?? '']) {
                             if (options.verbose) {
                                 console.log(`Creating index on ${model_class.table_name} ${Object.keys(index.columns)}`);
                             }
@@ -282,7 +284,6 @@ class Connection extends events_1.EventEmitter {
      * @see AdapterBase::applySchema
      */
     async getSchemaChanges() {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
         this._initializeModels();
         this.applyAssociations();
         this._checkArchive();
@@ -335,7 +336,7 @@ class Connection extends events_1.EventEmitter {
                         ignorable: true,
                     });
                 }
-                if (((_a = current_column.description) !== null && _a !== void 0 ? _a : '') !== ((_b = property.description) !== null && _b !== void 0 ? _b : '')) {
+                if ((current_column.description ?? '') !== (property.description ?? '')) {
                     if (!type_changed) {
                         changes.push({
                             message: `Change ${model_class.table_name}.${column}'s description to '${property.description}'`,
@@ -374,7 +375,7 @@ class Connection extends events_1.EventEmitter {
                 }
             }
             else if (current_table !== 'NO SCHEMA' &&
-                ((_c = current_table.description) !== null && _c !== void 0 ? _c : '') !== ((_d = model_class.description) !== null && _d !== void 0 ? _d : '')) {
+                (current_table.description ?? '') !== (model_class.description ?? '')) {
                 changes.push({
                     message: `Change table ${model_class.table_name}'s description to '${model_class.description}'`,
                     ignorable: true,
@@ -396,7 +397,7 @@ class Connection extends events_1.EventEmitter {
                 continue;
             }
             for (const index of model_class._indexes) {
-                if (!((_f = (_e = current.indexes) === null || _e === void 0 ? void 0 : _e[model_class.table_name]) === null || _f === void 0 ? void 0 : _f[(_g = index.options.name) !== null && _g !== void 0 ? _g : ''])) {
+                if (!current.indexes?.[model_class.table_name]?.[index.options.name ?? '']) {
                     changes.push({ message: `Add index on ${model_class.table_name} ${Object.keys(index.columns)}` });
                     const query = this._adapter.getCreateIndexQuery(model_name, index);
                     if (query) {
@@ -404,7 +405,7 @@ class Connection extends events_1.EventEmitter {
                     }
                 }
             }
-            for (const index in (_h = current.indexes) === null || _h === void 0 ? void 0 : _h[model_class.table_name]) {
+            for (const index in current.indexes?.[model_class.table_name]) {
                 // MySQL add index for foreign key, so does not need to remove if the index is defined in integrities
                 if (!lodash_1.default.find(model_class._indexes, (item) => item.options.name === index) &&
                     !lodash_1.default.find(model_class._integrities, (item) => item.column === index)) {
@@ -451,9 +452,8 @@ class Connection extends events_1.EventEmitter {
      * Drops all model tables
      */
     async dropAllModels() {
-        var _a;
         for (const model_name of this._getModelNamesByAssociationOrder()) {
-            await ((_a = this.models[model_name]) === null || _a === void 0 ? void 0 : _a.drop());
+            await this.models[model_name]?.drop();
         }
     }
     /**
@@ -563,7 +563,7 @@ class Connection extends events_1.EventEmitter {
                     const query = integrity.child.select('');
                     query.where(lodash_1.default.zipObject([integrity.column], [{ $not: { $in: ids } }]));
                     const property = integrity.child._schema[integrity.column];
-                    if (!(property === null || property === void 0 ? void 0 : property.required)) {
+                    if (!property?.required) {
                         query.where(lodash_1.default.zipObject([integrity.column], [{ $not: null }]));
                     }
                     records = await query.exec();
@@ -859,7 +859,7 @@ class Connection extends events_1.EventEmitter {
         }
         catch (error) {
             if (error.message === 'not implemented') {
-                await Promise.all(model_list.map((model_name) => { var _a; return (_a = this.models[model_name]) === null || _a === void 0 ? void 0 : _a.where().delete({ skip_log: true }); }));
+                await Promise.all(model_list.map((model_name) => this.models[model_name]?.where().delete({ skip_log: true })));
                 return;
             }
             throw error;

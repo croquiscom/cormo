@@ -23,7 +23,7 @@ import * as inflector from '../util/inflector';
 const Toposort = require('toposort-class');
 
 try {
-  redis = require('redis');
+  redis = require('ioredis');
 } catch (error: any) {
   /**/
 }

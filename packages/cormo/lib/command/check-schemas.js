@@ -7,7 +7,6 @@ const path_1 = __importDefault(require("path"));
 const yargs_1 = __importDefault(require("yargs"));
 class CommandCheckSchemas {
     constructor(argv) {
-        var _a;
         const args = yargs_1.default
             .option('r', {
             array: true,
@@ -18,7 +17,7 @@ class CommandCheckSchemas {
             .help('help')
             .alias('h', 'help')
             .parseSync(argv);
-        this.modules_to_load = (_a = args.require) !== null && _a !== void 0 ? _a : [];
+        this.modules_to_load = args.require ?? [];
     }
     async run() {
         let has_changes = false;

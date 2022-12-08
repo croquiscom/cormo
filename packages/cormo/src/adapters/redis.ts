@@ -3,7 +3,7 @@
 let redis: any;
 
 try {
-  redis = require('redis');
+  redis = require('ioredis');
 } catch (error: any) {
   //
 }
@@ -15,7 +15,6 @@ export interface AdapterSettingsRedis {
 }
 
 import stream from 'stream';
-import util from 'util';
 import _ from 'lodash';
 import { Connection } from '../connection';
 import { Transaction } from '../transaction';
@@ -83,12 +82,12 @@ export class RedisAdapter extends AdapterBase {
     data.$_$ = ''; // ensure that there is one argument(one field) at least
     let id;
     try {
-      id = await this._client.incrAsync(`${tableize(model_name)}:_lastid`);
+      id = await this._client.incr(`${tableize(model_name)}:_lastid`);
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     try {
-      await this._client.hmsetAsync(`${tableize(model_name)}:${id}`, data);
+      await this._client.hmset(`${tableize(model_name)}:${id}`, data);
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
@@ -107,7 +106,7 @@ export class RedisAdapter extends AdapterBase {
     data.$_$ = ''; // ensure that there is one argument(one field) at least
     let exists;
     try {
-      exists = await this._client.existsAsync(key);
+      exists = await this._client.exists(key);
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
@@ -115,12 +114,12 @@ export class RedisAdapter extends AdapterBase {
       return;
     }
     try {
-      await this._client.delAsync(key);
+      await this._client.del(key);
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
     try {
-      await this._client.hmsetAsync(key, data);
+      await this._client.hmset(key, data);
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
@@ -145,12 +144,12 @@ export class RedisAdapter extends AdapterBase {
       const args = _.clone(fields_to_del);
       args.unshift(key);
       try {
-        await this._client.hdelAsync(args);
+        await this._client.hdel(args);
       } catch (error: any) {
         throw RedisAdapter.wrapError('unknown error', error);
       }
       try {
-        await this._client.hmsetAsync(key, data);
+        await this._client.hmset(key, data);
       } catch (error: any) {
         throw RedisAdapter.wrapError('unknown error', error);
       }
@@ -176,7 +175,10 @@ export class RedisAdapter extends AdapterBase {
   ): Promise<any> {
     let result;
     try {
-      result = await this._client.hgetallAsync(`${tableize(model_name)}:${id}`);
+      const key = `${tableize(model_name)}:${id}`;
+      if (await this._client.exists(key)) {
+        result = await this._client.hgetall(key);
+      }
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
@@ -198,7 +200,7 @@ export class RedisAdapter extends AdapterBase {
     const keys = await this._getKeys(table, conditions);
     let records: any[] = await Promise.all(
       keys.map(async (key: any) => {
-        const result = await this._client.hgetallAsync(key);
+        const result = (await this._client.exists(key)) ? await this._client.hgetall(key) : undefined;
         if (result) {
           result.id = Number(key.substr(table.length + 1));
         }
@@ -241,7 +243,7 @@ export class RedisAdapter extends AdapterBase {
     }
     let count;
     try {
-      count = await this._client.delAsync(keys);
+      count = await this._client.del(keys);
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
@@ -260,10 +262,7 @@ export class RedisAdapter extends AdapterBase {
   public async connect(settings: AdapterSettingsRedis) {
     const methods = ['del', 'exists', 'hdel', 'hgetall', 'hmset', 'incr', 'keys', 'select'];
     this._client = redis.createClient(settings.port || 6379, settings.host || '127.0.0.1');
-    for (const method of methods) {
-      this._client[method + 'Async'] = util.promisify(this._client[method]);
-    }
-    return await this._client.selectAsync(settings.database || 0);
+    return await this._client.select(settings.database || 0);
   }
 
   /** @internal */
@@ -287,7 +286,7 @@ export class RedisAdapter extends AdapterBase {
   private async _getKeys(table: any, conditions: Array<Record<string, any>> | Record<string, any>) {
     if (Array.isArray(conditions)) {
       if (conditions.length === 0) {
-        return await this._client.keysAsync(`${table}:*`);
+        return await this._client.keys(`${table}:*`);
       }
       const all_keys: any[] = [];
       await Promise.all(

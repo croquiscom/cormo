@@ -2,7 +2,11 @@
 /* eslint-disable indent */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -245,7 +249,6 @@ function _buildWhere(schema, conditions, conjunction = '$and') {
     }
 }
 function _buildGroupExpr(schema, group_expr) {
-    var _a;
     let op = Object.keys(group_expr)[0];
     const sub_expr = group_expr[op];
     if (op === '$any') {
@@ -253,7 +256,7 @@ function _buildGroupExpr(schema, group_expr) {
     }
     if (typeof sub_expr === 'string' && sub_expr.substr(0, 1) === '$') {
         let column = sub_expr.substr(1);
-        column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
+        column = schema[column]?._dbname_us || column;
         return { [op]: `$${column}` };
     }
     else {
@@ -345,7 +348,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
         const indexes = [];
         for (const column in schema) {
             const property = schema[column];
-            if ((property === null || property === void 0 ? void 0 : property.type_class) === types.GeoPoint) {
+            if (property?.type_class === types.GeoPoint) {
                 indexes.push([lodash_1.default.zipObject([column], ['2d'])]);
             }
         }
@@ -729,8 +732,16 @@ class MongoDBAdapter extends base_1.AdapterBase {
             return 0;
         }
         if (options.orders.length > 0 || options.limit || options.skip) {
-            const [conditions_find, , , client_options] = this._buildConditionsForFind(model_name, conditions_arg, Object.assign(Object.assign({}, options), { lean: true, joins: [], conditions_of_group: [] }));
-            const cursor = await this._collection(model_name).find(conditions_find, Object.assign(Object.assign({}, client_options), { projection: { _id: 1 } }));
+            const [conditions_find, , , client_options] = this._buildConditionsForFind(model_name, conditions_arg, {
+                ...options,
+                lean: true,
+                joins: [],
+                conditions_of_group: [],
+            });
+            const cursor = await this._collection(model_name).find(conditions_find, {
+                ...client_options,
+                projection: { _id: 1 },
+            });
             const records = await cursor.toArray();
             const ids = records.map(this._getModelID);
             conditions_arg = [{ id: { $in: ids } }];
@@ -867,7 +878,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
                 }
                 if (value != null) {
                     if (value.$inc != null) {
-                        if (ignore_on_update === null || ignore_on_update === void 0 ? void 0 : ignore_on_update.includes(column)) {
+                        if (ignore_on_update?.includes(column)) {
                             update_ops.$setOnInsert[path + column] = value.$inc;
                         }
                         else {
@@ -875,7 +886,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
                         }
                     }
                     else {
-                        if (ignore_on_update === null || ignore_on_update === void 0 ? void 0 : ignore_on_update.includes(column)) {
+                        if (ignore_on_update?.includes(column)) {
                             update_ops.$setOnInsert[path + column] = value;
                         }
                         else {

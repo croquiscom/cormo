@@ -23,7 +23,7 @@ jobs:
         ports:
           - 21860:3306
       mongo:
-        image: mongo:3.4-jessie
+        image: mongo:3.6-jessie
         ports:
           - 21861:27017
       postgres:
@@ -41,20 +41,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Cache node modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+        uses: actions/checkout@v3
 
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          node-version: '18'
+          cache: npm
 
       - name: Install packages
         run: |

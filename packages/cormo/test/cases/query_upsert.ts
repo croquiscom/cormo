@@ -37,7 +37,7 @@ export default function (_models: { connection: cormo.Connection | null }) {
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
-    sandbox.useFakeTimers(fake_date);
+    sandbox.useFakeTimers({ now: fake_date, toFake: ['Date'] });
 
     @cormo.Model()
     class UserUnique extends cormo.BaseModel {

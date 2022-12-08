@@ -155,9 +155,9 @@ class Query {
         this._options.joins.push({
             model_class,
             type: 'INNER JOIN',
-            alias: options === null || options === void 0 ? void 0 : options.alias,
-            base_column: options === null || options === void 0 ? void 0 : options.base_column,
-            join_column: options === null || options === void 0 ? void 0 : options.join_column,
+            alias: options?.alias,
+            base_column: options?.base_column,
+            join_column: options?.join_column,
         });
         return this;
     }
@@ -171,9 +171,9 @@ class Query {
         this._options.joins.push({
             model_class,
             type: 'LEFT OUTER JOIN',
-            alias: options === null || options === void 0 ? void 0 : options.alias,
-            base_column: options === null || options === void 0 ? void 0 : options.base_column,
-            join_column: options === null || options === void 0 ? void 0 : options.join_column,
+            alias: options?.alias,
+            base_column: options?.base_column,
+            join_column: options?.join_column,
         });
         return this;
     }
@@ -387,7 +387,6 @@ class Query {
      * @see AdapterBase::upsert
      */
     async upsert(updates, options) {
-        var _a;
         this._setUsed();
         await this._model._checkReady();
         const errors = [];
@@ -401,7 +400,10 @@ class Query {
             delete this._id;
         }
         const default_applied_columns = this._model.applyDefaultValues(data);
-        options = Object.assign(Object.assign({}, this._options), { ignore_on_update: ((_a = options === null || options === void 0 ? void 0 : options.ignore_on_update) !== null && _a !== void 0 ? _a : []).concat(default_applied_columns) });
+        options = {
+            ...this._options,
+            ignore_on_update: (options?.ignore_on_update ?? []).concat(default_applied_columns),
+        };
         this._connection.log(this._name, 'upsert', { data, conditions: this._conditions, options });
         return await this._adapter.upsert(this._name, data, this._conditions, options);
     }
@@ -515,8 +517,7 @@ class Query {
         let group_by;
         if (this._options.group_by) {
             group_by = lodash_1.default.compact(this._options.group_by.map((column) => {
-                var _a;
-                return (_a = this._model._schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us;
+                return this._model._schema[column]?._dbname_us;
             }));
         }
         const orders = [];
@@ -582,7 +583,23 @@ class Query {
                 }
             }
         }
-        return Object.assign({ conditions_of_group: this._options.conditions_of_group, explain: this._options.explain, group_by, group_fields: this._options.group_fields, joins, lean: this._options.lean, limit: this._options.limit, near: this._options.near, node: this._options.node, index_hint: this._options.index_hint, orders, skip: this._options.skip, transaction: this._options.transaction, distinct: this._options.distinct }, (select_raw.length > 0 && { select, select_raw }));
+        return {
+            conditions_of_group: this._options.conditions_of_group,
+            explain: this._options.explain,
+            group_by,
+            group_fields: this._options.group_fields,
+            joins,
+            lean: this._options.lean,
+            limit: this._options.limit,
+            near: this._options.near,
+            node: this._options.node,
+            index_hint: this._options.index_hint,
+            orders,
+            skip: this._options.skip,
+            transaction: this._options.transaction,
+            distinct: this._options.distinct,
+            ...(select_raw.length > 0 && { select, select_raw }),
+        };
     }
     _getAdapterDeleteOptions() {
         const orders = [];
@@ -682,7 +699,6 @@ class Query {
         await Promise.all(promises);
     }
     async _doArchiveAndIntegrity(options) {
-        var _a;
         const need_archive = this._model.archive;
         const integrities = this._model._integrities.filter((integrity) => integrity.type.substr(0, 7) === 'parent_');
         const need_child_archive = integrities.some((integrity) => integrity.child.archive);
@@ -701,7 +717,7 @@ class Query {
             const archive_records = records.map((record) => {
                 return { model: this._name, data: record };
             });
-            await ((_a = this._connection.models._Archive) === null || _a === void 0 ? void 0 : _a.createBulk(archive_records));
+            await this._connection.models._Archive?.createBulk(archive_records);
         }
         if (!need_integrity) {
             return;

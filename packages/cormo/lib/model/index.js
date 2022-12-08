@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -53,88 +57,6 @@ function _pf_reset() {
  * Base class for models
  */
 class BaseModel {
-    /**
-     * Creates a record
-     */
-    constructor(data) {
-        data = data || {};
-        const ctor = this.constructor;
-        const schema = ctor._schema;
-        const adapter = ctor._adapter;
-        Object.defineProperty(this, '_prev_attributes', { writable: true, value: {} });
-        if (ctor.dirty_tracking) {
-            Object.defineProperty(this, '_attributes', { value: {} });
-            Object.defineProperty(this, '_intermediates', { value: {} });
-            for (const path of Object.keys(ctor._intermediate_paths).sort()) {
-                const [obj, last] = util.getLeafOfPath(this, path);
-                this._intermediates[path] = {};
-                this._defineProperty(obj, last, path, false);
-            }
-            for (const column in schema) {
-                const property = schema[column];
-                if (!property || property.primary_key) {
-                    continue;
-                }
-                const [obj, last] = util.getLeafOfPath(this, property._parts);
-                this._defineProperty(obj, last, column, false);
-            }
-        }
-        else {
-            Object.defineProperty(this, 'isDirty', { value: _pf_isDirty });
-            Object.defineProperty(this, 'getChanged', { value: _pf_getChanged });
-            Object.defineProperty(this, 'get', { value: _pf_get });
-            Object.defineProperty(this, 'getPrevious', { value: _pf_getPrevious });
-            Object.defineProperty(this, 'set', { value: _pf_set });
-            Object.defineProperty(this, 'reset', { value: _pf_reset });
-        }
-        if (ctor._object_column_classes) {
-            for (const { column, klass } of ctor._object_column_classes) {
-                this[column] = new klass();
-            }
-        }
-        if (arguments.length === 4) {
-            // if this has 4 arguments, this is called from adapter with database record data
-            // eslint-disable-next-line prefer-rest-params
-            const [id, selected_columns, selected_columns_raw] = [arguments[1], arguments[2], arguments[3]];
-            adapter.setValuesFromDB(this, data, schema, selected_columns);
-            ctor._collapseNestedNulls(this, selected_columns_raw, ctor.dirty_tracking ? this._intermediates : undefined);
-            Object.defineProperty(this, 'id', {
-                configurable: false,
-                enumerable: true,
-                value: id,
-                writable: false,
-            });
-            Object.defineProperty(this, '_is_persisted', {
-                configurable: false,
-                enumerable: false,
-                value: true,
-                writable: false,
-            });
-            this._runCallbacks('find', 'after');
-        }
-        else {
-            for (const column in schema) {
-                const property = schema[column];
-                if (!property || property.primary_key) {
-                    continue;
-                }
-                const parts = property._parts;
-                let value = util.getPropertyOfPath(data, parts);
-                if (value === undefined) {
-                    value = null;
-                }
-                util.setPropertyOfPath(this, parts, value);
-            }
-            ctor._collapseNestedNulls(this, null, ctor.dirty_tracking ? this._intermediates : undefined);
-            Object.defineProperty(this, 'id', {
-                configurable: true,
-                enumerable: true,
-                value: null,
-                writable: false,
-            });
-        }
-        this._runCallbacks('initialize', 'after');
-    }
     static initialize() {
         /**/
     }
@@ -317,7 +239,7 @@ class BaseModel {
     static [util_1.inspect.custom](_depth) {
         const schema = Object.keys(this._schema)
             .sort()
-            .map((column) => { var _a; return `${column}: ${(_a = this._schema[column]) === null || _a === void 0 ? void 0 : _a.type}`; })
+            .map((column) => `${column}: ${this._schema[column]?.type}`)
             .join(', ');
         return '\u001b[36m' + `[Model: ${this.name}(` + '\u001b[90m' + schema + '\u001b[36m' + ')]' + '\u001b[39m';
     }
@@ -655,8 +577,7 @@ class BaseModel {
         for (const index of this._indexes) {
             if (!index.options.name) {
                 const column_names = Object.keys(index.columns).map((column_name) => {
-                    var _a;
-                    return ((_a = this._schema[column_name]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column_name;
+                    return this._schema[column_name]?._dbname_us || column_name;
                 });
                 index.options.name = column_names.join('_');
             }
@@ -738,6 +659,88 @@ class BaseModel {
                 }
         }
         return value;
+    }
+    /**
+     * Creates a record
+     */
+    constructor(data) {
+        data = data || {};
+        const ctor = this.constructor;
+        const schema = ctor._schema;
+        const adapter = ctor._adapter;
+        Object.defineProperty(this, '_prev_attributes', { writable: true, value: {} });
+        if (ctor.dirty_tracking) {
+            Object.defineProperty(this, '_attributes', { value: {} });
+            Object.defineProperty(this, '_intermediates', { value: {} });
+            for (const path of Object.keys(ctor._intermediate_paths).sort()) {
+                const [obj, last] = util.getLeafOfPath(this, path);
+                this._intermediates[path] = {};
+                this._defineProperty(obj, last, path, false);
+            }
+            for (const column in schema) {
+                const property = schema[column];
+                if (!property || property.primary_key) {
+                    continue;
+                }
+                const [obj, last] = util.getLeafOfPath(this, property._parts);
+                this._defineProperty(obj, last, column, false);
+            }
+        }
+        else {
+            Object.defineProperty(this, 'isDirty', { value: _pf_isDirty });
+            Object.defineProperty(this, 'getChanged', { value: _pf_getChanged });
+            Object.defineProperty(this, 'get', { value: _pf_get });
+            Object.defineProperty(this, 'getPrevious', { value: _pf_getPrevious });
+            Object.defineProperty(this, 'set', { value: _pf_set });
+            Object.defineProperty(this, 'reset', { value: _pf_reset });
+        }
+        if (ctor._object_column_classes) {
+            for (const { column, klass } of ctor._object_column_classes) {
+                this[column] = new klass();
+            }
+        }
+        if (arguments.length === 4) {
+            // if this has 4 arguments, this is called from adapter with database record data
+            // eslint-disable-next-line prefer-rest-params
+            const [id, selected_columns, selected_columns_raw] = [arguments[1], arguments[2], arguments[3]];
+            adapter.setValuesFromDB(this, data, schema, selected_columns);
+            ctor._collapseNestedNulls(this, selected_columns_raw, ctor.dirty_tracking ? this._intermediates : undefined);
+            Object.defineProperty(this, 'id', {
+                configurable: false,
+                enumerable: true,
+                value: id,
+                writable: false,
+            });
+            Object.defineProperty(this, '_is_persisted', {
+                configurable: false,
+                enumerable: false,
+                value: true,
+                writable: false,
+            });
+            this._runCallbacks('find', 'after');
+        }
+        else {
+            for (const column in schema) {
+                const property = schema[column];
+                if (!property || property.primary_key) {
+                    continue;
+                }
+                const parts = property._parts;
+                let value = util.getPropertyOfPath(data, parts);
+                if (value === undefined) {
+                    value = null;
+                }
+                util.setPropertyOfPath(this, parts, value);
+            }
+            ctor._collapseNestedNulls(this, null, ctor.dirty_tracking ? this._intermediates : undefined);
+            Object.defineProperty(this, 'id', {
+                configurable: true,
+                enumerable: true,
+                value: null,
+                writable: false,
+            });
+        }
+        this._runCallbacks('initialize', 'after');
     }
     /**
      * Returns true if there is some changed columns
@@ -848,7 +851,7 @@ class BaseModel {
         }
         if (options.validate !== false) {
             this.validate();
-            return await this.save(Object.assign(Object.assign({}, options), { validate: false }));
+            return await this.save({ ...options, validate: false });
         }
         this._runCallbacks('save', 'before');
         if (this._is_persisted) {

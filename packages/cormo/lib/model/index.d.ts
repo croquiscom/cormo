@@ -5,11 +5,11 @@ import { Connection, AssociationBelongsToOptions, AssociationHasManyOptions, Ass
 import { QueryArray, QuerySingle } from '../query';
 import { Transaction } from '../transaction';
 import * as types from '../types';
-declare type ModelCallbackMethod = () => void | 'string';
-export declare type ModelColumnNames<M> = Exclude<keyof M, keyof BaseModel>;
-export declare type ModelColumnNamesWithId<M> = Exclude<keyof M, Exclude<keyof BaseModel, 'id'>>;
-export declare type ModelValueObject<M> = Pick<M, ModelColumnNames<M>>;
-export declare type ModelValueObjectWithId<M> = Pick<M, ModelColumnNamesWithId<M>>;
+type ModelCallbackMethod = () => void | 'string';
+export type ModelColumnNames<M> = Exclude<keyof M, keyof BaseModel>;
+export type ModelColumnNamesWithId<M> = Exclude<keyof M, Exclude<keyof BaseModel, 'id'>>;
+export type ModelValueObject<M> = Pick<M, ModelColumnNames<M>>;
+export type ModelValueObjectWithId<M> = Pick<M, ModelColumnNamesWithId<M>>;
 export interface ColumnProperty {
     type: types.ColumnType | types.ColumnType[];
     array?: boolean;

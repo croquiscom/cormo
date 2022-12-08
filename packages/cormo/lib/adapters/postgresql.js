@@ -2,7 +2,11 @@
 /* eslint-disable indent */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -194,7 +198,6 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     async createIndex(model_name, index) {
-        var _a;
         const model_class = this._connection.models[model_name];
         if (!model_class) {
             return;
@@ -204,7 +207,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const columns = [];
         for (const column in index.columns) {
             const order = index.columns[column];
-            columns.push(`"${((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column}" ${order === -1 ? 'DESC' : 'ASC'}`);
+            columns.push(`"${schema[column]?._dbname_us || column}" ${order === -1 ? 'DESC' : 'ASC'}`);
         }
         const unique = index.options.unique ? 'UNIQUE ' : '';
         const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
@@ -530,7 +533,6 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         if (options.orders.length > 0) {
             const schema = model_class._schema;
             const orders = options.orders.map((order) => {
-                var _a;
                 let column;
                 if (order[0] === '-') {
                     column = order.slice(1);
@@ -540,7 +542,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
                     column = order;
                     order = 'ASC';
                 }
-                column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
+                column = schema[column]?._dbname_us || column;
                 return `"${column}" ${order}`;
             });
             sql += ' ORDER BY ' + orders.join(',');
@@ -683,13 +685,12 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
     }
     /** @internal */
     _buildGroupExpr(schema, group_expr) {
-        var _a;
         const op = Object.keys(group_expr)[0];
         if (op === '$any') {
             const sub_expr = group_expr[op];
             if (sub_expr.substr(0, 1) === '$') {
                 let column = sub_expr.substr(1);
-                column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
+                column = schema[column]?._dbname_us || column;
                 return `(ARRAY_AGG(${column}))[1]`;
             }
             else {
@@ -820,7 +821,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const places = [];
         for (const column in schema) {
             const property = schema[column];
-            if (property === null || property === void 0 ? void 0 : property.primary_key) {
+            if (property?.primary_key) {
                 continue;
             }
             this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
@@ -837,7 +838,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         const fields = [];
         const places = [];
         for (const column in data) {
-            const property = lodash_1.default.find(schema, (item) => (item === null || item === void 0 ? void 0 : item._dbname_us) === column);
+            const property = lodash_1.default.find(schema, (item) => item?._dbname_us === column);
             if (!property || property.primary_key) {
                 continue;
             }
@@ -894,7 +895,6 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         if (options.orders.length > 0 || order_by) {
             const schema = model_class._schema;
             const orders = options.orders.map((order) => {
-                var _a;
                 let column;
                 if (order[0] === '-') {
                     column = order.slice(1);
@@ -904,7 +904,7 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
                     column = order;
                     order = 'ASC';
                 }
-                column = ((_a = schema[column]) === null || _a === void 0 ? void 0 : _a._dbname_us) || column;
+                column = schema[column]?._dbname_us || column;
                 return `"${column}" ${order}`;
             });
             if (order_by) {

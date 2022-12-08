@@ -1,11 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
-    "declaration": true,
-    "experimentalDecorators": true,
+    "target": "es2021",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
     "strict": true,
     "stripInternal": true,
+    "declaration": true,
+    "module": "CommonJS",
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
     "esModuleInterop": true
   }
 }
