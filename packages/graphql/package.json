@@ -1,6 +1,6 @@
 {
   "name": "cormo-graphql",
-  "version": "0.9.4",
+  "version": "1.0.0",
   "description": "GraphQL support for CORMO",
   "main": "./lib",
   "types": "./lib/index.d.ts",
@@ -25,7 +25,7 @@
   "homepage": "https://github.com/croquiscom/cormo",
   "dependencies": {
     "@croquiscom/crary-graphql": "^1.0.0",
-    "cormo": "^0.19.3",
+    "cormo": "^1.0.0",
     "graphql": "^16.6.0",
     "lodash": "^4.17.21"
   },
