@@ -52,6 +52,16 @@ export default function (models: { User: typeof User }) {
     expect(user.id).to.exist;
   });
 
+  it('create with id', async () => {
+    const user = await models.User.create({ name: 'John Doe', age: 27, id: 1234567 }, { use_id_in_data: true });
+    expect(user.id).to.eql(1234567);
+  });
+
+  it('create without id', async () => {
+    const user = await models.User.create({ name: 'John Doe', age: 27, id: 1234567 } as any, { use_id_in_data: false });
+    expect(user.id).not.to.eql(1234567);
+  });
+
   it('find a record', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const record = await models.User.find(user.id);
@@ -248,6 +258,30 @@ export default function (models: { User: typeof User }) {
       expect(user.id).to.exist;
       const record = await models.User.find(user.id);
       expect(user).to.eql(record);
+    }
+  });
+
+  it('createBulk with id', async () => {
+    const data = [
+      { name: 'John Doe', age: 27, id: 1234567 },
+      { name: 'Bill Smith', age: 45, id: 1234568 },
+      { name: 'Alice Jackson', age: 27, id: 1234569 },
+    ];
+    const users = await models.User.createBulk(data, { use_id_in_data: true });
+    for (const user of users) {
+      expect(user.id).to.eql(data.find((item) => item.name === user.name)!.id);
+    }
+  });
+
+  it('createBulk without id', async () => {
+    const data = [
+      { name: 'John Doe', age: 27, id: 1234567 },
+      { name: 'Bill Smith', age: 45, id: 1234568 },
+      { name: 'Alice Jackson', age: 27, id: 1234569 },
+    ];
+    const users = await models.User.createBulk(data, { use_id_in_data: false });
+    for (const user of users) {
+      expect(user.id).not.to.eql(data.find((item) => item.name === user.name)!.id);
     }
   });
 
