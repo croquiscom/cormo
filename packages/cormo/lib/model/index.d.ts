@@ -118,7 +118,12 @@ declare class BaseModel {
      * Creates a record.
      * 'Model.build(data)' is the same as 'new Model(data)'
      */
-    static build<M extends BaseModel>(this: new (data_arg?: any) => M, data?: ModelValueObject<M>): M;
+    static build<M extends BaseModel>(this: new (data_arg?: any) => M, data: ModelValueObjectWithId<M>, options: {
+        use_id_in_data: true;
+    }): M;
+    static build<M extends BaseModel>(this: new (data_arg?: any) => M, data?: ModelValueObject<M>, options?: {
+        use_id_in_data?: boolean;
+    }): M;
     /**
      * Deletes all records from the database
      */
@@ -196,15 +201,26 @@ declare class BaseModel {
      * Creates a record and saves it to the database
      * 'Model.create(data)' is the same as 'Model.build(data).save()'
      */
+    static create<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data: ModelValueObjectWithId<M>, options: {
+        transaction?: Transaction;
+        skip_log?: boolean;
+        use_id_in_data: true;
+    }): Promise<M>;
     static create<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data?: ModelValueObject<M>, options?: {
         transaction?: Transaction;
         skip_log?: boolean;
+        use_id_in_data?: boolean;
     }): Promise<M>;
     /**
      * Creates multiple records and saves them to the database.
      */
+    static createBulk<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data: Array<ModelValueObjectWithId<M>>, options: {
+        transaction?: Transaction;
+        use_id_in_data: true;
+    }): Promise<M[]>;
     static createBulk<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data?: Array<ModelValueObject<M>>, options?: {
         transaction?: Transaction;
+        use_id_in_data?: boolean;
     }): Promise<M[]>;
     /**
      * Creates q query object
@@ -348,6 +364,7 @@ declare class BaseModel {
         transaction?: Transaction;
         skip_log?: boolean;
         validate?: boolean;
+        use_id_in_data?: boolean;
     }): Promise<this>;
     /**
      * Validates data

@@ -202,12 +202,17 @@ class BaseModel {
             this._connection._schema_changed = true;
         }
     }
-    /**
-     * Creates a record.
-     * 'Model.build(data)' is the same as 'new Model(data)'
-     */
-    static build(data) {
-        return new this(data);
+    static build(data, options) {
+        const model = new this(data);
+        if (options?.use_id_in_data && data?.id) {
+            Object.defineProperty(model, 'id', {
+                configurable: true,
+                enumerable: true,
+                value: data.id,
+                writable: false,
+            });
+        }
+        return model;
     }
     /**
      * Deletes all records from the database
@@ -394,17 +399,10 @@ class BaseModel {
     static afterValidate(method) {
         this.addCallback('after', 'validate', method);
     }
-    /**
-     * Creates a record and saves it to the database
-     * 'Model.create(data)' is the same as 'Model.build(data).save()'
-     */
     static async create(data, options) {
         await this._checkReady();
-        return await this.build(data).save(options);
+        return await this.build(data, options).save(options);
     }
-    /**
-     * Creates multiple records and saves them to the database.
-     */
     static async createBulk(data, options) {
         await this._checkReady();
         if (!Array.isArray(data)) {
@@ -414,7 +412,7 @@ class BaseModel {
             return [];
         }
         const records = data.map((item) => {
-            return this.build(item);
+            return this.build(item, options);
         });
         records.forEach((record) => this.applyDefaultValues(record));
         await Promise.all(records.map((record) => record.validate()));
@@ -606,7 +604,10 @@ class BaseModel {
             throw error;
         }
         this._connection.log(this._name, 'createBulk', data_array);
-        const ids = await this._adapter.createBulk(this._name, data_array, { transaction: options.transaction });
+        const ids = await this._adapter.createBulk(this._name, data_array, {
+            transaction: options.transaction,
+            use_id_in_data: options.use_id_in_data,
+        });
         records.forEach((record, i) => {
             Object.defineProperty(record, 'id', {
                 configurable: false,
@@ -961,7 +962,10 @@ class BaseModel {
         if (!options.skip_log) {
             ctor._connection.log(ctor._name, 'create', data);
         }
-        const id = await ctor._adapter.create(ctor._name, data, { transaction: options.transaction || this._transaction });
+        const id = await ctor._adapter.create(ctor._name, data, {
+            transaction: options.transaction || this._transaction,
+            use_id_in_data: options.use_id_in_data,
+        });
         Object.defineProperty(this, 'id', {
             configurable: false,
             enumerable: true,

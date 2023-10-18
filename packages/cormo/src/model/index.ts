@@ -309,8 +309,31 @@ class BaseModel {
    * Creates a record.
    * 'Model.build(data)' is the same as 'new Model(data)'
    */
-  public static build<M extends BaseModel>(this: new (data_arg?: any) => M, data?: ModelValueObject<M>): M {
-    return new this(data);
+  public static build<M extends BaseModel>(
+    this: new (data_arg?: any) => M,
+    data: ModelValueObjectWithId<M>,
+    options: { use_id_in_data: true },
+  ): M;
+  public static build<M extends BaseModel>(
+    this: new (data_arg?: any) => M,
+    data?: ModelValueObject<M>,
+    options?: { use_id_in_data?: boolean },
+  ): M;
+  public static build<M extends BaseModel>(
+    this: new (data_arg?: any) => M,
+    data?: ModelValueObjectWithId<M>,
+    options?: { use_id_in_data?: boolean },
+  ): M {
+    const model = new this(data);
+    if (options?.use_id_in_data && data?.id) {
+      Object.defineProperty(model, 'id', {
+        configurable: true,
+        enumerable: true,
+        value: data.id,
+        writable: false,
+      });
+    }
+    return model;
   }
 
   /**
@@ -524,11 +547,21 @@ class BaseModel {
    */
   public static async create<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
+    data: ModelValueObjectWithId<M>,
+    options: { transaction?: Transaction; skip_log?: boolean; use_id_in_data: true },
+  ): Promise<M>;
+  public static async create<M extends BaseModel>(
+    this: (new (data_arg?: any) => M) & typeof BaseModel,
     data?: ModelValueObject<M>,
-    options?: { transaction?: Transaction; skip_log?: boolean },
+    options?: { transaction?: Transaction; skip_log?: boolean; use_id_in_data?: boolean },
+  ): Promise<M>;
+  public static async create<M extends BaseModel>(
+    this: (new (data_arg?: any) => M) & typeof BaseModel,
+    data?: ModelValueObject<M>,
+    options?: { transaction?: Transaction; skip_log?: boolean; use_id_in_data?: boolean },
   ): Promise<M> {
     await this._checkReady();
-    return await this.build<M>(data).save(options);
+    return await this.build<M>(data, options).save(options);
   }
 
   /**
@@ -536,8 +569,18 @@ class BaseModel {
    */
   public static async createBulk<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
+    data: Array<ModelValueObjectWithId<M>>,
+    options: { transaction?: Transaction; use_id_in_data: true },
+  ): Promise<M[]>;
+  public static async createBulk<M extends BaseModel>(
+    this: (new (data_arg?: any) => M) & typeof BaseModel,
     data?: Array<ModelValueObject<M>>,
-    options?: { transaction?: Transaction },
+    options?: { transaction?: Transaction; use_id_in_data?: boolean },
+  ): Promise<M[]>;
+  public static async createBulk<M extends BaseModel>(
+    this: (new (data_arg?: any) => M) & typeof BaseModel,
+    data?: Array<ModelValueObject<M>>,
+    options?: { transaction?: Transaction; use_id_in_data?: boolean },
   ): Promise<M[]> {
     await this._checkReady();
     if (!Array.isArray(data)) {
@@ -547,7 +590,7 @@ class BaseModel {
       return [];
     }
     const records = data.map((item) => {
-      return this.build(item);
+      return this.build(item, options);
     });
     records.forEach((record) => this.applyDefaultValues(record));
     await Promise.all(records.map((record) => record.validate()));
@@ -836,7 +879,10 @@ class BaseModel {
     return callbacks.push({ type, method });
   }
 
-  private static async _createBulk(records: any[], options: { transaction?: Transaction } = {}) {
+  private static async _createBulk(
+    records: any[],
+    options: { transaction?: Transaction; use_id_in_data?: boolean } = {},
+  ) {
     let error: Error | undefined;
     const data_array = records.map((record) => {
       try {
@@ -849,7 +895,10 @@ class BaseModel {
       throw error;
     }
     this._connection.log(this._name, 'createBulk', data_array);
-    const ids = await this._adapter.createBulk(this._name, data_array, { transaction: options.transaction });
+    const ids = await this._adapter.createBulk(this._name, data_array, {
+      transaction: options.transaction,
+      use_id_in_data: options.use_id_in_data,
+    });
     records.forEach((record, i) => {
       Object.defineProperty(record, 'id', {
         configurable: false,
@@ -1105,7 +1154,7 @@ class BaseModel {
    * Saves data to the database
    */
   public async save(
-    options: { transaction?: Transaction; skip_log?: boolean; validate?: boolean } = {},
+    options: { transaction?: Transaction; skip_log?: boolean; validate?: boolean; use_id_in_data?: boolean } = {},
   ): Promise<this> {
     const ctor = this.constructor as typeof BaseModel;
     await ctor._checkReady();
@@ -1215,13 +1264,16 @@ class BaseModel {
     return data;
   }
 
-  private async _create(options: { transaction?: Transaction; skip_log?: boolean }) {
+  private async _create(options: { transaction?: Transaction; skip_log?: boolean; use_id_in_data?: boolean }) {
     const data = this._buildSaveData();
     const ctor = this.constructor as typeof BaseModel;
     if (!options.skip_log) {
       ctor._connection.log(ctor._name, 'create', data);
     }
-    const id = await ctor._adapter.create(ctor._name, data, { transaction: options.transaction || this._transaction });
+    const id = await ctor._adapter.create(ctor._name, data, {
+      transaction: options.transaction || this._transaction,
+      use_id_in_data: options.use_id_in_data,
+    });
     Object.defineProperty(this, 'id', {
       configurable: false,
       enumerable: true,
