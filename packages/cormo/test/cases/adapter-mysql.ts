@@ -9,6 +9,7 @@ export default function (models: { connection: cormo.Connection<cormo.MySQLAdapt
         implicit_apply_schemas: true,
         is_default: false,
         database: _g.db_configs.mysql.database,
+        host: _g.db_configs.mysql.host,
         port: _g.db_configs.mysql.port,
         user: new Promise((resolve) => {
           setTimeout(() => {

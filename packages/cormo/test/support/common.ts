@@ -4,6 +4,7 @@ const db_configs: { [db: string]: any } = {
   mongodb: {
     implicit_apply_schemas: true,
     database: 'test',
+    host: '127.0.0.1',
     port: 21861,
     redis_cache: {
       port: 21863,
@@ -13,6 +14,7 @@ const db_configs: { [db: string]: any } = {
     implicit_apply_schemas: true,
     database: 'cormo_test',
     password: 'cormo_test',
+    host: '127.0.0.1',
     port: 21860,
     redis_cache: {
       port: 21863,
@@ -23,6 +25,7 @@ const db_configs: { [db: string]: any } = {
     implicit_apply_schemas: true,
     database: 'cormo_test',
     password: 'cormo_test',
+    host: '127.0.0.1',
     port: 21862,
     redis_cache: {
       port: 21863,
