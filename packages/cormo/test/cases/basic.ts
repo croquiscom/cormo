@@ -18,7 +18,15 @@ function _getInvalidID(id: number | string) {
   }
 }
 
-export default function (models: { User: typeof User }) {
+function getFixedId(db: string): any {
+  if (db === 'mongodb') {
+    return '0123456789abcdef0123567';
+  } else {
+    return 1234567;
+  }
+}
+
+export default function (models: { User: typeof User }, db: string) {
   it('create one', () => {
     const user = new models.User();
     user.name = 'John Doe';
@@ -50,6 +58,20 @@ export default function (models: { User: typeof User }) {
     expect(user).to.be.an.instanceof(models.User);
     expect(user).to.have.keys('id', 'name', 'age');
     expect(user.id).to.exist;
+  });
+
+  it('create with id', async () => {
+    const fixed_id = getFixedId(db);
+    const user = await models.User.create({ name: 'John Doe', age: 27, id: fixed_id + 0 }, { use_id_in_data: true });
+    expect(user.id).to.eql(fixed_id + 0);
+  });
+
+  it('create without id', async () => {
+    const fixed_id = getFixedId(db);
+    const user = await models.User.create({ name: 'John Doe', age: 27, id: fixed_id + 0 } as any, {
+      use_id_in_data: false,
+    });
+    expect(user.id).not.to.eql(fixed_id + 0);
   });
 
   it('find a record', async () => {
@@ -248,6 +270,32 @@ export default function (models: { User: typeof User }) {
       expect(user.id).to.exist;
       const record = await models.User.find(user.id);
       expect(user).to.eql(record);
+    }
+  });
+
+  it('createBulk with id', async () => {
+    const fixed_id = getFixedId(db);
+    const data = [
+      { name: 'John Doe', age: 27, id: fixed_id + 0 },
+      { name: 'Bill Smith', age: 45, id: fixed_id + 1 },
+      { name: 'Alice Jackson', age: 27, id: fixed_id + 2 },
+    ];
+    const users = await models.User.createBulk(data, { use_id_in_data: true });
+    for (const user of users) {
+      expect(user.id).to.eql(data.find((item) => item.name === user.name)!.id);
+    }
+  });
+
+  it('createBulk without id', async () => {
+    const fixed_id = getFixedId(db);
+    const data = [
+      { name: 'John Doe', age: 27, id: fixed_id + 0 },
+      { name: 'Bill Smith', age: 45, id: fixed_id + 1 },
+      { name: 'Alice Jackson', age: 27, id: fixed_id + 2 },
+    ];
+    const users = await models.User.createBulk(data, { use_id_in_data: false });
+    for (const user of users) {
+      expect(user.id).not.to.eql(data.find((item) => item.name === user.name)!.id);
     }
   });
 

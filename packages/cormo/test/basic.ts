@@ -47,6 +47,6 @@ _dbs.forEach((db) => {
       _g.connection = null;
     });
 
-    cases(models);
+    cases(models, db);
   });
 });

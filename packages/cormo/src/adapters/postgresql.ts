@@ -288,14 +288,18 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async create(model_name: string, data: any, options: { transaction?: Transaction }): Promise<any> {
+  public async create(
+    model_name: string,
+    data: any,
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ): Promise<any> {
     const model_class = this._connection.models[model_name];
     if (!model_class) {
       throw new Error('model not found');
     }
     const table_name = model_class.table_name;
     const values: any[] = [];
-    const [fields, places] = this._buildUpdateSet(model_name, data, values, true);
+    const [fields, places] = this._buildUpdateSet(model_name, data, values, true, options.use_id_in_data);
     const sql = `INSERT INTO "${table_name}" (${fields}) VALUES (${places}) RETURNING id`;
     let result;
     try {
@@ -312,7 +316,11 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async createBulk(model_name: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
+  public async createBulk(
+    model_name: string,
+    data: any[],
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ): Promise<any[]> {
     const model_class = this._connection.models[model_name];
     if (!model_class) {
       throw new Error('model not found');
@@ -323,7 +331,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     const places: any[] = [];
     data.forEach((item) => {
       let places_sub;
-      [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true);
+      [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true, options.use_id_in_data);
       places.push('(' + places_sub + ')');
     });
     const sql = `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')} RETURNING id`;
@@ -856,7 +864,13 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  private _buildUpdateSet(model_name: string, data: any, values: any, insert: boolean = false) {
+  private _buildUpdateSet(
+    model_name: string,
+    data: any,
+    values: any,
+    insert: boolean = false,
+    use_id_in_data?: boolean,
+  ) {
     const model_class = this._connection.models[model_name];
     if (!model_class) {
       return ['', ''];
@@ -870,6 +884,11 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
         continue;
       }
       this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
+    }
+    if (use_id_in_data && data.id) {
+      values.push(data.id);
+      fields.push('id');
+      places.push('$' + values.length);
     }
     return [fields.join(','), places.join(',')];
   }

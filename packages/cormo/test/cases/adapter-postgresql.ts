@@ -9,6 +9,7 @@ export default function (models: { connection: cormo.Connection<cormo.PostgreSQL
         implicit_apply_schemas: true,
         is_default: false,
         database: _g.db_configs.postgresql.database,
+        host: _g.db_configs.postgresql.host,
         port: _g.db_configs.postgresql.port,
         user: new Promise((resolve) => {
           setTimeout(() => {

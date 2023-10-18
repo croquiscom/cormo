@@ -314,13 +314,21 @@ abstract class AdapterBase {
    * Creates a record
    * @internal
    */
-  public abstract create(model_name: string, data: any, options: { transaction?: Transaction }): Promise<any>;
+  public abstract create(
+    model_name: string,
+    data: any,
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ): Promise<any>;
 
   /**
    * Creates records
    * @internal
    */
-  public abstract createBulk(model_name: string, data: any[], options: { transaction?: Transaction }): Promise<any[]>;
+  public abstract createBulk(
+    model_name: string,
+    data: any[],
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ): Promise<any[]>;
 
   /**
    * Updates a record
@@ -501,7 +509,11 @@ abstract class AdapterBase {
   }
 
   /** @internal */
-  protected async _createBulkDefault(model_name: string, data: any[], options: { transaction?: Transaction }) {
+  protected async _createBulkDefault(
+    model_name: string,
+    data: any[],
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ) {
     return await Promise.all(
       data.map((item: any) => {
         return this.create(model_name, item, options);

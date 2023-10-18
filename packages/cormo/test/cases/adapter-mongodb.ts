@@ -10,6 +10,7 @@ export default function (models: { connection: cormo.Connection<cormo.MongoDBAda
         implicit_apply_schemas: true,
         is_default: false,
         database: _g.db_configs.mongodb.database,
+        host: _g.db_configs.mongodb.host,
         port: _g.db_configs.mongodb.port,
         user: new Promise((resolve) => {
           setTimeout(() => {

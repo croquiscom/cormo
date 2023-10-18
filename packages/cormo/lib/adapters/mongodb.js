@@ -413,10 +413,15 @@ class MongoDBAdapter extends base_1.AdapterBase {
         return value;
     }
     /** @internal */
-    async create(model_name, data, _options) {
+    async create(model_name, data, options) {
         let result;
         try {
-            result = await this._collection(model_name).insertOne(data, { safe: true });
+            if (options.use_id_in_data) {
+                result = await this._collection(model_name).insertOne({ ...data, _id: data.id }, { safe: true });
+            }
+            else {
+                result = await this._collection(model_name).insertOne(data, { safe: true });
+            }
         }
         catch (error) {
             throw _processSaveError(error);
@@ -447,7 +452,12 @@ class MongoDBAdapter extends base_1.AdapterBase {
         }
         let result;
         try {
-            result = await this._collection(model_name).insertMany(data, { safe: true });
+            if (options.use_id_in_data) {
+                result = await this._collection(model_name).insertMany(data.map((item) => ({ ...item, _id: item.id })), { safe: true });
+            }
+            else {
+                result = await this._collection(model_name).insertMany(data, { safe: true });
+            }
         }
         catch (e) {
             throw _processSaveError(e);
