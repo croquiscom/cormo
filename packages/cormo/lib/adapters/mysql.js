@@ -448,7 +448,12 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         const id = result && result.insertId;
         if (id) {
-            return data.map((item, i) => id + i);
+            if (options.use_id_in_data) {
+                return data.map((item) => item.id);
+            }
+            else {
+                return data.map((item, i) => id + i);
+            }
         }
         else {
             throw new Error('unexpected result');
