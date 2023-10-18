@@ -78,11 +78,19 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async create(model_name: string, data: any, options: { transaction?: Transaction }): Promise<any> {
+  public async create(
+    model_name: string,
+    data: any,
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ): Promise<any> {
     data.$_$ = ''; // ensure that there is one argument(one field) at least
     let id;
     try {
-      id = await this._client.incr(`${tableize(model_name)}:_lastid`);
+      if (options.use_id_in_data) {
+        id = data.id;
+      } else {
+        id = await this._client.incr(`${tableize(model_name)}:_lastid`);
+      }
     } catch (error: any) {
       throw RedisAdapter.wrapError('unknown error', error);
     }
@@ -95,7 +103,11 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async createBulk(model_name: string, data: any[], options: { transaction?: Transaction }): Promise<any[]> {
+  public async createBulk(
+    model_name: string,
+    data: any[],
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ): Promise<any[]> {
     return await this._createBulkDefault(model_name, data, options);
   }
 

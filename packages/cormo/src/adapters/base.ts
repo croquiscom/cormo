@@ -509,7 +509,11 @@ abstract class AdapterBase {
   }
 
   /** @internal */
-  protected async _createBulkDefault(model_name: string, data: any[], options: { transaction?: Transaction }) {
+  protected async _createBulkDefault(
+    model_name: string,
+    data: any[],
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ) {
     return await Promise.all(
       data.map((item: any) => {
         return this.create(model_name, item, options);

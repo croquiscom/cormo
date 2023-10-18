@@ -86,7 +86,12 @@ class RedisAdapter extends base_1.AdapterBase {
         data.$_$ = ''; // ensure that there is one argument(one field) at least
         let id;
         try {
-            id = await this._client.incr(`${(0, inflector_1.tableize)(model_name)}:_lastid`);
+            if (options.use_id_in_data) {
+                id = data.id;
+            }
+            else {
+                id = await this._client.incr(`${(0, inflector_1.tableize)(model_name)}:_lastid`);
+            }
         }
         catch (error) {
             throw RedisAdapter.wrapError('unknown error', error);

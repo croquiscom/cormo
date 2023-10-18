@@ -419,10 +419,14 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async create(model_name: string, data: any, _options: { transaction?: Transaction }) {
+  public async create(model_name: string, data: any, options: { transaction?: Transaction; use_id_in_data?: boolean }) {
     let result: any;
     try {
-      result = await this._collection(model_name).insertOne(data, { safe: true });
+      if (options.use_id_in_data) {
+        result = await this._collection(model_name).insertOne({ ...data, _id: data.id }, { safe: true });
+      } else {
+        result = await this._collection(model_name).insertOne(data, { safe: true });
+      }
     } catch (error: any) {
       throw _processSaveError(error);
     }
@@ -436,7 +440,11 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  public async createBulk(model_name: string, data: any[], options: { transaction?: Transaction }) {
+  public async createBulk(
+    model_name: string,
+    data: any[],
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ) {
     if (data.length > 1000) {
       const chunks = [];
       let i = 0;
@@ -452,7 +460,14 @@ export class MongoDBAdapter extends AdapterBase {
     }
     let result: any;
     try {
-      result = await this._collection(model_name).insertMany(data, { safe: true });
+      if (options.use_id_in_data) {
+        result = await this._collection(model_name).insertMany(
+          data.map((item) => ({ ...item, _id: item.id })),
+          { safe: true },
+        );
+      } else {
+        result = await this._collection(model_name).insertMany(data, { safe: true });
+      }
     } catch (e: any) {
       throw _processSaveError(e);
     }
