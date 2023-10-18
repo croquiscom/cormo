@@ -406,7 +406,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         const table_name = model_class.table_name;
         const values = [];
-        const [fields, places] = this._buildUpdateSet(model_name, data, values, true);
+        const [fields, places] = this._buildUpdateSet(model_name, data, values, true, options.use_id_in_data);
         const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES (${places})`;
         let result;
         try {
@@ -435,7 +435,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         const places = [];
         data.forEach((item) => {
             let places_sub;
-            [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true);
+            [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true, options.use_id_in_data);
             places.push('(' + places_sub + ')');
         });
         const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES ${places.join(',')}`;
@@ -1067,7 +1067,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
     }
     /** @internal */
-    _buildUpdateSet(model_name, data, values, insert = false) {
+    _buildUpdateSet(model_name, data, values, insert = false, use_id_in_data) {
         const model_class = this._connection.models[model_name];
         if (!model_class) {
             return ['', ''];
@@ -1081,6 +1081,11 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 continue;
             }
             this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
+        }
+        if (use_id_in_data && data.id) {
+            fields.push('id');
+            places.push('?');
+            values.push(data.id);
         }
         return [fields.join(','), places.join(',')];
     }

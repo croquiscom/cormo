@@ -314,13 +314,21 @@ abstract class AdapterBase {
    * Creates a record
    * @internal
    */
-  public abstract create(model_name: string, data: any, options: { transaction?: Transaction }): Promise<any>;
+  public abstract create(
+    model_name: string,
+    data: any,
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ): Promise<any>;
 
   /**
    * Creates records
    * @internal
    */
-  public abstract createBulk(model_name: string, data: any[], options: { transaction?: Transaction }): Promise<any[]>;
+  public abstract createBulk(
+    model_name: string,
+    data: any[],
+    options: { transaction?: Transaction; use_id_in_data?: boolean },
+  ): Promise<any[]>;
 
   /**
    * Updates a record
