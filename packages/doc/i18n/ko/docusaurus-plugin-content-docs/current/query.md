@@ -8,11 +8,11 @@
 단순한 질의를 쉽게 실행하기 위해서 [BaseModel](/cormo/api/cormo/classes/basemodel.html) 클래스는 [Query](/cormo/api/cormo/classes/query.html)에서 일부 메소드를 빌려와 가지고 있습니다.
 
 ```typescript
-const users = await User.query().where({ age: 27 }).exec();
+const users = await User.query().where(\{ age: 27 }).exec();
 
 // 또는
 
-const users = await User.where({ age: 27 }).exec();
+const users = await User.where(\{ age: 27 }).exec();
 ```
 
 ## 필터
@@ -27,128 +27,128 @@ const users = await User.where({ age: 27 }).exec();
 
 <tr>
 <td>같음</td>
-<td>User.where({ age: 27 })</td>
+<td>User.where(\{ age: 27 })</td>
 <td>SELECT * FROM users WHERE age=27</td>
-<td>db.users.find({ age: 27 })</td>
+<td>db.users.find(\{ age: 27 })</td>
 </tr>
 
 <tr>
 <td rowspan='4'>논리곱(모두 참)</td>
-<td>{ name: 'John Doe', age: 27 }</td>
+<td>\{ name: 'John Doe', age: 27 }</td>
 <td rowspan='4'>name='John Doe' AND age=27</td>
-<td rowspan='4'>{ name: 'John Doe', age: 27 }</td>
+<td rowspan='4'>\{ name: 'John Doe', age: 27 }</td>
 </tr>
 <tr>
-<td>.where({name: 'John Doe'}).where({age: 27})</td>
+<td>.where(\{name: 'John Doe'}).where(\{age: 27})</td>
 </tr>
 <tr>
-<td>{ $and: [ { name: 'John Doe' }, { age: 27 } ] }</td>
+<td>\{ $and: [ \{ name: 'John Doe' }, \{ age: 27 } ] }</td>
 </tr>
 <tr>
-<td>[ { name: 'John Doe' }, { age: 27 } ]</td>
+<td>[ \{ name: 'John Doe' }, \{ age: 27 } ]</td>
 </tr>
 
 <tr>
 <td>논리합(하나 이상 참)</td>
-<td>{ $or: [ { name: 'John Doe' }, { age: 27 } ] }</td>
+<td>\{ $or: [ \{ name: 'John Doe' }, \{ age: 27 } ] }</td>
 <td>name='John Doe' OR age=27</td>
-<td>{ $or: [ { name: 'John Doe' }, { age: 27 } ] }</td>
+<td>\{ $or: [ \{ name: 'John Doe' }, \{ age: 27 } ] }</td>
 </tr>
 
 <tr>
 <td>비교 ($lt, $gt, $lte, $gte)</td>
-<td>[ { age: { $gt: 30 } }, { age: { $lte: 45 } } ]</td>
-<td>age>30 AND age<=45</td>
-<td>{ $and: [ { age: { $gt: 30 } }, { age: { $lte: 45 } } ] }</td>
+<td>[ \{ age: \{ $gt: 30 } }, \{ age: \{ $lte: 45 } } ]</td>
+<td>age>30 AND age&lt;=45</td>
+<td>\{ $and: [ \{ age: \{ $gt: 30 } }, \{ age: \{ $lte: 45 } } ] }</td>
 </tr>
 
 <tr>
 <td rowspan='2'>대소문자 구분 없이 텍스트를 포함</td>
-<td>{ name: { $contains: 'smi' } }</td>
+<td>\{ name: \{ $contains: 'smi' } }</td>
 <td>name LIKE '%smi%'</td>
-<td>{ name: /smi/i }</td>
+<td>\{ name: /smi/i }</td>
 </tr>
 <tr>
-<td>{ name: { $contains: ['smi', 'doe'] } }</td>
+<td>\{ name: \{ $contains: ['smi', 'doe'] } }</td>
 <td>name LIKE '%smi%' OR name LIKE '%doe%'</td>
-<td>{ name: { $in: [/smi/i, /doe/i] } }</td>
+<td>\{ name: \{ $in: [/smi/i, /doe/i] } }</td>
 </tr>
 
 <tr>
 <td>대소문자 구분 없이 텍스트로 시작</td>
-<td>{ name: { $startswith: 'smi' } }</td>
+<td>\{ name: \{ $startswith: 'smi' } }</td>
 <td>name LIKE 'smi%'</td>
-<td>{ name: /^smi/i }</td>
+<td>\{ name: /^smi/i }</td>
 </tr>
 
 <tr>
 <td>대소문자 구분 없이 텍스트로 끝남</td>
-<td>{ name: { $endswith: 'smi' } }</td>
+<td>\{ name: \{ $endswith: 'smi' } }</td>
 <td>name LIKE '%smi'</td>
-<td>{ name: /smi$/i }</td>
+<td>\{ name: /smi$/i }</td>
 </tr>
 
 <tr>
 <td rowspan='2'>정규표현식</td>
-<td>{ name: /smi/ }</td>
+<td>\{ name: /smi/ }</td>
 <td>name REGEXP 'smi'</td>
-<td>{ name: /smi/i }</td>
+<td>\{ name: /smi/i }</td>
 </tr>
 <tr>
-<td>{ name: /smi|doe/ }</td>
+<td>\{ name: /smi|doe/ }</td>
 <td>name REGEXP 'smi|doe'</td>
-<td>{ name: /smi|doe/i }</td>
+<td>\{ name: /smi|doe/i }</td>
 </tr>
 
 <tr>
 <td rowspan='2'>배열의 값 중 하나라도 일치</td>
-<td>{ age: { $in: [ 10, 20, 30 ] } }</td>
+<td>\{ age: \{ $in: [ 10, 20, 30 ] } }</td>
 <td rowspan='2'>age IN (10,20,30)</td>
-<td rowspan='2'>{ age: { $in: [ 10, 20, 30 ] } }</td>
+<td rowspan='2'>\{ age: \{ $in: [ 10, 20, 30 ] } }</td>
 </tr>
 <tr>
-<td>{ age: [ 10, 20, 30 ] }</td>
+<td>\{ age: [ 10, 20, 30 ] }</td>
 </tr>
 
 <tr>
-<td rowspan='7'>부정</td>
-<td>{ age: { $not: 27 } }</td>
+<td rowspan='7'>부정</td>
+<td>\{ age: \{ $not: 27 } }</td>
 <td>NOT (age=27) OR age IS NULL</td>
-<td>{ age: { $ne: 27 } }</td>
+<td>\{ age: \{ $ne: 27 } }</td>
 </tr>
 <tr>
-<td>{ age: { $not: { $lt: 27 } } }</td>
-<td>NOT (age<27) OR age IS NULL</td>
-<td>{ age: { $not: { $lt: 27 } } }</td>
+<td>\{ age: \{ $not: \{ $lt: 27 } } }</td>
+<td>NOT (age&lt;27) OR age IS NULL</td>
+<td>\{ age: \{ $not: \{ $lt: 27 } } }</td>
 </tr>
 <tr>
-<td>{ name: { $not: { $contains: 'smi' } } }</td>
+<td>\{ name: \{ $not: \{ $contains: 'smi' } } }</td>
 <td>NOT (name LIKE '%smi%') OR name IS NULL</td>
-<td>{ name: { $not: /smi/i } }</td>
+<td>\{ name: \{ $not: /smi/i } }</td>
 </tr>
 <tr>
-<td>{ name: { $not: { $contains: ['smi', 'doe'] } } }</td>
+<td>\{ name: \{ $not: \{ $contains: ['smi', 'doe'] } } }</td>
 <td>NOT (name LIKE '%smi%' OR name LIKE '%doe%') OR name IS NULL</td>
-<td>{ name: { $nin: [/smi/i, /doe/i] } }</td>
+<td>\{ name: \{ $nin: [/smi/i, /doe/i] } }</td>
 </tr>
 <tr>
-<td>{ age: { $not: { $in: [ 10, 20, 30 ] } } }</td>
+<td>\{ age: \{ $not: \{ $in: [ 10, 20, 30 ] } } }</td>
 <td rowspan='2'>NOT (age IN (10,20,30)) OR age IS NULL</td>
-<td rowspan='2'>{ age: { $nin: [10,20,30] } }</td>
+<td rowspan='2'>\{ age: \{ $nin: [10,20,30] } }</td>
 </tr>
 <tr>
-<td>{ age: { $not: [ 10, 20, 30 ] } }</td>
+<td>\{ age: \{ $not: [ 10, 20, 30 ] } }</td>
 </tr>
 <tr>
-<td>{ name: { $not: null } }</td>
+<td>\{ name: \{ $not: null } }</td>
 <td>NOT name IS NULL</td>
-<td>{ age: { $ne: null } }</td>
+<td>\{ age: \{ $ne: null } }</td>
 </tr>
 
 </tbody></table>
 
 식별자에 기반해 레코드를 찾으려면 하나의 ID나 ID의 배열을 인자로 하는 [Query#find](/cormo/api/cormo/classes/query.html#find)를 사용합니다.
-논리적으로는 `.where({ id: <주어진 ID나 ID의 배열> })`과 동일하지만, 해당 레코드가 없을 경우 `find`는 예외를 발생시키는데 반해, `where`는 빈 결과를 반환합니다.
+논리적으로는 `.where(\{ id: <주어진 ID나 ID의 배열> })`과 동일하지만, 해당 레코드가 없을 경우 `find`는 예외를 발생시키는데 반해, `where`는 빈 결과를 반환합니다.
 
 ### 조건부 활성화
 
@@ -156,13 +156,13 @@ const users = await User.where({ age: 27 }).exec();
 이를 이용해 질의 문장을 단순화할 수 있습니다.
 
 ```typescript
-async function getOldUsers(options: { limit?: number; columns?: string[] }) {
+async function getOldUsers(options: \{ limit?: number; columns?: string[] }) \{
   const query = User.query();
-  query.where({ age: { $gt: 30 } });
-  if (options.limit) {
+  query.where(\{ age: \{ $gt: 30 } });
+  if (options.limit) \{
     query.limit(options.limit);
   }
-  if (options.columns) {
+  if (options.columns) \{
     query.select(options.columns as any);
   }
   return await query.exec();
@@ -170,9 +170,9 @@ async function getOldUsers(options: { limit?: number; columns?: string[] }) {
 
 // 위 코드를 다음과 같이 작성할 수 있습니다.
 
-async function getOldUsers(options: { limit?: number; columns?: string[] }) {
+async function getOldUsers(options: \{ limit?: number; columns?: string[] }) \{
   return await User.query()
-    .where({ age: { $gt: 30 } })
+    .where(\{ age: \{ $gt: 30 } })
     .if(options.limit != null)
     .limit(options.limit)
     .endif()
@@ -198,7 +198,7 @@ const users = await User.find([1, 2, 3]).exec();
 [Query](/cormo/api/cormo/classes/query.html)는 내부적으로 `exec`를 호출하는 `then` 메소드를 가지고 있습니다(즉 thenable). 따라서 `exec` 호출을 생략하고 단순히 `await`만 붙여줘도 됩니다.
 
 ```typescript
-const users = await User.where({ age: 30 });
+const users = await User.where(\{ age: 30 });
 ```
 
 찾지 못하는 ID가 있는 경우 [Query#find](/cormo/api/cormo/classes/query.html#find)는 에러를 던집니다.
@@ -219,14 +219,14 @@ const users = await User.findPreserve([2, 1, 2, 3]).exec();
 <td>컬럼 선택</td>
 <td>User.select(['id', 'name', 'age'])</td>
 <td>SELECT id,name,age FROM users</td>
-<td>db.users.find({}, { name: 1, age: 1 })</td>
+<td>db.users.find(\{}, \{ name: 1, age: 1 })</td>
 </tr>
 
 <tr>
 <td>정렬</td>
 <td>User.order('age -name')</td>
 <td>SELECT * FROM users ORDER BY age ASC, name DESC</td>
-<td>db.users.find().sort({ age: 1, name: -1 })</td>
+<td>db.users.find().sort(\{ age: 1, name: -1 })</td>
 </tr>
 
 <tr>
@@ -251,7 +251,7 @@ const users = await User.findPreserve([2, 1, 2, 3]).exec();
 인스턴스 배열을 반환하는 대신 하나의 인스턴스 (또는 null)을 반환하도록 만듭니다.
 
 ```typescript
-const user = await User.where({ age: 27 }).one();
+const user = await User.where(\{ age: 27 }).one();
 ```
 
 ### 하나의 컬럼만 선택하기
@@ -260,7 +260,7 @@ const user = await User.where({ age: 27 }).one();
 그러면 질의 객체는 Model 인스턴스 대신 하나의 값이나 값의 배열을 반환합니다.
 
 ```typescript
-const user_ids = await User.where({ age: 27 }).selectSingle('id');
+const user_ids = await User.where(\{ age: 27 }).selectSingle('id');
 const user_name = await User.find(1).selectSingle('name');
 ```
 
@@ -270,12 +270,12 @@ const user_name = await User.find(1).selectSingle('name');
 
 ```typescript
 let count = 0;
-await new Promise((resolve, reject) => {
-  const stream = User.where({ age: 27 }).stream();
-  stream.on('data', function (user) {
+await new Promise((resolve, reject) => \{
+  const stream = User.where(\{ age: 27 }).stream();
+  stream.on('data', function (user) \{
     count++;
   });
-  stream.on('end', function () {
+  stream.on('end', function () \{
     resolve();
   });
 });
@@ -296,12 +296,12 @@ await new Promise((resolve, reject) => {
 </tr>
 
 <tr>
-<td>User.count({age: 27})</td>
+<td>User.count(\{age: 27})</td>
 <td rowspan='2'>SELECT COUNT(*) FROM users WHERE age=27</td>
-<td rowspan='2'>db.users.find({age: 27}).count()</td>
+<td rowspan='2'>db.users.find(\{age: 27}).count()</td>
 </tr>
 <tr>
-<td>User.where({age: 27}).count()</td>
+<td>User.where(\{age: 27}).count()</td>
 </tr>
 
 </tbody></table>
@@ -325,24 +325,24 @@ await user.save();
 </tr></thead><tbody>
 
 <tr>
-<td>User.update({ age: 10 }, { age: 27 })</td>
+<td>User.update(\{ age: 10 }, \{ age: 27 })</td>
 <td rowspan='2'>UPDATE users SET age=10 WHERE age=27</td>
-<td rowspan='2'>db.users.update({age: 27}, {$set: {age: 10}}, {multi: true})</td>
+<td rowspan='2'>db.users.update(\{age: 27}, \{$set: \{age: 10}}, \{multi: true})</td>
 </tr>
 <tr>
-<td>User.where({ age: 27 }).update({ age:10 })</td>
+<td>User.where(\{ age: 27 }).update(\{ age:10 })</td>
 </tr>
 
 <tr>
-<td>User.find(1).update({ age: 10 })</td>
+<td>User.find(1).update(\{ age: 10 })</td>
 <td>UPDATE users SET age=10 WHERE id=1</td>
-<td>db.users.update({_id: 1}, {$set: {age: 10}}, {multi: true})</td>
+<td>db.users.update(\{_id: 1}, \{$set: \{age: 10}}, \{multi: true})</td>
 </tr>
 
 <tr>
-<td>User.find(2).update({ age: { $inc: 3 } })</td>
+<td>User.find(2).update(\{ age: \{ $inc: 3 } })</td>
 <td>UPDATE users SET age=age+3 WHERE id=2</td>
-<td>db.users.update({_id: 2}, {$inc: {age: 3}}, {multi: true})</td>
+<td>db.users.update(\{_id: 2}, \{$inc: \{age: 3}}, \{multi: true})</td>
 </tr>
 
 </tbody></table>
@@ -365,12 +365,12 @@ In CORMO, Active Record 패턴(즉 `BaseModel#save`)은 운영환경에서 잘 �
 </tr></thead><tbody>
 
 <tr>
-<td>User.delete({age: 27})</td>
+<td>User.delete(\{age: 27})</td>
 <td rowspan='2'>DELETE FROM users WHERE age=27</td>
-<td rowspan='2'>db.users.remove({age: 27})</td>
+<td rowspan='2'>db.users.remove(\{age: 27})</td>
 </tr>
 <tr>
-<td>User.where({age: 27}).delete()</td>
+<td>User.where(\{age: 27}).delete()</td>
 </tr>
 
 <tr>
