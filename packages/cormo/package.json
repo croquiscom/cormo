@@ -35,11 +35,12 @@
   "main": "./lib",
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "chalk": "^4.1.2",
+    "chalk": "^5.3.0",
     "inflected": "^2.1.0",
     "ioredis": "^5.3.2",
     "lodash": "^4.17.21",
     "toposort-class": "^1.0.1",
+    "tsimportlib": "^0.0.5",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
