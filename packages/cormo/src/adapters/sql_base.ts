@@ -186,14 +186,14 @@ abstract class SQLAdapterBase extends AdapterBase {
               sub_key === '$cgt'
                 ? '>'
                 : sub_key === '$cgte'
-                ? '>='
-                : sub_key === '$clt'
-                ? '<'
-                : sub_key === '$clte'
-                ? '<='
-                : sub_key === '$ceq'
-                ? '='
-                : '!=';
+                  ? '>='
+                  : sub_key === '$clt'
+                    ? '<'
+                    : sub_key === '$clte'
+                      ? '<='
+                      : sub_key === '$ceq'
+                        ? '='
+                        : '!=';
             return `${column} ${op} ${compare_column}`;
           } else {
             throw new Error(`unknown expression '${sub_expr}'`);
@@ -281,7 +281,7 @@ abstract class SQLAdapterBase extends AdapterBase {
       }
       if (keys.length === 1) {
         const key = keys[0];
-        if (key.substring(0, 1) === '$') {
+        if (key.startsWith('$')) {
           switch (key) {
             case '$and':
               return this._buildWhere(schema, base_alias, join_schemas, conditions[key], params, 'AND');

@@ -7,7 +7,7 @@ var IsolationLevel;
     IsolationLevel["READ_COMMITTED"] = "READ COMMITTED";
     IsolationLevel["REPEATABLE_READ"] = "REPEATABLE READ";
     IsolationLevel["SERIALIZABLE"] = "SERIALIZABLE";
-})(IsolationLevel = exports.IsolationLevel || (exports.IsolationLevel = {}));
+})(IsolationLevel || (exports.IsolationLevel = IsolationLevel = {}));
 class Transaction {
     /** @internal */
     constructor(connection) {

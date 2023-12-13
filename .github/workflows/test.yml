@@ -3,7 +3,7 @@ name: test
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
       - '**'
@@ -41,18 +41,19 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: npm
 
       - name: Install packages
         run: |
           npm install
-          ./node_modules/.bin/lerna bootstrap
+          (cd packages/cormo ; npm install)
+          (cd packages/graphql ; npm install)
 
       - name: Run test
         run: ./node_modules/.bin/lerna run test
