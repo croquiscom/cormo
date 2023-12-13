@@ -241,7 +241,7 @@ class RedisAdapter extends base_1.AdapterBase {
         return await this._client.select(settings.database || 0);
     }
     /** @internal */
-    valueToModel(value, property) {
+    valueToModel(value, property, query_record_id_as_string) {
         switch (property.type_class) {
             case types.Number:
             case types.Integer:
@@ -253,6 +253,9 @@ class RedisAdapter extends base_1.AdapterBase {
             case types.Object:
                 return JSON.parse(value);
             default:
+                if (property.record_id && query_record_id_as_string) {
+                    return String(value);
+                }
                 return value;
         }
     }

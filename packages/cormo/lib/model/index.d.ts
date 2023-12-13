@@ -55,6 +55,11 @@ declare class BaseModel {
      * Applies the lean option for all queries for this Model
      */
     static lean_query: boolean;
+    /**
+     * Forces to return record id as string.
+     * It remains as number on the persisted record if the adapter uses number for record id.
+     */
+    static query_record_id_as_string: boolean;
     static table_name: string;
     static description?: string;
     /**

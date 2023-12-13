@@ -3,7 +3,7 @@
 import stream from 'stream';
 import _ from 'lodash';
 import { Connection } from '../connection';
-import { ColumnPropertyInternal, IndexProperty } from '../model';
+import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
 import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as util from '../util';
@@ -289,16 +289,25 @@ abstract class AdapterBase {
   }
 
   /** @internal */
-  public setValuesFromDB(instance: any, data: any, schema: any, selected_columns: any) {
+  public setValuesFromDB(
+    instance: any,
+    data: any,
+    schema: ModelSchemaInternal,
+    selected_columns: any,
+    query_record_id_as_string: boolean,
+  ) {
     if (!selected_columns) {
       selected_columns = Object.keys(schema);
     }
     const support_nested = this.support_nested;
     for (const column of selected_columns) {
       const property = schema[column];
+      if (!property) {
+        continue;
+      }
       let value = support_nested ? util.getPropertyOfPath(data, property._parts_db) : data[property._dbname_us];
       if (value != null) {
-        value = this.valueToModel(value, property);
+        value = this.valueToModel(value, property, query_record_id_as_string);
       } else {
         value = null;
       }
@@ -450,7 +459,7 @@ abstract class AdapterBase {
   }
 
   /** @internal */
-  protected valueToModel(value: any, property: any) {
+  protected valueToModel(value: any, property: ColumnPropertyInternal, _query_record_id_as_string: boolean) {
     if (property.type_class === types.Object || property.array) {
       return JSON.parse(value);
     } else {
@@ -466,22 +475,28 @@ abstract class AdapterBase {
         return null;
       }
       const instance: any = {};
-      this.setValuesFromDB(instance, data, model_class._schema, options.select);
+      this.setValuesFromDB(instance, data, model_class._schema, options.select, model_class.query_record_id_as_string);
       model_class._collapseNestedNulls(instance, options.select_raw, null);
-      const id = this._getModelID(data);
+      const id = model_class.query_record_id_as_string ? String(this._getModelID(data)) : this._getModelID(data);
       if (id) {
         instance.id = id;
       }
       return instance;
     } else {
-      const id = this._getModelID(data);
       const model_class: any = this._connection.models[model_name];
+      const id = model_class.query_record_id_as_string ? String(this._getModelID(data)) : this._getModelID(data);
       return new model_class(data, id, options.select, options.select_raw);
     }
   }
 
   /** @internal */
-  protected _convertToGroupInstance(model_name: string, data: any, group_by: any, group_fields: any) {
+  protected _convertToGroupInstance(
+    model_name: string,
+    data: any,
+    group_by: any,
+    group_fields: any,
+    query_record_id_as_string: boolean,
+  ) {
     const instance: any = {};
     if (group_by) {
       const model_class = this._connection.models[model_name];
@@ -492,7 +507,11 @@ abstract class AdapterBase {
       for (const field of group_by) {
         const property = _.find(schema, (item) => item?._dbname_us === field);
         if (property) {
-          util.setPropertyOfPath(instance, property._parts, this.valueToModel(data[field], property));
+          util.setPropertyOfPath(
+            instance,
+            property._parts,
+            this.valueToModel(data[field], property, query_record_id_as_string),
+          );
         }
       }
     }

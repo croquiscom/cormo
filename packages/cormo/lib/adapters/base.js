@@ -215,16 +215,19 @@ class AdapterBase {
         }
     }
     /** @internal */
-    setValuesFromDB(instance, data, schema, selected_columns) {
+    setValuesFromDB(instance, data, schema, selected_columns, query_record_id_as_string) {
         if (!selected_columns) {
             selected_columns = Object.keys(schema);
         }
         const support_nested = this.support_nested;
         for (const column of selected_columns) {
             const property = schema[column];
+            if (!property) {
+                continue;
+            }
             let value = support_nested ? util.getPropertyOfPath(data, property._parts_db) : data[property._dbname_us];
             if (value != null) {
-                value = this.valueToModel(value, property);
+                value = this.valueToModel(value, property, query_record_id_as_string);
             }
             else {
                 value = null;
@@ -260,7 +263,7 @@ class AdapterBase {
         return data.id;
     }
     /** @internal */
-    valueToModel(value, property) {
+    valueToModel(value, property, _query_record_id_as_string) {
         if (property.type_class === types.Object || property.array) {
             return JSON.parse(value);
         }
@@ -276,22 +279,22 @@ class AdapterBase {
                 return null;
             }
             const instance = {};
-            this.setValuesFromDB(instance, data, model_class._schema, options.select);
+            this.setValuesFromDB(instance, data, model_class._schema, options.select, model_class.query_record_id_as_string);
             model_class._collapseNestedNulls(instance, options.select_raw, null);
-            const id = this._getModelID(data);
+            const id = model_class.query_record_id_as_string ? String(this._getModelID(data)) : this._getModelID(data);
             if (id) {
                 instance.id = id;
             }
             return instance;
         }
         else {
-            const id = this._getModelID(data);
             const model_class = this._connection.models[model_name];
+            const id = model_class.query_record_id_as_string ? String(this._getModelID(data)) : this._getModelID(data);
             return new model_class(data, id, options.select, options.select_raw);
         }
     }
     /** @internal */
-    _convertToGroupInstance(model_name, data, group_by, group_fields) {
+    _convertToGroupInstance(model_name, data, group_by, group_fields, query_record_id_as_string) {
         const instance = {};
         if (group_by) {
             const model_class = this._connection.models[model_name];
@@ -302,7 +305,7 @@ class AdapterBase {
             for (const field of group_by) {
                 const property = lodash_1.default.find(schema, (item) => item?._dbname_us === field);
                 if (property) {
-                    util.setPropertyOfPath(instance, property._parts, this.valueToModel(data[field], property));
+                    util.setPropertyOfPath(instance, property._parts, this.valueToModel(data[field], property, query_record_id_as_string));
                 }
             }
         }

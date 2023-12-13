@@ -7,13 +7,16 @@ import {
 import { BaseModel, ColumnNestedProperty, ColumnProperty } from './model';
 import * as types from './types';
 
-export function Model(options: { connection?: Connection; name?: string; description?: string } = {}) {
+export function Model(
+  options: { connection?: Connection; name?: string; description?: string; query_record_id_as_string?: boolean } = {},
+) {
   return (ctor: typeof BaseModel) => {
     ctor._initialize_called = true;
     if (options.name) {
       ctor.table_name = options.name;
     }
     ctor.description = options.description;
+    ctor.query_record_id_as_string = options.query_record_id_as_string ?? false;
     if (options.connection) {
       ctor.connection(options.connection);
     }

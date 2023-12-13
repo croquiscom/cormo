@@ -429,8 +429,15 @@ export class SQLite3Adapter extends SQLAdapterBase {
       throw SQLite3Adapter.wrapError('unknown error', error);
     }
     if (options.group_fields) {
+      const model_class = this._connection.models[model_name];
       return result.map((record: any) => {
-        return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields);
+        return this._convertToGroupInstance(
+          model_name,
+          record,
+          options.group_by,
+          options.group_fields,
+          model_class?.query_record_id_as_string ?? false,
+        );
       });
     } else {
       return result.map((record: any) => {
@@ -660,7 +667,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  protected valueToModel(value: any, property: any) {
+  protected valueToModel(value: any, property: ColumnPropertyInternal, query_record_id_as_string: boolean) {
     if (property.type_class === types.Object || property.array) {
       try {
         return JSON.parse(value);
@@ -671,6 +678,8 @@ export class SQLite3Adapter extends SQLAdapterBase {
       return new Date(value);
     } else if (property.type_class === types.Boolean) {
       return value !== 0;
+    } else if (property.record_id && query_record_id_as_string) {
+      return String(value);
     } else {
       return value;
     }
@@ -716,18 +725,18 @@ export class SQLite3Adapter extends SQLAdapterBase {
       const type = /^varchar\((\d*)\)/i.test(column.type)
         ? new types.String(Number(RegExp.$1))
         : /^double/i.test(column.type)
-        ? new types.Number()
-        : /^tinyint/i.test(column.type)
-        ? new types.Boolean()
-        : /^int/i.test(column.type)
-        ? new types.Integer()
-        : /^bigint/i.test(column.type)
-        ? new types.BigInteger()
-        : /^real/i.test(column.type)
-        ? new types.Date()
-        : /^text/i.test(column.type)
-        ? new types.Text()
-        : undefined;
+          ? new types.Number()
+          : /^tinyint/i.test(column.type)
+            ? new types.Boolean()
+            : /^int/i.test(column.type)
+              ? new types.Integer()
+              : /^bigint/i.test(column.type)
+                ? new types.BigInteger()
+                : /^real/i.test(column.type)
+                  ? new types.Date()
+                  : /^text/i.test(column.type)
+                    ? new types.Text()
+                    : undefined;
       schema.columns[column.name] = {
         required: column.notnull === 1,
         type,

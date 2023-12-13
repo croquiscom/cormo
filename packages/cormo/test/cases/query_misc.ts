@@ -279,4 +279,22 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       throw error;
     }
   });
+
+  it('return record id as string', async () => {
+    const user = await models.User.create({ name: 'John Doe', age: 27 });
+    models.User.query_record_id_as_string = true;
+    const record = await models.User.find(user.id);
+    const record_lean = await models.User.find(user.id).lean();
+    models.User.query_record_id_as_string = false;
+    expect(record).to.exist;
+    expect(record).to.be.an.instanceof(models.User);
+    expect(record).to.have.property('id', String(user.id));
+    expect(record).to.have.property('name', user.name);
+    expect(record).to.have.property('age', user.age);
+    expect(record_lean).to.exist;
+    expect(record_lean).not.to.be.an.instanceof(models.User);
+    expect(record_lean).to.have.property('id', String(user.id));
+    expect(record_lean).to.have.property('name', user.name);
+    expect(record_lean).to.have.property('age', user.age);
+  });
 }

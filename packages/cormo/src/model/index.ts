@@ -107,6 +107,12 @@ class BaseModel {
    */
   public static lean_query = false;
 
+  /**
+   * Forces to return record id as string.
+   * It remains as number on the persisted record if the adapter uses number for record id.
+   */
+  public static query_record_id_as_string = false;
+
   public static table_name: string;
 
   public static description?: string;
@@ -1008,7 +1014,7 @@ class BaseModel {
       // if this has 4 arguments, this is called from adapter with database record data
       // eslint-disable-next-line prefer-rest-params
       const [id, selected_columns, selected_columns_raw] = [arguments[1], arguments[2], arguments[3]];
-      adapter.setValuesFromDB(this, data, schema, selected_columns);
+      adapter.setValuesFromDB(this, data, schema, selected_columns, ctor.query_record_id_as_string);
       ctor._collapseNestedNulls(this, selected_columns_raw, ctor.dirty_tracking ? this._intermediates : undefined);
       Object.defineProperty(this, 'id', {
         configurable: false,

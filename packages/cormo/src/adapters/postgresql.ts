@@ -444,8 +444,15 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     }
     const rows = result && result.rows;
     if (options.group_fields) {
+      const model_class = this._connection.models[model_name];
       return rows.map((record: any) => {
-        return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields);
+        return this._convertToGroupInstance(
+          model_name,
+          record,
+          options.group_by,
+          options.group_fields,
+          model_class?.query_record_id_as_string ?? false,
+        );
       });
     } else {
       return rows.map((record: any) => {
@@ -694,9 +701,11 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  protected valueToModel(value: any, property: any) {
+  protected valueToModel(value: any, property: ColumnPropertyInternal, query_record_id_as_string: boolean) {
     if (property.type_class === types.BigInteger) {
       return Number(value);
+    } else if (property.record_id && query_record_id_as_string) {
+      return String(value);
     }
     return value;
   }
@@ -764,22 +773,24 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
         column.data_type === 'character varying'
           ? new types.String(column.character_maximum_length)
           : column.data_type === 'double precision'
-          ? new types.Number()
-          : column.data_type === 'boolean'
-          ? new types.Boolean()
-          : column.data_type === 'integer'
-          ? new types.Integer()
-          : column.data_type === 'bigint'
-          ? new types.BigInteger()
-          : column.data_type === 'USER-DEFINED' && column.udt_schema === 'public' && column.udt_name === 'geometry'
-          ? new types.GeoPoint()
-          : column.data_type === 'timestamp without time zone'
-          ? new types.Date()
-          : column.data_type === 'json'
-          ? new types.Object()
-          : column.data_type === 'text'
-          ? new types.Text()
-          : undefined;
+            ? new types.Number()
+            : column.data_type === 'boolean'
+              ? new types.Boolean()
+              : column.data_type === 'integer'
+                ? new types.Integer()
+                : column.data_type === 'bigint'
+                  ? new types.BigInteger()
+                  : column.data_type === 'USER-DEFINED' &&
+                      column.udt_schema === 'public' &&
+                      column.udt_name === 'geometry'
+                    ? new types.GeoPoint()
+                    : column.data_type === 'timestamp without time zone'
+                      ? new types.Date()
+                      : column.data_type === 'json'
+                        ? new types.Object()
+                        : column.data_type === 'text'
+                          ? new types.Text()
+                          : undefined;
       let adapter_type_string = column.data_type.toUpperCase();
       if (column.data_type === 'character varying') {
         adapter_type_string += `(${column.character_maximum_length || 255})`;
