@@ -28,7 +28,7 @@ interface Options {
   updated_at_column?: string;
 }
 
-function getGraphQlType(property: NonNullable<typeof cormo.BaseModel['_schema']['path']>) {
+function getGraphQlType(property: NonNullable<(typeof cormo.BaseModel)['_schema']['path']>) {
   let graphql_type: GraphQLScalarType | undefined;
   if (property.record_id) {
     return new GraphQLNonNull(GraphQLID);

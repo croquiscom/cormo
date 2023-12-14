@@ -1,2 +1,3 @@
 packages/*/lib
+doc/.docusaurus
 doc/build
