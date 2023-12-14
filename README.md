@@ -8,4 +8,4 @@ You can see the documentation on http://croquiscom.github.io/cormo/.
 
 - [Core](packages/cormo)
 - [GraphQL extension](packages/graphql)
-- [Documentation](packages/doc)
+- [Documentation](doc)

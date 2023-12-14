@@ -6,10 +6,10 @@ cd gh-pages
 git rm -rf .
 cd ..
 
-cd packages/doc
+cd doc
 npm run build
-cd ../..
-cp -a packages/doc/build/* gh-pages
+cd ..
+cp -a doc/build/* gh-pages
 
 cd packages/cormo
 npm run doc

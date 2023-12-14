@@ -29,7 +29,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/croquiscom/cormo/tree/main/packages/doc/',
+          editUrl: 'https://github.com/croquiscom/cormo/tree/main/doc/',
         },
         theme: {
           customCss: './src/css/custom.css',
