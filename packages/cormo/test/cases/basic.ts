@@ -60,6 +60,16 @@ export default function (models: { User: typeof User }, db: string) {
     expect(user.id).to.exist;
   });
 
+  it('string id for created', async () => {
+    models.User.query_record_id_as_string = true;
+    const user = await models.User.create({ name: 'John Doe', age: 27 });
+    models.User.query_record_id_as_string = false;
+    expect(user).to.be.an.instanceof(models.User);
+    expect(user).to.have.keys('id', 'name', 'age');
+    expect(user.id).to.exist;
+    expect(user.id).to.be.a('string');
+  });
+
   it('create with id', async () => {
     const fixed_id = getFixedId(db);
     const user = await models.User.create({ name: 'John Doe', age: 27, id: fixed_id + 0 }, { use_id_in_data: true });
@@ -269,6 +279,30 @@ export default function (models: { User: typeof User }, db: string) {
       expect(user).to.have.keys('id', 'name', 'age');
       expect(user.id).to.exist;
       const record = await models.User.find(user.id);
+      expect(user).to.eql(record);
+    }
+  });
+
+  it('string id for createBulk', async () => {
+    const data = [
+      { name: 'John Doe', age: 27 },
+      { name: 'Bill Smith', age: 45 },
+      { name: 'Alice Jackson', age: 27 },
+    ];
+    models.User.query_record_id_as_string = true;
+    const users = await models.User.createBulk(data);
+    models.User.query_record_id_as_string = false;
+    expect(users).to.exist;
+    expect(users).to.be.an.instanceof(Array);
+    expect(users).to.have.length(3);
+    for (const user of users) {
+      expect(user).to.be.an.instanceof(models.User);
+      expect(user).to.have.keys('id', 'name', 'age');
+      expect(user.id).to.exist;
+      expect(user.id).to.be.a('string');
+      models.User.query_record_id_as_string = true;
+      const record = await models.User.find(user.id);
+      models.User.query_record_id_as_string = false;
       expect(user).to.eql(record);
     }
   });

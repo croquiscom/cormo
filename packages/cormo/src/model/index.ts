@@ -911,7 +911,7 @@ class BaseModel {
       Object.defineProperty(record, 'id', {
         configurable: false,
         enumerable: true,
-        value: ids[i],
+        value: this.query_record_id_as_string ? String(ids[i]) : ids[i],
         writable: false,
       });
     });
@@ -1285,7 +1285,7 @@ class BaseModel {
     Object.defineProperty(this, 'id', {
       configurable: false,
       enumerable: true,
-      value: id,
+      value: ctor.query_record_id_as_string ? String(id) : id,
       writable: false,
     });
     Object.defineProperty(this, '_is_persisted', {
