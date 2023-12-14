@@ -639,7 +639,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
                         }
                     }
                 }
-                return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields);
+                return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields, model_class.query_record_id_as_string);
             });
         }
         else {
@@ -813,7 +813,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
         return _objectIdToString(data._id);
     }
     /** @internal */
-    valueToModel(value, property) {
+    valueToModel(value, property, _query_record_id_as_string) {
         if (property.type_class === CormoTypesObjectId) {
             if (property.array) {
                 return value.map((v) => v && _objectIdToString(v));

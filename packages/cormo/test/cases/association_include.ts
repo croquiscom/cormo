@@ -160,4 +160,36 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
     const post = await models.Post.find(preset_posts[2].id).include('user');
     _checkPost(models.Post, models.User, post, 'another post', null);
   });
+
+  it('query record id as string', async () => {
+    models.Post.query_record_id_as_string = true;
+    const posts = await models.Post.query().include('user');
+    const posts_lean = await models.Post.query().lean().include('user');
+    models.Post.query_record_id_as_string = false;
+    expect(posts).to.have.length(3);
+    expect(posts[0]).to.have.property('id', preset_posts[0].id.toString());
+    expect(posts[0]).to.have.property('user_id', preset_users[0].id.toString());
+    expect(posts[0].user).to.have.property('id', preset_users[0].id);
+    expect(posts_lean).to.have.length(3);
+    expect(posts_lean[0]).to.have.property('id', preset_posts[0].id.toString());
+    expect(posts_lean[0]).to.have.property('user_id', preset_users[0].id.toString());
+    expect(posts_lean[0].user).to.have.property('id', preset_users[0].id);
+  });
+
+  it('query record id as string include sub', async () => {
+    models.Post.query_record_id_as_string = true;
+    models.User.query_record_id_as_string = true;
+    const posts = await models.Post.query().include('user');
+    const posts_lean = await models.Post.query().lean().include('user');
+    models.Post.query_record_id_as_string = false;
+    models.User.query_record_id_as_string = false;
+    expect(posts).to.have.length(3);
+    expect(posts[0]).to.have.property('id', preset_posts[0].id.toString());
+    expect(posts[0]).to.have.property('user_id', preset_users[0].id.toString());
+    expect(posts[0].user).to.have.property('id', preset_users[0].id.toString());
+    expect(posts_lean).to.have.length(3);
+    expect(posts_lean[0]).to.have.property('id', preset_posts[0].id.toString());
+    expect(posts_lean[0]).to.have.property('user_id', preset_users[0].id.toString());
+    expect(posts_lean[0].user).to.have.property('id', preset_users[0].id.toString());
+  });
 }

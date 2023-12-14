@@ -103,28 +103,28 @@ function _buildWhereSingle(property: ColumnPropertyInternal | undefined, key: an
               sub_key === '$cgt'
                 ? '<='
                 : sub_key === '$cgte'
-                ? '<'
-                : sub_key === '$clt'
-                ? '>='
-                : sub_key === '$clte'
-                ? '>'
-                : sub_key === '$ceq'
-                ? '!='
-                : '==';
+                  ? '<'
+                  : sub_key === '$clt'
+                    ? '>='
+                    : sub_key === '$clte'
+                      ? '>'
+                      : sub_key === '$ceq'
+                        ? '!='
+                        : '==';
             return { $where: `this.${key} ${op} this.${compare_column}` };
           } else {
             const op =
               sub_key === '$cgt'
                 ? '>'
                 : sub_key === '$cgte'
-                ? '>='
-                : sub_key === '$clt'
-                ? '<'
-                : sub_key === '$clte'
-                ? '<='
-                : sub_key === '$ceq'
-                ? '=='
-                : '!=';
+                  ? '>='
+                  : sub_key === '$clt'
+                    ? '<'
+                    : sub_key === '$clte'
+                      ? '<='
+                      : sub_key === '$ceq'
+                        ? '=='
+                        : '!=';
             return { $where: `this.${key} ${op} this.${compare_column}` };
           }
         } else {
@@ -663,7 +663,13 @@ export class MongoDBAdapter extends AdapterBase {
             }
           }
         }
-        return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields);
+        return this._convertToGroupInstance(
+          model_name,
+          record,
+          options.group_by,
+          options.group_fields,
+          model_class.query_record_id_as_string,
+        );
       });
     } else {
       if (options.explain) {
@@ -843,7 +849,7 @@ export class MongoDBAdapter extends AdapterBase {
   }
 
   /** @internal */
-  protected valueToModel(value: any, property: any) {
+  protected valueToModel(value: any, property: ColumnPropertyInternal, _query_record_id_as_string: boolean) {
     if (property.type_class === CormoTypesObjectId) {
       if (property.array) {
         return value.map((v: any) => v && _objectIdToString(v));

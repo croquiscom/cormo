@@ -8,6 +8,7 @@ function Model(options = {}) {
             ctor.table_name = options.name;
         }
         ctor.description = options.description;
+        ctor.query_record_id_as_string = options.query_record_id_as_string ?? false;
         if (options.connection) {
             ctor.connection(options.connection);
         }

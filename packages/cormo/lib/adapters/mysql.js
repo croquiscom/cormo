@@ -594,8 +594,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             throw this._wrapError('unknown error', error);
         }
         if (options.group_fields) {
+            const model_class = this._connection.models[model_name];
             return result.map((record) => {
-                return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields);
+                return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields, model_class?.query_record_id_as_string ?? false);
             });
         }
         else {
@@ -932,7 +933,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         return { used, queued };
     }
     /** @internal */
-    valueToModel(value, property) {
+    valueToModel(value, property, query_record_id_as_string) {
         if (property.type_class === types.Object || property.array) {
             try {
                 return JSON.parse(value);
@@ -946,6 +947,9 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         else if (property.type_class === types.Boolean) {
             return value !== 0;
+        }
+        else if (property.record_id && query_record_id_as_string) {
+            return String(value);
         }
         else {
             return value;

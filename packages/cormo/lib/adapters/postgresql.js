@@ -418,8 +418,9 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         }
         const rows = result && result.rows;
         if (options.group_fields) {
+            const model_class = this._connection.models[model_name];
             return rows.map((record) => {
-                return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields);
+                return this._convertToGroupInstance(model_name, record, options.group_by, options.group_fields, model_class?.query_record_id_as_string ?? false);
             });
         }
         else {
@@ -651,9 +652,12 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
         return '$' + pos;
     }
     /** @internal */
-    valueToModel(value, property) {
+    valueToModel(value, property, query_record_id_as_string) {
         if (property.type_class === types.BigInteger) {
             return Number(value);
+        }
+        else if (property.record_id && query_record_id_as_string) {
+            return String(value);
         }
         return value;
     }
@@ -725,7 +729,9 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
                             ? new types.Integer()
                             : column.data_type === 'bigint'
                                 ? new types.BigInteger()
-                                : column.data_type === 'USER-DEFINED' && column.udt_schema === 'public' && column.udt_name === 'geometry'
+                                : column.data_type === 'USER-DEFINED' &&
+                                    column.udt_schema === 'public' &&
+                                    column.udt_name === 'geometry'
                                     ? new types.GeoPoint()
                                     : column.data_type === 'timestamp without time zone'
                                         ? new types.Date()

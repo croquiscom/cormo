@@ -17,6 +17,7 @@ export interface AdapterSettingsRedis {
 import stream from 'stream';
 import _ from 'lodash';
 import { Connection } from '../connection';
+import { ColumnPropertyInternal } from '../model';
 import { Transaction } from '../transaction';
 import * as types from '../types';
 import { tableize } from '../util/inflector';
@@ -278,7 +279,7 @@ export class RedisAdapter extends AdapterBase {
   }
 
   /** @internal */
-  protected valueToModel(value: any, property: any) {
+  protected valueToModel(value: any, property: ColumnPropertyInternal, query_record_id_as_string: boolean) {
     switch (property.type_class) {
       case types.Number:
       case types.Integer:
@@ -290,6 +291,9 @@ export class RedisAdapter extends AdapterBase {
       case types.Object:
         return JSON.parse(value);
       default:
+        if (property.record_id && query_record_id_as_string) {
+          return String(value);
+        }
         return value;
     }
   }
