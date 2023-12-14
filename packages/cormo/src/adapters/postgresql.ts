@@ -705,6 +705,9 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     if (property.type_class === types.BigInteger) {
       return Number(value);
     } else if (property.record_id && query_record_id_as_string) {
+      if (property.array) {
+        return value.map((item: any) => (item ? String(item) : null));
+      }
       return String(value);
     }
     return value;

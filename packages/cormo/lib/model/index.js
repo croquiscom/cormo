@@ -535,7 +535,9 @@ class BaseModel {
                 }
                 try {
                     for (let i = 0; i < value.length; i++) {
-                        value[i] = this._validateType(column, property.type_class, value[i]);
+                        if (value[i] != null) {
+                            value[i] = this._validateType(column, property.type_class, value[i]);
+                        }
                     }
                 }
                 catch (error) {

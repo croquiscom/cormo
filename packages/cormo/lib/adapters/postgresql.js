@@ -657,6 +657,9 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
             return Number(value);
         }
         else if (property.record_id && query_record_id_as_string) {
+            if (property.array) {
+                return value.map((item) => (item ? String(item) : null));
+            }
             return String(value);
         }
         return value;

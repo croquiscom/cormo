@@ -217,18 +217,23 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
   it('array of recordid', async () => {
     const types = await models.Type.createBulk([{ int_c: 1 }, { int_c: 2 }, { int_c: 3 }]);
     const type_ids = [types[0].id, null, types[1].id, types[2].id, null];
-    let type = await models.Type.create({ recordid_array: type_ids });
+    const type = await models.Type.create({ recordid_array: type_ids });
     expect(type.recordid_array).to.eql(type_ids);
-    type = await models.Type.find(type.id);
-    expect(type.recordid_array).to.eql(type_ids);
+    const record = await models.Type.find(type.id);
+    const record_lean = await models.Type.find(type.id).lean();
+    expect(record.recordid_array).to.eql(type_ids);
+    expect(record_lean.recordid_array).to.eql(type_ids);
   });
 
-  it('array of recordid with lean', async () => {
+  it('array of recordid: query  as string', async () => {
     const types = await models.Type.createBulk([{ int_c: 1 }, { int_c: 2 }, { int_c: 3 }]);
     const type_ids = [types[0].id, null, types[1].id, types[2].id, null];
-    let type = await models.Type.create({ recordid_array: type_ids });
-    expect(type.recordid_array).to.eql(type_ids);
-    type = await models.Type.find(type.id).lean();
-    expect(type.recordid_array).to.eql(type_ids);
+    const type = await models.Type.create({ recordid_array: type_ids });
+    models.Type.query_record_id_as_string = true;
+    const record = await models.Type.find(type.id);
+    const record_lean = await models.Type.find(type.id).lean();
+    models.Type.query_record_id_as_string = false;
+    expect(record.recordid_array).to.eql(type_ids.map((id) => (id ? String(id) : null)));
+    expect(record_lean.recordid_array).to.eql(type_ids.map((id) => (id ? String(id) : null)));
   });
 }

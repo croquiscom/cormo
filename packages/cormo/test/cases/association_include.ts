@@ -162,34 +162,40 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
   });
 
   it('query record id as string', async () => {
+    await models.Post.find(preset_posts[1].id).update({ user_id: null });
     models.Post.query_record_id_as_string = true;
-    const posts = await models.Post.query().include('user');
-    const posts_lean = await models.Post.query().lean().include('user');
+    const posts = await models.Post.query().include('user').order('id');
+    const posts_lean = await models.Post.query().lean().include('user').order('id');
     models.Post.query_record_id_as_string = false;
     expect(posts).to.have.length(3);
     expect(posts[0]).to.have.property('id', preset_posts[0].id.toString());
     expect(posts[0]).to.have.property('user_id', preset_users[0].id.toString());
     expect(posts[0].user).to.have.property('id', preset_users[0].id);
+    expect(posts[1]).to.have.property('user_id', null);
     expect(posts_lean).to.have.length(3);
     expect(posts_lean[0]).to.have.property('id', preset_posts[0].id.toString());
     expect(posts_lean[0]).to.have.property('user_id', preset_users[0].id.toString());
     expect(posts_lean[0].user).to.have.property('id', preset_users[0].id);
+    expect(posts_lean[1]).to.have.property('user_id', null);
   });
 
   it('query record id as string include sub', async () => {
+    await models.Post.find(preset_posts[1].id).update({ user_id: null });
     models.Post.query_record_id_as_string = true;
     models.User.query_record_id_as_string = true;
-    const posts = await models.Post.query().include('user');
-    const posts_lean = await models.Post.query().lean().include('user');
+    const posts = await models.Post.query().include('user').order('id');
+    const posts_lean = await models.Post.query().lean().include('user').order('id');
     models.Post.query_record_id_as_string = false;
     models.User.query_record_id_as_string = false;
     expect(posts).to.have.length(3);
     expect(posts[0]).to.have.property('id', preset_posts[0].id.toString());
     expect(posts[0]).to.have.property('user_id', preset_users[0].id.toString());
     expect(posts[0].user).to.have.property('id', preset_users[0].id.toString());
+    expect(posts[1]).to.have.property('user_id', null);
     expect(posts_lean).to.have.length(3);
     expect(posts_lean[0]).to.have.property('id', preset_posts[0].id.toString());
     expect(posts_lean[0]).to.have.property('user_id', preset_users[0].id.toString());
     expect(posts_lean[0].user).to.have.property('id', preset_users[0].id.toString());
+    expect(posts_lean[1]).to.have.property('user_id', null);
   });
 }

@@ -1024,7 +1024,11 @@ export class MySQLAdapter extends SQLAdapterBase {
   protected valueToModel(value: any, property: ColumnPropertyInternal, query_record_id_as_string: boolean) {
     if (property.type_class === types.Object || property.array) {
       try {
-        return JSON.parse(value);
+        const array = JSON.parse(value);
+        if (property.record_id && query_record_id_as_string) {
+          return array.map((item: any) => (item ? String(item) : null));
+        }
+        return array;
       } catch (error: any) {
         return null;
       }

@@ -624,7 +624,11 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
     valueToModel(value, property, query_record_id_as_string) {
         if (property.type_class === types.Object || property.array) {
             try {
-                return JSON.parse(value);
+                const array = JSON.parse(value);
+                if (property.record_id && query_record_id_as_string) {
+                    return array.map((item) => (item ? String(item) : null));
+                }
+                return array;
             }
             catch (error1) {
                 return null;
