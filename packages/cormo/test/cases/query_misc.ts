@@ -297,4 +297,14 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     expect(record_lean).to.have.property('name', user.name);
     expect(record_lean).to.have.property('age', user.age);
   });
+
+  it('record_id_as_string and no select id', async () => {
+    const user = await models.User.create({ name: 'John Doe', age: 27 });
+    models.User.query_record_id_as_string = true;
+    const record = await models.User.find(user.id).select(['name', 'age']);
+    const record_lean = await models.User.find(user.id).select(['name', 'age']).lean();
+    models.User.query_record_id_as_string = false;
+    expect(record).to.eql({ id: null, name: user.name, age: user.age });
+    expect(record_lean).to.eql({ name: user.name, age: user.age });
+  });
 }

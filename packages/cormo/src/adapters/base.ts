@@ -477,14 +477,16 @@ abstract class AdapterBase {
       const instance: any = {};
       this.setValuesFromDB(instance, data, model_class._schema, options.select, model_class.query_record_id_as_string);
       model_class._collapseNestedNulls(instance, options.select_raw, null);
-      const id = model_class.query_record_id_as_string ? String(this._getModelID(data)) : this._getModelID(data);
+      const raw_id = this._getModelID(data);
+      const id = raw_id && model_class.query_record_id_as_string ? String(raw_id) : raw_id;
       if (id) {
         instance.id = id;
       }
       return instance;
     } else {
       const model_class: any = this._connection.models[model_name];
-      const id = model_class.query_record_id_as_string ? String(this._getModelID(data)) : this._getModelID(data);
+      const raw_id = this._getModelID(data);
+      const id = raw_id && model_class.query_record_id_as_string ? String(raw_id) : raw_id;
       return new model_class(data, id, options.select, options.select_raw);
     }
   }
