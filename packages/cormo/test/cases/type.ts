@@ -10,6 +10,7 @@ export class Type extends cormo.BaseModel {
   public object?: object;
   public string?: string;
   public int_array?: number[];
+  public recordid?: any;
   public recordid_array?: any[];
   public text?: string;
 }
@@ -214,25 +215,56 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
     }
   });
 
+  it('recordid', async () => {
+    const types = await models.Type.createBulk([{ int_c: 1 }]);
+    const type = await models.Type.create({ recordid: types[0].id });
+    const record = await models.Type.find(type.id);
+    const record_lean = await models.Type.find(type.id).lean();
+    expect(type.recordid).to.eql(types[0].id);
+    expect(record.recordid).to.eql(types[0].id);
+    expect(record_lean.recordid).to.eql(types[0].id);
+  });
+
+  it('recordid: query as string', async () => {
+    const types = await models.Type.createBulk([{ int_c: 1 }]);
+    models.Type.query_record_id_as_string = true;
+    const type = await models.Type.create({ recordid: types[0].id });
+    const type_bulk = await models.Type.createBulk([{ recordid: types[0].id }]);
+    const record = await models.Type.find(type.id);
+    const record_lean = await models.Type.find(type.id).lean();
+    models.Type.query_record_id_as_string = false;
+    expect(type.id).to.be.a('string');
+    expect(type.recordid).to.eql(String(types[0].id));
+    expect(type_bulk[0].id).to.be.a('string');
+    expect(type_bulk[0].recordid).to.eql(String(types[0].id));
+    expect(record.recordid).to.eql(String(types[0].id));
+    expect(record_lean.recordid).to.eql(String(types[0].id));
+  });
+
   it('array of recordid', async () => {
     const types = await models.Type.createBulk([{ int_c: 1 }, { int_c: 2 }, { int_c: 3 }]);
     const type_ids = [types[0].id, null, types[1].id, types[2].id, null];
     const type = await models.Type.create({ recordid_array: type_ids });
-    expect(type.recordid_array).to.eql(type_ids);
     const record = await models.Type.find(type.id);
     const record_lean = await models.Type.find(type.id).lean();
+    expect(type.recordid_array).to.eql(type_ids);
     expect(record.recordid_array).to.eql(type_ids);
     expect(record_lean.recordid_array).to.eql(type_ids);
   });
 
-  it('array of recordid: query  as string', async () => {
+  it('array of recordid: query as string', async () => {
     const types = await models.Type.createBulk([{ int_c: 1 }, { int_c: 2 }, { int_c: 3 }]);
     const type_ids = [types[0].id, null, types[1].id, types[2].id, null];
-    const type = await models.Type.create({ recordid_array: type_ids });
     models.Type.query_record_id_as_string = true;
+    const type = await models.Type.create({ recordid_array: type_ids });
+    const type_bulk = await models.Type.createBulk([{ recordid_array: type_ids }]);
     const record = await models.Type.find(type.id);
     const record_lean = await models.Type.find(type.id).lean();
     models.Type.query_record_id_as_string = false;
+    expect(type.id).to.be.a('string');
+    expect(type.recordid_array).to.eql(type_ids.map((id) => (id ? String(id) : null)));
+    expect(type_bulk[0].id).to.be.a('string');
+    expect(type_bulk[0].recordid_array).to.eql(type_ids.map((id) => (id ? String(id) : null)));
     expect(record.recordid_array).to.eql(type_ids.map((id) => (id ? String(id) : null)));
     expect(record_lean.recordid_array).to.eql(type_ids.map((id) => (id ? String(id) : null)));
   });

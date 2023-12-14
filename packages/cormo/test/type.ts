@@ -48,6 +48,9 @@ _dbs.forEach((db) => {
           @cormo.Column(['integer'])
           public int_array?: number[];
 
+          @cormo.Column('recordid')
+          public recordid?: any;
+
           @cormo.Column(['recordid'])
           public recordid_array?: any[];
 
@@ -64,6 +67,7 @@ _dbs.forEach((db) => {
           bigint_c: _g.cormo.types.BigInteger,
           number: Number,
           object: Object,
+          recordid: _g.cormo.types.RecordID,
           recordid_array: [_g.cormo.types.RecordID],
           string: String,
           text: _g.cormo.types.Text,

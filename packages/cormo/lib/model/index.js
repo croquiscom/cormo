@@ -617,6 +617,22 @@ class BaseModel {
                 value: this.query_record_id_as_string ? String(ids[i]) : ids[i],
                 writable: false,
             });
+            if (this.query_record_id_as_string) {
+                for (const column of Object.keys(this._schema)) {
+                    const property = this._schema[column];
+                    if (property && property.record_id && !property.primary_key) {
+                        const value = record[column];
+                        if (value) {
+                            if (property.array) {
+                                record[column] = value.map((item) => (item ? String(item) : null));
+                            }
+                            else {
+                                record[column] = String(value);
+                            }
+                        }
+                    }
+                }
+            }
         });
         return records;
     }
@@ -974,6 +990,22 @@ class BaseModel {
             value: ctor.query_record_id_as_string ? String(id) : id,
             writable: false,
         });
+        if (ctor.query_record_id_as_string) {
+            for (const column of Object.keys(ctor._schema)) {
+                const property = ctor._schema[column];
+                if (property && property.record_id && !property.primary_key) {
+                    const value = this.get(column);
+                    if (value) {
+                        if (property.array) {
+                            this.set(column, value.map((item) => (item ? String(item) : null)));
+                        }
+                        else {
+                            this.set(column, String(value));
+                        }
+                    }
+                }
+            }
+        }
         Object.defineProperty(this, '_is_persisted', {
             configurable: false,
             enumerable: false,
