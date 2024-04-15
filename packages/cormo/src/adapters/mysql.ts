@@ -1380,7 +1380,7 @@ export class MySQLAdapter extends SQLAdapterBase {
 
   /** @internal */
   private _setEvent(client: any, max_lifetime?: number) {
-    if (!max_lifetime || max_lifetime < 0) {
+    if (!max_lifetime || max_lifetime <= 0) {
       return;
     }
     client.on('connection', (connection: any) => {
