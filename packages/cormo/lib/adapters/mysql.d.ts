@@ -14,7 +14,7 @@ export interface AdapterSettingsMySQL {
     collation?: string;
     pool_size?: number;
     query_timeout?: number;
-    idle_timeout?: number;
+    max_lifetime?: number;
     replication?: {
         use_master_for_read?: boolean;
         read_replicas: Array<{
