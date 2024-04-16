@@ -795,6 +795,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         this._client._node_id = 'MASTER';
         this._client.queryAsync = util_1.default.promisify(this._client.query);
         this._client.getConnectionAsync = util_1.default.promisify(this._client.getConnection);
+        this._setEvent(this._client, settings.max_lifetime);
         if (settings.replication) {
             this._read_clients = [];
             if (settings.replication.use_master_for_read) {
@@ -816,6 +817,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 read_client._node_id = `SLAVE${i + 1}`;
                 read_client.queryAsync = util_1.default.promisify(read_client.query);
                 read_client.getConnectionAsync = util_1.default.promisify(read_client.getConnection);
+                this._setEvent(read_client, settings.max_lifetime);
                 this._read_clients.push(read_client);
             }
         }
@@ -1277,6 +1279,20 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
             return cause;
         }
         return MySQLAdapter.wrapError(msg, cause);
+    }
+    /** @internal */
+    _setEvent(client, max_lifetime) {
+        if (!max_lifetime || max_lifetime < 0) {
+            return;
+        }
+        client.on('connection', (connection) => {
+            connection._connected_ts = Date.now();
+        });
+        client.on('release', (connection) => {
+            if (Date.now() - connection._connected_ts >= max_lifetime) {
+                connection.destroy();
+            }
+        });
     }
 }
 exports.MySQLAdapter = MySQLAdapter;
