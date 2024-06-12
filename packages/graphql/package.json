@@ -24,24 +24,24 @@
   },
   "homepage": "https://github.com/croquiscom/cormo",
   "dependencies": {
-    "@croquiscom/crary-graphql": "^1.0.1",
+    "@croquiscom/crary-graphql": "^1.3.1",
     "cormo": "^1.3.1",
     "graphql": "^16.8.1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
-    "@types/lodash": "^4.14.202",
+    "@types/lodash": "^4.17.5",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.10.4",
+    "@types/node": "^20.14.2",
     "@types/sinon": "^17.0.2",
     "chai": "^4.3.10",
-    "mocha": "^10.2.0",
+    "mocha": "^10.4.0",
     "mysql": "^2.18.1",
-    "mysql2": "^3.6.5",
-    "rimraf": "^5.0.5",
+    "mysql2": "^3.10.0",
+    "rimraf": "^5.0.7",
     "sinon": "^17.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.5"
   }
 }
