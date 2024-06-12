@@ -56,6 +56,9 @@ _dbs.forEach((db) => {
 
           @cormo.Column('text')
           public text?: string;
+
+          @cormo.Column('blob')
+          public blob?: Buffer;
         }
         models.Type = Type;
       } else {
@@ -71,6 +74,7 @@ _dbs.forEach((db) => {
           recordid_array: [_g.cormo.types.RecordID],
           string: String,
           text: _g.cormo.types.Text,
+          blob: _g.cormo.types.Blob,
         });
       }
 

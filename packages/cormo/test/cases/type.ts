@@ -13,6 +13,7 @@ export class Type extends cormo.BaseModel {
   public recordid?: any;
   public recordid_array?: any[];
   public text?: string;
+  public blob?: Buffer;
 }
 
 export default function (models: { Type: typeof Type; connection: cormo.Connection | null }) {
@@ -267,5 +268,12 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
     expect(type_bulk[0].recordid_array).to.eql(type_ids.map((id) => (id ? String(id) : null)));
     expect(record.recordid_array).to.eql(type_ids.map((id) => (id ? String(id) : null)));
     expect(record_lean.recordid_array).to.eql(type_ids.map((id) => (id ? String(id) : null)));
+  });
+
+  it('blob', async () => {
+    let type = await models.Type.create({ blob: Buffer.from([1, 2, 3, 4]) });
+    expect(type.blob).to.deep.equal(Buffer.from([1, 2, 3, 4]));
+    type = await models.Type.find(type.id);
+    expect(type.blob).to.deep.equal(Buffer.from([1, 2, 3, 4]));
   });
 }

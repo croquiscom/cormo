@@ -856,6 +856,8 @@ export class MongoDBAdapter extends AdapterBase {
       } else {
         return value && _objectIdToString(value);
       }
+    } else if (property.type_class === types.Blob) {
+      return value.read(0, value.length);
     } else {
       return value;
     }
