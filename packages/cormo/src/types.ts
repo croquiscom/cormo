@@ -221,6 +221,27 @@ const CormoTypesText: CormoTypesTextConstructor = function (this: CormoTypesText
   this.toString = () => 'text';
 } as CormoTypesTextConstructor;
 
+/**
+ * Represents a blob, used in model schemas.
+ * @namespace types
+ * @class Blob
+ */
+export interface CormoTypesBlob {
+  _type: 'blob';
+}
+
+interface CormoTypesBlobConstructor {
+  new (): CormoTypesBlob;
+  (): CormoTypesBlob;
+}
+
+const CormoTypesBlob: CormoTypesBlobConstructor = function (this: CormoTypesBlob): void {
+  if (!(this instanceof CormoTypesBlob)) {
+    return new (CormoTypesBlob as any)();
+  }
+  this.toString = () => 'blob';
+} as CormoTypesBlobConstructor;
+
 export type ColumnTypeInternal =
   | CormoTypesString
   | CormoTypesNumber
@@ -231,7 +252,8 @@ export type ColumnTypeInternal =
   | CormoTypesBigInteger
   | CormoTypesGeoPoint
   | CormoTypesRecordID
-  | CormoTypesText;
+  | CormoTypesText
+  | CormoTypesBlob;
 
 export type ColumnTypeInternalConstructor =
   | CormoTypesStringConstructor
@@ -243,7 +265,8 @@ export type ColumnTypeInternalConstructor =
   | CormoTypesBigIntegerConstructor
   | CormoTypesGeoPointConstructor
   | CormoTypesRecordIDConstructor
-  | CormoTypesTextConstructor;
+  | CormoTypesTextConstructor
+  | CormoTypesBlobConstructor;
 
 type ColumnTypeNativeConstructor =
   | StringConstructor
@@ -262,7 +285,8 @@ type ColumnTypeString =
   | 'biginteger'
   | 'geopoint'
   | 'recordid'
-  | 'text';
+  | 'text'
+  | 'blob';
 
 export type ColumnType =
   | ColumnTypeInternal
@@ -301,6 +325,8 @@ function _toCORMOType(type: ColumnType): ColumnTypeInternal {
         return new CormoTypesRecordID();
       case 'text':
         return new CormoTypesText();
+      case 'blob':
+        return new CormoTypesBlob();
     }
     throw new Error(`unknown type: ${type}`);
   } else if (type === String) {
@@ -331,6 +357,7 @@ export {
   CormoTypesObject as Object,
   CormoTypesRecordID as RecordID,
   CormoTypesText as Text,
+  CormoTypesBlob as Blob,
   _toCORMOType,
 };
 

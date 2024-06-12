@@ -5,7 +5,7 @@
  * @namespace cormo
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._toCORMOType = exports.Text = exports.RecordID = exports.Object = exports.Date = exports.GeoPoint = exports.BigInteger = exports.Integer = exports.Boolean = exports.Number = exports.String = void 0;
+exports._toCORMOType = exports.Blob = exports.Text = exports.RecordID = exports.Object = exports.Date = exports.GeoPoint = exports.BigInteger = exports.Integer = exports.Boolean = exports.Number = exports.String = void 0;
 const CormoTypesString = function (length) {
     if (!(this instanceof CormoTypesString)) {
         return new CormoTypesString(length);
@@ -77,6 +77,13 @@ const CormoTypesText = function () {
     this.toString = () => 'text';
 };
 exports.Text = CormoTypesText;
+const CormoTypesBlob = function () {
+    if (!(this instanceof CormoTypesBlob)) {
+        return new CormoTypesBlob();
+    }
+    this.toString = () => 'blob';
+};
+exports.Blob = CormoTypesBlob;
 /**
  * Converts JavaScript built-in class to CORMO type
  * @private
@@ -108,6 +115,8 @@ function _toCORMOType(type) {
                 return new CormoTypesRecordID();
             case 'text':
                 return new CormoTypesText();
+            case 'blob':
+                return new CormoTypesBlob();
         }
         throw new Error(`unknown type: ${type}`);
     }

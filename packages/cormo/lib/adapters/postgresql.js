@@ -70,6 +70,8 @@ function _typeToSQL(property) {
             return 'JSON';
         case types.Text:
             return 'TEXT';
+        case types.Blob:
+            return 'BYTEA';
     }
 }
 function _propertyToSQL(property) {
@@ -742,7 +744,9 @@ class PostgreSQLAdapter extends sql_base_1.SQLAdapterBase {
                                             ? new types.Object()
                                             : column.data_type === 'text'
                                                 ? new types.Text()
-                                                : undefined;
+                                                : column.data_type === 'bytea'
+                                                    ? new types.Blob()
+                                                    : undefined;
             let adapter_type_string = column.data_type.toUpperCase();
             if (column.data_type === 'character varying') {
                 adapter_type_string += `(${column.character_maximum_length || 255})`;

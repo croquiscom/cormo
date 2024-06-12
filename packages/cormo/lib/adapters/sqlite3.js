@@ -62,6 +62,8 @@ function _typeToSQL(property) {
             return 'TEXT';
         case types.Text:
             return 'TEXT';
+        case types.Blob:
+            return 'BLOB';
     }
 }
 function _propertyToSQL(property) {
@@ -695,7 +697,9 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
                                     ? new types.Date()
                                     : /^text/i.test(column.type)
                                         ? new types.Text()
-                                        : undefined;
+                                        : /^blob/i.test(column.type)
+                                            ? new types.Blob()
+                                            : undefined;
             schema.columns[column.name] = {
                 required: column.notnull === 1,
                 type,

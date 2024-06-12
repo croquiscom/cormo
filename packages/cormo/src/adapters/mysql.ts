@@ -90,6 +90,8 @@ function _typeToSQL(property: ColumnPropertyInternal, support_fractional_seconds
       return 'TEXT';
     case types.Text:
       return 'TEXT';
+    case types.Blob:
+      return 'BLOB';
   }
 }
 
@@ -1101,7 +1103,9 @@ export class MySQLAdapter extends SQLAdapterBase {
                     ? new types.Date()
                     : /^text/i.test(column.Type)
                       ? new types.Text()
-                      : undefined;
+                      : /^blob/i.test(column.Type)
+                        ? new types.Blob()
+                        : undefined;
       schema.columns[column.Field] = {
         required: column.Null === 'NO',
         type,
