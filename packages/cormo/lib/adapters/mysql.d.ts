@@ -13,6 +13,8 @@ export interface AdapterSettingsMySQL {
     charset?: string;
     collation?: string;
     pool_size?: number;
+    pool_max_idle?: number;
+    pool_idle_timeout?: number;
     query_timeout?: number;
     max_lifetime?: number;
     replication?: {
@@ -23,6 +25,8 @@ export interface AdapterSettingsMySQL {
             user?: string | Promise<string>;
             password?: string | Promise<string>;
             pool_size?: number;
+            pool_max_idle?: number;
+            pool_idle_timeout?: number;
         }>;
     };
     ssl?: string | (tls.SecureContextOptions & {

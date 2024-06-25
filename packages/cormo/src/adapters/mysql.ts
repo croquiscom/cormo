@@ -42,6 +42,8 @@ export interface AdapterSettingsMySQL {
   charset?: string;
   collation?: string;
   pool_size?: number;
+  pool_max_idle?: number;
+  pool_idle_timeout?: number;
   query_timeout?: number;
   max_lifetime?: number;
   replication?: {
@@ -52,6 +54,8 @@ export interface AdapterSettingsMySQL {
       user?: string | Promise<string>;
       password?: string | Promise<string>;
       pool_size?: number;
+      pool_max_idle?: number;
+      pool_idle_timeout?: number;
     }>;
   };
   ssl?: string | (tls.SecureContextOptions & { rejectUnauthorized?: boolean });
@@ -864,6 +868,8 @@ export class MySQLAdapter extends SQLAdapterBase {
     this._client = mysql.createPool({
       charset: settings.charset,
       connectionLimit: settings.pool_size || 10,
+      maxIdle: settings.pool_max_idle,
+      idleTimeout: settings.pool_idle_timeout,
       database: settings.database,
       host: settings.host,
       password: await settings.password,
@@ -887,6 +893,8 @@ export class MySQLAdapter extends SQLAdapterBase {
         const read_client = mysql.createPool({
           charset: settings.charset,
           connectionLimit: replica.pool_size || 10,
+          maxIdle: settings.pool_max_idle,
+          idleTimeout: settings.pool_idle_timeout,
           database: settings.database,
           host: replica.host,
           password: await replica.password,

@@ -13,11 +13,15 @@ export const connection = new cormo.MySQLConnection({
         password: 'cormo_test',
         port: 21860,
         user: 'cormo_test',
+        pool_max_idle: 2,
+        pool_idle_timeout: 5000,
       },
     ],
   },
   user: 'cormo_test',
   connection_retry_count: 2,
+  pool_max_idle: 2,
+  pool_idle_timeout: 5000,
 });
 
 class Name {

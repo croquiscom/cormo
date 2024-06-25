@@ -786,6 +786,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
         this._client = mysql.createPool({
             charset: settings.charset,
             connectionLimit: settings.pool_size || 10,
+            maxIdle: settings.pool_max_idle,
+            idleTimeout: settings.pool_idle_timeout,
             database: settings.database,
             host: settings.host,
             password: await settings.password,
@@ -808,6 +810,8 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 const read_client = mysql.createPool({
                     charset: settings.charset,
                     connectionLimit: replica.pool_size || 10,
+                    maxIdle: settings.pool_max_idle,
+                    idleTimeout: settings.pool_idle_timeout,
                     database: settings.database,
                     host: replica.host,
                     password: await replica.password,
