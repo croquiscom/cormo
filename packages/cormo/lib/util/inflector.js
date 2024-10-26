@@ -23,7 +23,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.camelize = exports.underscore = exports.classify = exports.tableize = exports.singularize = exports.pluralize = exports.foreign_key = void 0;
+exports.foreign_key = foreign_key;
+exports.pluralize = pluralize;
+exports.singularize = singularize;
+exports.tableize = tableize;
+exports.classify = classify;
+exports.underscore = underscore;
+exports.camelize = camelize;
 /**
  * Inflectors
  * @module inflector
@@ -37,7 +43,6 @@ const inflected = __importStar(require("inflected"));
 function foreign_key(name) {
     return underscore(name) + '_id';
 }
-exports.foreign_key = foreign_key;
 /**
  * Returns pluralized string of a string
  * @memberOf inflector
@@ -45,7 +50,6 @@ exports.foreign_key = foreign_key;
 function pluralize(str) {
     return inflected.pluralize(str);
 }
-exports.pluralize = pluralize;
 /**
  * Returns singularized string of a string
  * @memberOf inflector
@@ -53,7 +57,6 @@ exports.pluralize = pluralize;
 function singularize(str) {
     return inflected.singularize(str);
 }
-exports.singularize = singularize;
 /**
  * Returns table name of a name
  * @memberOf inflector
@@ -61,7 +64,6 @@ exports.singularize = singularize;
 function tableize(name) {
     return pluralize(underscore(name));
 }
-exports.tableize = tableize;
 /**
  * Returns class name of a name
  * @memberOf inflector
@@ -69,7 +71,6 @@ exports.tableize = tableize;
 function classify(name) {
     return camelize(singularize(name));
 }
-exports.classify = classify;
 /**
  * Returns underscored string of a string
  * @memberOf inflector
@@ -77,7 +78,6 @@ exports.classify = classify;
 function underscore(str) {
     return inflected.underscore(str);
 }
-exports.underscore = underscore;
 /**
  * Returns camelized string of a string
  * @memberOf inflector
@@ -85,4 +85,3 @@ exports.underscore = underscore;
 function camelize(str) {
     return inflected.camelize(str);
 }
-exports.camelize = camelize;

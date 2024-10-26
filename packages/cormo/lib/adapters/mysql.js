@@ -26,7 +26,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAdapter = exports.MySQLAdapter = void 0;
+exports.MySQLAdapter = void 0;
+exports.createAdapter = createAdapter;
 let mysql;
 let is_mysql2 = false;
 const stream_1 = __importDefault(require("stream"));
@@ -1310,4 +1311,3 @@ function createAdapter(connection) {
     }
     return new MySQLAdapter(connection);
 }
-exports.createAdapter = createAdapter;

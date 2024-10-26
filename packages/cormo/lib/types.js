@@ -5,7 +5,8 @@
  * @namespace cormo
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._toCORMOType = exports.Blob = exports.Text = exports.RecordID = exports.Object = exports.Date = exports.GeoPoint = exports.BigInteger = exports.Integer = exports.Boolean = exports.Number = exports.String = void 0;
+exports.Blob = exports.Text = exports.RecordID = exports.Object = exports.Date = exports.GeoPoint = exports.BigInteger = exports.Integer = exports.Boolean = exports.Number = exports.String = void 0;
+exports._toCORMOType = _toCORMOType;
 const CormoTypesString = function (length) {
     if (!(this instanceof CormoTypesString)) {
         return new CormoTypesString(length);
@@ -140,4 +141,3 @@ function _toCORMOType(type) {
     }
     return type;
 }
-exports._toCORMOType = _toCORMOType;

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { inspect } from 'util';
 import { AdapterBase } from '../adapters/base';
 import { Connection, AssociationBelongsToOptions, AssociationHasManyOptions, AssociationHasOneOptions } from '../connection';

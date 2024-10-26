@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import stream from 'stream';
 import { BaseModel, ModelColumnNamesWithId } from './model';
 import { Transaction } from './transaction';

@@ -5,7 +5,9 @@
  * @namespace cormo
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setPropertyOfPath = exports.getPropertyOfPath = exports.getLeafOfPath = void 0;
+exports.getLeafOfPath = getLeafOfPath;
+exports.getPropertyOfPath = getPropertyOfPath;
+exports.setPropertyOfPath = setPropertyOfPath;
 /**
  * Returns leaf object and last part.
  *
@@ -32,7 +34,6 @@ function getLeafOfPath(obj, path, create_object = true) {
     }
     return [obj, last];
 }
-exports.getLeafOfPath = getLeafOfPath;
 /**
  * Gets a value of object by path
  * @memberOf util
@@ -41,7 +42,6 @@ function getPropertyOfPath(obj, path) {
     const [child, last] = getLeafOfPath(obj, path, false);
     return child && last ? child[last] : undefined;
 }
-exports.getPropertyOfPath = getPropertyOfPath;
 /**
  * Sets a value to object by path
  * @memberOf util
@@ -52,4 +52,3 @@ function setPropertyOfPath(obj, path, value) {
         child[last] = value;
     }
 }
-exports.setPropertyOfPath = setPropertyOfPath;

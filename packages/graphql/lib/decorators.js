@@ -23,7 +23,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Index = exports.BelongsTo = exports.HasOne = exports.HasMany = exports.ObjectColumn = exports.Column = exports.Model = void 0;
+exports.Model = Model;
+exports.Column = Column;
+exports.ObjectColumn = ObjectColumn;
+exports.HasMany = HasMany;
+exports.HasOne = HasOne;
+exports.BelongsTo = BelongsTo;
+exports.Index = Index;
 const cormo = __importStar(require("cormo"));
 function Model(options = {}) {
     const c = cormo.Model({ connection: options.connection, name: options.name, description: options.description });
@@ -31,7 +37,6 @@ function Model(options = {}) {
         c(ctor);
     };
 }
-exports.Model = Model;
 function Column(options) {
     let cormo_type;
     if (options.enum) {
@@ -52,14 +57,12 @@ function Column(options) {
         c(target, propertyKey);
     };
 }
-exports.Column = Column;
 function ObjectColumn(options) {
     const c = cormo.ObjectColumn(options.type);
     return (target, propertyKey) => {
         c(target, propertyKey);
     };
 }
-exports.ObjectColumn = ObjectColumn;
 function HasMany(options) {
     const c_options = {
         foreign_key: options.foreign_key,
@@ -71,7 +74,6 @@ function HasMany(options) {
         c(target, propertyKey);
     };
 }
-exports.HasMany = HasMany;
 function HasOne(options) {
     const c_options = {
         foreign_key: options.foreign_key,
@@ -83,7 +85,6 @@ function HasOne(options) {
         c(target, propertyKey);
     };
 }
-exports.HasOne = HasOne;
 function BelongsTo(options) {
     const c_options = {
         foreign_key: options.foreign_key,
@@ -95,11 +96,9 @@ function BelongsTo(options) {
         c(target, propertyKey);
     };
 }
-exports.BelongsTo = BelongsTo;
 function Index(columns, options) {
     const c = cormo.Index(columns, options);
     return (ctor) => {
         c(ctor);
     };
 }
-exports.Index = Index;

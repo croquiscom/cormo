@@ -27,7 +27,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAdapter = exports.RedisAdapter = void 0;
+exports.RedisAdapter = void 0;
+exports.createAdapter = createAdapter;
 let redis;
 try {
     redis = require('ioredis');
@@ -291,4 +292,3 @@ function createAdapter(connection) {
     }
     return new RedisAdapter(connection);
 }
-exports.createAdapter = createAdapter;

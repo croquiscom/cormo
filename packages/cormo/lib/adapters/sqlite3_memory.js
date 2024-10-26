@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAdapter = void 0;
+exports.createAdapter = createAdapter;
 const sqlite3_1 = require("./sqlite3");
 function createAdapter(connection) {
     const adapter = (0, sqlite3_1.createAdapter)(connection);
@@ -12,4 +12,3 @@ function createAdapter(connection) {
     };
     return adapter;
 }
-exports.createAdapter = createAdapter;

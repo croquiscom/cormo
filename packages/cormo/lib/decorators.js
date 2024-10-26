@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Index = exports.BelongsTo = exports.HasOne = exports.HasMany = exports.ObjectColumn = exports.Column = exports.Model = void 0;
+exports.Model = Model;
+exports.Column = Column;
+exports.ObjectColumn = ObjectColumn;
+exports.HasMany = HasMany;
+exports.HasOne = HasOne;
+exports.BelongsTo = BelongsTo;
+exports.Index = Index;
 function Model(options = {}) {
     return (ctor) => {
         ctor._initialize_called = true;
@@ -33,7 +39,6 @@ function Model(options = {}) {
         }
     };
 }
-exports.Model = Model;
 function Column(column_property) {
     return (target, propertyKey) => {
         const ctor = target.constructor;
@@ -43,7 +48,6 @@ function Column(column_property) {
         ctor._property_decorators.push({ type: 'column', propertyKey: propertyKey.toString(), column_property });
     };
 }
-exports.Column = Column;
 function ObjectColumn(partial_model_class) {
     return (target, propertyKey) => {
         const ctor = target.constructor;
@@ -63,7 +67,6 @@ function ObjectColumn(partial_model_class) {
         ctor._property_decorators.push({ type: 'column', propertyKey: propertyKey.toString(), column_property });
     };
 }
-exports.ObjectColumn = ObjectColumn;
 function HasMany(options) {
     return (target, propertyKey) => {
         const ctor = target.constructor;
@@ -73,7 +76,6 @@ function HasMany(options) {
         ctor._property_decorators.push({ type: 'hasMany', propertyKey, options });
     };
 }
-exports.HasMany = HasMany;
 function HasOne(options) {
     return (target, propertyKey) => {
         const ctor = target.constructor;
@@ -83,7 +85,6 @@ function HasOne(options) {
         ctor._property_decorators.push({ type: 'hasOne', propertyKey, options });
     };
 }
-exports.HasOne = HasOne;
 function BelongsTo(options) {
     return (target, propertyKey) => {
         const ctor = target.constructor;
@@ -93,7 +94,6 @@ function BelongsTo(options) {
         ctor._property_decorators.push({ type: 'belongsTo', propertyKey, options });
     };
 }
-exports.BelongsTo = BelongsTo;
 function Index(columns, options) {
     return (ctor) => {
         if (ctor._initialize_called) {
@@ -107,4 +107,3 @@ function Index(columns, options) {
         }
     };
 }
-exports.Index = Index;

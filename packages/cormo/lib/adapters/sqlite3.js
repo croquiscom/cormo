@@ -26,7 +26,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAdapter = exports.SQLite3Adapter = void 0;
+exports.SQLite3Adapter = void 0;
+exports.createAdapter = createAdapter;
 let sqlite3;
 try {
     sqlite3 = require('sqlite3');
@@ -873,4 +874,3 @@ function createAdapter(connection) {
     }
     return new SQLite3Adapter(connection);
 }
-exports.createAdapter = createAdapter;

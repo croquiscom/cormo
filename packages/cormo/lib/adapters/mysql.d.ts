@@ -1,5 +1,3 @@
-/// <reference types="node" />
-/// <reference types="node" />
 import tls = require('tls');
 import { Connection } from '../connection';
 import { Transaction } from '../transaction';

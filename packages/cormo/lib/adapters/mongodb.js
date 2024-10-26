@@ -26,7 +26,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAdapter = exports.MongoDBAdapter = void 0;
+exports.MongoDBAdapter = void 0;
+exports.createAdapter = createAdapter;
 let mongodb;
 try {
     mongodb = require('mongodb');
@@ -1000,4 +1001,3 @@ function createAdapter(connection) {
     }
     return new MongoDBAdapter(connection);
 }
-exports.createAdapter = createAdapter;

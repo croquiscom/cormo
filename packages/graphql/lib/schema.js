@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createDefaultCrudSchema = void 0;
+exports.createDefaultCrudSchema = createDefaultCrudSchema;
 const crary_graphql_1 = require("@croquiscom/crary-graphql");
 const cormo = __importStar(require("cormo"));
 const graphql_1 = require("graphql");
@@ -385,4 +385,3 @@ function createDefaultCrudSchema(model_class, options = {}) {
         }),
     });
 }
-exports.createDefaultCrudSchema = createDefaultCrudSchema;
