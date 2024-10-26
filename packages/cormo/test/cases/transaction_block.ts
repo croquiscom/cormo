@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
-import { UserRef } from './transaction';
+import { UserRef } from './transaction.js';
 
 export default function (models: { User: typeof UserRef; connection: cormo.Connection | null }) {
   it('transaction success', async () => {

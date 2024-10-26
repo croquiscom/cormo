@@ -14,7 +14,7 @@ export interface CormoTypesString {
   length?: number;
 }
 
-interface CormoTypesStringConstructor {
+export interface CormoTypesStringConstructor {
   new (length?: number): CormoTypesString;
   (length?: number): CormoTypesString;
 }
@@ -36,7 +36,7 @@ export interface CormoTypesNumber {
   _type: 'number';
 }
 
-interface CormoTypesNumberConstructor {
+export interface CormoTypesNumberConstructor {
   new (): CormoTypesNumber;
   (): CormoTypesNumber;
 }
@@ -57,7 +57,7 @@ export interface CormoTypesBoolean {
   _type: 'boolean';
 }
 
-interface CormoTypesBooleanConstructor {
+export interface CormoTypesBooleanConstructor {
   new (): CormoTypesBoolean;
   (): CormoTypesBoolean;
 }
@@ -78,7 +78,7 @@ export interface CormoTypesInteger {
   _type: 'integer';
 }
 
-interface CormoTypesIntegerConstructor {
+export interface CormoTypesIntegerConstructor {
   new (): CormoTypesInteger;
   (): CormoTypesInteger;
 }
@@ -99,7 +99,7 @@ export interface CormoTypesBigInteger {
   _type: 'biginteger';
 }
 
-interface CormoTypesBigIntegerConstructor {
+export interface CormoTypesBigIntegerConstructor {
   new (): CormoTypesBigInteger;
   (): CormoTypesBigInteger;
 }
@@ -122,7 +122,7 @@ export interface CormoTypesGeoPoint {
   _type: 'geopoint';
 }
 
-interface CormoTypesGeoPointConstructor {
+export interface CormoTypesGeoPointConstructor {
   new (): CormoTypesGeoPoint;
   (): CormoTypesGeoPoint;
 }
@@ -143,7 +143,7 @@ export interface CormoTypesDate {
   _type: 'date';
 }
 
-interface CormoTypesDateConstructor {
+export interface CormoTypesDateConstructor {
   new (): CormoTypesDate;
   (): CormoTypesDate;
 }
@@ -167,7 +167,7 @@ export interface CormoTypesObject {
   _type: 'object';
 }
 
-interface CormoTypesObjectConstructor {
+export interface CormoTypesObjectConstructor {
   new (): CormoTypesObject;
   (): CormoTypesObject;
 }
@@ -188,7 +188,7 @@ export interface CormoTypesRecordID {
   _type: 'recordid';
 }
 
-interface CormoTypesRecordIDConstructor {
+export interface CormoTypesRecordIDConstructor {
   new (): CormoTypesRecordID;
   (): CormoTypesRecordID;
 }
@@ -209,7 +209,7 @@ export interface CormoTypesText {
   _type: 'text';
 }
 
-interface CormoTypesTextConstructor {
+export interface CormoTypesTextConstructor {
   new (): CormoTypesText;
   (): CormoTypesText;
 }
@@ -230,7 +230,7 @@ export interface CormoTypesBlob {
   _type: 'blob';
 }
 
-interface CormoTypesBlobConstructor {
+export interface CormoTypesBlobConstructor {
   new (): CormoTypesBlob;
   (): CormoTypesBlob;
 }

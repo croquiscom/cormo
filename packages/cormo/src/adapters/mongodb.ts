@@ -1,7 +1,7 @@
 let mongodb: any;
 
 try {
-  mongodb = require('mongodb');
+  mongodb = await import('mongodb');
 } catch {
   //
 }
@@ -18,10 +18,10 @@ class CormoTypesObjectId {}
 
 import stream from 'stream';
 import _ from 'lodash';
-import { Connection } from '../connection';
-import { BaseModel, ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
-import { Transaction } from '../transaction';
-import * as types from '../types';
+import { Connection } from '../connection/index.js';
+import { BaseModel, ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model/index.js';
+import { Transaction } from '../transaction.js';
+import * as types from '../types.js';
 import {
   AdapterBase,
   AdapterCountOptions,
@@ -30,7 +30,7 @@ import {
   AdapterUpsertOptions,
   Schemas,
   SchemasIndex,
-} from './base';
+} from './base.js';
 
 function _convertValueToObjectID(value: any, key: any) {
   if (value == null) {

@@ -1,4 +1,8 @@
-import * as cormo from '../..';
+import path from 'path';
+import url from 'url';
+import * as cormo from '../../lib/esm/index.js';
+
+const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 const db_configs: { [db: string]: any } = {
   mongodb: {
@@ -42,7 +46,7 @@ const db_configs: { [db: string]: any } = {
   },
   sqlite3: {
     implicit_apply_schemas: true,
-    database: __dirname + '/test.sqlite3',
+    database: dirname + '/test.sqlite3',
     redis_cache: {
       port: 21863,
     },

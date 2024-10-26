@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import * as cormo from '..';
-import cases, { PlaceRef } from './cases/geospatial';
-import _g from './support/common';
+import * as cormo from '../lib/esm/index.js';
+import cases, { PlaceRef } from './cases/geospatial.js';
+import _g from './support/common.js';
 
 const _dbs = ['mysql', 'mongodb', 'postgresql'];
 

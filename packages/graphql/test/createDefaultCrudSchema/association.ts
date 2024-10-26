@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import * as cormo from 'cormo';
 import { graphql, GraphQLSchema, printSchema } from 'graphql';
-import { BelongsTo, Column, createDefaultCrudSchema, Model } from '../..';
-import _g from '../common';
+import { BelongsTo, Column, createDefaultCrudSchema, Model } from '../../lib/esm/index.js';
+import _g from '../common.js';
 
 class UserRef extends cormo.BaseModel {
   public name!: string;

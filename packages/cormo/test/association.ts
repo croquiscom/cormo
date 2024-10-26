@@ -1,13 +1,13 @@
-import * as cormo from '..';
-import { ComputerRef, PostRef, UserRef } from './cases/association';
-import cases_as from './cases/association_as';
-import cases_belongs_to from './cases/association_belongs_to';
-import cases_fetch from './cases/association_fetch';
-import cases_has_many from './cases/association_has_many';
-import cases_has_one from './cases/association_has_one';
-import cases_include from './cases/association_include';
-import cases_include_lean from './cases/association_include_lean';
-import _g from './support/common';
+import * as cormo from '../lib/esm/index.js';
+import { ComputerRef, PostRef, UserRef } from './cases/association.js';
+import cases_as from './cases/association_as.js';
+import cases_belongs_to from './cases/association_belongs_to.js';
+import cases_fetch from './cases/association_fetch.js';
+import cases_has_many from './cases/association_has_many.js';
+import cases_has_one from './cases/association_has_one.js';
+import cases_include from './cases/association_include.js';
+import cases_include_lean from './cases/association_include_lean.js';
+import _g from './support/common.js';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

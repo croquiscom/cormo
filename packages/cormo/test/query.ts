@@ -1,13 +1,13 @@
-import * as cormo from '..';
-import cases, { UserRef, LedgerRef } from './cases/query';
-import cases_misc from './cases/query_misc';
-import cases_not from './cases/query_not';
-import cases_null from './cases/query_null';
-import cases_op from './cases/query_op';
-import cases_stream from './cases/query_stream';
-import cases_update from './cases/query_update';
-import cases_upsert from './cases/query_upsert';
-import _g from './support/common';
+import * as cormo from '../lib/esm/index.js';
+import cases, { UserRef, LedgerRef } from './cases/query.js';
+import cases_misc from './cases/query_misc.js';
+import cases_not from './cases/query_not.js';
+import cases_null from './cases/query_null.js';
+import cases_op from './cases/query_op.js';
+import cases_stream from './cases/query_stream.js';
+import cases_update from './cases/query_update.js';
+import cases_upsert from './cases/query_upsert.js';
+import _g from './support/common.js';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

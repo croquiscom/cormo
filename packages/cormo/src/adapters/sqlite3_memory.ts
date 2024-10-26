@@ -1,5 +1,5 @@
-import { Connection } from '../connection';
-import { createAdapter as createSQLite3Adapter } from './sqlite3';
+import { Connection } from '../connection/index.js';
+import { createAdapter as createSQLite3Adapter } from './sqlite3.js';
 
 export function createAdapter(connection: Connection) {
   const adapter: any = createSQLite3Adapter(connection);

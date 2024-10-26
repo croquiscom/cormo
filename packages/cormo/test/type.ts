@@ -1,9 +1,9 @@
-import * as cormo from '..';
-import cases, { Type as TypeRef } from './cases/type';
-import cases_compare from './cases/type_compare';
-import cases_options from './cases/type_options';
-import cases_update from './cases/type_update';
-import _g from './support/common';
+import * as cormo from '../lib/esm/index.js';
+import cases, { Type as TypeRef } from './cases/type.js';
+import cases_compare from './cases/type_compare.js';
+import cases_options from './cases/type_options.js';
+import cases_update from './cases/type_update.js';
+import _g from './support/common.js';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

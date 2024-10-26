@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { ComputerRef, PostRef, UserRef } from './association';
+import { ComputerRef, PostRef, UserRef } from './association.js';
 
 function _compareComment(a: PostRef, b: PostRef) {
   expect(a).to.have.property('title', b.title);

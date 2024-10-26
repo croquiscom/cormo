@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import * as cormo from 'cormo';
 import { graphql, GraphQLSchema, printSchema } from 'graphql';
-import { Column, createDefaultCrudSchema, Model } from '../..';
-import _g from '../common';
+import { Column, createDefaultCrudSchema, Model } from '../../lib/esm/index.js';
+import _g from '../common.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class UserRef extends cormo.BaseModel {

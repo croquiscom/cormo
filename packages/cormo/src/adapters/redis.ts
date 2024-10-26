@@ -3,7 +3,7 @@
 let redis: any;
 
 try {
-  redis = require('ioredis');
+  redis = (await import('ioredis')).default;
 } catch (error: any) {
   //
 }
@@ -16,18 +16,18 @@ export interface AdapterSettingsRedis {
 
 import stream from 'stream';
 import _ from 'lodash';
-import { Connection } from '../connection';
-import { ColumnPropertyInternal } from '../model';
-import { Transaction } from '../transaction';
-import * as types from '../types';
-import { tableize } from '../util/inflector';
+import { Connection } from '../connection/index.js';
+import { ColumnPropertyInternal } from '../model/index.js';
+import { Transaction } from '../transaction.js';
+import * as types from '../types.js';
+import { tableize } from '../util/inflector.js';
 import {
   AdapterBase,
   AdapterCountOptions,
   AdapterDeleteOptions,
   AdapterFindOptions,
   AdapterUpsertOptions,
-} from './base';
+} from './base.js';
 
 // Adapter for Redis
 // @namespace adapter

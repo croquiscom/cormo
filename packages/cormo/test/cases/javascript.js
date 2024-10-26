@@ -1,7 +1,7 @@
 /* global it */
 
-const { expect } = require('chai');
-const _g = require('../support/common').default;
+import { expect } from 'chai';
+import _g from '../support/common';
 
 async function _createUsers(User, data) {
   if (!data) {
@@ -17,7 +17,7 @@ async function _createUsers(User, data) {
   return await User.createBulk(data);
 }
 
-module.exports = () => {
+export default () => {
   it('create one', () => {
     const user = new _g.connection.User();
     user.name = 'John Doe';

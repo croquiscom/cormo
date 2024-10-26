@@ -2,13 +2,14 @@ let pg: any;
 let QueryStream: any;
 
 try {
-  pg = require('pg');
+  // @ts-expect-error no type definitions
+  pg = (await import('pg')).default;
 } catch {
   //
 }
 
 try {
-  QueryStream = require('pg-query-stream');
+  QueryStream = (await import('pg-query-stream')).default;
 } catch {
   /**/
 }
@@ -23,10 +24,10 @@ export interface AdapterSettingsPostgreSQL {
 
 import stream from 'stream';
 import _ from 'lodash';
-import { Connection } from '../connection';
-import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
-import { IsolationLevel, Transaction } from '../transaction';
-import * as types from '../types';
+import { Connection } from '../connection/index.js';
+import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model/index.js';
+import { IsolationLevel, Transaction } from '../transaction.js';
+import * as types from '../types.js';
 import {
   AdapterCountOptions,
   AdapterFindOptions,
@@ -35,8 +36,8 @@ import {
   SchemasTable,
   SchemasIndex,
   AdapterDeleteOptions,
-} from './base';
-import { SQLAdapterBase } from './sql_base';
+} from './base.js';
+import { SQLAdapterBase } from './sql_base.js';
 
 function _typeToSQL(property: ColumnPropertyInternal) {
   if (property.array) {

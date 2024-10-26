@@ -1,5 +1,5 @@
-import cases from './cases/misc';
-import _g from './support/common';
+import cases from './cases/misc.js';
+import _g from './support/common.js';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

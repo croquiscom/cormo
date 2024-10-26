@@ -1,7 +1,7 @@
-import * as cormo from '..';
-import cases, { PostRef, UserRef } from './cases/constraint';
-import cases_multicolumn, { VersionRef } from './cases/constraint_multicolumn';
-import _g from './support/common';
+import * as cormo from '../lib/esm/index.js';
+import cases, { PostRef, UserRef } from './cases/constraint.js';
+import cases_multicolumn, { VersionRef } from './cases/constraint_multicolumn.js';
+import _g from './support/common.js';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

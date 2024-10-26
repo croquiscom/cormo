@@ -1,4 +1,4 @@
-import { Connection } from './connection';
+import { Connection } from './connection/index.js';
 
 export enum IsolationLevel {
   READ_UNCOMMITTED = 'READ UNCOMMITTED',

@@ -1,7 +1,7 @@
 let sqlite3: any;
 
 try {
-  sqlite3 = require('sqlite3');
+  sqlite3 = (await import('sqlite3')).default;
 } catch {
   //
 }
@@ -13,10 +13,10 @@ export interface AdapterSettingsSQLite3 {
 import stream from 'stream';
 import util from 'util';
 import _ from 'lodash';
-import { Connection } from '../connection';
-import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
-import { IsolationLevel, Transaction } from '../transaction';
-import * as types from '../types';
+import { Connection } from '../connection/index.js';
+import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model/index.js';
+import { IsolationLevel, Transaction } from '../transaction.js';
+import * as types from '../types.js';
 import {
   AdapterCountOptions,
   AdapterFindOptions,
@@ -25,8 +25,8 @@ import {
   SchemasTable,
   SchemasIndex,
   AdapterDeleteOptions,
-} from './base';
-import { SQLAdapterBase } from './sql_base';
+} from './base.js';
+import { SQLAdapterBase } from './sql_base.js';
 
 function _typeToSQL(property: ColumnPropertyInternal) {
   if (property.array) {

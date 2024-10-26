@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
-import { UserExtraRef, UserRef } from './transaction';
+import { UserExtraRef, UserRef } from './transaction.js';
 
 export default function (models: {
   User: typeof UserRef;

@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { BaseModel, ColumnPropertyInternal, ModelSchemaInternal } from '../model';
-import * as types from '../types';
-import { AdapterBase, AdapterUpsertOptions } from './base';
+import { BaseModel, ColumnPropertyInternal, ModelSchemaInternal } from '../model/index.js';
+import * as types from '../types.js';
+import { AdapterBase, AdapterUpsertOptions } from './base.js';
 
 // Base class for SQL adapters
 // @namespace adapter

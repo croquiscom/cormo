@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
-import { UserRef, UserRefVO } from './query';
+import { UserRef, UserRefVO } from './query.js';
 
 function _getInvalidID(id: number | string) {
   if (typeof id === 'number') {

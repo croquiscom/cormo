@@ -1,4 +1,4 @@
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
 export class UserRef extends cormo.BaseModel {
   public name?: string | null;

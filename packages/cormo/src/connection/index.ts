@@ -3,26 +3,38 @@ let redis: any;
 import { EventEmitter } from 'events';
 import { inspect } from 'util';
 import _ from 'lodash';
-import { AdapterBase } from '../adapters/base';
-import { createAdapter as createMongoDBAdapter, AdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb';
-import { createAdapter as createMySQLAdapter, AdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql';
+import { AdapterBase } from '../adapters/base.js';
+import { createAdapter as createMongoDBAdapter, AdapterSettingsMongoDB, MongoDBAdapter } from '../adapters/mongodb.js';
+import { createAdapter as createMySQLAdapter, AdapterSettingsMySQL, MySQLAdapter } from '../adapters/mysql.js';
 import {
   createAdapter as createPostgreSQLAdapter,
   AdapterSettingsPostgreSQL,
   PostgreSQLAdapter,
-} from '../adapters/postgresql';
-import { createAdapter as createSQLite3Adapter, AdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3';
-import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, Logger } from '../logger';
-import { BaseModel, ColumnProperty, ModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model';
-import { QueryArray, QuerySingle } from '../query';
-import { IsolationLevel, Transaction } from '../transaction';
-import * as types from '../types';
-import * as inflector from '../util/inflector';
+} from '../adapters/postgresql.js';
+import { createAdapter as createRedisAdapter } from '../adapters/redis.js';
+import { createAdapter as createSQLite3Adapter, AdapterSettingsSQLite3, SQLite3Adapter } from '../adapters/sqlite3.js';
+import { createAdapter as createSQLite3MemoryAdapter } from '../adapters/sqlite3_memory.js';
+import { ColorConsoleLogger, ConsoleLogger, EmptyLogger, Logger } from '../logger/index.js';
+import { BaseModel, ColumnProperty, ModelSchema, ModelColumnNamesWithId, ModelValueObject } from '../model/index.js';
+import { QueryArray, QuerySingle } from '../query.js';
+import { IsolationLevel, Transaction } from '../transaction.js';
+import * as types from '../types.js';
+import * as inflector from '../util/inflector.js';
 
-const Toposort = require('toposort-class');
+const adapter_creaters: Record<string, (connection: Connection) => AdapterBase> = {
+  mongodb: createMongoDBAdapter,
+  mysql: createMySQLAdapter,
+  postgresql: createPostgreSQLAdapter,
+  redis: createRedisAdapter,
+  sqlite3: createSQLite3Adapter,
+  sqlite3_memory: createSQLite3MemoryAdapter,
+};
+
+// @ts-expect-error no type definitions
+const Toposort = (await import('toposort-class')).default;
 
 try {
-  redis = require('ioredis');
+  redis = (await import('ioredis')).default;
 } catch {
   /**/
 }
@@ -202,7 +214,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     this.models = {};
     this._pending_associations = [];
     if (typeof adapter === 'string') {
-      this._adapter = require(__dirname + '/../adapters/' + adapter).createAdapter(this);
+      this._adapter = adapter_creaters[adapter](this) as AdapterType;
     } else {
       this._adapter = adapter(this);
     }

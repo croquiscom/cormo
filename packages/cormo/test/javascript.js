@@ -1,6 +1,7 @@
 /* global describe, before, beforeEach, after */
 
-const _g = require('./support/common').default;
+import cases from './cases/javascript.js';
+import _g from './support/common.js';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 _dbs.forEach(function (db) {
@@ -25,6 +26,6 @@ _dbs.forEach(function (db) {
       await _g.connection.dropAllModels();
     });
 
-    require('./cases/javascript')();
+    cases();
   });
 });

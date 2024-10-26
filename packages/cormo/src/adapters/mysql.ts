@@ -2,13 +2,13 @@ let mysql: any;
 let is_mysql2 = false;
 
 import stream from 'stream';
-import tls = require('tls');
+import tls from 'tls';
 import util from 'util';
 import _ from 'lodash';
-import { Connection } from '../connection';
-import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
-import { IsolationLevel, Transaction } from '../transaction';
-import * as types from '../types';
+import { Connection } from '../connection/index.js';
+import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model/index.js';
+import { IsolationLevel, Transaction } from '../transaction.js';
+import * as types from '../types.js';
 import {
   AdapterCountOptions,
   AdapterFindOptions,
@@ -17,15 +17,16 @@ import {
   SchemasIndex,
   AdapterUpsertOptions,
   AdapterDeleteOptions,
-} from './base';
-import { SQLAdapterBase } from './sql_base';
+} from './base.js';
+import { SQLAdapterBase } from './sql_base.js';
 
 try {
-  mysql = require('mysql2');
+  mysql = await import('mysql2');
   is_mysql2 = true;
 } catch {
   try {
-    mysql = require('mysql');
+    // @ts-expect-error no type definitions
+    mysql = await import('mysql');
   } catch {
     //
   }

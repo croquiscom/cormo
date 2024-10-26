@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
-import { Type } from './type';
+import { Type } from './type.js';
 
 export default function (models: { Type: typeof Type; connection: cormo.Connection | null }) {
   it('number on Model.update', async () => {

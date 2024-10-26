@@ -1,11 +1,11 @@
 import stream from 'stream';
 import _ from 'lodash';
 
-import { AdapterBase, AdapterDeleteOptions, AdapterFindOptions } from './adapters/base';
-import { Connection } from './connection';
-import { BaseModel, ModelColumnNamesWithId } from './model';
-import { Transaction } from './transaction';
-import { RecordID } from './types';
+import { AdapterBase, AdapterDeleteOptions, AdapterFindOptions } from './adapters/base.js';
+import { Connection } from './connection/index.js';
+import { BaseModel, ModelColumnNamesWithId } from './model/index.js';
+import { Transaction } from './transaction.js';
+import { RecordID } from './types.js';
 
 interface QueryOptions {
   lean: boolean;

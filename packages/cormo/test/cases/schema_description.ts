@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
 export default function (db: any, db_config: any) {
   if (db !== 'mysql') {

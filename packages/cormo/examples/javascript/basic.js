@@ -1,4 +1,4 @@
-const cormo = require('../..');
+import * as cormo from '../../lib/esm/index.js';
 
 const connection = new cormo.Connection('mysql', {
   implicit_apply_schemas: true,
