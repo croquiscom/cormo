@@ -1,8 +1,8 @@
+import { Connection } from '../connection/index.js';
+import { SQLAdapterBase } from './sql_base.js';
 export interface AdapterSettingsSQLite3 {
     database: string;
 }
-import { Connection } from '../connection/index.js';
-import { SQLAdapterBase } from './sql_base.js';
 export declare class SQLite3Adapter extends SQLAdapterBase {
     /**
      * Exposes sqlite3 module's run method

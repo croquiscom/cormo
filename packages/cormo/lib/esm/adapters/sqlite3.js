@@ -1,16 +1,17 @@
-let sqlite3;
-try {
-    sqlite3 = (await import('sqlite3')).default;
-}
-catch {
-    //
-}
 import stream from 'stream';
 import util from 'util';
 import _ from 'lodash';
 import * as types from '../types.js';
 import { AdapterBase, } from './base.js';
 import { SQLAdapterBase } from './sql_base.js';
+let sqlite3;
+const module_promise = import('sqlite3')
+    .then((m) => {
+    sqlite3 = m.default;
+})
+    .catch(() => {
+    //
+});
 function _typeToSQL(property) {
     if (property.array) {
         return 'TEXT';
@@ -542,6 +543,11 @@ export class SQLite3Adapter extends SQLAdapterBase {
      * @internal
      */
     async connect(settings) {
+        await module_promise;
+        if (!sqlite3) {
+            console.log('Install sqlite3 module to use this adapter');
+            process.exit(1);
+        }
         try {
             this._settings = settings;
             this._client = await this._getClient();
@@ -837,9 +843,5 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
 }
 export function createAdapter(connection) {
-    if (!sqlite3) {
-        console.log('Install sqlite3 module to use this adapter');
-        process.exit(1);
-    }
     return new SQLite3Adapter(connection);
 }

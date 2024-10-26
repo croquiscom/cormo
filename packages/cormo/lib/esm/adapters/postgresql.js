@@ -1,23 +1,25 @@
-let pg;
-let QueryStream;
-try {
-    // @ts-expect-error no type definitions
-    pg = (await import('pg')).default;
-}
-catch {
-    //
-}
-try {
-    QueryStream = (await import('pg-query-stream')).default;
-}
-catch {
-    /**/
-}
 import stream from 'stream';
 import _ from 'lodash';
 import * as types from '../types.js';
 import { AdapterBase, } from './base.js';
 import { SQLAdapterBase } from './sql_base.js';
+let pg;
+let QueryStream;
+// @ts-expect-error no type definitions
+const module_promise = import('pg')
+    .then((m) => {
+    pg = m.default;
+    return import('pg-query-stream')
+        .then((m2) => {
+        QueryStream = m2.default;
+    })
+        .catch(() => {
+        //
+    });
+})
+    .catch(() => {
+    //
+});
 function _typeToSQL(property) {
     if (property.array) {
         return 'JSON';
@@ -553,6 +555,11 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
      * @internal
      */
     async connect(settings) {
+        await module_promise;
+        if (!pg) {
+            console.log('Install pg module to use this adapter');
+            process.exit(1);
+        }
         // connect
         const pool = new pg.Pool({
             database: settings.database,
@@ -914,9 +921,5 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
     }
 }
 export function createAdapter(connection) {
-    if (!pg) {
-        console.log('Install pg module to use this adapter');
-        process.exit(1);
-    }
     return new PostgreSQLAdapter(connection);
 }

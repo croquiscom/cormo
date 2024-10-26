@@ -1,5 +1,3 @@
-let redis: any;
-
 import { EventEmitter } from 'events';
 import { inspect } from 'util';
 import _ from 'lodash';
@@ -30,11 +28,17 @@ const adapter_creaters: Record<string, (connection: Connection) => AdapterBase> 
   sqlite3_memory: createSQLite3MemoryAdapter,
 };
 
+let Toposort: any;
 // @ts-expect-error no type definitions
-const Toposort = (await import('toposort-class')).default;
+import('toposort-class').then((m) => {
+  Toposort = m.default;
+});
 
+let redis: any;
 try {
-  redis = (await import('ioredis')).default;
+  import('ioredis').then((m) => {
+    redis = m.default;
+  });
 } catch {
   /**/
 }

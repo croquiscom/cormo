@@ -1,21 +1,3 @@
-let mongodb: any;
-
-try {
-  mongodb = await import('mongodb');
-} catch {
-  //
-}
-
-export interface AdapterSettingsMongoDB {
-  host?: string;
-  port?: number;
-  user?: string | Promise<string>;
-  password?: string | Promise<string>;
-  database: string;
-}
-
-class CormoTypesObjectId {}
-
 import stream from 'stream';
 import _ from 'lodash';
 import { Connection } from '../connection/index.js';
@@ -31,6 +13,26 @@ import {
   Schemas,
   SchemasIndex,
 } from './base.js';
+
+let mongodb: any;
+
+const module_promise = import('mongodb')
+  .then((m) => {
+    mongodb = m;
+  })
+  .catch(() => {
+    //
+  });
+
+export interface AdapterSettingsMongoDB {
+  host?: string;
+  port?: number;
+  user?: string | Promise<string>;
+  password?: string | Promise<string>;
+  database: string;
+}
+
+class CormoTypesObjectId {}
 
 function _convertValueToObjectID(value: any, key: any) {
   if (value == null) {
@@ -803,6 +805,12 @@ export class MongoDBAdapter extends AdapterBase {
    * @internal
    */
   public async connect(settings: AdapterSettingsMongoDB) {
+    await module_promise;
+    if (!mongodb) {
+      console.log('Install mongodb module to use this adapter');
+      process.exit(1);
+    }
+
     let url;
     const host = settings.host || 'localhost';
     const port = settings.port || 27017;
@@ -1033,9 +1041,5 @@ export class MongoDBAdapter extends AdapterBase {
 }
 
 export function createAdapter(connection: Connection) {
-  if (!mongodb) {
-    console.log('Install mongodb module to use this adapter');
-    process.exit(1);
-  }
   return new MongoDBAdapter(connection);
 }

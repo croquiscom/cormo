@@ -1,3 +1,6 @@
+import { Connection } from '../connection/index.js';
+import { Transaction } from '../transaction.js';
+import { SQLAdapterBase } from './sql_base.js';
 export interface AdapterSettingsPostgreSQL {
     host?: string;
     port?: number;
@@ -5,9 +8,6 @@ export interface AdapterSettingsPostgreSQL {
     password?: string | Promise<string>;
     database: string;
 }
-import { Connection } from '../connection/index.js';
-import { Transaction } from '../transaction.js';
-import { SQLAdapterBase } from './sql_base.js';
 export declare class PostgreSQLAdapter extends SQLAdapterBase {
     /**
      * Exposes pg module's query method

@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-let redis;
-try {
-    redis = (await import('ioredis')).default;
-}
-catch (error) {
-    //
-}
 import _ from 'lodash';
 import * as types from '../types.js';
 import { tableize } from '../util/inflector.js';
 import { AdapterBase, } from './base.js';
+let redis;
+const module_promise = import('ioredis')
+    .then((m) => {
+    redis = m.default;
+})
+    .catch(() => {
+    //
+});
 // Adapter for Redis
 // @namespace adapter
 export class RedisAdapter extends AdapterBase {
@@ -207,6 +208,11 @@ export class RedisAdapter extends AdapterBase {
      * @internal
      */
     async connect(settings) {
+        await module_promise;
+        if (!redis) {
+            console.log('Install redis module to use this adapter');
+            process.exit(1);
+        }
         const methods = ['del', 'exists', 'hdel', 'hgetall', 'hmset', 'incr', 'keys', 'select'];
         this._client = redis.createClient(settings.port || 6379, settings.host || '127.0.0.1');
         return await this._client.select(settings.database || 0);
@@ -255,9 +261,5 @@ export class RedisAdapter extends AdapterBase {
     }
 }
 export function createAdapter(connection) {
-    if (!redis) {
-        console.log('Install redis module to use this adapter');
-        process.exit(1);
-    }
     return new RedisAdapter(connection);
 }

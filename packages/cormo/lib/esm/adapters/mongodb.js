@@ -1,16 +1,17 @@
-let mongodb;
-try {
-    mongodb = await import('mongodb');
-}
-catch {
-    //
-}
-class CormoTypesObjectId {
-}
 import stream from 'stream';
 import _ from 'lodash';
 import * as types from '../types.js';
 import { AdapterBase, } from './base.js';
+let mongodb;
+const module_promise = import('mongodb')
+    .then((m) => {
+    mongodb = m;
+})
+    .catch(() => {
+    //
+});
+class CormoTypesObjectId {
+}
 function _convertValueToObjectID(value, key) {
     if (value == null) {
         return null;
@@ -741,6 +742,11 @@ export class MongoDBAdapter extends AdapterBase {
      * @internal
      */
     async connect(settings) {
+        await module_promise;
+        if (!mongodb) {
+            console.log('Install mongodb module to use this adapter');
+            process.exit(1);
+        }
         let url;
         const host = settings.host || 'localhost';
         const port = settings.port || 27017;
@@ -964,9 +970,5 @@ export class MongoDBAdapter extends AdapterBase {
     }
 }
 export function createAdapter(connection) {
-    if (!mongodb) {
-        console.log('Install mongodb module to use this adapter');
-        process.exit(1);
-    }
     return new MongoDBAdapter(connection);
 }

@@ -1,23 +1,25 @@
-let mysql;
-let is_mysql2 = false;
 import stream from 'stream';
 import util from 'util';
 import _ from 'lodash';
 import * as types from '../types.js';
 import { SQLAdapterBase } from './sql_base.js';
-try {
-    mysql = await import('mysql2');
+let mysql;
+let is_mysql2 = false;
+const module_promise = import('mysql2')
+    .then((m) => {
+    mysql = m;
     is_mysql2 = true;
-}
-catch {
-    try {
-        // @ts-expect-error no type definitions
-        mysql = await import('mysql');
-    }
-    catch {
+})
+    .catch(() => {
+    // @ts-expect-error no type definitions
+    return import('mysql')
+        .then((m) => {
+        mysql = m;
+    })
+        .catch(() => {
         //
-    }
-}
+    });
+});
 function _typeToSQL(property, support_fractional_seconds, major_version) {
     if (property.array) {
         return 'TEXT';
@@ -717,6 +719,11 @@ export class MySQLAdapter extends SQLAdapterBase {
      * @internal
      */
     async connect(settings) {
+        await module_promise;
+        if (!mysql) {
+            console.log('Install mysql module to use this adapter');
+            process.exit(1);
+        }
         // connect
         let client;
         this._database = settings.database;
@@ -1275,9 +1282,5 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
 }
 export function createAdapter(connection) {
-    if (!mysql) {
-        console.log('Install mysql module to use this adapter');
-        process.exit(1);
-    }
     return new MySQLAdapter(connection);
 }

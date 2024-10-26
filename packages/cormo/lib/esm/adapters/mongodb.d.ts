@@ -1,3 +1,5 @@
+import { Connection } from '../connection/index.js';
+import { AdapterBase } from './base.js';
 export interface AdapterSettingsMongoDB {
     host?: string;
     port?: number;
@@ -5,8 +7,6 @@ export interface AdapterSettingsMongoDB {
     password?: string | Promise<string>;
     database: string;
 }
-import { Connection } from '../connection/index.js';
-import { AdapterBase } from './base.js';
 export declare class MongoDBAdapter extends AdapterBase {
     /**
      * Exposes mongodb module's a collection object
