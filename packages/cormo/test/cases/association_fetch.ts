@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import * as cormo from '../..';
-import { ComputerRef, PostRef, UserRef } from './association';
+import * as cormo from '../../lib/esm/index.js';
+import { ComputerRef, PostRef, UserRef } from './association.js';
 
 function _checkPost(
   Post: typeof PostRef,

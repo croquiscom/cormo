@@ -3,9 +3,9 @@ import {
   AssociationBelongsToOptions,
   AssociationHasManyOptions,
   AssociationHasOneOptions,
-} from './connection';
-import { BaseModel, ColumnNestedProperty, ColumnProperty } from './model';
-import * as types from './types';
+} from './connection/index.js';
+import { BaseModel, ColumnNestedProperty, ColumnProperty } from './model/index.js';
+import * as types from './types.js';
 
 export function Model(
   options: { connection?: Connection; name?: string; description?: string; query_record_id_as_string?: boolean } = {},

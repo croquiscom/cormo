@@ -1,14 +1,11 @@
-let mysql: any;
-let is_mysql2 = false;
-
 import stream from 'stream';
-import tls = require('tls');
+import tls from 'tls';
 import util from 'util';
 import _ from 'lodash';
-import { Connection } from '../connection';
-import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
-import { IsolationLevel, Transaction } from '../transaction';
-import * as types from '../types';
+import { Connection } from '../connection/index.js';
+import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model/index.js';
+import { IsolationLevel, Transaction } from '../transaction.js';
+import * as types from '../types.js';
 import {
   AdapterCountOptions,
   AdapterFindOptions,
@@ -17,19 +14,27 @@ import {
   SchemasIndex,
   AdapterUpsertOptions,
   AdapterDeleteOptions,
-} from './base';
-import { SQLAdapterBase } from './sql_base';
+} from './base.js';
+import { SQLAdapterBase } from './sql_base.js';
 
-try {
-  mysql = require('mysql2');
-  is_mysql2 = true;
-} catch {
-  try {
-    mysql = require('mysql');
-  } catch {
-    //
-  }
-}
+let mysql: any;
+let is_mysql2 = false;
+
+const module_promise = import('mysql2')
+  .then((m) => {
+    mysql = m;
+    is_mysql2 = true;
+  })
+  .catch(() => {
+    // @ts-expect-error no type definitions
+    return import('mysql')
+      .then((m) => {
+        mysql = m;
+      })
+      .catch(() => {
+        //
+      });
+  });
 
 export interface AdapterSettingsMySQL {
   host?: string;
@@ -829,6 +834,12 @@ export class MySQLAdapter extends SQLAdapterBase {
    * @internal
    */
   public async connect(settings: AdapterSettingsMySQL) {
+    await module_promise;
+    if (!mysql) {
+      console.log('Install mysql module to use this adapter');
+      process.exit(1);
+    }
+
     // connect
     let client: any;
     this._database = settings.database;
@@ -1405,9 +1416,5 @@ export class MySQLAdapter extends SQLAdapterBase {
 }
 
 export function createAdapter(connection: Connection) {
-  if (!mysql) {
-    console.log('Install mysql module to use this adapter');
-    process.exit(1);
-  }
   return new MySQLAdapter(connection);
 }

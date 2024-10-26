@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
-import { UserRef, UserRefVO } from './query';
+import { UserRef, UserRefVO } from './query.js';
 
 async function _createUsers(User: typeof UserRef, data?: UserRefVO[]) {
   if (!data) {

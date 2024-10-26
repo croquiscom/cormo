@@ -1,22 +1,10 @@
-let sqlite3: any;
-
-try {
-  sqlite3 = require('sqlite3');
-} catch {
-  //
-}
-
-export interface AdapterSettingsSQLite3 {
-  database: string;
-}
-
 import stream from 'stream';
 import util from 'util';
 import _ from 'lodash';
-import { Connection } from '../connection';
-import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
-import { IsolationLevel, Transaction } from '../transaction';
-import * as types from '../types';
+import { Connection } from '../connection/index.js';
+import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model/index.js';
+import { IsolationLevel, Transaction } from '../transaction.js';
+import * as types from '../types.js';
 import {
   AdapterCountOptions,
   AdapterFindOptions,
@@ -25,8 +13,22 @@ import {
   SchemasTable,
   SchemasIndex,
   AdapterDeleteOptions,
-} from './base';
-import { SQLAdapterBase } from './sql_base';
+} from './base.js';
+import { SQLAdapterBase } from './sql_base.js';
+
+let sqlite3: any;
+
+const module_promise = import('sqlite3')
+  .then((m) => {
+    sqlite3 = m.default;
+  })
+  .catch(() => {
+    //
+  });
+
+export interface AdapterSettingsSQLite3 {
+  database: string;
+}
 
 function _typeToSQL(property: ColumnPropertyInternal) {
   if (property.array) {
@@ -608,6 +610,12 @@ export class SQLite3Adapter extends SQLAdapterBase {
    * @internal
    */
   public async connect(settings: AdapterSettingsSQLite3) {
+    await module_promise;
+    if (!sqlite3) {
+      console.log('Install sqlite3 module to use this adapter');
+      process.exit(1);
+    }
+
     try {
       this._settings = settings;
       this._client = await this._getClient();
@@ -928,9 +936,5 @@ export class SQLite3Adapter extends SQLAdapterBase {
 }
 
 export function createAdapter(connection: Connection) {
-  if (!sqlite3) {
-    console.log('Install sqlite3 module to use this adapter');
-    process.exit(1);
-  }
   return new SQLite3Adapter(connection);
 }

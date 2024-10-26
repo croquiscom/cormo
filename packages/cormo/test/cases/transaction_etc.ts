@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
 export default function (models: { connection: cormo.Connection | null }) {
   let User: typeof cormo.BaseModel;

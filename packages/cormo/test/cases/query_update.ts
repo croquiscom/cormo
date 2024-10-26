@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
-import { UserRef, UserRefVO } from './query';
+import { UserRef, UserRefVO } from './query.js';
 
 function _compareUser(user: UserRef, expected: UserRefVO) {
   expect(user).to.have.keys('id', 'name', 'age');

@@ -1,32 +1,9 @@
-let pg: any;
-let QueryStream: any;
-
-try {
-  pg = require('pg');
-} catch {
-  //
-}
-
-try {
-  QueryStream = require('pg-query-stream');
-} catch {
-  /**/
-}
-
-export interface AdapterSettingsPostgreSQL {
-  host?: string;
-  port?: number;
-  user?: string | Promise<string>;
-  password?: string | Promise<string>;
-  database: string;
-}
-
 import stream from 'stream';
 import _ from 'lodash';
-import { Connection } from '../connection';
-import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
-import { IsolationLevel, Transaction } from '../transaction';
-import * as types from '../types';
+import { Connection } from '../connection/index.js';
+import { ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model/index.js';
+import { IsolationLevel, Transaction } from '../transaction.js';
+import * as types from '../types.js';
 import {
   AdapterCountOptions,
   AdapterFindOptions,
@@ -35,8 +12,35 @@ import {
   SchemasTable,
   SchemasIndex,
   AdapterDeleteOptions,
-} from './base';
-import { SQLAdapterBase } from './sql_base';
+} from './base.js';
+import { SQLAdapterBase } from './sql_base.js';
+
+let pg: any;
+let QueryStream: any;
+
+// @ts-expect-error no type definitions
+const module_promise = import('pg')
+  .then((m) => {
+    pg = m.default;
+    return import('pg-query-stream')
+      .then((m2) => {
+        QueryStream = m2.default;
+      })
+      .catch(() => {
+        //
+      });
+  })
+  .catch(() => {
+    //
+  });
+
+export interface AdapterSettingsPostgreSQL {
+  host?: string;
+  port?: number;
+  user?: string | Promise<string>;
+  password?: string | Promise<string>;
+  database: string;
+}
 
 function _typeToSQL(property: ColumnPropertyInternal) {
   if (property.array) {
@@ -623,6 +627,12 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
    * @internal
    */
   public async connect(settings: AdapterSettingsPostgreSQL) {
+    await module_promise;
+    if (!pg) {
+      console.log('Install pg module to use this adapter');
+      process.exit(1);
+    }
+
     // connect
     const pool = new pg.Pool({
       database: settings.database,
@@ -1009,9 +1019,5 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
 }
 
 export function createAdapter(connection: Connection) {
-  if (!pg) {
-    console.log('Install pg module to use this adapter');
-    process.exit(1);
-  }
   return new PostgreSQLAdapter(connection);
 }

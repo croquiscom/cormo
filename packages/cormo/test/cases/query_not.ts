@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
-import { LedgerRef, UserRef, UserRefVO } from './query';
+import { LedgerRef, UserRef, UserRefVO } from './query.js';
 
 function _compareUser(user: UserRef, expected: UserRefVO) {
   if (expected.age != null) {

@@ -1,10 +1,10 @@
-import * as cormo from '..';
-import { UserExtraRef, UserRef } from './cases/transaction';
-import cases_bind from './cases/transaction_bind';
-import cases_block from './cases/transaction_block';
-import cases_etc from './cases/transaction_etc';
-import cases_full_control from './cases/transaction_full_control';
-import _g from './support/common';
+import * as cormo from '../lib/esm/index.js';
+import { UserExtraRef, UserRef } from './cases/transaction.js';
+import cases_bind from './cases/transaction_bind.js';
+import cases_block from './cases/transaction_block.js';
+import cases_etc from './cases/transaction_etc.js';
+import cases_full_control from './cases/transaction_full_control.js';
+import _g from './support/common.js';
 
 const _dbs = ['mysql', 'postgresql'];
 

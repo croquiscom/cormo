@@ -1,5 +1,5 @@
 import * as util from 'util';
-import * as cormo from '../../src';
+import * as cormo from '../../src/index.js';
 
 export const connection = new cormo.MySQLConnection({
   implicit_apply_schemas: true,
@@ -121,14 +121,12 @@ async function run() {
   await User.drop();
 }
 
-if (require.main === module) {
-  run()
-    .then(() => {
-      console.log('Done');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.log((error.cause || error).toString());
-      process.exit(0);
-    });
-}
+run()
+  .then(() => {
+    console.log('Done');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.log((error.cause || error).toString());
+    process.exit(0);
+  });

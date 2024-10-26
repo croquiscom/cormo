@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { ObjectId } from 'mongodb';
-import * as cormo from '../..';
-import _g from '../support/common';
+import * as cormo from '../../lib/esm/index.js';
+import _g from '../support/common.js';
 
 export default function (models: { connection: cormo.Connection<cormo.MongoDBAdapter> | null }) {
   describe('issues', () => {

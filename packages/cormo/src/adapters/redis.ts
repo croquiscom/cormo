@@ -1,33 +1,35 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-let redis: any;
-
-try {
-  redis = require('ioredis');
-} catch (error: any) {
-  //
-}
-
-export interface AdapterSettingsRedis {
-  host?: string;
-  port?: number;
-  database: string;
-}
-
 import stream from 'stream';
 import _ from 'lodash';
-import { Connection } from '../connection';
-import { ColumnPropertyInternal } from '../model';
-import { Transaction } from '../transaction';
-import * as types from '../types';
-import { tableize } from '../util/inflector';
+import { Connection } from '../connection/index.js';
+import { ColumnPropertyInternal } from '../model/index.js';
+import { Transaction } from '../transaction.js';
+import * as types from '../types.js';
+import { tableize } from '../util/inflector.js';
 import {
   AdapterBase,
   AdapterCountOptions,
   AdapterDeleteOptions,
   AdapterFindOptions,
   AdapterUpsertOptions,
-} from './base';
+} from './base.js';
+
+let redis: any;
+
+const module_promise = import('ioredis')
+  .then((m) => {
+    redis = m.default;
+  })
+  .catch(() => {
+    //
+  });
+
+export interface AdapterSettingsRedis {
+  host?: string;
+  port?: number;
+  database: string;
+}
 
 // Adapter for Redis
 // @namespace adapter
@@ -273,6 +275,12 @@ export class RedisAdapter extends AdapterBase {
    * @internal
    */
   public async connect(settings: AdapterSettingsRedis) {
+    await module_promise;
+    if (!redis) {
+      console.log('Install redis module to use this adapter');
+      process.exit(1);
+    }
+
     const methods = ['del', 'exists', 'hdel', 'hgetall', 'hmset', 'incr', 'keys', 'select'];
     this._client = redis.createClient(settings.port || 6379, settings.host || '127.0.0.1');
     return await this._client.select(settings.database || 0);
@@ -324,9 +332,5 @@ export class RedisAdapter extends AdapterBase {
 }
 
 export function createAdapter(connection: Connection) {
-  if (!redis) {
-    console.log('Install redis module to use this adapter');
-    process.exit(1);
-  }
   return new RedisAdapter(connection);
 }

@@ -15,16 +15,23 @@
   },
   "author": "Sangmin Yoon <sangmin.yoon@croquis.com>",
   "license": "MIT",
+  "type": "module",
+  "main": "./lib/cjs/index.js",
+  "types": "./lib/cjs/index.d.ts",
+  "exports": {
+    "import": "./lib/esm/index.js",
+    "require": "./lib/cjs/index.js"
+  },
   "bin": {
     "cormo": "./bin/cormo"
   },
   "scripts": {
     "prepublishOnly": "npm run lint && npm run build",
-    "build": "rimraf lib && tsc -p src/tsconfig.build.json",
+    "build": "rimraf lib && tsc -b src/tsconfig.build.cjs.json src/tsconfig.build.esm.json && echo '{\"type\":\"commonjs\"}' > lib/cjs/package.json",
     "doc": "../../node_modules/.bin/typedoc src",
     "lint": "../../node_modules/.bin/eslint .",
     "test:type": "tsc --noEmit",
-    "test:unit": "NODE_ENV=test TZ=Etc/UTC mocha --timeout 5000 --require ts-node/register/transpile-only --exit 'test/*.{js,ts}'",
+    "test:unit": "NODE_ENV=test TZ=Etc/UTC mocha -n import=tsx --timeout 5000 --exit 'test/*.{js,ts}'",
     "test": "npm run test:type && npm run lint && npm run test:unit --",
     "test:debug": "npm run test:unit -- --inspect-brk=30000"
   },
@@ -32,8 +39,6 @@
     "type": "git",
     "url": "https://github.com/croquiscom/cormo.git"
   },
-  "main": "./lib",
-  "types": "./lib/index.d.ts",
   "dependencies": {
     "chalk": "^5.3.0",
     "inflected": "^2.1.0",
@@ -61,7 +66,7 @@
     "rimraf": "^6.0.1",
     "sinon": "^19.0.2",
     "sqlite3": "^5.1.7",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.1",
     "typescript": "^5.6.3"
   }
 }

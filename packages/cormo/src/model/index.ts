@@ -1,19 +1,19 @@
 import { inspect } from 'util';
 import _ from 'lodash';
 
-import { AdapterBase } from '../adapters/base';
+import { AdapterBase } from '../adapters/base.js';
 import {
   Connection,
   AssociationBelongsToOptions,
   AssociationHasManyOptions,
   AssociationHasOneOptions,
-} from '../connection';
-import { QueryArray, QuerySingle, Query } from '../query';
-import { Transaction } from '../transaction';
-import * as types from '../types';
-import * as util from '../util';
-import { tableize } from '../util/inflector';
-import * as inflector from '../util/inflector';
+} from '../connection/index.js';
+import { QueryArray, QuerySingle, Query } from '../query.js';
+import { Transaction } from '../transaction.js';
+import * as types from '../types.js';
+import * as util from '../util/index.js';
+import { tableize } from '../util/inflector.js';
+import * as inflector from '../util/inflector.js';
 
 type ModelCallbackName = 'create' | 'destroy' | 'find' | 'initialize' | 'save' | 'update' | 'validate';
 type ModelCallbackType = 'after' | 'before';

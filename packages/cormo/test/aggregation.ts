@@ -1,6 +1,6 @@
-import * as cormo from '..';
-import cases, { Order as OrderRef } from './cases/aggregation';
-import _g from './support/common';
+import * as cormo from '../lib/esm/index.js';
+import cases, { Order as OrderRef } from './cases/aggregation.js';
+import _g from './support/common.js';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

@@ -1,10 +1,28 @@
+import stream from 'stream';
+import _ from 'lodash';
+import { Connection } from '../connection/index.js';
+import { BaseModel, ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model/index.js';
+import { Transaction } from '../transaction.js';
+import * as types from '../types.js';
+import {
+  AdapterBase,
+  AdapterCountOptions,
+  AdapterDeleteOptions,
+  AdapterFindOptions,
+  AdapterUpsertOptions,
+  Schemas,
+  SchemasIndex,
+} from './base.js';
+
 let mongodb: any;
 
-try {
-  mongodb = require('mongodb');
-} catch {
-  //
-}
+const module_promise = import('mongodb')
+  .then((m) => {
+    mongodb = m;
+  })
+  .catch(() => {
+    //
+  });
 
 export interface AdapterSettingsMongoDB {
   host?: string;
@@ -15,22 +33,6 @@ export interface AdapterSettingsMongoDB {
 }
 
 class CormoTypesObjectId {}
-
-import stream from 'stream';
-import _ from 'lodash';
-import { Connection } from '../connection';
-import { BaseModel, ColumnPropertyInternal, IndexProperty, ModelSchemaInternal } from '../model';
-import { Transaction } from '../transaction';
-import * as types from '../types';
-import {
-  AdapterBase,
-  AdapterCountOptions,
-  AdapterDeleteOptions,
-  AdapterFindOptions,
-  AdapterUpsertOptions,
-  Schemas,
-  SchemasIndex,
-} from './base';
 
 function _convertValueToObjectID(value: any, key: any) {
   if (value == null) {
@@ -803,6 +805,12 @@ export class MongoDBAdapter extends AdapterBase {
    * @internal
    */
   public async connect(settings: AdapterSettingsMongoDB) {
+    await module_promise;
+    if (!mongodb) {
+      console.log('Install mongodb module to use this adapter');
+      process.exit(1);
+    }
+
     let url;
     const host = settings.host || 'localhost';
     const port = settings.port || 27017;
@@ -1033,9 +1041,5 @@ export class MongoDBAdapter extends AdapterBase {
 }
 
 export function createAdapter(connection: Connection) {
-  if (!mongodb) {
-    console.log('Install mongodb module to use this adapter');
-    process.exit(1);
-  }
   return new MongoDBAdapter(connection);
 }

@@ -1,6 +1,6 @@
-import * as cormo from '..';
-import cases, { UserRef } from './cases/callbacks';
-import _g from './support/common';
+import * as cormo from '../lib/esm/index.js';
+import cases, { UserRef } from './cases/callbacks.js';
+import _g from './support/common.js';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

@@ -5,7 +5,7 @@ export default class CommandCheckSchemas {
   private modules_to_load: string[];
 
   constructor(argv: string[]) {
-    const args = yargs
+    const args = yargs()
       .option('r', {
         array: true,
         description: 'preload the given module',

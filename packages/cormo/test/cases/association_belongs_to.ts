@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { ComputerRef, PostRef, UserRef } from './association';
+import { ComputerRef, PostRef, UserRef } from './association.js';
 
 export default function (models: { Computer: typeof ComputerRef; Post: typeof PostRef; User: typeof UserRef }) {
   it('get associated object', async () => {

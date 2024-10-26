@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as cormo from '../..';
+import * as cormo from '../../lib/esm/index.js';
 
 export class User extends cormo.BaseModel {
   public name!: string | null;
