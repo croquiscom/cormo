@@ -16,15 +16,18 @@
   "author": "Sangmin Yoon <sangmin.yoon@croquis.com>",
   "license": "MIT",
   "type": "module",
+  "main": "./lib/cjs/index.js",
+  "types": "./lib/cjs/index.d.ts",
   "exports": {
-    "import": "./lib/esm/index.js"
+    "import": "./lib/esm/index.js",
+    "require": "./lib/cjs/index.js"
   },
   "bin": {
     "cormo": "./bin/cormo"
   },
   "scripts": {
     "prepublishOnly": "npm run lint && npm run build",
-    "build": "rimraf lib && tsc -b src/tsconfig.build.esm.json",
+    "build": "rimraf lib && tsc -b src/tsconfig.build.cjs.json src/tsconfig.build.esm.json && echo '{\"type\":\"commonjs\"}' > lib/cjs/package.json",
     "doc": "../../node_modules/.bin/typedoc src",
     "lint": "../../node_modules/.bin/eslint .",
     "test:type": "tsc --noEmit",
