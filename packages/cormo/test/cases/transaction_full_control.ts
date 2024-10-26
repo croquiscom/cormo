@@ -19,7 +19,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     } finally {
       try {
         await tx.rollback();
-      } catch (error: any) {
+      } catch {
         /**/
       }
     }
@@ -42,7 +42,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     } finally {
       try {
         await tx.rollback();
-      } catch (error: any) {
+      } catch {
         /**/
       }
     }
@@ -78,7 +78,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     } finally {
       try {
         await tx.rollback();
-      } catch (error: any) {
+      } catch {
         /**/
       }
     }
@@ -118,12 +118,12 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx1.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
         try {
           await tx2.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -153,12 +153,12 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx1.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
         try {
           await tx2.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -201,12 +201,12 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx1.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
         try {
           await tx2.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -224,7 +224,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -242,7 +242,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -263,7 +263,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -281,7 +281,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -301,7 +301,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -321,7 +321,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -339,7 +339,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -357,7 +357,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -377,7 +377,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -397,7 +397,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -415,7 +415,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -435,7 +435,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -453,7 +453,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -473,7 +473,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -491,7 +491,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -511,7 +511,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }
@@ -531,7 +531,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       } finally {
         try {
           await tx.rollback();
-        } catch (error: any) {
+        } catch {
           /**/
         }
       }

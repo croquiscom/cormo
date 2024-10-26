@@ -1,10 +1,8 @@
-/* eslint-disable indent */
-
 let mongodb: any;
 
 try {
   mongodb = require('mongodb');
-} catch (error: any) {
+} catch {
   //
 }
 
@@ -40,7 +38,7 @@ function _convertValueToObjectID(value: any, key: any) {
   }
   try {
     return new mongodb.ObjectID(value);
-  } catch (error: any) {
+  } catch {
     throw new Error(`'${key}' is not a valid id`);
   }
 }
@@ -591,7 +589,7 @@ export class MongoDBAdapter extends AdapterBase {
     const fields = this._buildSelect(options.select);
     try {
       id = _convertValueToObjectID(id, 'id');
-    } catch (error: any) {
+    } catch {
       throw new Error('not found');
     }
     const client_options: any = {};

@@ -48,7 +48,7 @@ export default function (models: {
         TxUser = _TxUser;
         throw new Error('force fail');
       });
-    } catch (error: any) {
+    } catch {
       //
     }
 

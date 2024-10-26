@@ -127,7 +127,7 @@ abstract class AdapterBase {
   public native_integrity = false;
 
   /** @internal */
-  public async connect(settings: {}) {
+  public async connect(settings: Record<string, any>) {
     return Promise.resolve();
   }
 
@@ -239,7 +239,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public getCreateForeignKeyQuery(model_name: string, column: string, type: string, references: {}): string | null {
+  public getCreateForeignKeyQuery(model_name: string, column: string, type: string, references: any): string | null {
     return null;
   }
 
@@ -248,7 +248,7 @@ abstract class AdapterBase {
    * @see Connection::applySchemas
    * @internal
    */
-  public async createForeignKey(model_name: string, column: string, type: string, references: {}, verbose = false) {
+  public async createForeignKey(model_name: string, column: string, type: string, references: any, verbose = false) {
     return Promise.resolve();
   }
 

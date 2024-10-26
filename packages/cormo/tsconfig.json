@@ -10,6 +10,7 @@
     "module": "CommonJS",
     "skipLibCheck": true,
     "experimentalDecorators": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowJs": true
   }
 }

@@ -40,12 +40,11 @@ const model_1 = require("../model");
 const transaction_1 = require("../transaction");
 const types = __importStar(require("../types"));
 const inflector = __importStar(require("../util/inflector"));
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
 try {
     redis = require('ioredis');
 }
-catch (error) {
+catch {
     /**/
 }
 /**
@@ -77,7 +76,6 @@ class Connection extends events_1.EventEmitter {
         this.models = {};
         this._pending_associations = [];
         if (typeof adapter === 'string') {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
             this._adapter = require(__dirname + '/../adapters/' + adapter).createAdapter(this);
         }
         else {
@@ -1123,7 +1121,7 @@ class Connection extends events_1.EventEmitter {
                     }
                 });
             }
-            catch (error) {
+            catch {
                 //
             }
         }
@@ -1204,7 +1202,7 @@ class Connection extends events_1.EventEmitter {
                     });
                 });
             }
-            catch (error) {
+            catch {
                 //
             }
         }
@@ -1231,7 +1229,7 @@ class Connection extends events_1.EventEmitter {
                     return records[column].push(sub_record);
                 });
             }
-            catch (error) {
+            catch {
                 //
             }
         }

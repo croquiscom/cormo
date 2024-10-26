@@ -534,7 +534,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       try {
         // try cache
         return await this._model._loadFromCache(this._options.cache.key, this._options.cache.refresh);
-      } catch (error: any) {
+      } catch {
         // no cache, execute query
         const records = await this._execAndInclude(options);
         // save result to cache
@@ -586,13 +586,12 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
     onfulfilled?:
       | ((value: T) => TResult1 | PromiseLike<TResult1>)
       | ((value: T[]) => TResult1 | PromiseLike<TResult1>)
-      | undefined
       | null,
-    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2>;
   public then<TResult1 = T, TResult2 = never>(
-    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
-    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
     return this.exec().then(onfulfilled, onrejected);
   }
@@ -687,7 +686,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       let record;
       try {
         record = await this._adapter.findById(this._name, this._id, find_options);
-      } catch (error: any) {
+      } catch {
         throw new Error('not found');
       }
       if (!record) {

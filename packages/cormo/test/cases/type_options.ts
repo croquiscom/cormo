@@ -16,7 +16,7 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
       let record;
       try {
         record = await TypeOptionsString1.create({ col: '0123456789' });
-      } catch (error: any) {
+      } catch {
         return;
       }
       // MySQL non-strict mode accepts long string
@@ -41,7 +41,7 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
       let record;
       try {
         record = await TypeOptionsString2.create({ col: '0123456789' });
-      } catch (error: any) {
+      } catch {
         return;
       }
       // MySQL non-strict mode accepts long string

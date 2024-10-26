@@ -1,5 +1,4 @@
 "use strict";
-/* eslint-disable indent */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -32,7 +31,7 @@ let mongodb;
 try {
     mongodb = require('mongodb');
 }
-catch (error) {
+catch {
     //
 }
 class CormoTypesObjectId {
@@ -48,7 +47,7 @@ function _convertValueToObjectID(value, key) {
     try {
         return new mongodb.ObjectID(value);
     }
-    catch (error) {
+    catch {
         throw new Error(`'${key}' is not a valid id`);
     }
 }
@@ -569,7 +568,7 @@ class MongoDBAdapter extends base_1.AdapterBase {
         try {
             id = _convertValueToObjectID(id, 'id');
         }
-        catch (error) {
+        catch {
             throw new Error('not found');
         }
         const client_options = {};

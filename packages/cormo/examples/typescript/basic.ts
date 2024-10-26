@@ -100,7 +100,7 @@ async function transaction() {
       console.log(await TxUser.count());
       throw new Error('abort');
     });
-  } catch (error: any) {
+  } catch {
     //
   }
   console.log('count after transaction =', await User.count());

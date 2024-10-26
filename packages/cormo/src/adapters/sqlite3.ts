@@ -1,10 +1,8 @@
-/* eslint-disable indent */
-
 let sqlite3: any;
 
 try {
   sqlite3 = require('sqlite3');
-} catch (error: any) {
+} catch {
   //
 }
 
@@ -265,7 +263,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
       if (options.transaction) {
         options.transaction.checkFinished();
         id = await new Promise((resolve, reject) => {
-          options.transaction!._adapter_connection.run(sql, values, function (this: any, error: any) {
+          options.transaction!._adapter_connection.run(sql, values, function (this: any, error?: Error) {
             if (error) {
               reject(error);
             } else {
@@ -275,7 +273,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
         });
       } else {
         id = await new Promise((resolve, reject) => {
-          this._client.run(sql, values, function (this: any, error: any) {
+          this._client.run(sql, values, function (this: any, error?: Error) {
             if (error) {
               reject(error);
             } else {
@@ -313,7 +311,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     let id: any;
     try {
       id = await new Promise((resolve, reject) => {
-        this._client.run(sql, values, function (this: any, error: any) {
+        this._client.run(sql, values, function (this: any, error?: Error) {
           if (error) {
             reject(error);
           } else {
@@ -370,7 +368,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
     try {
       return await new Promise<number>((resolve, reject) => {
-        this._client.run(sql, values, function (this: any, error: any) {
+        this._client.run(sql, values, function (this: any, error?: Error) {
           if (error) {
             reject(error);
           } else {
@@ -589,7 +587,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
     try {
       return await new Promise<number>((resolve, reject) => {
-        this._client.run(sql, params, function (this: any, error: any) {
+        this._client.run(sql, params, function (this: any, error?: Error) {
           if (error) {
             reject(error);
           } else {
@@ -677,7 +675,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
           return array.map((item: any) => (item ? String(item) : null));
         }
         return array;
-      } catch (error1: any) {
+      } catch {
         return null;
       }
     } else if (property.type_class === types.Date) {
@@ -702,7 +700,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   /** @internal */
   private async _getClient() {
     return await new Promise((resolve, reject) => {
-      const client = new sqlite3.Database(this._settings.database, (error: any) => {
+      const client = new sqlite3.Database(this._settings.database, (error?: Error) => {
         if (error) {
           reject(error);
           return;

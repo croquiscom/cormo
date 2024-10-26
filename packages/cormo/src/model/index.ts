@@ -826,7 +826,7 @@ class BaseModel {
               value[i] = this._validateType(column, property.type_class, value[i]);
             }
           }
-        } catch (error: any) {
+        } catch {
           // TODO: detail message like 'array of types'
           throw new Error(`'${column}' is not an array`);
         }
@@ -1338,7 +1338,7 @@ class BaseModel {
     });
     try {
       await Promise.all(promises);
-    } catch (error: any) {
+    } catch {
       //
     }
     return (this._prev_attributes = {});

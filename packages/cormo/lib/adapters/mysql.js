@@ -1,5 +1,4 @@
 "use strict";
-/* eslint-disable indent */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -39,11 +38,11 @@ try {
     mysql = require('mysql2');
     is_mysql2 = true;
 }
-catch (error1) {
+catch {
     try {
         mysql = require('mysql');
     }
-    catch (error2) {
+    catch {
         //
     }
 }
@@ -106,7 +105,7 @@ async function _tryCreateConnection(config, count = 0) {
         try {
             client.end();
         }
-        catch (e) {
+        catch {
             // ignore error
         }
         if (error.errorno === 'ETIMEDOUT') {
@@ -370,7 +369,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 try {
                     await connection.queryAsync(`DELETE FROM \`${table_name}\``);
                 }
-                catch (error) {
+                catch {
                     // try again with ignoring foreign key constraints
                     await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 0');
                     await connection.queryAsync(`DELETE FROM \`${table_name}\``);
@@ -950,7 +949,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 }
                 return array;
             }
-            catch (error) {
+            catch {
                 return null;
             }
         }
@@ -1260,7 +1259,7 @@ class MySQLAdapter extends sql_base_1.SQLAdapterBase {
                 this._version = { major: Number(match[1]), minor: Number(match[2]) };
             }
         }
-        catch (error) {
+        catch {
             // ignore
         }
     }

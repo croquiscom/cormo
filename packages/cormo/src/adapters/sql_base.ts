@@ -1,5 +1,3 @@
-/* eslint-disable indent */
-
 import _ from 'lodash';
 import { BaseModel, ColumnPropertyInternal, ModelSchemaInternal } from '../model';
 import * as types from '../types';

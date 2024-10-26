@@ -1,5 +1,3 @@
-/* eslint-disable indent */
-
 let mysql: any;
 let is_mysql2 = false;
 
@@ -25,10 +23,10 @@ import { SQLAdapterBase } from './sql_base';
 try {
   mysql = require('mysql2');
   is_mysql2 = true;
-} catch (error1: any) {
+} catch {
   try {
     mysql = require('mysql');
-  } catch (error2: any) {
+  } catch {
     //
   }
 }
@@ -123,7 +121,7 @@ async function _tryCreateConnection(config: any, count: number = 0): Promise<any
   } catch (error: any) {
     try {
       client.end();
-    } catch (e: any) {
+    } catch {
       // ignore error
     }
     if (error.errorno === 'ETIMEDOUT') {
@@ -418,7 +416,7 @@ export class MySQLAdapter extends SQLAdapterBase {
         try {
           try {
             await connection.queryAsync(`DELETE FROM \`${table_name}\``);
-          } catch (error: any) {
+          } catch {
             // try again with ignoring foreign key constraints
             await connection.queryAsync('SET FOREIGN_KEY_CHECKS = 0');
             await connection.queryAsync(`DELETE FROM \`${table_name}\``);
@@ -1042,7 +1040,7 @@ export class MySQLAdapter extends SQLAdapterBase {
           return array.map((item: any) => (item ? String(item) : null));
         }
         return array;
-      } catch (error: any) {
+      } catch {
         return null;
       }
     } else if (property.type_class === types.GeoPoint) {
@@ -1362,7 +1360,7 @@ export class MySQLAdapter extends SQLAdapterBase {
       if (match) {
         this._version = { major: Number(match[1]), minor: Number(match[2]) };
       }
-    } catch (error: any) {
+    } catch {
       // ignore
     }
   }

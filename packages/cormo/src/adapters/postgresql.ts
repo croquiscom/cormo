@@ -1,17 +1,15 @@
-/* eslint-disable indent */
-
 let pg: any;
 let QueryStream: any;
 
 try {
   pg = require('pg');
-} catch (error: any) {
+} catch {
   //
 }
 
 try {
   QueryStream = require('pg-query-stream');
-} catch (error: any) {
+} catch {
   /**/
 }
 

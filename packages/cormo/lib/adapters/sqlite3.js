@@ -1,5 +1,4 @@
 "use strict";
-/* eslint-disable indent */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -32,7 +31,7 @@ let sqlite3;
 try {
     sqlite3 = require('sqlite3');
 }
-catch (error) {
+catch {
     //
 }
 const stream_1 = __importDefault(require("stream"));
@@ -632,7 +631,7 @@ class SQLite3Adapter extends sql_base_1.SQLAdapterBase {
                 }
                 return array;
             }
-            catch (error1) {
+            catch {
                 return null;
             }
         }

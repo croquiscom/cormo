@@ -41,7 +41,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         tx = _tx;
         throw new Error('force fail');
       });
-    } catch (error: any) {
+    } catch {
       //
     }
 

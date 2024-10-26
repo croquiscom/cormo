@@ -540,7 +540,7 @@ class BaseModel {
                         }
                     }
                 }
-                catch (error) {
+                catch {
                     // TODO: detail message like 'array of types'
                     throw new Error(`'${column}' is not an array`);
                 }
@@ -1024,7 +1024,7 @@ class BaseModel {
         try {
             await Promise.all(promises);
         }
-        catch (error) {
+        catch {
             //
         }
         return (this._prev_attributes = {});

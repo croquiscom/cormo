@@ -19,12 +19,11 @@ import { IsolationLevel, Transaction } from '../transaction';
 import * as types from '../types';
 import * as inflector from '../util/inflector';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Toposort = require('toposort-class');
 
 try {
   redis = require('ioredis');
-} catch (error: any) {
+} catch {
   /**/
 }
 
@@ -203,7 +202,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
     this.models = {};
     this._pending_associations = [];
     if (typeof adapter === 'string') {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       this._adapter = require(__dirname + '/../adapters/' + adapter).createAdapter(this);
     } else {
       this._adapter = adapter(this);
@@ -1333,7 +1331,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
             }
           }
         });
-      } catch (error: any) {
+      } catch {
         //
       }
     } else {
@@ -1414,7 +1412,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
             }
           });
         });
-      } catch (error: any) {
+      } catch {
         //
       }
     } else {
@@ -1438,7 +1436,7 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
         sub_records.forEach((sub_record: any) => {
           return records[column].push(sub_record);
         });
-      } catch (error: any) {
+      } catch {
         //
       }
     }

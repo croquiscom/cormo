@@ -303,7 +303,7 @@ class Query {
                 // try cache
                 return await this._model._loadFromCache(this._options.cache.key, this._options.cache.refresh);
             }
-            catch (error) {
+            catch {
                 // no cache, execute query
                 const records = await this._execAndInclude(options);
                 // save result to cache
@@ -436,7 +436,7 @@ class Query {
             try {
                 record = await this._adapter.findById(this._name, this._id, find_options);
             }
-            catch (error) {
+            catch {
                 throw new Error('not found');
             }
             if (!record) {

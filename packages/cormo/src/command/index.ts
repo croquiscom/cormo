@@ -15,11 +15,10 @@ class Command {
       return;
     }
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const CommandClass = require(path.resolve(__dirname, command)).default;
       const runner = new CommandClass(argv.slice(3));
       return await runner.run();
-    } catch (error: any) {
+    } catch {
       console.log(`Cannot find a CORMO command ${command}`);
     }
   }

@@ -22,7 +22,6 @@ export default class CommandCheckSchemas {
     let has_changes = false;
     for (const module_to_load of this.modules_to_load) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const loaded = require(path.resolve(process.cwd(), module_to_load));
         for (const obj in loaded) {
           if (typeof loaded[obj].getSchemaChanges === 'function') {
