@@ -13,4 +13,4 @@ const _g = {
   db_configs,
 };
 
-export = _g;
+export default _g;

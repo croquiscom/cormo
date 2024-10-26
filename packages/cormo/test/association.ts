@@ -7,7 +7,7 @@ import cases_has_many from './cases/association_has_many';
 import cases_has_one from './cases/association_has_one';
 import cases_include from './cases/association_include';
 import cases_include_lean from './cases/association_include_lean';
-import _g = require('./support/common');
+import _g from './support/common';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

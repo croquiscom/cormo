@@ -1,5 +1,5 @@
 import cases from './cases/nested';
-import _g = require('./support/common');
+import _g from './support/common';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

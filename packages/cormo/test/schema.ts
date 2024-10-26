@@ -1,6 +1,6 @@
 import cases from './cases/schema';
 import cases_description from './cases/schema_description';
-import _g = require('./support/common');
+import _g from './support/common';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

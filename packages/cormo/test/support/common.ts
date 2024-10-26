@@ -88,4 +88,4 @@ if (process.env.DIRTY_TRACKING) {
 
 console.log(`Run test with dirty_tracking=${_g.BaseModel.dirty_tracking}`);
 
-export = _g;
+export default _g;

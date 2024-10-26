@@ -4,7 +4,7 @@ import cases_bind from './cases/transaction_bind';
 import cases_block from './cases/transaction_block';
 import cases_etc from './cases/transaction_etc';
 import cases_full_control from './cases/transaction_full_control';
-import _g = require('./support/common');
+import _g from './support/common';
 
 const _dbs = ['mysql', 'postgresql'];
 

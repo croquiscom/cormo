@@ -1,6 +1,6 @@
 /* global describe, before, beforeEach, after */
 
-const _g = require('./support/common');
+const _g = require('./support/common').default;
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 _dbs.forEach(function (db) {

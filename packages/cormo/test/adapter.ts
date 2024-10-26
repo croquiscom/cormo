@@ -1,5 +1,5 @@
 import * as cormo from '..';
-import _g = require('./support/common');
+import _g from './support/common';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'postgresql'];
 

@@ -3,7 +3,7 @@ import cases, { Type as TypeRef } from './cases/type';
 import cases_compare from './cases/type_compare';
 import cases_options from './cases/type_options';
 import cases_update from './cases/type_update';
-import _g = require('./support/common');
+import _g from './support/common';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

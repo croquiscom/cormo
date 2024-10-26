@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import * as cormo from '../..';
-import _g = require('../support/common');
+import _g from '../support/common';
 
 export default function (models: { connection: cormo.Connection<cormo.PostgreSQLAdapter> | null }) {
   describe('issues', () => {

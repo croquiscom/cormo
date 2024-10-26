@@ -1,6 +1,6 @@
 import * as cormo from '..';
 import cases, { UserRef } from './cases/callbacks';
-import _g = require('./support/common');
+import _g from './support/common';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

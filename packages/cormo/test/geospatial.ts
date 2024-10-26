@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as cormo from '..';
 import cases, { PlaceRef } from './cases/geospatial';
-import _g = require('./support/common');
+import _g from './support/common';
 
 const _dbs = ['mysql', 'mongodb', 'postgresql'];
 

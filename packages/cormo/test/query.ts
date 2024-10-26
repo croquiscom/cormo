@@ -7,7 +7,7 @@ import cases_op from './cases/query_op';
 import cases_stream from './cases/query_stream';
 import cases_update from './cases/query_update';
 import cases_upsert from './cases/query_upsert';
-import _g = require('./support/common');
+import _g from './support/common';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 

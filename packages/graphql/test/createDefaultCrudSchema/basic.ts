@@ -2,8 +2,7 @@ import { expect } from 'chai';
 import * as cormo from 'cormo';
 import { graphql, GraphQLSchema, printSchema } from 'graphql';
 import { Column, createDefaultCrudSchema, Model } from '../..';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-import _g = require('../common');
+import _g from '../common';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class UserRef extends cormo.BaseModel {

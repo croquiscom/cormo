@@ -1,6 +1,6 @@
 import * as cormo from '..';
 import cases, { ComputerRef, PostRef, UserRef } from './cases/join';
-import _g = require('./support/common');
+import _g from './support/common';
 
 const _dbs = ['mysql', 'sqlite3', 'sqlite3_memory', 'postgresql'];
 
