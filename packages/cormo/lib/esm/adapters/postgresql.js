@@ -430,6 +430,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
             callback();
         };
         this._pool.connect().then((client) => {
+            this._connection._logger.logQuery(sql, params);
             client
                 .query(new QueryStream(sql, params))
                 .on('end', () => {
@@ -624,10 +625,12 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
             await this._connection._promise_connection;
         }
         if (transaction && transaction._adapter_connection) {
+            this._connection._logger.logQuery(text, values);
             transaction.checkFinished();
             return await transaction._adapter_connection.query(text, values);
         }
         else {
+            this._connection._logger.logQuery(text, values);
             return await this._pool.query(text, values);
         }
     }
