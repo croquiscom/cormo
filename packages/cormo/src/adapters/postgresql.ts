@@ -59,6 +59,10 @@ function _typeToSQL(property: ColumnPropertyInternal) {
       return 'BIGINT';
     case types.GeoPoint:
       return 'GEOMETRY(POINT)';
+    case types.Vector:
+      return (property.type as types.CormoTypesVector).dimension
+        ? `VECTOR(${(property.type as types.CormoTypesVector).dimension})`
+        : 'VECTOR';
     case types.Date:
       return 'TIMESTAMP WITHOUT TIME ZONE';
     case types.Object:
@@ -719,6 +723,8 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
         return value.map((item: any) => (item ? String(item) : null));
       }
       return String(value);
+    } else if (property.type_class === types.Vector) {
+      return JSON.parse(value);
     }
     return value;
   }
@@ -797,15 +803,17 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
                       column.udt_schema === 'public' &&
                       column.udt_name === 'geometry'
                     ? new types.GeoPoint()
-                    : column.data_type === 'timestamp without time zone'
-                      ? new types.Date()
-                      : column.data_type === 'json'
-                        ? new types.Object()
-                        : column.data_type === 'text'
-                          ? new types.Text()
-                          : column.data_type === 'bytea'
-                            ? new types.Blob()
-                            : undefined;
+                    : column.data_type === 'vector'
+                      ? new types.Vector()
+                      : column.data_type === 'timestamp without time zone'
+                        ? new types.Date()
+                        : column.data_type === 'json'
+                          ? new types.Object()
+                          : column.data_type === 'text'
+                            ? new types.Text()
+                            : column.data_type === 'bytea'
+                              ? new types.Blob()
+                              : undefined;
       let adapter_type_string = column.data_type.toUpperCase();
       if (column.data_type === 'character varying') {
         adapter_type_string += `(${column.character_maximum_length || 255})`;
@@ -874,6 +882,14 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
         places.push(`ST_Point($${values.length - 1}, $${values.length})`);
       } else {
         fields.push(`"${dbname}"=ST_Point($${values.length - 1}, $${values.length})`);
+      }
+    } else if (property.type_class === types.Vector) {
+      values.push(JSON.stringify(value));
+      if (insert) {
+        fields.push(`"${dbname}"`);
+        places.push(`$${values.length}`);
+      } else {
+        fields.push(`"${dbname}"=$${values.length}`);
       }
     } else if (value && value.$inc != null) {
       values.push(value.$inc);

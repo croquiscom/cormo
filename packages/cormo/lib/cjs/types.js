@@ -5,7 +5,7 @@
  * @namespace cormo
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Blob = exports.Text = exports.RecordID = exports.Object = exports.Date = exports.GeoPoint = exports.BigInteger = exports.Integer = exports.Boolean = exports.Number = exports.String = void 0;
+exports.Blob = exports.Text = exports.RecordID = exports.Object = exports.Date = exports.Vector = exports.GeoPoint = exports.BigInteger = exports.Integer = exports.Boolean = exports.Number = exports.String = void 0;
 exports._toCORMOType = _toCORMOType;
 const CormoTypesString = function (length) {
     if (!(this instanceof CormoTypesString)) {
@@ -50,6 +50,14 @@ const CormoTypesGeoPoint = function () {
     this.toString = () => 'geopoint';
 };
 exports.GeoPoint = CormoTypesGeoPoint;
+const CormoTypesVector = function (dimension) {
+    if (!(this instanceof CormoTypesVector)) {
+        return new CormoTypesVector(dimension);
+    }
+    this.dimension = dimension;
+    this.toString = () => (this.dimension ? `vector(${this.dimension})` : 'vector');
+};
+exports.Vector = CormoTypesVector;
 const CormoTypesDate = function () {
     if (!(this instanceof CormoTypesDate)) {
         return new CormoTypesDate();
@@ -108,6 +116,8 @@ function _toCORMOType(type) {
                 return new CormoTypesBigInteger();
             case 'geopoint':
                 return new CormoTypesGeoPoint();
+            case 'vector':
+                return new CormoTypesVector();
             case 'date':
                 return new CormoTypesDate();
             case 'object':
