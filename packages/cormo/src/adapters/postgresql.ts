@@ -884,7 +884,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
         fields.push(`"${dbname}"=ST_Point($${values.length - 1}, $${values.length})`);
       }
     } else if (property.type_class === types.Vector) {
-      values.push(JSON.stringify(value));
+      values.push(value != null ? JSON.stringify(value) : null);
       if (insert) {
         fields.push(`"${dbname}"`);
         places.push(`$${values.length}`);
@@ -1046,7 +1046,7 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
           op = '<%>';
         }
         if (op) {
-          params.push(JSON.stringify(value));
+          params.push(value != null ? JSON.stringify(value) : null);
           sql += ` ORDER BY _Base."${column}" ${op} $${params.length}`;
         }
       }

@@ -14,6 +14,13 @@ export default function (models: { Document: typeof DocumentRef; connection: cor
     expect(found).to.have.deep.property('embedding', [1, 2, 3]);
   });
 
+  it('null value', async function () {
+    const record = await models.Document.create({ name: 'doc1', embedding: undefined });
+    expect(record).to.have.deep.property('embedding', null);
+    const found = await models.Document.find(record.id);
+    expect(found).to.have.deep.property('embedding', null);
+  });
+
   it('update', async function () {
     const record = await models.Document.create({ name: 'doc1', embedding: [1, 2, 3] });
     await models.Document.find(record.id).update({ embedding: [4, 5, 6] });
