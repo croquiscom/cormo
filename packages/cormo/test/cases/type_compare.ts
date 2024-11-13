@@ -84,38 +84,58 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
   });
 
   it('compare string', async () => {
+    // string comparison is a little different between DBMSs
     const data = [{ string: '1' }, { string: 'a' }, { string: 'A' }, { string: 'K' }];
     await models.Type.createBulk(data);
     let records = await models.Type.where({ string: 'a' });
-    // some adapters(currently, MySQL) may do case insensitive comparison.
-    // skip test for now
-    if (records.length === 2) {
-      return;
-    }
-    expect(records).to.have.length(1);
-    expect(records[0].string).to.equal('a');
-    records = await models.Type.where({ string: { $lt: 'D' } });
-    expect(records).to.have.length(2);
     records.sort((a, b) => (a.string! < b.string! ? -1 : 1));
-    expect(records[0].string).to.equal('1');
-    expect(records[1].string).to.equal('A');
+    if (records.length === 2) {
+      expect(records).to.have.length(2);
+      expect(records[0].string).to.equal('A');
+      expect(records[1].string).to.equal('a');
+    } else {
+      expect(records).to.have.length(1);
+      expect(records[0].string).to.equal('a');
+    }
+    records = await models.Type.where({ string: { $lt: 'D' } });
+    records.sort((a, b) => (a.string! < b.string! ? -1 : 1));
+    if (records.length === 3) {
+      expect(records).to.have.length(3);
+      expect(records[0].string).to.equal('1');
+      expect(records[1].string).to.equal('A');
+      expect(records[2].string).to.equal('a');
+    } else {
+      expect(records).to.have.length(2);
+      expect(records[0].string).to.equal('1');
+      expect(records[1].string).to.equal('A');
+    }
   });
 
   it('compare text', async () => {
+    // string comparison is a little different between DBMSs
     const data = [{ text: '1' }, { text: 'a' }, { text: 'A' }, { text: 'K' }];
     await models.Type.createBulk(data);
     let records = await models.Type.where({ text: 'a' });
-    // some adapters(currently, MySQL) may do case insensitive comparison.
-    // skip test for now
-    if (records.length === 2) {
-      return;
-    }
-    expect(records).to.have.length(1);
-    expect(records[0].text).to.equal('a');
-    records = await models.Type.where({ text: { $lt: 'D' } });
-    expect(records).to.have.length(2);
     records.sort((a, b) => (a.text! < b.text! ? -1 : 1));
-    expect(records[0].text).to.equal('1');
-    expect(records[1].text).to.equal('A');
+    if (records.length === 2) {
+      expect(records).to.have.length(2);
+      expect(records[0].text).to.equal('A');
+      expect(records[1].text).to.equal('a');
+    } else {
+      expect(records).to.have.length(1);
+      expect(records[0].text).to.equal('a');
+    }
+    records = await models.Type.where({ text: { $lt: 'D' } });
+    records.sort((a, b) => (a.text! < b.text! ? -1 : 1));
+    if (records.length === 3) {
+      expect(records).to.have.length(3);
+      expect(records[0].text).to.equal('1');
+      expect(records[1].text).to.equal('A');
+      expect(records[2].text).to.equal('a');
+    } else {
+      expect(records).to.have.length(2);
+      expect(records[0].text).to.equal('1');
+      expect(records[1].text).to.equal('A');
+    }
   });
 }

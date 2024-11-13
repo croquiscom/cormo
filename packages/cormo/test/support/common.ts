@@ -1,5 +1,3 @@
-import path from 'path';
-import url from 'url';
 import * as cormo from '../../lib/esm/index.js';
 
 const db_configs: { [db: string]: any } = {
