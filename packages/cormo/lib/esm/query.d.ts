@@ -1,10 +1,12 @@
 import stream from 'stream';
+import { VectorOrderOption } from './adapters/base.js';
 import { BaseModel, ModelColumnNamesWithId } from './model/index.js';
 import { Transaction } from './transaction.js';
 import { RecordID } from './types.js';
 interface QueryOptions {
     lean: boolean;
     orders?: string;
+    vector_order?: VectorOrderOption;
     near?: any;
     select_columns?: string[];
     select_single: boolean;
@@ -43,6 +45,7 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
     select<K extends ModelColumnNamesWithId<M>>(columns?: string): QuerySingle<M, Pick<M, K>>;
     selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QuerySingle<M, M[K]>;
     order(orders?: string): QuerySingle<M, T>;
+    vector_order(order: VectorOrderOption): QuerySingle<M, T>;
     group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): QuerySingle<M, {
         [field in keyof F]: number;
     } & Pick<M, G>>;
@@ -95,6 +98,7 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
     select<K extends ModelColumnNamesWithId<M>>(columns?: string): QuerySingleNull<M, Pick<M, K>>;
     selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QuerySingleNull<M, M[K]>;
     order(orders?: string): QuerySingleNull<M, T>;
+    vector_order(order: VectorOrderOption): QuerySingleNull<M, T>;
     group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): QuerySingleNull<M, {
         [field in keyof F]: number;
     } & Pick<M, G>>;
@@ -147,6 +151,7 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
     select<K extends ModelColumnNamesWithId<M>>(columns?: string): QueryArray<M, Pick<M, K>>;
     selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QueryArray<M, M[K]>;
     order(orders?: string): QueryArray<M, T>;
+    vector_order(order: VectorOrderOption): QueryArray<M, T>;
     group<G extends ModelColumnNamesWithId<M>, F>(group_by: G | G[], fields?: F): QueryArray<M, {
         [field in keyof F]: number;
     } & Pick<M, G>>;
@@ -238,6 +243,7 @@ declare class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, Qu
      * Specifies orders of result
      */
     order(orders?: string): this;
+    vector_order(order: VectorOrderOption): this;
     /**
      * Groups result records
      */

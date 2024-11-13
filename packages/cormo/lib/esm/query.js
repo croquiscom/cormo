@@ -125,6 +125,13 @@ class Query {
         this._options.orders = orders;
         return this;
     }
+    vector_order(order) {
+        if (!this._current_if) {
+            return this;
+        }
+        this._options.vector_order = order;
+        return this;
+    }
     group(group_by, fields) {
         if (!this._current_if) {
             return this;
@@ -589,6 +596,7 @@ class Query {
             node: this._options.node,
             index_hint: this._options.index_hint,
             orders,
+            vector_order: this._options.vector_order,
             skip: this._options.skip,
             transaction: this._options.transaction,
             distinct: this._options.distinct,

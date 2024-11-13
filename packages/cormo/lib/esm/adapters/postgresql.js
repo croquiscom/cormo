@@ -927,6 +927,39 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
             }
             sql += ' ORDER BY ' + orders.join(',');
         }
+        else if (options.vector_order &&
+            typeof options.vector_order === 'object' &&
+            Object.keys(options.vector_order).length === 1) {
+            const column = Object.keys(options.vector_order)[0];
+            const cond = options.vector_order[column];
+            if (cond && typeof cond === 'object' && Object.keys(cond).length === 1) {
+                const key = Object.keys(cond)[0];
+                const value = Object.values(cond)[0];
+                let op = '';
+                if (key === '$l2_distance') {
+                    op = '<->';
+                }
+                else if (key === '$l1_distance') {
+                    op = '<+>';
+                }
+                else if (key === '$cosine_distance') {
+                    op = '<=>';
+                }
+                else if (key === '$negative_inner_product') {
+                    op = '<#>';
+                }
+                else if (key === '$hamming_distance') {
+                    op = '<~>';
+                }
+                else if (key === '$jaccard_distance') {
+                    op = '<%>';
+                }
+                if (op) {
+                    params.push(JSON.stringify(value));
+                    sql += ` ORDER BY _Base."${column}" ${op} $${params.length}`;
+                }
+            }
+        }
         if (options.limit) {
             sql += ' LIMIT ' + options.limit;
             if (options.skip) {
