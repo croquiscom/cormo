@@ -85,6 +85,22 @@ export interface CormoTypesGeoPointConstructor {
 }
 declare const CormoTypesGeoPoint: CormoTypesGeoPointConstructor;
 /**
+ * Represents a vector, used in model schemas.
+ *
+ * This type is supported only in PostgreSQL with pgvector
+ * @namespace types
+ * @class Vector
+ */
+export interface CormoTypesVector {
+    _type: 'vector';
+    dimension?: number;
+}
+export interface CormoTypesVectorConstructor {
+    new (dimension?: number): CormoTypesVector;
+    (dimension?: number): CormoTypesVector;
+}
+declare const CormoTypesVector: CormoTypesVectorConstructor;
+/**
  * Represents a date, used in model schemas.
  * @namespace types
  * @class Date
@@ -152,17 +168,17 @@ export interface CormoTypesBlobConstructor {
     (): CormoTypesBlob;
 }
 declare const CormoTypesBlob: CormoTypesBlobConstructor;
-export type ColumnTypeInternal = CormoTypesString | CormoTypesNumber | CormoTypesBoolean | CormoTypesDate | CormoTypesObject | CormoTypesInteger | CormoTypesBigInteger | CormoTypesGeoPoint | CormoTypesRecordID | CormoTypesText | CormoTypesBlob;
-export type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor | CormoTypesBooleanConstructor | CormoTypesDateConstructor | CormoTypesObjectConstructor | CormoTypesIntegerConstructor | CormoTypesBigIntegerConstructor | CormoTypesGeoPointConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor | CormoTypesBlobConstructor;
+export type ColumnTypeInternal = CormoTypesString | CormoTypesNumber | CormoTypesBoolean | CormoTypesDate | CormoTypesObject | CormoTypesInteger | CormoTypesBigInteger | CormoTypesGeoPoint | CormoTypesVector | CormoTypesRecordID | CormoTypesText | CormoTypesBlob;
+export type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor | CormoTypesBooleanConstructor | CormoTypesDateConstructor | CormoTypesObjectConstructor | CormoTypesIntegerConstructor | CormoTypesBigIntegerConstructor | CormoTypesGeoPointConstructor | CormoTypesVectorConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor | CormoTypesBlobConstructor;
 type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor | BooleanConstructor | DateConstructor | ObjectConstructor;
-type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'biginteger' | 'geopoint' | 'recordid' | 'text' | 'blob';
+type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'biginteger' | 'geopoint' | 'vector' | 'recordid' | 'text' | 'blob';
 export type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor | ColumnTypeNativeConstructor | ColumnTypeString;
 /**
  * Converts JavaScript built-in class to CORMO type
  * @private
  */
 declare function _toCORMOType(type: ColumnType): ColumnTypeInternal;
-export { CormoTypesString as String, CormoTypesNumber as Number, CormoTypesBoolean as Boolean, CormoTypesInteger as Integer, CormoTypesBigInteger as BigInteger, CormoTypesGeoPoint as GeoPoint, CormoTypesDate as Date, CormoTypesObject as Object, CormoTypesRecordID as RecordID, CormoTypesText as Text, CormoTypesBlob as Blob, _toCORMOType, };
+export { CormoTypesString as String, CormoTypesNumber as Number, CormoTypesBoolean as Boolean, CormoTypesInteger as Integer, CormoTypesBigInteger as BigInteger, CormoTypesGeoPoint as GeoPoint, CormoTypesVector as Vector, CormoTypesDate as Date, CormoTypesObject as Object, CormoTypesRecordID as RecordID, CormoTypesText as Text, CormoTypesBlob as Blob, _toCORMOType, };
 /**
  * A pseudo type represents a record's unique identifier.
  *

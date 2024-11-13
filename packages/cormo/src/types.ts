@@ -135,6 +135,31 @@ const CormoTypesGeoPoint: CormoTypesGeoPointConstructor = function (this: CormoT
 } as CormoTypesGeoPointConstructor;
 
 /**
+ * Represents a vector, used in model schemas.
+ *
+ * This type is supported only in PostgreSQL with pgvector
+ * @namespace types
+ * @class Vector
+ */
+export interface CormoTypesVector {
+  _type: 'vector';
+  dimension?: number;
+}
+
+export interface CormoTypesVectorConstructor {
+  new (dimension?: number): CormoTypesVector;
+  (dimension?: number): CormoTypesVector;
+}
+
+const CormoTypesVector: CormoTypesVectorConstructor = function (this: CormoTypesVector, dimension?: number): void {
+  if (!(this instanceof CormoTypesVector)) {
+    return new (CormoTypesVector as any)(dimension);
+  }
+  this.dimension = dimension;
+  this.toString = () => (this.dimension ? `vector(${this.dimension})` : 'vector');
+} as CormoTypesVectorConstructor;
+
+/**
  * Represents a date, used in model schemas.
  * @namespace types
  * @class Date
@@ -251,6 +276,7 @@ export type ColumnTypeInternal =
   | CormoTypesInteger
   | CormoTypesBigInteger
   | CormoTypesGeoPoint
+  | CormoTypesVector
   | CormoTypesRecordID
   | CormoTypesText
   | CormoTypesBlob;
@@ -264,6 +290,7 @@ export type ColumnTypeInternalConstructor =
   | CormoTypesIntegerConstructor
   | CormoTypesBigIntegerConstructor
   | CormoTypesGeoPointConstructor
+  | CormoTypesVectorConstructor
   | CormoTypesRecordIDConstructor
   | CormoTypesTextConstructor
   | CormoTypesBlobConstructor;
@@ -284,6 +311,7 @@ type ColumnTypeString =
   | 'integer'
   | 'biginteger'
   | 'geopoint'
+  | 'vector'
   | 'recordid'
   | 'text'
   | 'blob';
@@ -317,6 +345,8 @@ function _toCORMOType(type: ColumnType): ColumnTypeInternal {
         return new CormoTypesBigInteger();
       case 'geopoint':
         return new CormoTypesGeoPoint();
+      case 'vector':
+        return new CormoTypesVector();
       case 'date':
         return new CormoTypesDate();
       case 'object':
@@ -353,6 +383,7 @@ export {
   CormoTypesInteger as Integer,
   CormoTypesBigInteger as BigInteger,
   CormoTypesGeoPoint as GeoPoint,
+  CormoTypesVector as Vector,
   CormoTypesDate as Date,
   CormoTypesObject as Object,
   CormoTypesRecordID as RecordID,

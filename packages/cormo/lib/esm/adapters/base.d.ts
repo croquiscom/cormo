@@ -27,9 +27,11 @@ export interface Schemas {
         [table_name: string]: any;
     };
 }
+export type VectorOrderOption = Record<string, Record<string, number[] | undefined> | undefined>;
 export interface AdapterFindOptions {
     lean: boolean;
     orders: any[];
+    vector_order?: VectorOrderOption;
     near?: any;
     select?: string[];
     select_raw?: string[];

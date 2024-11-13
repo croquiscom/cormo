@@ -40,6 +40,13 @@ const CormoTypesGeoPoint = function () {
     }
     this.toString = () => 'geopoint';
 };
+const CormoTypesVector = function (dimension) {
+    if (!(this instanceof CormoTypesVector)) {
+        return new CormoTypesVector(dimension);
+    }
+    this.dimension = dimension;
+    this.toString = () => (this.dimension ? `vector(${this.dimension})` : 'vector');
+};
 const CormoTypesDate = function () {
     if (!(this instanceof CormoTypesDate)) {
         return new CormoTypesDate();
@@ -93,6 +100,8 @@ function _toCORMOType(type) {
                 return new CormoTypesBigInteger();
             case 'geopoint':
                 return new CormoTypesGeoPoint();
+            case 'vector':
+                return new CormoTypesVector();
             case 'date':
                 return new CormoTypesDate();
             case 'object':
@@ -126,4 +135,4 @@ function _toCORMOType(type) {
     }
     return type;
 }
-export { CormoTypesString as String, CormoTypesNumber as Number, CormoTypesBoolean as Boolean, CormoTypesInteger as Integer, CormoTypesBigInteger as BigInteger, CormoTypesGeoPoint as GeoPoint, CormoTypesDate as Date, CormoTypesObject as Object, CormoTypesRecordID as RecordID, CormoTypesText as Text, CormoTypesBlob as Blob, _toCORMOType, };
+export { CormoTypesString as String, CormoTypesNumber as Number, CormoTypesBoolean as Boolean, CormoTypesInteger as Integer, CormoTypesBigInteger as BigInteger, CormoTypesGeoPoint as GeoPoint, CormoTypesVector as Vector, CormoTypesDate as Date, CormoTypesObject as Object, CormoTypesRecordID as RecordID, CormoTypesText as Text, CormoTypesBlob as Blob, _toCORMOType, };

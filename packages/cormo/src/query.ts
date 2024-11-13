@@ -1,7 +1,7 @@
 import stream from 'stream';
 import _ from 'lodash';
 
-import { AdapterBase, AdapterDeleteOptions, AdapterFindOptions } from './adapters/base.js';
+import { AdapterBase, AdapterDeleteOptions, AdapterFindOptions, VectorOrderOption } from './adapters/base.js';
 import { Connection } from './connection/index.js';
 import { BaseModel, ModelColumnNamesWithId } from './model/index.js';
 import { Transaction } from './transaction.js';
@@ -10,6 +10,7 @@ import { RecordID } from './types.js';
 interface QueryOptions {
   lean: boolean;
   orders?: string;
+  vector_order?: VectorOrderOption;
   near?: any;
   select_columns?: string[];
   select_single: boolean;
@@ -49,6 +50,7 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): QuerySingle<M, Pick<M, K>>;
   selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QuerySingle<M, M[K]>;
   order(orders?: string): QuerySingle<M, T>;
+  vector_order(order: VectorOrderOption): QuerySingle<M, T>;
   group<G extends ModelColumnNamesWithId<M>, F>(
     group_by: G | G[],
     fields?: F,
@@ -96,6 +98,7 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): QuerySingleNull<M, Pick<M, K>>;
   selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QuerySingleNull<M, M[K]>;
   order(orders?: string): QuerySingleNull<M, T>;
+  vector_order(order: VectorOrderOption): QuerySingleNull<M, T>;
   group<G extends ModelColumnNamesWithId<M>, F>(
     group_by: G | G[],
     fields?: F,
@@ -143,6 +146,7 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
   select<K extends ModelColumnNamesWithId<M>>(columns?: string): QueryArray<M, Pick<M, K>>;
   selectSingle<K extends ModelColumnNamesWithId<M>>(column: K): QueryArray<M, M[K]>;
   order(orders?: string): QueryArray<M, T>;
+  vector_order(order: VectorOrderOption): QueryArray<M, T>;
   group<G extends ModelColumnNamesWithId<M>, F>(
     group_by: G | G[],
     fields?: F,
@@ -334,6 +338,14 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       return this;
     }
     this._options.orders = orders;
+    return this;
+  }
+
+  public vector_order(order: VectorOrderOption): this {
+    if (!this._current_if) {
+      return this;
+    }
+    this._options.vector_order = order;
     return this;
   }
 
@@ -846,6 +858,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       node: this._options.node,
       index_hint: this._options.index_hint,
       orders,
+      vector_order: this._options.vector_order,
       skip: this._options.skip,
       transaction: this._options.transaction,
       distinct: this._options.distinct,

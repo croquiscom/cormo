@@ -65,6 +65,10 @@ function _typeToSQL(property) {
             return 'BIGINT';
         case types.GeoPoint:
             return 'GEOMETRY(POINT)';
+        case types.Vector:
+            return property.type.dimension
+                ? `VECTOR(${property.type.dimension})`
+                : 'VECTOR';
         case types.Date:
             return 'TIMESTAMP WITHOUT TIME ZONE';
         case types.Object:
@@ -454,6 +458,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
             callback();
         };
         this._pool.connect().then((client) => {
+            this._connection._logger.logQuery(sql, params);
             client
                 .query(new QueryStream(sql, params))
                 .on('end', () => {
@@ -648,10 +653,12 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
             await this._connection._promise_connection;
         }
         if (transaction && transaction._adapter_connection) {
+            this._connection._logger.logQuery(text, values);
             transaction.checkFinished();
             return await transaction._adapter_connection.query(text, values);
         }
         else {
+            this._connection._logger.logQuery(text, values);
             return await this._pool.query(text, values);
         }
     }
@@ -669,6 +676,9 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
                 return value.map((item) => (item ? String(item) : null));
             }
             return String(value);
+        }
+        else if (property.type_class === types.Vector) {
+            return JSON.parse(value);
         }
         return value;
     }
@@ -744,15 +754,17 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
                                     column.udt_schema === 'public' &&
                                     column.udt_name === 'geometry'
                                     ? new types.GeoPoint()
-                                    : column.data_type === 'timestamp without time zone'
-                                        ? new types.Date()
-                                        : column.data_type === 'json'
-                                            ? new types.Object()
-                                            : column.data_type === 'text'
-                                                ? new types.Text()
-                                                : column.data_type === 'bytea'
-                                                    ? new types.Blob()
-                                                    : undefined;
+                                    : column.data_type === 'vector'
+                                        ? new types.Vector()
+                                        : column.data_type === 'timestamp without time zone'
+                                            ? new types.Date()
+                                            : column.data_type === 'json'
+                                                ? new types.Object()
+                                                : column.data_type === 'text'
+                                                    ? new types.Text()
+                                                    : column.data_type === 'bytea'
+                                                        ? new types.Blob()
+                                                        : undefined;
             let adapter_type_string = column.data_type.toUpperCase();
             if (column.data_type === 'character varying') {
                 adapter_type_string += `(${column.character_maximum_length || 255})`;
@@ -812,6 +824,16 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
             }
             else {
                 fields.push(`"${dbname}"=ST_Point($${values.length - 1}, $${values.length})`);
+            }
+        }
+        else if (property.type_class === types.Vector) {
+            values.push(value != null ? JSON.stringify(value) : null);
+            if (insert) {
+                fields.push(`"${dbname}"`);
+                places.push(`$${values.length}`);
+            }
+            else {
+                fields.push(`"${dbname}"=$${values.length}`);
             }
         }
         else if (value && value.$inc != null) {
@@ -935,6 +957,39 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
                 orders.push(order_by);
             }
             sql += ' ORDER BY ' + orders.join(',');
+        }
+        else if (options.vector_order &&
+            typeof options.vector_order === 'object' &&
+            Object.keys(options.vector_order).length === 1) {
+            const column = Object.keys(options.vector_order)[0];
+            const cond = options.vector_order[column];
+            if (cond && typeof cond === 'object' && Object.keys(cond).length === 1) {
+                const key = Object.keys(cond)[0];
+                const value = Object.values(cond)[0];
+                let op = '';
+                if (key === '$l2_distance') {
+                    op = '<->';
+                }
+                else if (key === '$l1_distance') {
+                    op = '<+>';
+                }
+                else if (key === '$cosine_distance') {
+                    op = '<=>';
+                }
+                else if (key === '$negative_inner_product') {
+                    op = '<#>';
+                }
+                else if (key === '$hamming_distance') {
+                    op = '<~>';
+                }
+                else if (key === '$jaccard_distance') {
+                    op = '<%>';
+                }
+                if (op) {
+                    params.push(value != null ? JSON.stringify(value) : null);
+                    sql += ` ORDER BY _Base."${column}" ${op} $${params.length}`;
+                }
+            }
         }
         if (options.limit) {
             sql += ' LIMIT ' + options.limit;
