@@ -17,7 +17,7 @@ services:
       - 21861:27017
 
   postgres:
-    image: postgis/postgis:16-3.5
+    image: croquiscom/postgis-pgvector:16-3.5-0.7.3
     environment:
       POSTGRES_DB: cormo_test
       POSTGRES_USER: cormo_test
