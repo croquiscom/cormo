@@ -1,0 +1,42 @@
+name: Release cormo
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - packages/cormo/**
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/cormo
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install packages
+        run: npm install
+
+      - name: Create Release Pull Request or Publish to npm
+        uses: changesets/action@v1
+        with:
+          version: npm run changeset version
+          publish: npm run release
+          title: 'chore(cormo): release x.y.z'
+          cwd: ./packages/cormo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          createGithubReleases: false

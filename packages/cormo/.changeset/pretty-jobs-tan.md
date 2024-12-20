@@ -1,0 +1,5 @@
+---
+'cormo': minor
+---
+
+Adopt changesets
