@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2021",
+    "target": "ES2023",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "declaration": true,
@@ -8,6 +8,7 @@
     "strict": true,
     "stripInternal": true,
     "esModuleInterop": true,
-    "lib": ["ES2021"]
+    "useDefineForClassFields": false,
+    "lib": ["ES2023"]
   }
 }

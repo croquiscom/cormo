@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2021",
+    "target": "ES2023",
     "noImplicitAny": true,
     "noImplicitThis": true,
     "strictNullChecks": true,
@@ -13,6 +13,7 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowJs": true,
-    "lib": ["ES2021"]
+    "useDefineForClassFields": false,
+    "lib": ["ES2023"]
   }
 }

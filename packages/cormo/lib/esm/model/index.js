@@ -28,6 +28,24 @@ function _pf_reset() {
  * Base class for models
  */
 class BaseModel {
+    /**
+     * Tracks changes of a record if true
+     */
+    static { this.dirty_tracking = false; }
+    /**
+     * Archives deleted records in the archive table
+     */
+    static { this.archive = false; }
+    /**
+     * Applies the lean option for all queries for this Model
+     */
+    static { this.lean_query = false; }
+    /**
+     * Forces to return record id as string.
+     * It remains as number on the persisted record if the adapter uses number for record id.
+     */
+    static { this.query_record_id_as_string = false; }
+    static { this._initialize_called = false; }
     static initialize() {
         /**/
     }
@@ -1051,22 +1069,4 @@ class BaseModel {
         return applied_columns;
     }
 }
-/**
- * Tracks changes of a record if true
- */
-BaseModel.dirty_tracking = false;
-/**
- * Archives deleted records in the archive table
- */
-BaseModel.archive = false;
-/**
- * Applies the lean option for all queries for this Model
- */
-BaseModel.lean_query = false;
-/**
- * Forces to return record id as string.
- * It remains as number on the persisted record if the adapter uses number for record id.
- */
-BaseModel.query_record_id_as_string = false;
-BaseModel._initialize_called = false;
 export { BaseModel };
