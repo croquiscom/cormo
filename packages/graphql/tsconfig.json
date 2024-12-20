@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2021",
+    "target": "ES2021",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "declaration": true,
@@ -8,6 +8,6 @@
     "strict": true,
     "stripInternal": true,
     "esModuleInterop": true,
-    "lib": ["es2017", "dom", "esnext.asynciterable"]
+    "lib": ["ES2021"]
   }
 }

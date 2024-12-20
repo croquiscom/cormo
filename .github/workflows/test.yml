@@ -46,7 +46,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
 
       - name: Install packages
@@ -57,3 +57,13 @@ jobs:
 
       - name: Run test
         run: ./node_modules/.bin/lerna run test
+
+      - name: Check file changes
+        run: |
+          (cd packages/cormo ; npm run build)
+          (cd packages/graphql ; npm run build)
+          npx prettier --version
+          npx prettier --check . || exit 100
+          git status --short
+          git diff
+          git diff --quiet

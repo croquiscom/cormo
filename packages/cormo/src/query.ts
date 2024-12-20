@@ -922,7 +922,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
   private _validateAndBuildSaveData(errors: any, data: any, updates: any, path: any, object: any) {
     const model = this._model;
     const schema = model._schema;
-    for (let column in object) {
+    for (const column in object) {
       const property = schema[path + column];
       if (property) {
         try {
@@ -933,14 +933,14 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
         model._buildSaveDataColumn(data, updates, path + column, property, true);
       } else if (!object[column] && model._intermediate_paths[column]) {
         // set all nested columns null
-        column += '.';
+        const column_with_dot = column + '.';
         const temp: any = {};
         Object.keys(schema).forEach((sc) => {
-          if (sc.startsWith(column)) {
-            temp[sc.substr(column.length)] = null;
+          if (sc.startsWith(column_with_dot)) {
+            temp[sc.substr(column_with_dot.length)] = null;
           }
         });
-        this._validateAndBuildSaveData(errors, data, updates, path + column, temp);
+        this._validateAndBuildSaveData(errors, data, updates, path + column_with_dot, temp);
       } else if (typeof object[column] === 'object') {
         this._validateAndBuildSaveData(errors, data, updates, path + column + '.', object[column]);
       }

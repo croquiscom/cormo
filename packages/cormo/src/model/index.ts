@@ -376,6 +376,7 @@ class BaseModel {
   public static [inspect.custom](_depth: number) {
     const schema = Object.keys(this._schema)
       .sort()
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       .map((column) => `${column}: ${this._schema[column]?.type}`)
       .join(', ');
     return '\u001b[36m' + `[Model: ${this.name}(` + '\u001b[90m' + schema + '\u001b[36m' + ')]' + '\u001b[39m';

@@ -43,7 +43,7 @@ class Name {
 @cormo.Model({ connection, description: 'User model' })
 @cormo.Index({ 'name.first': 1, 'age': 1 })
 export class User extends cormo.BaseModel {
-  public id!: number;
+  declare public id: number;
 
   @cormo.ObjectColumn(Name)
   public name!: Name;

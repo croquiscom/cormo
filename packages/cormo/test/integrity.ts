@@ -38,7 +38,6 @@ _dbs.forEach((db) => {
       models.Event = Event;
 
       @cormo.Model()
-      // eslint-disable-next-line @typescript-eslint/no-shadow
       class Comment extends _g.BaseModel {
         @cormo.Column('string')
         public content?: string;

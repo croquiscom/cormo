@@ -662,7 +662,7 @@ class Query {
     _validateAndBuildSaveData(errors, data, updates, path, object) {
         const model = this._model;
         const schema = model._schema;
-        for (let column in object) {
+        for (const column in object) {
             const property = schema[path + column];
             if (property) {
                 try {
@@ -675,14 +675,14 @@ class Query {
             }
             else if (!object[column] && model._intermediate_paths[column]) {
                 // set all nested columns null
-                column += '.';
+                const column_with_dot = column + '.';
                 const temp = {};
                 Object.keys(schema).forEach((sc) => {
-                    if (sc.startsWith(column)) {
-                        temp[sc.substr(column.length)] = null;
+                    if (sc.startsWith(column_with_dot)) {
+                        temp[sc.substr(column_with_dot.length)] = null;
                     }
                 });
-                this._validateAndBuildSaveData(errors, data, updates, path + column, temp);
+                this._validateAndBuildSaveData(errors, data, updates, path + column_with_dot, temp);
             }
             else if (typeof object[column] === 'object') {
                 this._validateAndBuildSaveData(errors, data, updates, path + column + '.', object[column]);

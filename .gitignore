@@ -3,3 +3,4 @@ lib-cov
 cov.html
 .DS_Store
 test.sqlite3
+*.tsbuildinfo
