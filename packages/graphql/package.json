@@ -17,7 +17,9 @@
     "test:unit": "NODE_ENV=test TZ=Etc/UTC mocha -n import=tsx ./test/*/*.ts",
     "test": "npm run test:type && npm run lint && npm run test:unit --",
     "test:debug": "npm run test:unit -- --inspect-brk=30000",
-    "test:cov": "c8 npm run test"
+    "test:cov": "c8 npm run test",
+    "changeset": "changeset",
+    "release": "npm run lint && npm run build && npm run changeset publish"
   },
   "repository": {
     "type": "git",
@@ -36,6 +38,7 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.11",
     "@types/chai": "^5.0.1",
     "@types/lodash": "^4.17.13",
     "@types/mocha": "^10.0.10",

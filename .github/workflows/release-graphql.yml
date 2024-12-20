@@ -1,11 +1,11 @@
-name: Release cormo
+name: Release cormo-graphql
 
 on:
   push:
     branches:
       - main
     paths:
-      - packages/cormo/**
+      - packages/graphql/**
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: packages/cormo
+        working-directory: packages/graphql
 
     steps:
       - name: Checkout
@@ -37,8 +37,8 @@ jobs:
         with:
           version: npm run changeset version
           publish: npm run release
-          title: 'chore(cormo): release x.y.z'
-          cwd: ./packages/cormo
+          title: 'chore(graphql): release x.y.z'
+          cwd: ./packages/graphql
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
