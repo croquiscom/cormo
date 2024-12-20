@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import * as cormo from '../../lib/esm/index.js';
+import * as cormo from '../../src/index.js';
 
 export default function (db: any, db_config: any) {
   let connection!: cormo.Connection;

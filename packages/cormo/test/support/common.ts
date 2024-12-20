@@ -1,4 +1,4 @@
-import * as cormo from '../../lib/esm/index.js';
+import * as cormo from '../../src/index.js';
 
 const db_configs: { [db: string]: any } = {
   mongodb: {

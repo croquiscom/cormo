@@ -1,4 +1,4 @@
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import cases, { DocumentRef } from './cases/vector.js';
 import _g from './support/common.js';
 
@@ -19,7 +19,6 @@ _dbs.forEach((db) => {
       _g.connection = models.connection = new cormo.Connection(db as any, _g.db_configs[db]);
 
       @cormo.Model()
-      // eslint-disable-next-line @typescript-eslint/no-shadow
       class Document extends _g.BaseModel {
         @cormo.Column('string')
         public name?: string;

@@ -1,4 +1,4 @@
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import { UserExtraRef, UserRef } from './cases/transaction.js';
 import cases_bind from './cases/transaction_bind.js';
 import cases_block from './cases/transaction_block.js';

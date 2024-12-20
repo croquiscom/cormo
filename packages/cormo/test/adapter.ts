@@ -1,4 +1,4 @@
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import cases_mongodb from './cases/adapter-mongodb.js';
 import cases_mysql from './cases/adapter-mysql.js';
 import cases_postgresql from './cases/adapter-postgresql.js';

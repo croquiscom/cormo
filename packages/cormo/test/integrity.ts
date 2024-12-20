@@ -1,4 +1,4 @@
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import cases, { TeamRef, EventRef, CommentRef } from './cases/integrity.js';
 import _g from './support/common.js';
 
@@ -38,7 +38,6 @@ _dbs.forEach((db) => {
       models.Event = Event;
 
       @cormo.Model()
-      // eslint-disable-next-line @typescript-eslint/no-shadow
       class Comment extends _g.BaseModel {
         @cormo.Column('string')
         public content?: string;

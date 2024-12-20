@@ -46,7 +46,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
 
       - name: Install packages
@@ -56,4 +56,21 @@ jobs:
           (cd packages/graphql ; npm install)
 
       - name: Run test
-        run: ./node_modules/.bin/lerna run test
+        run: |
+          (cd packages/cormo ; npm run test:cov)
+          (cd packages/graphql ; npm run test:cov)
+
+      - name: Check file changes
+        run: |
+          (cd packages/cormo ; npm run build)
+          (cd packages/graphql ; npm run build)
+          npx prettier --version
+          npx prettier --check . || exit 100
+          git status --short
+          git diff
+          git diff --quiet
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import cases, { UserRef, LedgerRef } from './cases/query.js';
 import cases_misc from './cases/query_misc.js';
 import cases_not from './cases/query_not.js';
