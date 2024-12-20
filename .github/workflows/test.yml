@@ -56,7 +56,9 @@ jobs:
           (cd packages/graphql ; npm install)
 
       - name: Run test
-        run: npx lerna run test:cov
+        run: |
+          (cd packages/cormo ; npm run test:cov)
+          (cd packages/graphql ; npm run test:cov)
 
       - name: Check file changes
         run: |
