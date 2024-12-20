@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import _g from './support/common.js';
 
 const _dbs = ['mysql', 'mongodb', 'sqlite3', 'sqlite3_memory', 'postgresql', 'redis'];

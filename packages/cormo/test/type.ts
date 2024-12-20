@@ -1,4 +1,4 @@
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import cases, { Type as TypeRef } from './cases/type.js';
 import cases_compare from './cases/type_compare.js';
 import cases_options from './cases/type_options.js';

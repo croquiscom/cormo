@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as cormo from '../../lib/esm/index.js';
+import * as cormo from '../../src/index.js';
 
 export class Order extends cormo.BaseModel {
   public customer!: string;

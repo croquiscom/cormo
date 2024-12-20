@@ -1,4 +1,4 @@
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import cases, { UserRef, PostRef } from './cases/archive.js';
 import _g from './support/common.js';
 

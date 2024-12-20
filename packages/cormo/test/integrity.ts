@@ -1,4 +1,4 @@
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import cases, { TeamRef, EventRef, CommentRef } from './cases/integrity.js';
 import _g from './support/common.js';
 

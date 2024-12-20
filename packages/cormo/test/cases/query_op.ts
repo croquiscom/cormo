@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as cormo from '../../lib/esm/index.js';
+import * as cormo from '../../src/index.js';
 
 import { UserRef, UserRefVO, LedgerRef } from './query.js';
 

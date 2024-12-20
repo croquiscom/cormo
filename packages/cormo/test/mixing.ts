@@ -1,4 +1,4 @@
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import { ComputerRef, PostRef, UserRef } from './cases/association.js';
 import cases_as from './cases/association_as.js';
 import cases_belongs_to from './cases/association_belongs_to.js';

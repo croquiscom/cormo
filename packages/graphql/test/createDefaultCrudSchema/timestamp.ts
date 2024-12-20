@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as cormo from 'cormo';
 import { graphql, GraphQLSchema, printSchema } from 'graphql';
 import sinon, { createSandbox } from 'sinon';
-import { Column, createDefaultCrudSchema, Model } from '../../lib/esm/index.js';
+import { Column, createDefaultCrudSchema, Model } from '../../src/index.js';
 import _g from '../common.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

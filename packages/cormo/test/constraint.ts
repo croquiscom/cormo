@@ -1,4 +1,4 @@
-import * as cormo from '../lib/esm/index.js';
+import * as cormo from '../src/index.js';
 import cases, { PostRef, UserRef } from './cases/constraint.js';
 import cases_multicolumn, { VersionRef } from './cases/constraint_multicolumn.js';
 import _g from './support/common.js';
