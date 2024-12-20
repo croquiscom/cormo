@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - packages/cormo/**
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
