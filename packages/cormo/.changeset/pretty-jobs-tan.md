@@ -1,5 +1,0 @@
----
-'cormo': minor
----
-
-Adopt changesets
