@@ -56,7 +56,7 @@ jobs:
           (cd packages/graphql ; npm install)
 
       - name: Run test
-        run: ./node_modules/.bin/lerna run test
+        run: npx lerna run test:cov
 
       - name: Check file changes
         run: |
@@ -67,3 +67,8 @@ jobs:
           git status --short
           git diff
           git diff --quiet
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
