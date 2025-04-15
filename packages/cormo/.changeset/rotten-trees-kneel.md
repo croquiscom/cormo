@@ -1,0 +1,5 @@
+---
+'cormo': minor
+---
+
+Update dependencies
