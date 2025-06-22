@@ -577,17 +577,17 @@ class BaseModel {
   public static async createBulk<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
     data: Array<ModelValueObjectWithId<M>>,
-    options: { transaction?: Transaction; use_id_in_data: true },
+    options: { transaction?: Transaction; use_id_in_data: true; update_on_duplicate?: string[] },
   ): Promise<M[]>;
   public static async createBulk<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
     data?: Array<ModelValueObject<M>>,
-    options?: { transaction?: Transaction; use_id_in_data?: boolean },
+    options?: { transaction?: Transaction; use_id_in_data?: boolean; update_on_duplicate?: string[] },
   ): Promise<M[]>;
   public static async createBulk<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
     data?: Array<ModelValueObject<M>>,
-    options?: { transaction?: Transaction; use_id_in_data?: boolean },
+    options?: { transaction?: Transaction; use_id_in_data?: boolean; update_on_duplicate?: string[] },
   ): Promise<M[]> {
     await this._checkReady();
     if (!Array.isArray(data)) {
@@ -890,7 +890,7 @@ class BaseModel {
 
   private static async _createBulk(
     records: any[],
-    options: { transaction?: Transaction; use_id_in_data?: boolean } = {},
+    options: { transaction?: Transaction; use_id_in_data?: boolean; update_on_duplicate?: string[] } = {},
   ) {
     let error: Error | undefined;
     const data_array = records.map((record) => {
@@ -907,6 +907,7 @@ class BaseModel {
     const ids = await this._adapter.createBulk(this._name, data_array, {
       transaction: options.transaction,
       use_id_in_data: options.use_id_in_data,
+      update_on_duplicate: options.update_on_duplicate,
     });
     records.forEach((record, i) => {
       Object.defineProperty(record, 'id', {

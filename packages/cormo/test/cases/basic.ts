@@ -333,6 +333,47 @@ export default function (models: { User: typeof User }, db: string) {
     }
   });
 
+  it('createBulk update on duplicate', async () => {
+    if (!['mysql', 'postgresql', 'sqlite3'].includes(db)) {
+      return; // only support MySQL, PostgreSQL, SQLite3
+    }
+    const data = [
+      { name: 'John Doe', age: 27 },
+      { name: 'Bill Smith', age: 45 },
+      { name: 'Alice Jackson', age: 27 },
+    ];
+    const users = await models.User.createBulk(data);
+    for (const user of users) {
+      expect(user).to.be.an.instanceof(models.User);
+      expect(user).to.have.keys('id', 'name', 'age');
+      expect(user.id).to.exist;
+    }
+    const upsert_data = [
+      { id: users[0].id, name: 'John Doe', age: 28 },
+      { id: users[1].id, name: 'Bill Smith Jr.', age: 21 },
+      { name: 'Elsa Wood', age: 30 },
+      { id: users[2].id, name: 'Alice Jackson', age: 28 },
+      { name: 'Michael Jackson', age: 31 },
+    ];
+    const updated_users = await models.User.createBulk(upsert_data, {
+      use_id_in_data: true,
+      update_on_duplicate: ['name', 'age'],
+    });
+
+    for (const user of updated_users) {
+      const record = await models.User.find(user.id);
+      expect(user).to.be.an.instanceof(models.User);
+      expect(user).to.have.keys('id', 'name', 'age');
+      const exist_user = users.find((u) => u.id === user.id);
+      if (exist_user) {
+        // updated
+        expect(user.id).to.equal(exist_user.id);
+      }
+      expect(user.name).to.equal(record.name);
+      expect(user.age).to.equal(record.age);
+    }
+  });
+
   it('dirty', async () => {
     if (!models.User.dirty_tracking) {
       return;

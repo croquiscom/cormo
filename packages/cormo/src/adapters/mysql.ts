@@ -485,7 +485,7 @@ export class MySQLAdapter extends SQLAdapterBase {
   public async createBulk(
     model_name: string,
     data: any[],
-    options: { transaction?: Transaction; use_id_in_data?: boolean },
+    options: { transaction?: Transaction; use_id_in_data?: boolean; update_on_duplicate?: string[] },
   ): Promise<any[]> {
     const model_class = this._connection.models[model_name];
     if (!model_class) {
@@ -500,7 +500,14 @@ export class MySQLAdapter extends SQLAdapterBase {
       [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true, options.use_id_in_data);
       places.push('(' + places_sub + ')');
     });
-    const sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES ${places.join(',')}`;
+    let sql = `INSERT INTO \`${table_name}\` (${fields}) VALUES ${places.join(',')}`;
+
+    if (options.update_on_duplicate && options.update_on_duplicate.length > 0) {
+      fields = this._buildUpdateOnDuplicateFields(model_name, options.update_on_duplicate);
+      const update_on_duplicate_fields = fields.map((field: string) => `${field}=VALUES(${field})`).join(',');
+      sql += ` ON DUPLICATE KEY UPDATE ${update_on_duplicate_fields}`;
+    }
+
     let result;
     try {
       result = await this.query(sql, values, { transaction: options.transaction });
@@ -509,10 +516,11 @@ export class MySQLAdapter extends SQLAdapterBase {
     }
     const id = result && result.insertId;
     if (id) {
+      let insert_id = Number(id);
       if (options.use_id_in_data) {
-        return data.map((item) => item.id);
+        return data.map((item) => item.id ?? insert_id++);
       } else {
-        return data.map((item, i) => id + i);
+        return data.map((item, i) => insert_id + i);
       }
     } else {
       throw new Error('unexpected result');
@@ -1217,10 +1225,14 @@ export class MySQLAdapter extends SQLAdapterBase {
       }
       this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
     }
-    if (use_id_in_data && data.id) {
-      fields.push('id');
-      places.push('?');
-      values.push(data.id);
+    if (use_id_in_data) {
+      fields.push('`id`');
+      if (data.id) {
+        values.push(data.id);
+        places.push('?');
+      } else {
+        places.push('DEFAULT');
+      }
     }
     return [fields.join(','), places.join(',')];
   }
@@ -1242,6 +1254,24 @@ export class MySQLAdapter extends SQLAdapterBase {
       this._buildUpdateSetOfColumn(property, data, values, fields, places);
     }
     return [fields.join(','), places.join(',')];
+  }
+
+  /** @internal */
+  private _buildUpdateOnDuplicateFields(model_name: string, columns: string[]) {
+    const model_class = this._connection.models[model_name];
+    if (!model_class) {
+      return [];
+    }
+    const schema = model_class._schema;
+    const fields: string[] = [];
+    for (const column of columns) {
+      const property = _.find(schema, (item) => item?._dbname_us === column);
+      if (!property || property.primary_key) {
+        continue;
+      }
+      fields.push(column);
+    }
+    return fields;
   }
 
   /** @internal */

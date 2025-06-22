@@ -339,7 +339,7 @@ abstract class AdapterBase {
   public abstract createBulk(
     model_name: string,
     data: any[],
-    options: { transaction?: Transaction; use_id_in_data?: boolean },
+    options: { transaction?: Transaction; use_id_in_data?: boolean; update_on_duplicate?: string[] },
   ): Promise<any[]>;
 
   /**
