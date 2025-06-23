@@ -296,7 +296,13 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
             [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true, options.use_id_in_data);
             places.push('(' + places_sub + ')');
         });
-        const sql = `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')} RETURNING id`;
+        let sql = `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')}`;
+        if (options.update_on_duplicate && options.update_on_duplicate.length > 0) {
+            fields = this._buildUpdateOnDuplicateFields(model_name, options.update_on_duplicate);
+            const update_on_duplicate_fields = fields.map((field) => `${field}=EXCLUDED.${field}`).join(',');
+            sql += ` ON CONFLICT (id) DO UPDATE SET ${update_on_duplicate_fields}`;
+        }
+        sql += ' RETURNING id';
         let result;
         try {
             result = await this.query(sql, values, options.transaction);
@@ -839,10 +845,15 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
             }
             this._buildUpdateSetOfColumn(property, data, values, fields, places, insert);
         }
-        if (use_id_in_data && data.id) {
-            values.push(data.id);
+        if (use_id_in_data) {
             fields.push('id');
-            places.push('$' + values.length);
+            if (data.id) {
+                values.push(data.id);
+                places.push('$' + values.length);
+            }
+            else {
+                places.push('DEFAULT');
+            }
         }
         return [fields.join(','), places.join(',')];
     }
@@ -863,6 +874,23 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
             this._buildUpdateSetOfColumn(property, data, values, fields, places);
         }
         return [fields.join(','), places.join(',')];
+    }
+    /** @internal */
+    _buildUpdateOnDuplicateFields(model_name, columns) {
+        const model_class = this._connection.models[model_name];
+        if (!model_class) {
+            return [];
+        }
+        const schema = model_class._schema;
+        const fields = [];
+        for (const column of columns) {
+            const property = _.find(schema, (item) => item?._dbname_us === column);
+            if (!property || property.primary_key) {
+                continue;
+            }
+            fields.push(column);
+        }
+        return fields;
     }
     /** @internal */
     _buildSqlForFind(model_name, conditions, options) {

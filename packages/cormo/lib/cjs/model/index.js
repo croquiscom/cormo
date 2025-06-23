@@ -638,6 +638,7 @@ class BaseModel {
         const ids = await this._adapter.createBulk(this._name, data_array, {
             transaction: options.transaction,
             use_id_in_data: options.use_id_in_data,
+            update_on_duplicate: options.update_on_duplicate,
         });
         records.forEach((record, i) => {
             Object.defineProperty(record, 'id', {

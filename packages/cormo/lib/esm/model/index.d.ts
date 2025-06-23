@@ -221,10 +221,12 @@ declare class BaseModel {
     static createBulk<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data: Array<ModelValueObjectWithId<M>>, options: {
         transaction?: Transaction;
         use_id_in_data: true;
+        update_on_duplicate?: string[];
     }): Promise<M[]>;
     static createBulk<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data?: Array<ModelValueObject<M>>, options?: {
         transaction?: Transaction;
         use_id_in_data?: boolean;
+        update_on_duplicate?: string[];
     }): Promise<M[]>;
     /**
      * Creates q query object
