@@ -113,6 +113,11 @@ class BaseModel {
    */
   public static query_record_id_as_string = false;
 
+  /**
+   * The schema of the table in the database (PostgreSQL only)
+   */
+  public static pg_schema?: string;
+
   public static table_name: string;
 
   public static description?: string;

@@ -59,6 +59,10 @@ declare class BaseModel {
      * It remains as number on the persisted record if the adapter uses number for record id.
      */
     static query_record_id_as_string: boolean;
+    /**
+     * The schema of the table in the database (PostgreSQL only)
+     */
+    static pg_schema?: string;
     static table_name: string;
     static description?: string;
     /**

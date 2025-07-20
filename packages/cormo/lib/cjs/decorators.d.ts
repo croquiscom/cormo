@@ -6,6 +6,7 @@ export declare function Model(options?: {
     name?: string;
     description?: string;
     query_record_id_as_string?: boolean;
+    pg_schema?: string;
 }): (ctor: typeof BaseModel) => void;
 export declare function Column(column_property: types.ColumnType | types.ColumnType[] | ColumnProperty | ColumnNestedProperty): PropertyDecorator;
 export declare function ObjectColumn(partial_model_class: any): PropertyDecorator;

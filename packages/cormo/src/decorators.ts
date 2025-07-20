@@ -8,7 +8,13 @@ import { BaseModel, ColumnNestedProperty, ColumnProperty } from './model/index.j
 import * as types from './types.js';
 
 export function Model(
-  options: { connection?: Connection; name?: string; description?: string; query_record_id_as_string?: boolean } = {},
+  options: {
+    connection?: Connection;
+    name?: string;
+    description?: string;
+    query_record_id_as_string?: boolean;
+    pg_schema?: string;
+  } = {},
 ) {
   return (ctor: typeof BaseModel) => {
     ctor._initialize_called = true;
@@ -17,6 +23,7 @@ export function Model(
     }
     ctor.description = options.description;
     ctor.query_record_id_as_string = options.query_record_id_as_string ?? false;
+    ctor.pg_schema = options.pg_schema;
     if (options.connection) {
       ctor.connection(options.connection);
     }
