@@ -101,6 +101,11 @@ function _propertyToSQL(property) {
         return type;
     }
 }
+function _getTableNameWithSchema(model_class) {
+    const schema = model_class.pg_schema;
+    const table_name = model_class.table_name;
+    return schema ? `"${schema}"."${table_name}"` : `"${table_name}"`;
+}
 function _processSaveError(table_name, error) {
     if (error.code === '42P01') {
         return new Error('table does not exist');
@@ -172,7 +177,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (!model_class) {
             return;
         }
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         const column_sqls = [];
         for (const column in model_class._schema) {
             const property = model_class._schema[column];
@@ -189,7 +194,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
                 }
             }
         }
-        const sql = `CREATE TABLE "${table_name}" ( ${column_sqls.join(',')} )`;
+        const sql = `CREATE TABLE ${table_name_with_schema} ( ${column_sqls.join(',')} )`;
         try {
             await this._pool.query(sql);
         }
@@ -203,9 +208,9 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (!model_class) {
             return;
         }
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         const column_name = column_property._dbname_us;
-        const sql = `ALTER TABLE "${table_name}" ADD COLUMN "${column_name}" ${_propertyToSQL(column_property)}`;
+        const sql = `ALTER TABLE ${table_name_with_schema} ADD COLUMN "${column_name}" ${_propertyToSQL(column_property)}`;
         try {
             await this._pool.query(sql);
         }
@@ -220,14 +225,14 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
             return;
         }
         const schema = model_class._schema;
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         const columns = [];
         for (const column in index.columns) {
             const order = index.columns[column];
             columns.push(`"${schema[column]?._dbname_us || column}" ${order === -1 ? 'DESC' : 'ASC'}`);
         }
         const unique = index.options.unique ? 'UNIQUE ' : '';
-        const sql = `CREATE ${unique}INDEX "${index.options.name}" ON "${table_name}" (${columns.join(',')})`;
+        const sql = `CREATE ${unique}INDEX "${index.options.name}" ON ${table_name_with_schema} (${columns.join(',')})`;
         try {
             await this._pool.query(sql);
         }
@@ -241,7 +246,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (!model_class) {
             return;
         }
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         let action = '';
         switch (type) {
             case 'nullify':
@@ -254,7 +259,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
                 action = 'CASCADE';
                 break;
         }
-        const sql = `ALTER TABLE "${table_name}" ADD FOREIGN KEY ("${column}")
+        const sql = `ALTER TABLE ${table_name_with_schema} ADD FOREIGN KEY ("${column}")
       REFERENCES "${references.table_name}"(id) ON DELETE ${action}`;
         try {
             await this._pool.query(sql);
@@ -270,10 +275,10 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
             if (!model_class) {
                 return;
             }
-            const table_name = model_class.table_name;
-            await this.query(`ALTER TABLE "${table_name}" DISABLE TRIGGER ALL`);
-            await this.query(`DELETE FROM "${table_name}"`);
-            await this.query(`ALTER TABLE "${table_name}" ENABLE TRIGGER ALL`);
+            const table_name_with_schema = _getTableNameWithSchema(model_class);
+            await this.query(`ALTER TABLE ${table_name_with_schema} DISABLE TRIGGER ALL`);
+            await this.query(`DELETE FROM ${table_name_with_schema}`);
+            await this.query(`ALTER TABLE ${table_name_with_schema} ENABLE TRIGGER ALL`);
         }));
     }
     /** @internal */
@@ -282,9 +287,9 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (!model_class) {
             return;
         }
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         try {
-            await this._pool.query(`DROP TABLE IF EXISTS "${table_name}"`);
+            await this._pool.query(`DROP TABLE IF EXISTS ${table_name_with_schema}`);
         }
         catch (error) {
             throw PostgreSQLAdapter.wrapError('unknown error', error);
@@ -300,16 +305,16 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (!model_class) {
             throw new Error('model not found');
         }
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         const values = [];
         const [fields, places] = this._buildUpdateSet(model_name, data, values, true, options.use_id_in_data);
-        const sql = `INSERT INTO "${table_name}" (${fields}) VALUES (${places}) RETURNING id`;
+        const sql = `INSERT INTO ${table_name_with_schema} (${fields}) VALUES (${places}) RETURNING id`;
         let result;
         try {
             result = await this.query(sql, values, options.transaction);
         }
         catch (error) {
-            throw _processSaveError(table_name, error);
+            throw _processSaveError(model_class.table_name, error);
         }
         const rows = result && result.rows;
         if (rows && rows.length === 1 && rows[0].id) {
@@ -325,7 +330,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (!model_class) {
             throw new Error('model not found');
         }
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         const values = [];
         let fields;
         const places = [];
@@ -334,13 +339,13 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
             [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true, options.use_id_in_data);
             places.push('(' + places_sub + ')');
         });
-        const sql = `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')} RETURNING id`;
+        const sql = `INSERT INTO ${table_name_with_schema} (${fields}) VALUES ${places.join(',')} RETURNING id`;
         let result;
         try {
             result = await this.query(sql, values, options.transaction);
         }
         catch (error) {
-            throw _processSaveError(table_name, error);
+            throw _processSaveError(model_class.table_name, error);
         }
         const ids = result && result.rows.map((row) => row.id);
         if (ids && ids.length === data.length) {
@@ -356,16 +361,16 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (!model_class) {
             return;
         }
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         const values = [];
         const [fields] = this._buildUpdateSet(model_name, data, values);
         values.push(data.id);
-        const sql = `UPDATE "${table_name}" SET ${fields} WHERE id=$${values.length}`;
+        const sql = `UPDATE ${table_name_with_schema} SET ${fields} WHERE id=$${values.length}`;
         try {
             await this.query(sql, values, options.transaction);
         }
         catch (error) {
-            throw _processSaveError(table_name, error);
+            throw _processSaveError(model_class.table_name, error);
         }
     }
     /** @internal */
@@ -374,10 +379,10 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (!model_class) {
             return 0;
         }
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         const values = [];
         const [fields] = this._buildPartialUpdateSet(model_name, data, values);
-        let sql = `UPDATE "${table_name}" SET ${fields}`;
+        let sql = `UPDATE ${table_name_with_schema} SET ${fields}`;
         if (conditions.length > 0) {
             sql += ' WHERE ' + this._buildWhere(model_class._schema, '', {}, conditions, values);
         }
@@ -386,7 +391,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
             result = await this.query(sql, values, options.transaction);
         }
         catch (error) {
-            throw _processSaveError(table_name, error);
+            throw _processSaveError(model_class.table_name, error);
         }
         return result.rowCount;
     }
@@ -397,8 +402,8 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
             throw new Error('model not found');
         }
         const select = this._buildSelect(model_class, options.select);
-        const table_name = model_class.table_name;
-        const sql = `SELECT ${select} FROM "${table_name}" AS _Base WHERE id=$1 LIMIT 1`;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
+        const sql = `SELECT ${select} FROM ${table_name_with_schema} AS _Base WHERE id=$1 LIMIT 1`;
         if (options.explain) {
             return await this.query(`EXPLAIN ${sql}`, [id], options.transaction);
         }
@@ -489,11 +494,11 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         }
         const select = options.select ? this._buildSelect(model_class, options.select) : '*';
         const params = [];
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         const join_schemas = {};
         let sql = options.distinct && !options.select
-            ? `SELECT DISTINCT _Base.* FROM "${table_name}" AS _Base`
-            : `SELECT COUNT(${options.distinct ? `DISTINCT ${select}` : '*'}) AS count FROM "${table_name}" AS _Base`;
+            ? `SELECT DISTINCT _Base.* FROM ${table_name_with_schema} AS _Base`
+            : `SELECT COUNT(${options.distinct ? `DISTINCT ${select}` : '*'}) AS count FROM ${table_name_with_schema} AS _Base`;
         if (options.joins.length > 0) {
             const escape_ch = this._escape_ch;
             for (const join of options.joins) {
@@ -501,7 +506,8 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
                 if (!join_model_class) {
                     continue;
                 }
-                sql += ` ${join.type} ${join_model_class.table_name} AS _${join.alias}`;
+                const join_table_name_with_schema = _getTableNameWithSchema(join_model_class);
+                sql += ` ${join.type} ${join_table_name_with_schema} AS _${join.alias}`;
                 sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = _${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
                 join_schemas[join.alias] = join_model_class._schema;
             }
@@ -541,10 +547,10 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         }
         const nested = options.orders.length > 0 || options.limit || options.skip;
         const params = [];
-        const table_name = model_class.table_name;
-        let sql = `DELETE FROM "${table_name}"`;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
+        let sql = `DELETE FROM ${table_name_with_schema}`;
         if (nested) {
-            sql += ` WHERE id IN (SELECT id FROM "${table_name}"`;
+            sql += ` WHERE id IN (SELECT id FROM ${table_name_with_schema}`;
         }
         if (conditions.length > 0) {
             sql += ' WHERE ' + this._buildWhere(model_class._schema, '', {}, conditions, params);
@@ -923,9 +929,9 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
             select += `,ST_Distance("${field}",ST_Point(${location[0]},${location[1]})) AS "${field}_distance"`;
         }
         const params = [];
-        const table_name = model_class.table_name;
+        const table_name_with_schema = _getTableNameWithSchema(model_class);
         const join_schemas = {};
-        let sql = `SELECT ${options.distinct ? 'DISTINCT' : ''} ${select} FROM "${table_name}" as _Base`;
+        let sql = `SELECT ${options.distinct ? 'DISTINCT' : ''} ${select} FROM ${table_name_with_schema} as _Base`;
         if (options.joins.length > 0) {
             const escape_ch = this._escape_ch;
             for (const join of options.joins) {
@@ -933,7 +939,8 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
                 if (!join_model_class) {
                     continue;
                 }
-                sql += ` ${join.type} ${join_model_class.table_name} AS _${join.alias}`;
+                const join_table_name_with_schema = _getTableNameWithSchema(join_model_class);
+                sql += ` ${join.type} ${join_table_name_with_schema} AS _${join.alias}`;
                 sql += ` ON _Base.${escape_ch}${join.base_column}${escape_ch} = _${join.alias}.${escape_ch}${join.join_column}${escape_ch}`;
                 join_schemas[join.alias] = join_model_class._schema;
             }

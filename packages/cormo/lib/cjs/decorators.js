@@ -15,6 +15,7 @@ function Model(options = {}) {
         }
         ctor.description = options.description;
         ctor.query_record_id_as_string = options.query_record_id_as_string ?? false;
+        ctor.pg_schema = options.pg_schema;
         if (options.connection) {
             ctor.connection(options.connection);
         }
