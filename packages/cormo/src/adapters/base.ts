@@ -50,6 +50,7 @@ export interface AdapterFindOptions {
   transaction?: Transaction;
   node?: 'master' | 'read';
   index_hint?: string;
+  comment?: string;
 }
 
 export interface AdapterCountOptions {
@@ -62,12 +63,14 @@ export interface AdapterCountOptions {
   transaction?: Transaction;
   node?: 'master' | 'read';
   index_hint?: string;
+  comment?: string;
 }
 
 export interface AdapterUpsertOptions {
   transaction?: Transaction;
   node?: 'master' | 'read';
   ignore_on_update?: string[];
+  comment?: string;
 }
 
 export interface AdapterDeleteOptions {
@@ -75,6 +78,7 @@ export interface AdapterDeleteOptions {
   limit?: number;
   skip?: number;
   transaction?: Transaction;
+  comment?: string;
 }
 
 /**
@@ -95,6 +99,65 @@ abstract class AdapterBase {
     const error = new Error(msg);
     (error as any).cause = cause;
     return error;
+  }
+
+  /**
+   * Sanitizes comment to prevent SQL injection (static wrapper for testing)
+   * Only allows alphanumeric characters, spaces, underscores, hyphens, and Korean characters
+   * @param comment The comment text to sanitize
+   * @returns Sanitized comment or empty string if invalid
+   * @internal
+   */
+  public static sanitizeComment(comment?: string): string {
+    if (!comment) {
+      return '';
+    }
+    // Allow alphanumeric, spaces, underscores, hyphens, and Korean characters
+    // Remove any characters that could be used for SQL injection
+    const sanitized = comment.replace(/[^\w\s\-가-힣ㄱ-ㅎㅏ-ㅣ]/g, '');
+    // Limit length to prevent abuse
+    return sanitized.slice(0, 100);
+  }
+
+  /**
+   * Sanitizes comment to prevent SQL injection
+   * Only allows alphanumeric characters, spaces, underscores, hyphens, and Korean characters
+   * @param comment The comment text to sanitize
+   * @returns Sanitized comment or empty string if invalid
+   * @internal
+   */
+  protected sanitizeComment(comment?: string): string {
+    return AdapterBase.sanitizeComment(comment);
+  }
+
+  /**
+   * Creates SQL with query comment (static wrapper for testing)
+   * @param sql The SQL string to prepend comment to
+   * @param comment The comment text
+   * @returns SQL string with comment prepended, or original SQL if no comment
+   * @internal
+   */
+  public static createCommentedSQL(sql: string, comment?: string): string {
+    const sanitized = AdapterBase.sanitizeComment(comment);
+    if (!sanitized) {
+      return sql;
+    }
+    return `/* ${sanitized} */ ${sql}`;
+  }
+
+  /**
+   * Creates SQL with query comment
+   * @param sql The SQL string to prepend comment to
+   * @param comment The comment text
+   * @returns SQL string with comment prepended, or original SQL if no comment
+   * @internal
+   */
+  protected createCommentedSQL(sql: string, comment?: string): string {
+    const sanitized = this.sanitizeComment(comment);
+    if (!sanitized) {
+      return sql;
+    }
+    return `/* ${sanitized} */ ${sql}`;
   }
 
   /** @internal */
@@ -329,7 +392,7 @@ abstract class AdapterBase {
   public abstract create(
     model_name: string,
     data: any,
-    options: { transaction?: Transaction; use_id_in_data?: boolean },
+    options: { transaction?: Transaction; use_id_in_data?: boolean; comment?: string },
   ): Promise<any>;
 
   /**
@@ -339,14 +402,18 @@ abstract class AdapterBase {
   public abstract createBulk(
     model_name: string,
     data: any[],
-    options: { transaction?: Transaction; use_id_in_data?: boolean },
+    options: { transaction?: Transaction; use_id_in_data?: boolean; comment?: string },
   ): Promise<any[]>;
 
   /**
    * Updates a record
    * @internal
    */
-  public abstract update(model_name: string, data: any, options: { transaction?: Transaction }): Promise<void>;
+  public abstract update(
+    model_name: string,
+    data: any,
+    options: { transaction?: Transaction; comment?: string },
+  ): Promise<void>;
 
   /**
    * Updates some fields of records that match conditions
@@ -356,7 +423,7 @@ abstract class AdapterBase {
     model_name: string,
     data: any,
     conditions: Array<Record<string, any>>,
-    options: { transaction?: Transaction },
+    options: { transaction?: Transaction; comment?: string },
   ): Promise<number>;
 
   /**
@@ -378,7 +445,13 @@ abstract class AdapterBase {
   public abstract findById(
     model_name: string,
     id: any,
-    options: { select?: string[]; explain?: boolean; transaction?: Transaction; node?: 'master' | 'read' },
+    options: {
+      select?: string[];
+      explain?: boolean;
+      transaction?: Transaction;
+      node?: 'master' | 'read';
+      comment?: string;
+    },
   ): Promise<any>;
 
   /**

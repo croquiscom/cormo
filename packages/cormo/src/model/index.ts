@@ -560,17 +560,17 @@ class BaseModel {
   public static async create<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
     data: ModelValueObjectWithId<M>,
-    options: { transaction?: Transaction; skip_log?: boolean; use_id_in_data: true },
+    options: { transaction?: Transaction; skip_log?: boolean; use_id_in_data: true; comment?: string },
   ): Promise<M>;
   public static async create<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
     data?: ModelValueObject<M>,
-    options?: { transaction?: Transaction; skip_log?: boolean; use_id_in_data?: boolean },
+    options?: { transaction?: Transaction; skip_log?: boolean; use_id_in_data?: boolean; comment?: string },
   ): Promise<M>;
   public static async create<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
     data?: ModelValueObject<M>,
-    options?: { transaction?: Transaction; skip_log?: boolean; use_id_in_data?: boolean },
+    options?: { transaction?: Transaction; skip_log?: boolean; use_id_in_data?: boolean; comment?: string },
   ): Promise<M> {
     await this._checkReady();
     return await this.build<M>(data, options).save(options);
@@ -582,17 +582,17 @@ class BaseModel {
   public static async createBulk<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
     data: Array<ModelValueObjectWithId<M>>,
-    options: { transaction?: Transaction; use_id_in_data: true },
+    options: { transaction?: Transaction; use_id_in_data: true; comment?: string },
   ): Promise<M[]>;
   public static async createBulk<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
     data?: Array<ModelValueObject<M>>,
-    options?: { transaction?: Transaction; use_id_in_data?: boolean },
+    options?: { transaction?: Transaction; use_id_in_data?: boolean; comment?: string },
   ): Promise<M[]>;
   public static async createBulk<M extends BaseModel>(
     this: (new (data_arg?: any) => M) & typeof BaseModel,
     data?: Array<ModelValueObject<M>>,
-    options?: { transaction?: Transaction; use_id_in_data?: boolean },
+    options?: { transaction?: Transaction; use_id_in_data?: boolean; comment?: string },
   ): Promise<M[]> {
     await this._checkReady();
     if (!Array.isArray(data)) {
@@ -754,16 +754,27 @@ class BaseModel {
   public static async update(
     updates: any,
     condition?: object,
-    options?: { transaction?: Transaction },
+    options?: { transaction?: Transaction; comment?: string },
   ): Promise<number> {
-    return await this.query(options).where(condition).update(updates);
+    const query = this.query(options).where(condition);
+    if (options?.comment) {
+      query.comment(options.comment);
+    }
+    return await query.update(updates);
   }
 
   /**
    * Deletes records by conditions
    */
-  public static async delete(condition?: object, options?: { transaction?: Transaction }): Promise<number> {
-    return await this.query(options).where(condition).delete();
+  public static async delete(
+    condition?: object,
+    options?: { transaction?: Transaction; comment?: string },
+  ): Promise<number> {
+    const query = this.query(options).where(condition);
+    if (options?.comment) {
+      query.comment(options.comment);
+    }
+    return await query.delete();
   }
 
   /**
@@ -895,7 +906,7 @@ class BaseModel {
 
   private static async _createBulk(
     records: any[],
-    options: { transaction?: Transaction; use_id_in_data?: boolean } = {},
+    options: { transaction?: Transaction; use_id_in_data?: boolean; comment?: string } = {},
   ) {
     let error: Error | undefined;
     const data_array = records.map((record) => {
@@ -912,6 +923,7 @@ class BaseModel {
     const ids = await this._adapter.createBulk(this._name, data_array, {
       transaction: options.transaction,
       use_id_in_data: options.use_id_in_data,
+      comment: options.comment,
     });
     records.forEach((record, i) => {
       Object.defineProperty(record, 'id', {
@@ -1183,7 +1195,13 @@ class BaseModel {
    * Saves data to the database
    */
   public async save(
-    options: { transaction?: Transaction; skip_log?: boolean; validate?: boolean; use_id_in_data?: boolean } = {},
+    options: {
+      transaction?: Transaction;
+      skip_log?: boolean;
+      validate?: boolean;
+      use_id_in_data?: boolean;
+      comment?: string;
+    } = {},
   ): Promise<this> {
     const ctor = this.constructor as typeof BaseModel;
     await ctor._checkReady();
@@ -1293,7 +1311,12 @@ class BaseModel {
     return data;
   }
 
-  private async _create(options: { transaction?: Transaction; skip_log?: boolean; use_id_in_data?: boolean }) {
+  private async _create(options: {
+    transaction?: Transaction;
+    skip_log?: boolean;
+    use_id_in_data?: boolean;
+    comment?: string;
+  }) {
     const data = this._buildSaveData();
     const ctor = this.constructor as typeof BaseModel;
     if (!options.skip_log) {
@@ -1302,6 +1325,7 @@ class BaseModel {
     const id = await ctor._adapter.create(ctor._name, data, {
       transaction: options.transaction || this._transaction,
       use_id_in_data: options.use_id_in_data,
+      comment: options.comment,
     });
     Object.defineProperty(this, 'id', {
       configurable: false,
@@ -1350,7 +1374,7 @@ class BaseModel {
     return (this._prev_attributes = {});
   }
 
-  private async _update(options: { transaction?: Transaction; skip_log?: boolean }) {
+  private async _update(options: { transaction?: Transaction; skip_log?: boolean; comment?: string }) {
     const ctor = this.constructor as typeof BaseModel;
     if (ctor.dirty_tracking) {
       // update changed values only
@@ -1369,7 +1393,7 @@ class BaseModel {
       if (!options.skip_log) {
         ctor._connection.log(ctor._name, 'update', data);
       }
-      await adapter.updatePartial(ctor._name, data, [{ id: this.id }], {});
+      await adapter.updatePartial(ctor._name, data, [{ id: this.id }], { comment: options.comment });
       return (this._prev_attributes = {});
     } else {
       // update all
@@ -1377,7 +1401,10 @@ class BaseModel {
       if (!options.skip_log) {
         ctor._connection.log(ctor._name, 'update', data);
       }
-      await ctor._adapter.update(ctor._name, data, { transaction: options.transaction || this._transaction });
+      await ctor._adapter.update(ctor._name, data, {
+        transaction: options.transaction || this._transaction,
+        comment: options.comment,
+      });
       return (this._prev_attributes = {});
     }
   }
