@@ -41,7 +41,7 @@ class SQLAdapterBase extends AdapterBase {
         }
         if (Object.keys(update_data).length === 0) {
             try {
-                return await this.create(model_name, insert_data, {});
+                return await this.create(model_name, insert_data, { comment: options.comment });
             }
             catch (error) {
                 if (!/duplicated/.test(error.message)) {
@@ -55,7 +55,7 @@ class SQLAdapterBase extends AdapterBase {
                 return;
             }
             try {
-                return await this.create(model_name, insert_data, {});
+                return await this.create(model_name, insert_data, { comment: options.comment });
             }
             catch (error) {
                 if (!/duplicated/.test(error.message)) {

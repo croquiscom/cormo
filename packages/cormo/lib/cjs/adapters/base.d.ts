@@ -52,6 +52,7 @@ export interface AdapterFindOptions {
     transaction?: Transaction;
     node?: 'master' | 'read';
     index_hint?: string;
+    comment?: string;
 }
 export interface AdapterCountOptions {
     select?: string[];
@@ -69,17 +70,20 @@ export interface AdapterCountOptions {
     transaction?: Transaction;
     node?: 'master' | 'read';
     index_hint?: string;
+    comment?: string;
 }
 export interface AdapterUpsertOptions {
     transaction?: Transaction;
     node?: 'master' | 'read';
     ignore_on_update?: string[];
+    comment?: string;
 }
 export interface AdapterDeleteOptions {
     orders: any[];
     limit?: number;
     skip?: number;
     transaction?: Transaction;
+    comment?: string;
 }
 /**
  * Base class for adapters
