@@ -587,7 +587,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (nested) {
             sql += ')';
         }
-        sql = PostgreSQLAdapter.createCommentedSQL(sql, options.comment);
+        sql = this.createCommentedSQL(sql, options.comment);
         let result;
         try {
             result = await this.query(sql, params, options.transaction);
@@ -1021,7 +1021,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         else if (options.skip) {
             sql += ' LIMIT ALL OFFSET ' + options.skip;
         }
-        return [PostgreSQLAdapter.createCommentedSQL(sql, options.comment), params];
+        return [this.createCommentedSQL(sql, options.comment), params];
     }
 }
 exports.PostgreSQLAdapter = PostgreSQLAdapter;

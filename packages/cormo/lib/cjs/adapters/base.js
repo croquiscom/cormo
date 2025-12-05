@@ -78,61 +78,6 @@ class AdapterBase {
         error.cause = cause;
         return error;
     }
-    /**
-     * Sanitizes comment to prevent SQL injection (static wrapper for testing)
-     * Only allows alphanumeric characters, spaces, underscores, hyphens, and Korean characters
-     * @param comment The comment text to sanitize
-     * @returns Sanitized comment or empty string if invalid
-     * @internal
-     */
-    static sanitizeComment(comment) {
-        if (!comment) {
-            return '';
-        }
-        // Allow alphanumeric, spaces, underscores, hyphens, and Korean characters
-        // Remove any characters that could be used for SQL injection
-        const sanitized = comment.replace(/[^\w\s\-가-힣ㄱ-ㅎㅏ-ㅣ]/g, '');
-        // Limit length to prevent abuse
-        return sanitized.slice(0, 100);
-    }
-    /**
-     * Sanitizes comment to prevent SQL injection
-     * Only allows alphanumeric characters, spaces, underscores, hyphens, and Korean characters
-     * @param comment The comment text to sanitize
-     * @returns Sanitized comment or empty string if invalid
-     * @internal
-     */
-    sanitizeComment(comment) {
-        return AdapterBase.sanitizeComment(comment);
-    }
-    /**
-     * Creates SQL with query comment (static wrapper for testing)
-     * @param sql The SQL string to prepend comment to
-     * @param comment The comment text
-     * @returns SQL string with comment prepended, or original SQL if no comment
-     * @internal
-     */
-    static createCommentedSQL(sql, comment) {
-        const sanitized = AdapterBase.sanitizeComment(comment);
-        if (!sanitized) {
-            return sql;
-        }
-        return `/* ${sanitized} */ ${sql}`;
-    }
-    /**
-     * Creates SQL with query comment
-     * @param sql The SQL string to prepend comment to
-     * @param comment The comment text
-     * @returns SQL string with comment prepended, or original SQL if no comment
-     * @internal
-     */
-    createCommentedSQL(sql, comment) {
-        const sanitized = this.sanitizeComment(comment);
-        if (!sanitized) {
-            return sql;
-        }
-        return `/* ${sanitized} */ ${sql}`;
-    }
     /** @internal */
     async connect(settings) {
         return Promise.resolve();
