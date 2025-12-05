@@ -2,8 +2,10 @@
  * Query Comment Test
  */
 
+import { Readable } from 'stream';
 import { expect } from 'chai';
-import { AdapterBase } from '../src/adapters/base.js';
+import { AdapterFindOptions, AdapterCountOptions, AdapterDeleteOptions } from '../src/adapters/base.js';
+import { SQLAdapterBase } from '../src/adapters/sql_base.js';
 import * as cormo from '../src/index.js';
 import _g from './support/common.js';
 
@@ -15,99 +17,181 @@ class IUser extends cormo.BaseModel {
 }
 
 describe('Query Comment', () => {
+  class Adapter extends SQLAdapterBase {
+    public create(
+      _model_name: string,
+      _data: any,
+      _options: { transaction?: cormo.Transaction; use_id_in_data?: boolean; comment?: string },
+    ): Promise<any> {
+      throw new Error('Method not implemented.');
+    }
+    public createBulk(
+      _model_name: string,
+      _data: any[],
+      _options: { transaction?: cormo.Transaction; use_id_in_data?: boolean; comment?: string },
+    ): Promise<any[]> {
+      throw new Error('Method not implemented.');
+    }
+    public update(
+      _model_name: string,
+      _data: any,
+      _options: { transaction?: cormo.Transaction; comment?: string },
+    ): Promise<void> {
+      throw new Error('Method not implemented.');
+    }
+    public updatePartial(
+      _model_name: string,
+      _data: any,
+      _conditions: Array<Record<string, any>>,
+      _options: { transaction?: cormo.Transaction; comment?: string },
+    ): Promise<number> {
+      throw new Error('Method not implemented.');
+    }
+    public findById(
+      _model_name: string,
+      _id: any,
+      _options: {
+        select?: string[];
+        explain?: boolean;
+        transaction?: cormo.Transaction;
+        node?: 'master' | 'read';
+        comment?: string;
+      },
+    ): Promise<any> {
+      throw new Error('Method not implemented.');
+    }
+    public find(
+      _model_name: string,
+      _conditions: Array<Record<string, any>>,
+      _options: AdapterFindOptions,
+    ): Promise<any> {
+      throw new Error('Method not implemented.');
+    }
+    public stream(
+      _model_name: string,
+      _conditions: Array<Record<string, any>>,
+      _options: AdapterFindOptions,
+    ): Readable {
+      throw new Error('Method not implemented.');
+    }
+    public count(
+      _model_name: string,
+      _conditions: Array<Record<string, any>>,
+      _options: AdapterCountOptions,
+    ): Promise<number> {
+      throw new Error('Method not implemented.');
+    }
+    public delete(
+      _model_name: string,
+      _conditions: Array<Record<string, any>>,
+      _options: AdapterDeleteOptions,
+    ): Promise<number> {
+      throw new Error('Method not implemented.');
+    }
+    public close(): void {
+      throw new Error('Method not implemented.');
+    }
+    sanitizeComment(comment?: string): string {
+      return super.sanitizeComment(comment);
+    }
+    createCommentedSQL(sql: string, comment?: string): string {
+      return super.createCommentedSQL(sql, comment);
+    }
+  }
+  const adapter = new Adapter();
   describe('sanitizeComment', () => {
     it('should allow alphanumeric characters', () => {
-      const result = AdapterBase.sanitizeComment('test123ABC');
+      const result = adapter.sanitizeComment('test123ABC');
       expect(result).to.equal('test123ABC');
     });
 
     it('should allow spaces', () => {
-      const result = AdapterBase.sanitizeComment('test query comment');
+      const result = adapter.sanitizeComment('test query comment');
       expect(result).to.equal('test query comment');
     });
 
     it('should allow underscores and hyphens', () => {
-      const result = AdapterBase.sanitizeComment('test_query-comment');
+      const result = adapter.sanitizeComment('test_query-comment');
       expect(result).to.equal('test_query-comment');
     });
 
     it('should allow Korean characters', () => {
-      const result = AdapterBase.sanitizeComment('사용자 조회');
+      const result = adapter.sanitizeComment('사용자 조회');
       expect(result).to.equal('사용자 조회');
     });
 
     it('should allow mixed Korean and English', () => {
-      const result = AdapterBase.sanitizeComment('사용자 User 조회');
+      const result = adapter.sanitizeComment('사용자 User 조회');
       expect(result).to.equal('사용자 User 조회');
     });
 
     it('should remove SQL special characters', () => {
-      const result = AdapterBase.sanitizeComment("'; DROP TABLE users; --");
+      const result = adapter.sanitizeComment("'; DROP TABLE users; --");
       expect(result).to.equal(' DROP TABLE users --');
     });
 
     it('should remove quotes', () => {
-      const result = AdapterBase.sanitizeComment('test"query\'comment');
+      const result = adapter.sanitizeComment('test"query\'comment');
       expect(result).to.equal('testquerycomment');
     });
 
     it('should remove SQL comment markers', () => {
-      const result = AdapterBase.sanitizeComment('test /* comment */ query');
+      const result = adapter.sanitizeComment('test /* comment */ query');
       expect(result).to.equal('test  comment  query');
     });
 
     it('should limit length to 100 characters', () => {
       const longString = 'a'.repeat(300);
-      const result = AdapterBase.sanitizeComment(longString);
+      const result = adapter.sanitizeComment(longString);
       expect(result.length).to.equal(100);
     });
 
     it('should return empty string for undefined', () => {
-      const result = AdapterBase.sanitizeComment(undefined);
+      const result = adapter.sanitizeComment(undefined);
       expect(result).to.equal('');
     });
 
     it('should return empty string for empty string', () => {
-      const result = AdapterBase.sanitizeComment('');
+      const result = adapter.sanitizeComment('');
       expect(result).to.equal('');
     });
   });
 
   describe('createCommentedSQL', () => {
     it('should create SQL with comment prepended', () => {
-      const result = AdapterBase.createCommentedSQL('SELECT * FROM users', 'test query');
+      const result = adapter.createCommentedSQL('SELECT * FROM users', 'test query');
       expect(result).to.equal('/* test query */ SELECT * FROM users');
     });
 
     it('should return original SQL for undefined comment', () => {
-      const result = AdapterBase.createCommentedSQL('SELECT * FROM users', undefined);
+      const result = adapter.createCommentedSQL('SELECT * FROM users', undefined);
       expect(result).to.equal('SELECT * FROM users');
     });
 
     it('should return original SQL for empty comment', () => {
-      const result = AdapterBase.createCommentedSQL('SELECT * FROM users', '');
+      const result = adapter.createCommentedSQL('SELECT * FROM users', '');
       expect(result).to.equal('SELECT * FROM users');
     });
 
     it('should sanitize comment text before creating SQL comment', () => {
-      const result = AdapterBase.createCommentedSQL('SELECT * FROM users', "test'; DROP TABLE");
+      const result = adapter.createCommentedSQL('SELECT * FROM users', "test'; DROP TABLE");
       expect(result).to.equal('/* test DROP TABLE */ SELECT * FROM users');
     });
 
     it('should work with Korean characters', () => {
-      const result = AdapterBase.createCommentedSQL('SELECT * FROM users', '사용자 조회');
+      const result = adapter.createCommentedSQL('SELECT * FROM users', '사용자 조회');
       expect(result).to.equal('/* 사용자 조회 */ SELECT * FROM users');
     });
 
     it('should work with complex SQL', () => {
       const sql = 'INSERT INTO users (name, age) VALUES (?, ?)';
-      const result = AdapterBase.createCommentedSQL(sql, '사용자 생성');
+      const result = adapter.createCommentedSQL(sql, '사용자 생성');
       expect(result).to.equal('/* 사용자 생성 */ INSERT INTO users (name, age) VALUES (?, ?)');
     });
 
     it('should work with UPDATE statements', () => {
       const sql = 'UPDATE users SET name = ? WHERE id = ?';
-      const result = AdapterBase.createCommentedSQL(sql, '프로필 업데이트');
+      const result = adapter.createCommentedSQL(sql, '프로필 업데이트');
       expect(result).to.equal('/* 프로필 업데이트 */ UPDATE users SET name = ? WHERE id = ?');
     });
   });

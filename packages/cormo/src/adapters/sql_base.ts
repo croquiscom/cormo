@@ -388,6 +388,39 @@ abstract class SQLAdapterBase extends AdapterBase {
       return `_Base.*`;
     }
   }
+
+  /**
+   * Sanitizes comment to prevent SQL injection
+   * Only allows alphanumeric characters, spaces, underscores, hyphens, and Korean characters
+   * @param comment The comment text to sanitize
+   * @returns Sanitized comment or empty string if invalid
+   * @internal
+   */
+  protected sanitizeComment(comment?: string): string {
+    if (!comment) {
+      return '';
+    }
+    // Allow alphanumeric, spaces, underscores, hyphens, and Korean characters
+    // Remove any characters that could be used for SQL injection
+    const sanitized = comment.replace(/[^\w\s\-가-힣ㄱ-ㅎㅏ-ㅣ]/g, '');
+    // Limit length to prevent abuse
+    return sanitized.slice(0, 100);
+  }
+
+  /**
+   * Creates SQL with query comment
+   * @param sql The SQL string to prepend comment to
+   * @param comment The comment text
+   * @returns SQL string with comment prepended, or original SQL if no comment
+   * @internal
+   */
+  protected createCommentedSQL(sql: string, comment?: string): string {
+    const sanitized = this.sanitizeComment(comment);
+    if (!sanitized) {
+      return sql;
+    }
+    return `/* ${sanitized} */ ${sql}`;
+  }
 }
 
 export { SQLAdapterBase };
