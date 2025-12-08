@@ -1,5 +1,11 @@
 # cormo
 
+## 2.5.0
+
+### Minor Changes
+
+- 2a6281a: Add support for SQL comments in queries and operations
+
 ## 2.4.0
 
 ### Minor Changes
