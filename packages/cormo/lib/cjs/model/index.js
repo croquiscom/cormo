@@ -507,13 +507,21 @@ class BaseModel {
      * Updates some fields of records that match conditions
      */
     static async update(updates, condition, options) {
-        return await this.query(options).where(condition).update(updates);
+        const query = this.query(options).where(condition);
+        if (options?.comment) {
+            query.comment(options.comment);
+        }
+        return await query.update(updates);
     }
     /**
      * Deletes records by conditions
      */
     static async delete(condition, options) {
-        return await this.query(options).where(condition).delete();
+        const query = this.query(options).where(condition);
+        if (options?.comment) {
+            query.comment(options.comment);
+        }
+        return await query.delete();
     }
     /**
      * Adds 'created_at' and 'updated_at' fields to records
@@ -638,6 +646,7 @@ class BaseModel {
         const ids = await this._adapter.createBulk(this._name, data_array, {
             transaction: options.transaction,
             use_id_in_data: options.use_id_in_data,
+            comment: options.comment,
         });
         records.forEach((record, i) => {
             Object.defineProperty(record, 'id', {
@@ -1012,6 +1021,7 @@ class BaseModel {
         const id = await ctor._adapter.create(ctor._name, data, {
             transaction: options.transaction || this._transaction,
             use_id_in_data: options.use_id_in_data,
+            comment: options.comment,
         });
         Object.defineProperty(this, 'id', {
             configurable: false,
@@ -1077,7 +1087,7 @@ class BaseModel {
             if (!options.skip_log) {
                 ctor._connection.log(ctor._name, 'update', data);
             }
-            await adapter.updatePartial(ctor._name, data, [{ id: this.id }], {});
+            await adapter.updatePartial(ctor._name, data, [{ id: this.id }], { comment: options.comment });
             return (this._prev_attributes = {});
         }
         else {
@@ -1086,7 +1096,10 @@ class BaseModel {
             if (!options.skip_log) {
                 ctor._connection.log(ctor._name, 'update', data);
             }
-            await ctor._adapter.update(ctor._name, data, { transaction: options.transaction || this._transaction });
+            await ctor._adapter.update(ctor._name, data, {
+                transaction: options.transaction || this._transaction,
+                comment: options.comment,
+            });
             return (this._prev_attributes = {});
         }
     }

@@ -37,6 +37,7 @@ interface QueryOptions {
   transaction?: Transaction;
   node?: 'master' | 'read';
   index_hint?: string;
+  comment?: string;
 }
 
 export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
@@ -77,6 +78,7 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
   transaction(transaction?: Transaction): QuerySingle<M, T>;
   using(node: 'master' | 'read'): QuerySingle<M, T>;
   index_hint(hint: string): QuerySingle<M, T>;
+  comment(alias: string): QuerySingle<M, T>;
 
   exec(options?: { skip_log?: boolean }): PromiseLike<T>;
   stream(): stream.Readable;
@@ -125,6 +127,7 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
   transaction(transaction?: Transaction): QuerySingleNull<M, T>;
   using(node: 'master' | 'read'): QuerySingleNull<M, T>;
   index_hint(hint: string): QuerySingleNull<M, T>;
+  comment(alias: string): QuerySingleNull<M, T>;
 
   exec(options?: { skip_log?: boolean }): PromiseLike<T | null>;
   stream(): stream.Readable;
@@ -173,6 +176,7 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
   transaction(transaction?: Transaction): QueryArray<M, T>;
   using(node: 'master' | 'read'): QueryArray<M, T>;
   index_hint(hint: string): QueryArray<M, T>;
+  comment(alias: string): QueryArray<M, T>;
 
   exec(options?: { skip_log?: boolean }): PromiseLike<T[]>;
   stream(): stream.Readable;
@@ -534,6 +538,11 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
     return this;
   }
 
+  public comment(alias?: string): this {
+    this._options.comment = alias;
+    return this;
+  }
+
   /**
    * Executes the query
    * @see AdapterBase::findById
@@ -857,6 +866,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       near: this._options.near,
       node: this._options.node,
       index_hint: this._options.index_hint,
+      comment: this._options.comment,
       orders,
       vector_order: this._options.vector_order,
       skip: this._options.skip,
@@ -891,6 +901,7 @@ class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, QueryArray
       limit: this._options.limit,
       skip: this._options.skip,
       transaction: this._options.transaction,
+      comment: this._options.comment,
     };
   }
 

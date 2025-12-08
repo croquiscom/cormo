@@ -50,6 +50,7 @@ export interface AdapterFindOptions {
   transaction?: Transaction;
   node?: 'master' | 'read';
   index_hint?: string;
+  comment?: string;
 }
 
 export interface AdapterCountOptions {
@@ -62,12 +63,14 @@ export interface AdapterCountOptions {
   transaction?: Transaction;
   node?: 'master' | 'read';
   index_hint?: string;
+  comment?: string;
 }
 
 export interface AdapterUpsertOptions {
   transaction?: Transaction;
   node?: 'master' | 'read';
   ignore_on_update?: string[];
+  comment?: string;
 }
 
 export interface AdapterDeleteOptions {
@@ -75,6 +78,7 @@ export interface AdapterDeleteOptions {
   limit?: number;
   skip?: number;
   transaction?: Transaction;
+  comment?: string;
 }
 
 /**
@@ -329,7 +333,7 @@ abstract class AdapterBase {
   public abstract create(
     model_name: string,
     data: any,
-    options: { transaction?: Transaction; use_id_in_data?: boolean },
+    options: { transaction?: Transaction; use_id_in_data?: boolean; comment?: string },
   ): Promise<any>;
 
   /**
@@ -339,14 +343,18 @@ abstract class AdapterBase {
   public abstract createBulk(
     model_name: string,
     data: any[],
-    options: { transaction?: Transaction; use_id_in_data?: boolean },
+    options: { transaction?: Transaction; use_id_in_data?: boolean; comment?: string },
   ): Promise<any[]>;
 
   /**
    * Updates a record
    * @internal
    */
-  public abstract update(model_name: string, data: any, options: { transaction?: Transaction }): Promise<void>;
+  public abstract update(
+    model_name: string,
+    data: any,
+    options: { transaction?: Transaction; comment?: string },
+  ): Promise<void>;
 
   /**
    * Updates some fields of records that match conditions
@@ -356,7 +364,7 @@ abstract class AdapterBase {
     model_name: string,
     data: any,
     conditions: Array<Record<string, any>>,
-    options: { transaction?: Transaction },
+    options: { transaction?: Transaction; comment?: string },
   ): Promise<number>;
 
   /**
@@ -378,7 +386,13 @@ abstract class AdapterBase {
   public abstract findById(
     model_name: string,
     id: any,
-    options: { select?: string[]; explain?: boolean; transaction?: Transaction; node?: 'master' | 'read' },
+    options: {
+      select?: string[];
+      explain?: boolean;
+      transaction?: Transaction;
+      node?: 'master' | 'read';
+      comment?: string;
+    },
   ): Promise<any>;
 
   /**

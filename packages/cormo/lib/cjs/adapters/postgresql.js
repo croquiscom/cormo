@@ -308,7 +308,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         const table_name_with_schema = _getTableNameWithSchema(model_class);
         const values = [];
         const [fields, places] = this._buildUpdateSet(model_name, data, values, true, options.use_id_in_data);
-        const sql = `INSERT INTO ${table_name_with_schema} (${fields}) VALUES (${places}) RETURNING id`;
+        const sql = this.createCommentedSQL(`INSERT INTO ${table_name_with_schema} (${fields}) VALUES (${places}) RETURNING id`, options.comment);
         let result;
         try {
             result = await this.query(sql, values, options.transaction);
@@ -339,7 +339,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
             [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true, options.use_id_in_data);
             places.push('(' + places_sub + ')');
         });
-        const sql = `INSERT INTO ${table_name_with_schema} (${fields}) VALUES ${places.join(',')} RETURNING id`;
+        const sql = this.createCommentedSQL(`INSERT INTO ${table_name_with_schema} (${fields}) VALUES ${places.join(',')} RETURNING id`, options.comment);
         let result;
         try {
             result = await this.query(sql, values, options.transaction);
@@ -365,7 +365,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         const values = [];
         const [fields] = this._buildUpdateSet(model_name, data, values);
         values.push(data.id);
-        const sql = `UPDATE ${table_name_with_schema} SET ${fields} WHERE id=$${values.length}`;
+        const sql = this.createCommentedSQL(`UPDATE ${table_name_with_schema} SET ${fields} WHERE id=$${values.length}`, options.comment);
         try {
             await this.query(sql, values, options.transaction);
         }
@@ -386,6 +386,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (conditions.length > 0) {
             sql += ' WHERE ' + this._buildWhere(model_class._schema, '', {}, conditions, values);
         }
+        sql = this.createCommentedSQL(sql, options.comment);
         let result;
         try {
             result = await this.query(sql, values, options.transaction);
@@ -403,7 +404,8 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         }
         const select = this._buildSelect(model_class, options.select);
         const table_name_with_schema = _getTableNameWithSchema(model_class);
-        const sql = `SELECT ${select} FROM ${table_name_with_schema} AS _Base WHERE id=$1 LIMIT 1`;
+        let sql = `SELECT ${select} FROM ${table_name_with_schema} AS _Base WHERE id=$1 LIMIT 1`;
+        sql = this.createCommentedSQL(sql, options.comment);
         if (options.explain) {
             return await this.query(`EXPLAIN ${sql}`, [id], options.transaction);
         }
@@ -526,6 +528,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (options.distinct && !options.select) {
             sql = `SELECT COUNT(*) AS count FROM (${sql}) _sub`;
         }
+        sql = this.createCommentedSQL(sql, options.comment);
         let result;
         try {
             result = await this.query(sql, params, options.transaction);
@@ -584,6 +587,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         if (nested) {
             sql += ')';
         }
+        sql = this.createCommentedSQL(sql, options.comment);
         let result;
         try {
             result = await this.query(sql, params, options.transaction);
@@ -1017,7 +1021,7 @@ class PostgreSQLAdapter extends sql_base_js_1.SQLAdapterBase {
         else if (options.skip) {
             sql += ' LIMIT ALL OFFSET ' + options.skip;
         }
-        return [sql, params];
+        return [this.createCommentedSQL(sql, options.comment), params];
     }
 }
 exports.PostgreSQLAdapter = PostgreSQLAdapter;

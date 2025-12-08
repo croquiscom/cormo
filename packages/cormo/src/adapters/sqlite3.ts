@@ -250,22 +250,22 @@ export class SQLite3Adapter extends SQLAdapterBase {
   public async create(
     model_name: string,
     data: any,
-    options: { transaction?: Transaction; use_id_in_data?: boolean },
+    options: { transaction?: Transaction; use_id_in_data?: boolean; comment?: string },
   ): Promise<any> {
     const model_class = this._connection.models[model_name];
     if (!model_class) {
       return;
     }
     const table_name = model_class.table_name;
-    const values: any[] = [];
-    const [fields, places] = this._buildUpdateSet(model_name, data, values, true, options.use_id_in_data);
-    const sql = `INSERT INTO "${table_name}" (${fields}) VALUES (${places})`;
+    const insert_values: any[] = [];
+    const [fields, places] = this._buildUpdateSet(model_name, data, insert_values, true, options.use_id_in_data);
+    const sql = this.createCommentedSQL(`INSERT INTO "${table_name}" (${fields}) VALUES (${places})`, options.comment);
     let id;
     try {
       if (options.transaction) {
         options.transaction.checkFinished();
         id = await new Promise((resolve, reject) => {
-          options.transaction!._adapter_connection.run(sql, values, function (this: any, error?: Error) {
+          options.transaction!._adapter_connection.run(sql, insert_values, function (this: any, error?: Error) {
             if (error) {
               reject(error);
             } else {
@@ -275,7 +275,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
         });
       } else {
         id = await new Promise((resolve, reject) => {
-          this._client.run(sql, values, function (this: any, error?: Error) {
+          this._client.run(sql, insert_values, function (this: any, error?: Error) {
             if (error) {
               reject(error);
             } else {
@@ -294,7 +294,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   public async createBulk(
     model_name: string,
     data: any[],
-    options: { transaction?: Transaction; use_id_in_data?: boolean },
+    options: { transaction?: Transaction; use_id_in_data?: boolean; comment?: string },
   ): Promise<any[]> {
     const model_class = this._connection.models[model_name];
     if (!model_class) {
@@ -309,7 +309,10 @@ export class SQLite3Adapter extends SQLAdapterBase {
       [fields, places_sub] = this._buildUpdateSet(model_name, item, values, true, options.use_id_in_data);
       return places.push('(' + places_sub + ')');
     });
-    const sql = `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')}`;
+    const sql = this.createCommentedSQL(
+      `INSERT INTO "${table_name}" (${fields}) VALUES ${places.join(',')}`,
+      options.comment,
+    );
     let id: any;
     try {
       id = await new Promise((resolve, reject) => {
@@ -333,7 +336,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
   }
 
   /** @internal */
-  public async update(model_name: string, data: any, _options: { transaction?: Transaction }) {
+  public async update(model_name: string, data: any, options: { transaction?: Transaction; comment?: string }) {
     const model_class = this._connection.models[model_name];
     if (!model_class) {
       return;
@@ -342,7 +345,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     const values: any[] = [];
     const [fields] = this._buildUpdateSet(model_name, data, values);
     values.push(data.id);
-    const sql = `UPDATE "${table_name}" SET ${fields} WHERE id=?`;
+    const sql = this.createCommentedSQL(`UPDATE "${table_name}" SET ${fields} WHERE id=?`, options.comment);
     try {
       await this._client.runAsync(sql, values);
     } catch (error: any) {
@@ -355,7 +358,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     model_name: string,
     data: any,
     conditions: Array<Record<string, any>>,
-    _options: { transaction?: Transaction },
+    _options: { transaction?: Transaction; comment?: string },
   ): Promise<number> {
     const model_class = this._connection.models[model_name];
     if (!model_class) {
@@ -368,6 +371,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     if (conditions.length > 0) {
       sql += ' WHERE ' + this._buildWhere(model_class._schema, '', {}, conditions, values);
     }
+    sql = this.createCommentedSQL(sql, _options.comment);
     try {
       return await new Promise<number>((resolve, reject) => {
         this._client.run(sql, values, function (this: any, error?: Error) {
@@ -387,7 +391,13 @@ export class SQLite3Adapter extends SQLAdapterBase {
   public async findById(
     model_name: string,
     id: any,
-    options: { select?: string[]; explain?: boolean; transaction?: Transaction },
+    options: {
+      select?: string[];
+      explain?: boolean;
+      transaction?: Transaction;
+      node?: 'master' | 'read';
+      comment?: string;
+    },
   ): Promise<any> {
     const model_class = this._connection.models[model_name];
     if (!model_class) {
@@ -395,7 +405,8 @@ export class SQLite3Adapter extends SQLAdapterBase {
     }
     const select = this._buildSelect(model_class, options.select);
     const table_name = model_class.table_name;
-    const sql = `SELECT ${select} FROM "${table_name}" AS _Base WHERE id=? LIMIT 1`;
+    let sql = `SELECT ${select} FROM "${table_name}" AS _Base WHERE id=? LIMIT 1`;
+    sql = this.createCommentedSQL(sql, options.comment);
     if (options.explain) {
       return await this._client.allAsync(`EXPLAIN QUERY PLAN ${sql}`, id);
     }
@@ -528,6 +539,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     if (options.distinct && !options.select) {
       sql = `SELECT COUNT(*) AS count FROM (${sql}) _sub`;
     }
+    sql = this.createCommentedSQL(sql, options.comment);
     let result;
     try {
       result = await this._client.allAsync(sql, params);
@@ -587,6 +599,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     if (nested) {
       sql += ')';
     }
+    sql = this.createCommentedSQL(sql, options.comment);
     try {
       return await new Promise<number>((resolve, reject) => {
         this._client.run(sql, params, function (this: any, error?: Error) {
@@ -931,7 +944,7 @@ export class SQLite3Adapter extends SQLAdapterBase {
     } else if (options.skip) {
       sql += ' LIMIT 2147483647 OFFSET ' + options.skip;
     }
-    return [sql, params];
+    return [this.createCommentedSQL(sql, options.comment), params];
   }
 }
 

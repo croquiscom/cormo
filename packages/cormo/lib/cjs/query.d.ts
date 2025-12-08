@@ -33,6 +33,7 @@ interface QueryOptions {
     transaction?: Transaction;
     node?: 'master' | 'read';
     index_hint?: string;
+    comment?: string;
 }
 export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> {
     clone(): QuerySingle<M, T>;
@@ -75,6 +76,7 @@ export interface QuerySingle<M extends BaseModel, T = M> extends PromiseLike<T> 
     transaction(transaction?: Transaction): QuerySingle<M, T>;
     using(node: 'master' | 'read'): QuerySingle<M, T>;
     index_hint(hint: string): QuerySingle<M, T>;
+    comment(alias: string): QuerySingle<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T>;
@@ -128,6 +130,7 @@ interface QuerySingleNull<M extends BaseModel, T = M> extends PromiseLike<T | nu
     transaction(transaction?: Transaction): QuerySingleNull<M, T>;
     using(node: 'master' | 'read'): QuerySingleNull<M, T>;
     index_hint(hint: string): QuerySingleNull<M, T>;
+    comment(alias: string): QuerySingleNull<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T | null>;
@@ -181,6 +184,7 @@ export interface QueryArray<M extends BaseModel, T = M> extends PromiseLike<T[]>
     transaction(transaction?: Transaction): QueryArray<M, T>;
     using(node: 'master' | 'read'): QueryArray<M, T>;
     index_hint(hint: string): QueryArray<M, T>;
+    comment(alias: string): QueryArray<M, T>;
     exec(options?: {
         skip_log?: boolean;
     }): PromiseLike<T[]>;
@@ -315,6 +319,7 @@ declare class Query<M extends BaseModel, T = M> implements QuerySingle<M, T>, Qu
     transaction(transaction?: Transaction): this;
     using(node: 'master' | 'read'): this;
     index_hint(hint: string): this;
+    comment(alias?: string): this;
     /**
      * Executes the query
      * @see AdapterBase::findById

@@ -213,11 +213,13 @@ declare class BaseModel {
         transaction?: Transaction;
         skip_log?: boolean;
         use_id_in_data: true;
+        comment?: string;
     }): Promise<M>;
     static create<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data?: ModelValueObject<M>, options?: {
         transaction?: Transaction;
         skip_log?: boolean;
         use_id_in_data?: boolean;
+        comment?: string;
     }): Promise<M>;
     /**
      * Creates multiple records and saves them to the database.
@@ -225,10 +227,12 @@ declare class BaseModel {
     static createBulk<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data: Array<ModelValueObjectWithId<M>>, options: {
         transaction?: Transaction;
         use_id_in_data: true;
+        comment?: string;
     }): Promise<M[]>;
     static createBulk<M extends BaseModel>(this: (new (data_arg?: any) => M) & typeof BaseModel, data?: Array<ModelValueObject<M>>, options?: {
         transaction?: Transaction;
         use_id_in_data?: boolean;
+        comment?: string;
     }): Promise<M[]>;
     /**
      * Creates q query object
@@ -301,12 +305,14 @@ declare class BaseModel {
      */
     static update(updates: any, condition?: object, options?: {
         transaction?: Transaction;
+        comment?: string;
     }): Promise<number>;
     /**
      * Deletes records by conditions
      */
     static delete(condition?: object, options?: {
         transaction?: Transaction;
+        comment?: string;
     }): Promise<number>;
     /**
      * Adds 'created_at' and 'updated_at' fields to records
@@ -373,6 +379,7 @@ declare class BaseModel {
         skip_log?: boolean;
         validate?: boolean;
         use_id_in_data?: boolean;
+        comment?: string;
     }): Promise<this>;
     /**
      * Validates data

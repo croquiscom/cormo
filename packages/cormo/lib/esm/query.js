@@ -291,6 +291,10 @@ class Query {
         this._options.index_hint = hint;
         return this;
     }
+    comment(alias) {
+        this._options.comment = alias;
+        return this;
+    }
     /**
      * Executes the query
      * @see AdapterBase::findById
@@ -595,6 +599,7 @@ class Query {
             near: this._options.near,
             node: this._options.node,
             index_hint: this._options.index_hint,
+            comment: this._options.comment,
             orders,
             vector_order: this._options.vector_order,
             skip: this._options.skip,
@@ -627,6 +632,7 @@ class Query {
             limit: this._options.limit,
             skip: this._options.skip,
             transaction: this._options.transaction,
+            comment: this._options.comment,
         };
     }
     async _execAndInclude(options) {

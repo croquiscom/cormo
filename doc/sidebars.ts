@@ -10,7 +10,16 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Advanced',
-      items: ['aggregation', 'constraint', 'association', 'callback', 'geospatial', 'miscellaneous', 'validation'],
+      items: [
+        'aggregation',
+        'constraint',
+        'association',
+        'callback',
+        'geospatial',
+        'comment',
+        'miscellaneous',
+        'validation',
+      ],
     },
   ],
 };
