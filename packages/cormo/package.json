@@ -16,6 +16,12 @@
   "author": "Sangmin Yoon <sangmin.yoon@croquis.com>",
   "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
   "exports": {

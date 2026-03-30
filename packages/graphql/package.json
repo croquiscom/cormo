@@ -3,6 +3,12 @@
   "version": "2.2.0",
   "description": "GraphQL support for CORMO",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
   "exports": {
