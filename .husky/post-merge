@@ -1,1 +1,7 @@
-npx --no-install post-merge-install
+changed_lock_files=$(git diff --name-only ORIG_HEAD HEAD -- '**/package-lock.json')
+
+for lock_file in $changed_lock_files; do
+  dir=$(dirname "$lock_file")
+  echo "package-lock.json changed in $dir, running npm install..."
+  (cd "$dir" && npm install)
+done
