@@ -1,5 +1,11 @@
 # cormo
 
+## 2.6.0
+
+### Minor Changes
+
+- dc5ee11: update dependencies
+
 ## 2.5.0
 
 ### Minor Changes
