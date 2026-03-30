@@ -844,7 +844,7 @@ class Connection extends EventEmitter {
         }
         catch (error) {
             if (error.message === 'not implemented') {
-                await Promise.all(model_list.map((model_name) => this.models[model_name]?.where().delete({ skip_log: true })));
+                await Promise.all(model_list.map(async (model_name) => this.models[model_name]?.where().delete({ skip_log: true })));
                 return;
             }
             throw error;

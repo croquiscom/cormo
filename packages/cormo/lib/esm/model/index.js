@@ -405,7 +405,7 @@ class BaseModel {
             return this.build(item, options);
         });
         records.forEach((record) => this.applyDefaultValues(record));
-        await Promise.all(records.map((record) => record.validate()));
+        records.forEach((record) => record.validate());
         for (const record of records) {
             record._runCallbacks('save', 'before');
         }
