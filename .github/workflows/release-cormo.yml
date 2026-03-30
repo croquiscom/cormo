@@ -8,6 +8,11 @@ on:
       - packages/cormo/**
   workflow_dispatch:
 
+permissions:
+  id-token: write # for OIDC
+  contents: write
+  pull-requests: write
+
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
@@ -19,13 +24,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          cache: npm
+          node-version: '24'
 
       - name: Install packages
         run: npm install
@@ -34,7 +38,7 @@ jobs:
         run: cd ../.. && npm install
 
       - name: Create Release Pull Request or Publish to npm
-        uses: changesets/action@v1
+        uses: changesets/action@v1.5.1
         with:
           version: npm run changeset version
           publish: npm run release
@@ -42,5 +46,4 @@ jobs:
           cwd: ./packages/cormo
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           createGithubReleases: false

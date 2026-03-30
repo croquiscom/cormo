@@ -1,14 +1,16 @@
 import { CrJson, CrTimestamp, getFieldList } from '@croquiscom/crary-graphql';
 import * as cormo from 'cormo';
-import {
-  GraphQLBoolean,
-  GraphQLEnumType,
+import type {
   GraphQLEnumValueConfigMap,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
+  GraphQLInputFieldConfigMap,
+} from 'graphql';
+import {
+  GraphQLBoolean,
+  GraphQLEnumType,
   GraphQLFloat,
   GraphQLID,
-  GraphQLInputFieldConfigMap,
   GraphQLInputObjectType,
   GraphQLInt,
   GraphQLList,
