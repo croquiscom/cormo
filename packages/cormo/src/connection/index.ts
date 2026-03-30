@@ -1079,7 +1079,9 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
       await this.adapter.deleteAllIgnoringConstraint(model_list);
     } catch (error: any) {
       if (error.message === 'not implemented') {
-        await Promise.all(model_list.map((model_name) => this.models[model_name]?.where().delete({ skip_log: true })));
+        await Promise.all(
+          model_list.map(async (model_name) => this.models[model_name]?.where().delete({ skip_log: true })),
+        );
         return;
       }
       throw error;
