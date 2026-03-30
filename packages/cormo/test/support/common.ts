@@ -1,5 +1,7 @@
 import * as cormo from '../../src/index.js';
 
+const dirname = typeof __dirname === 'undefined' ? import.meta.dirname : __dirname;
+
 const db_configs: { [db: string]: any } = {
   mongodb: {
     implicit_apply_schemas: true,
@@ -42,7 +44,7 @@ const db_configs: { [db: string]: any } = {
   },
   sqlite3: {
     implicit_apply_schemas: true,
-    database: import.meta.dirname + '/test.sqlite3',
+    database: dirname + '/test.sqlite3',
     redis_cache: {
       port: 21863,
     },
