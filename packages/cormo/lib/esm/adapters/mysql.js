@@ -47,8 +47,21 @@ function _typeToSQL(property, support_fractional_seconds, major_version) {
             break;
         case types.Object:
             return 'TEXT';
-        case types.Text:
-            return 'TEXT';
+        case types.Text: {
+            const size = property.type.size;
+            switch (size) {
+                case 'tiny':
+                    return 'TINYTEXT';
+                case 'small':
+                    return 'TEXT';
+                case 'medium':
+                    return 'MEDIUMTEXT';
+                case 'long':
+                    return 'LONGTEXT';
+                default:
+                    return 'TEXT';
+            }
+        }
         case types.Blob:
             return 'BLOB';
     }

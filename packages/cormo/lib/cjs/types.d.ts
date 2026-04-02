@@ -147,12 +147,14 @@ declare const CormoTypesRecordID: CormoTypesRecordIDConstructor;
  * @namespace types
  * @class Text
  */
+export type CormoTypesTextSize = 'tiny' | 'small' | 'medium' | 'long';
 export interface CormoTypesText {
     _type: 'text';
+    size?: CormoTypesTextSize;
 }
 export interface CormoTypesTextConstructor {
-    new (): CormoTypesText;
-    (): CormoTypesText;
+    new (size?: CormoTypesTextSize): CormoTypesText;
+    (size?: CormoTypesTextSize): CormoTypesText;
 }
 declare const CormoTypesText: CormoTypesTextConstructor;
 /**
@@ -171,7 +173,7 @@ declare const CormoTypesBlob: CormoTypesBlobConstructor;
 export type ColumnTypeInternal = CormoTypesString | CormoTypesNumber | CormoTypesBoolean | CormoTypesDate | CormoTypesObject | CormoTypesInteger | CormoTypesBigInteger | CormoTypesGeoPoint | CormoTypesVector | CormoTypesRecordID | CormoTypesText | CormoTypesBlob;
 export type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor | CormoTypesBooleanConstructor | CormoTypesDateConstructor | CormoTypesObjectConstructor | CormoTypesIntegerConstructor | CormoTypesBigIntegerConstructor | CormoTypesGeoPointConstructor | CormoTypesVectorConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor | CormoTypesBlobConstructor;
 type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor | BooleanConstructor | DateConstructor | ObjectConstructor;
-type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'biginteger' | 'geopoint' | 'vector' | 'recordid' | 'text' | 'blob';
+type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'biginteger' | 'geopoint' | 'vector' | 'recordid' | 'text' | 'text(tiny)' | 'text(small)' | 'text(medium)' | 'text(long)' | 'blob';
 export type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor | ColumnTypeNativeConstructor | ColumnTypeString;
 /**
  * Converts JavaScript built-in class to CORMO type

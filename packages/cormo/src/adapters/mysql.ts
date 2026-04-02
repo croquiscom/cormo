@@ -95,8 +95,21 @@ function _typeToSQL(property: ColumnPropertyInternal, support_fractional_seconds
       break;
     case types.Object:
       return 'TEXT';
-    case types.Text:
-      return 'TEXT';
+    case types.Text: {
+      const size = (property.type as types.CormoTypesText).size;
+      switch (size) {
+        case 'tiny':
+          return 'TINYTEXT';
+        case 'small':
+          return 'TEXT';
+        case 'medium':
+          return 'MEDIUMTEXT';
+        case 'long':
+          return 'LONGTEXT';
+        default:
+          return 'TEXT';
+      }
+    }
     case types.Blob:
       return 'BLOB';
   }

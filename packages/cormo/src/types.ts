@@ -230,20 +230,24 @@ const CormoTypesRecordID: CormoTypesRecordIDConstructor = function (this: CormoT
  * @namespace types
  * @class Text
  */
+export type CormoTypesTextSize = 'tiny' | 'small' | 'medium' | 'long';
+
 export interface CormoTypesText {
   _type: 'text';
+  size?: CormoTypesTextSize;
 }
 
 export interface CormoTypesTextConstructor {
-  new (): CormoTypesText;
-  (): CormoTypesText;
+  new (size?: CormoTypesTextSize): CormoTypesText;
+  (size?: CormoTypesTextSize): CormoTypesText;
 }
 
-const CormoTypesText: CormoTypesTextConstructor = function (this: CormoTypesText): void {
+const CormoTypesText: CormoTypesTextConstructor = function (this: CormoTypesText, size?: CormoTypesTextSize): void {
   if (!(this instanceof CormoTypesText)) {
-    return new (CormoTypesText as any)();
+    return new (CormoTypesText as any)(size);
   }
-  this.toString = () => 'text';
+  this.size = size;
+  this.toString = () => (this.size ? `text(${this.size})` : 'text');
 } as CormoTypesTextConstructor;
 
 /**
@@ -314,6 +318,10 @@ type ColumnTypeString =
   | 'vector'
   | 'recordid'
   | 'text'
+  | 'text(tiny)'
+  | 'text(small)'
+  | 'text(medium)'
+  | 'text(long)'
   | 'blob';
 
 export type ColumnType =
@@ -355,6 +363,14 @@ function _toCORMOType(type: ColumnType): ColumnTypeInternal {
         return new CormoTypesRecordID();
       case 'text':
         return new CormoTypesText();
+      case 'text(tiny)':
+        return new CormoTypesText('tiny');
+      case 'text(small)':
+        return new CormoTypesText('small');
+      case 'text(medium)':
+        return new CormoTypesText('medium');
+      case 'text(long)':
+        return new CormoTypesText('long');
       case 'blob':
         return new CormoTypesBlob();
     }

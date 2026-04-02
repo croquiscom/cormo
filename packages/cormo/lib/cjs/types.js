@@ -79,11 +79,12 @@ const CormoTypesRecordID = function () {
     this.toString = () => 'recordid';
 };
 exports.RecordID = CormoTypesRecordID;
-const CormoTypesText = function () {
+const CormoTypesText = function (size) {
     if (!(this instanceof CormoTypesText)) {
-        return new CormoTypesText();
+        return new CormoTypesText(size);
     }
-    this.toString = () => 'text';
+    this.size = size;
+    this.toString = () => (this.size ? `text(${this.size})` : 'text');
 };
 exports.Text = CormoTypesText;
 const CormoTypesBlob = function () {
@@ -126,6 +127,14 @@ function _toCORMOType(type) {
                 return new CormoTypesRecordID();
             case 'text':
                 return new CormoTypesText();
+            case 'text(tiny)':
+                return new CormoTypesText('tiny');
+            case 'text(small)':
+                return new CormoTypesText('small');
+            case 'text(medium)':
+                return new CormoTypesText('medium');
+            case 'text(long)':
+                return new CormoTypesText('long');
             case 'blob':
                 return new CormoTypesBlob();
         }
