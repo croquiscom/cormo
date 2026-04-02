@@ -1,5 +1,11 @@
 # cormo
 
+## 2.7.0
+
+### Minor Changes
+
+- 7da01c6: Add size option to Text type for MySQL text variants (TINYTEXT, MEDIUMTEXT, LONGTEXT)
+
 ## 2.6.0
 
 ### Minor Changes
