@@ -47,8 +47,21 @@ function _typeToSQL(property, support_fractional_seconds, major_version) {
             break;
         case types.Object:
             return 'TEXT';
-        case types.Text:
-            return 'TEXT';
+        case types.Text: {
+            const size = property.type.size;
+            switch (size) {
+                case 'tiny':
+                    return 'TINYTEXT';
+                case 'small':
+                    return 'TEXT';
+                case 'medium':
+                    return 'MEDIUMTEXT';
+                case 'long':
+                    return 'LONGTEXT';
+                default:
+                    return 'TEXT';
+            }
+        }
         case types.Blob:
             return 'BLOB';
     }
@@ -988,25 +1001,44 @@ export class MySQLAdapter extends SQLAdapterBase {
         const columns = await this._client.queryAsync(`SHOW FULL COLUMNS FROM \`${table}\``);
         const schema = { columns: {} };
         for (const column of columns) {
-            const type = /^varchar\((\d*)\)/i.test(column.Type)
-                ? new types.String(Number(RegExp.$1))
-                : /^double/i.test(column.Type)
-                    ? new types.Number()
-                    : /^tinyint\(1\)/i.test(column.Type)
-                        ? new types.Boolean()
-                        : /^int/i.test(column.Type)
-                            ? new types.Integer()
-                            : /^bigint/i.test(column.Type)
-                                ? new types.BigInteger()
-                                : /^point/i.test(column.Type)
-                                    ? new types.GeoPoint()
-                                    : /^datetime/i.test(column.Type)
-                                        ? new types.Date()
-                                        : /^text/i.test(column.Type)
-                                            ? new types.Text()
-                                            : /^blob/i.test(column.Type)
-                                                ? new types.Blob()
-                                                : undefined;
+            let type;
+            const col_type = column.Type;
+            if (/^varchar\((\d*)\)/i.test(col_type)) {
+                type = new types.String(Number(RegExp.$1));
+            }
+            else if (/^double/i.test(col_type)) {
+                type = new types.Number();
+            }
+            else if (/^tinyint\(1\)/i.test(col_type)) {
+                type = new types.Boolean();
+            }
+            else if (/^int/i.test(col_type)) {
+                type = new types.Integer();
+            }
+            else if (/^bigint/i.test(col_type)) {
+                type = new types.BigInteger();
+            }
+            else if (/^point/i.test(col_type)) {
+                type = new types.GeoPoint();
+            }
+            else if (/^datetime/i.test(col_type)) {
+                type = new types.Date();
+            }
+            else if (/^tinytext/i.test(col_type)) {
+                type = new types.Text('tiny');
+            }
+            else if (/^mediumtext/i.test(col_type)) {
+                type = new types.Text('medium');
+            }
+            else if (/^longtext/i.test(col_type)) {
+                type = new types.Text('long');
+            }
+            else if (/^text/i.test(col_type)) {
+                type = new types.Text();
+            }
+            else if (/^blob/i.test(col_type)) {
+                type = new types.Blob();
+            }
             schema.columns[column.Field] = {
                 required: column.Null === 'NO',
                 type,

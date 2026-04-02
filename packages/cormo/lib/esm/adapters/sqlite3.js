@@ -663,23 +663,32 @@ export class SQLite3Adapter extends SQLAdapterBase {
         const columns = await this._client.allAsync(`PRAGMA table_info(\`${table}\`)`);
         const schema = { columns: {} };
         for (const column of columns) {
-            const type = /^varchar\((\d*)\)/i.test(column.type)
-                ? new types.String(Number(RegExp.$1))
-                : /^double/i.test(column.type)
-                    ? new types.Number()
-                    : /^tinyint/i.test(column.type)
-                        ? new types.Boolean()
-                        : /^int/i.test(column.type)
-                            ? new types.Integer()
-                            : /^bigint/i.test(column.type)
-                                ? new types.BigInteger()
-                                : /^real/i.test(column.type)
-                                    ? new types.Date()
-                                    : /^text/i.test(column.type)
-                                        ? new types.Text()
-                                        : /^blob/i.test(column.type)
-                                            ? new types.Blob()
-                                            : undefined;
+            let type;
+            const col_type = column.type;
+            if (/^varchar\((\d*)\)/i.test(col_type)) {
+                type = new types.String(Number(RegExp.$1));
+            }
+            else if (/^double/i.test(col_type)) {
+                type = new types.Number();
+            }
+            else if (/^tinyint/i.test(col_type)) {
+                type = new types.Boolean();
+            }
+            else if (/^int/i.test(col_type)) {
+                type = new types.Integer();
+            }
+            else if (/^bigint/i.test(col_type)) {
+                type = new types.BigInteger();
+            }
+            else if (/^real/i.test(col_type)) {
+                type = new types.Date();
+            }
+            else if (/^text/i.test(col_type)) {
+                type = new types.Text();
+            }
+            else if (/^blob/i.test(col_type)) {
+                type = new types.Blob();
+            }
             schema.columns[column.name] = {
                 required: column.notnull === 1,
                 type,
