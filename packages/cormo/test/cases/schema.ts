@@ -48,7 +48,7 @@ export default function (db: any, db_config: any) {
       throw new Error('must throw an error.');
     } catch (error: any) {
       // 'duplicated email' or 'duplicated'
-      expect(error.message).to.match(/^duplicated( age)?$/);
+      expect(error.message).to.match(/^duplicated( age| users_age)?$/);
     }
   });
 
@@ -570,7 +570,10 @@ export default function (db: any, db_config: any) {
     await connection.applySchemas();
     (User as any)._indexes.pop();
 
-    expect(await connection.getSchemaChanges()).to.eql([{ message: 'Remove index on users age', ignorable: true }]);
+    const index_name = db === 'mysql' || db === 'mongodb' ? 'age' : 'users_age';
+    expect(await connection.getSchemaChanges()).to.eql([
+      { message: `Remove index on users ${index_name}`, ignorable: true },
+    ]);
     expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
   });
 

@@ -125,6 +125,13 @@ abstract class AdapterBase {
   /** @internal */
   public support_distinct = false;
 
+  /**
+   * True if index names live in a per-table namespace (e.g. MySQL).
+   * False if index names must be unique within the whole schema (e.g. PostgreSQL, SQLite).
+   * @internal
+   */
+  public index_name_per_table = true;
+
   /** @internal */
   public key_type: any;
   /** @internal */

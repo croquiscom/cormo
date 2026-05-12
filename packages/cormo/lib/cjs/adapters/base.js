@@ -61,6 +61,12 @@ class AdapterBase {
         this.support_join = false;
         /** @internal */
         this.support_distinct = false;
+        /**
+         * True if index names live in a per-table namespace (e.g. MySQL).
+         * False if index names must be unique within the whole schema (e.g. PostgreSQL, SQLite).
+         * @internal
+         */
+        this.index_name_per_table = true;
         /** @internal */
         this.native_integrity = false;
     }

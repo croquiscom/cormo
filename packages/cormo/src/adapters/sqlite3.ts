@@ -88,6 +88,9 @@ export class SQLite3Adapter extends SQLAdapterBase {
   public support_distinct = true;
 
   /** @internal */
+  public index_name_per_table = false;
+
+  /** @internal */
   public key_type: any = types.Integer;
 
   /** @internal */
