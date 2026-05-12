@@ -1,5 +1,11 @@
 # cormo
 
+## 2.8.0
+
+### Minor Changes
+
+- 0e80bbb: Prefix auto-generated index names with the table name for PostgreSQL and SQLite to avoid schema-wide name collisions
+
 ## 2.7.0
 
 ### Minor Changes
