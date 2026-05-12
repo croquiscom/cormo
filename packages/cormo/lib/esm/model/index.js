@@ -577,7 +577,8 @@ class BaseModel {
                 const column_names = Object.keys(index.columns).map((column_name) => {
                     return this._schema[column_name]?._dbname_us || column_name;
                 });
-                index.options.name = column_names.join('_');
+                const base_name = column_names.join('_');
+                index.options.name = this._adapter.index_name_per_table ? base_name : `${this.table_name}_${base_name}`;
             }
         }
     }

@@ -111,6 +111,8 @@ class SQLite3Adapter extends sql_base_js_1.SQLAdapterBase {
         /** @internal */
         this.support_distinct = true;
         /** @internal */
+        this.index_name_per_table = false;
+        /** @internal */
         this.key_type = types.Integer;
         /** @internal */
         this.native_integrity = true;

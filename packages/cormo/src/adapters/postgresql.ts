@@ -131,6 +131,9 @@ export class PostgreSQLAdapter extends SQLAdapterBase {
   public support_distinct = true;
 
   /** @internal */
+  public index_name_per_table = false;
+
+  /** @internal */
   public native_integrity = true;
 
   /** @internal */
