@@ -40,7 +40,7 @@
     "test:unit": "NODE_ENV=test TZ=Etc/UTC vitest run",
     "test": "npm run test:type && npm run lint && npm run test:unit --",
     "test:debug": "NODE_ENV=test TZ=Etc/UTC vitest --inspect-brk --no-file-parallelism",
-    "test:cov": "NODE_ENV=test TZ=Etc/UTC vitest run --coverage",
+    "test:cov": "npm run test:type && npm run lint && NODE_ENV=test TZ=Etc/UTC vitest run --coverage",
     "changeset": "changeset",
     "release": "npm run lint && npm run build && npm run changeset publish"
   },
