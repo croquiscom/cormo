@@ -321,17 +321,23 @@ class BaseModel {
    * 'Model.build(data)' is the same as 'new Model(data)'
    */
   public static build<M extends BaseModel>(
-    this: new (data_arg?: any) => M,
+    this: new (
+      data_arg?: any,
+    ) => M,
     data: ModelValueObjectWithId<M>,
     options: { use_id_in_data: true },
   ): M;
   public static build<M extends BaseModel>(
-    this: new (data_arg?: any) => M,
+    this: new (
+      data_arg?: any,
+    ) => M,
     data?: ModelValueObject<M>,
     options?: { use_id_in_data?: boolean },
   ): M;
   public static build<M extends BaseModel>(
-    this: new (data_arg?: any) => M,
+    this: new (
+      data_arg?: any,
+    ) => M,
     data?: ModelValueObjectWithId<M>,
     options?: { use_id_in_data?: boolean },
   ): M {

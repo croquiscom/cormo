@@ -18,7 +18,7 @@
   "scripts": {
     "prepublishOnly": "npm run lint && npm run build",
     "build": "rimraf lib && tsc -b src/tsconfig.build.cjs.json src/tsconfig.build.esm.json && echo '{\"type\":\"commonjs\"}' > lib/cjs/package.json",
-    "lint": "../../node_modules/.bin/eslint .",
+    "lint": "../../node_modules/.bin/biome check .",
     "test:type": "tsc --noEmit",
     "test:unit": "NODE_ENV=test TZ=Etc/UTC mocha -n import=tsx ./test/*/*.ts",
     "test": "npm run test:type && npm run lint && npm run test:unit --",
