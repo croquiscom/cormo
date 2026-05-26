@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 import { UserRef } from './transaction.js';
@@ -25,7 +25,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     }
 
     const users = await models.User.where();
-    expect(users).to.eql([
+    expect(users).toEqual([
       { id: user1_id, name: 'John Doe', age: 27 },
       { id: user2_id, name: 'Bill Smith', age: 45 },
     ]);
@@ -48,7 +48,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     }
 
     const users = await models.User.where();
-    expect(users).to.eql([]);
+    expect(users).toEqual([]);
   });
 
   it('can not run command with finished transaction', async () => {
@@ -59,8 +59,8 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.be.an.instanceof(Error);
-      expect(error.message).to.equal('transaction finished');
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe('transaction finished');
     }
   });
 
@@ -84,7 +84,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     }
 
     const users = await models.User.where();
-    expect(users).to.eql([{ id: user3_id, name: 'Alice Jackson', age: 27 }]);
+    expect(users).toEqual([{ id: user3_id, name: 'Alice Jackson', age: 27 }]);
   });
 
   describe('isolation levels', () => {
@@ -102,14 +102,14 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx2 });
         await models.User.find(user1.id).transaction(tx2).update({ age: 30 });
 
-        expect(await models.User.where().transaction(tx1)).to.eql([
+        expect(await models.User.where().transaction(tx1)).toEqual([
           { id: user1.id, name: 'John Doe', age: 30 },
           { id: user2.id, name: 'Bill Smith', age: 45 },
         ]);
 
         await tx2.commit();
 
-        expect(await models.User.where().order('id').transaction(tx1)).to.eql([
+        expect(await models.User.where().order('id').transaction(tx1)).toEqual([
           { id: user1.id, name: 'John Doe', age: 30 },
           { id: user2.id, name: 'Bill Smith', age: 45 },
         ]);
@@ -140,11 +140,11 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx2 });
         await models.User.find(user1.id).transaction(tx2).update({ age: 30 });
 
-        expect(await models.User.where().transaction(tx1)).to.eql([{ id: user1.id, name: 'John Doe', age: 27 }]);
+        expect(await models.User.where().transaction(tx1)).toEqual([{ id: user1.id, name: 'John Doe', age: 27 }]);
 
         await tx2.commit();
 
-        expect(await models.User.where().order('id').transaction(tx1)).to.eql([
+        expect(await models.User.where().order('id').transaction(tx1)).toEqual([
           { id: user1.id, name: 'John Doe', age: 30 },
           { id: user2.id, name: 'Bill Smith', age: 45 },
         ]);
@@ -178,23 +178,23 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         const user2 = await models.User.create({ name: 'Bill Smith', age: 45 }, { transaction: tx2 });
         await models.User.find(user1.id).transaction(tx2).update({ age: 30 });
 
-        expect(await models.User.where().transaction(tx1)).to.eql([{ id: user1.id, name: 'John Doe', age: 27 }]);
+        expect(await models.User.where().transaction(tx1)).toEqual([{ id: user1.id, name: 'John Doe', age: 27 }]);
 
         await tx2.commit();
 
-        expect(await models.User.where().order('id').transaction(tx1)).to.eql([
+        expect(await models.User.where().order('id').transaction(tx1)).toEqual([
           { id: user1.id, name: 'John Doe', age: 27 },
         ]);
 
         models.User.find(user2.id).transaction(tx1).update({ age: 55 });
-        expect(await models.User.where().order('id').transaction(tx1)).to.eql([
+        expect(await models.User.where().order('id').transaction(tx1)).toEqual([
           { id: user1.id, name: 'John Doe', age: 27 },
           { id: user2.id, name: 'Bill Smith', age: 55 },
         ]);
 
         await tx1.commit();
 
-        expect(await models.User.where().order('id')).to.eql([
+        expect(await models.User.where().order('id')).toEqual([
           { id: user1.id, name: 'John Doe', age: 30 },
           { id: user2.id, name: 'Bill Smith', age: 55 },
         ]);
@@ -219,7 +219,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.where().transaction(tx)).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+        expect(await models.User.where().transaction(tx)).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
         await tx.rollback();
       } finally {
         try {
@@ -229,7 +229,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.createBulk', async () => {
@@ -237,7 +237,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const users = await models.User.createBulk([{ name: 'John Doe', age: 27 }], { transaction: tx });
-        expect(await models.User.where().transaction(tx)).to.eql([{ id: users[0].id, name: 'John Doe', age: 27 }]);
+        expect(await models.User.where().transaction(tx)).toEqual([{ id: users[0].id, name: 'John Doe', age: 27 }]);
         await tx.rollback();
       } finally {
         try {
@@ -247,7 +247,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model::save', async () => {
@@ -258,7 +258,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         user.name = 'John Doe';
         user.age = 27;
         await user.save({ transaction: tx });
-        expect(await models.User.where().transaction(tx)).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+        expect(await models.User.where().transaction(tx)).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
         await tx.rollback();
       } finally {
         try {
@@ -268,7 +268,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.count', async () => {
@@ -276,7 +276,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const _user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.count(undefined, { transaction: tx })).to.eql(1);
+        expect(await models.User.count(undefined, { transaction: tx })).toEqual(1);
         await tx.rollback();
       } finally {
         try {
@@ -286,7 +286,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.update', async () => {
@@ -296,7 +296,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         await models.User.update({ age: 30 }, undefined, { transaction: tx });
-        expect(await models.User.where().transaction(tx)).to.eql([{ id: user.id, name: 'John Doe', age: 30 }]);
+        expect(await models.User.where().transaction(tx)).toEqual([{ id: user.id, name: 'John Doe', age: 30 }]);
         await tx.rollback();
       } finally {
         try {
@@ -306,7 +306,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+      expect(await models.User.where()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
     });
 
     it('Model.delete', async () => {
@@ -316,7 +316,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         await models.User.delete(undefined, { transaction: tx });
-        expect(await models.User.where().transaction(tx)).to.eql([]);
+        expect(await models.User.where().transaction(tx)).toEqual([]);
         await tx.rollback();
       } finally {
         try {
@@ -326,7 +326,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+      expect(await models.User.where()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
     });
 
     it('Model.query', async () => {
@@ -334,7 +334,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.query({ transaction: tx })).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+        expect(await models.User.query({ transaction: tx })).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
         await tx.rollback();
       } finally {
         try {
@@ -344,7 +344,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.find', async () => {
@@ -352,7 +352,11 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.find(user.id, { transaction: tx })).to.eql({ id: user.id, name: 'John Doe', age: 27 });
+        expect(await models.User.find(user.id, { transaction: tx })).toEqual({
+          id: user.id,
+          name: 'John Doe',
+          age: 27,
+        });
         await tx.rollback();
       } finally {
         try {
@@ -362,7 +366,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.findPreserve', async () => {
@@ -370,7 +374,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.findPreserve([user.id], { transaction: tx })).to.eql([
+        expect(await models.User.findPreserve([user.id], { transaction: tx })).toEqual([
           { id: user.id, name: 'John Doe', age: 27 },
         ]);
         await tx.rollback();
@@ -382,7 +386,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.where', async () => {
@@ -390,7 +394,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.where({ age: 27 }, { transaction: tx })).to.eql([
+        expect(await models.User.where({ age: 27 }, { transaction: tx })).toEqual([
           { id: user.id, name: 'John Doe', age: 27 },
         ]);
         await tx.rollback();
@@ -402,7 +406,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.select', async () => {
@@ -410,7 +414,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.select('name', { transaction: tx })).to.eql([{ id: user.id, name: 'John Doe' }]);
+        expect(await models.User.select('name', { transaction: tx })).toEqual([{ id: user.id, name: 'John Doe' }]);
         await tx.rollback();
       } finally {
         try {
@@ -420,7 +424,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.order', async () => {
@@ -428,7 +432,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.order('name', { transaction: tx })).to.eql([
+        expect(await models.User.order('name', { transaction: tx })).toEqual([
           { id: user.id, name: 'John Doe', age: 27 },
         ]);
         await tx.rollback();
@@ -440,7 +444,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.group', async () => {
@@ -448,7 +452,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const _user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.group(null, { sum: { $sum: '$age' } }, { transaction: tx })).to.eql([{ sum: 27 }]);
+        expect(await models.User.group(null, { sum: { $sum: '$age' } }, { transaction: tx })).toEqual([{ sum: 27 }]);
         await tx.rollback();
       } finally {
         try {
@@ -458,7 +462,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Query::exec', async () => {
@@ -466,7 +470,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.query({ transaction: tx }).where({ age: 27 })).to.eql([
+        expect(await models.User.query({ transaction: tx }).where({ age: 27 })).toEqual([
           { id: user.id, name: 'John Doe', age: 27 },
         ]);
         await tx.rollback();
@@ -478,7 +482,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Query::count', async () => {
@@ -486,7 +490,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         const _user = await models.User.create({ name: 'John Doe', age: 27 }, { transaction: tx });
-        expect(await models.User.query({ transaction: tx }).count()).to.eql(1);
+        expect(await models.User.query({ transaction: tx }).count()).toEqual(1);
         await tx.rollback();
       } finally {
         try {
@@ -496,7 +500,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Query::update', async () => {
@@ -506,7 +510,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         await models.User.query({ transaction: tx }).update({ age: 30 });
-        expect(await models.User.where().transaction(tx)).to.eql([{ id: user.id, name: 'John Doe', age: 30 }]);
+        expect(await models.User.where().transaction(tx)).toEqual([{ id: user.id, name: 'John Doe', age: 30 }]);
         await tx.rollback();
       } finally {
         try {
@@ -516,7 +520,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+      expect(await models.User.where()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
     });
 
     it('Query::delete', async () => {
@@ -526,7 +530,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
 
       try {
         await models.User.query({ transaction: tx }).delete({ age: 27 });
-        expect(await models.User.where().transaction(tx)).to.eql([]);
+        expect(await models.User.where().transaction(tx)).toEqual([]);
         await tx.rollback();
       } finally {
         try {
@@ -536,7 +540,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         }
       }
 
-      expect(await models.User.where()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+      expect(await models.User.where()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
     });
   });
 }

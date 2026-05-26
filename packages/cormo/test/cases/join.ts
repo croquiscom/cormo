@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class UserRef extends cormo.BaseModel {
@@ -36,16 +36,16 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { title: 'third post', body: 'This is the 3rd post.', user_id: users[1].id },
     ]);
     const records = await models.User.query().join(models.Post);
-    expect(records).to.have.length(3);
-    expect(records[0]).to.be.an.instanceof(models.User);
-    expect(records).to.eql([
+    expect(records).toHaveLength(3);
+    expect(records[0]).toBeInstanceOf(models.User);
+    expect(records).toEqual([
       { id: users[0].id, name: users[0].name, age: users[0].age },
       { id: users[0].id, name: users[0].name, age: users[0].age },
       { id: users[1].id, name: users[1].name, age: users[1].age },
     ]);
 
     const count = await models.User.query().join(models.Post).count();
-    expect(count).to.eql(3);
+    expect(count).toEqual(3);
   });
 
   it('left outer join', async () => {
@@ -60,9 +60,9 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { title: 'third post', body: 'This is the 3rd post.', user_id: users[1].id },
     ]);
     const records = await models.User.query().left_outer_join(models.Post);
-    expect(records).to.have.length(4);
-    expect(records[0]).to.be.an.instanceof(models.User);
-    expect(records).to.eql([
+    expect(records).toHaveLength(4);
+    expect(records[0]).toBeInstanceOf(models.User);
+    expect(records).toEqual([
       { id: users[0].id, name: users[0].name, age: users[0].age },
       { id: users[0].id, name: users[0].name, age: users[0].age },
       { id: users[1].id, name: users[1].name, age: users[1].age },
@@ -70,7 +70,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
     ]);
 
     const count = await models.User.query().left_outer_join(models.Post).count();
-    expect(count).to.eql(4);
+    expect(count).toEqual(4);
   });
 
   it('condition', async () => {
@@ -85,15 +85,15 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { brand: 'Maple', user_id: users[1].id },
     ]);
     const records = await models.User.query().join(models.Computer).where({ 'Computer.brand': 'Maple' });
-    expect(records).to.have.length(2);
-    expect(records[0]).to.be.an.instanceof(models.User);
-    expect(records).to.eql([
+    expect(records).toHaveLength(2);
+    expect(records[0]).toBeInstanceOf(models.User);
+    expect(records).toEqual([
       { id: users[0].id, name: users[0].name, age: users[0].age },
       { id: users[1].id, name: users[1].name, age: users[1].age },
     ]);
 
     const count = await models.User.query().join(models.Computer).where({ 'Computer.brand': 'Maple' }).count();
-    expect(count).to.eql(2);
+    expect(count).toEqual(2);
   });
 
   it('condition with base table', async () => {
@@ -110,15 +110,15 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
     const records = await models.User.query()
       .join(models.Computer)
       .where({ 'Computer.brand': { $ceq: '$name' } });
-    expect(records).to.have.length(1);
-    expect(records[0]).to.be.an.instanceof(models.User);
-    expect(records).to.eql([{ id: users[0].id, name: users[0].name, age: users[0].age }]);
+    expect(records).toHaveLength(1);
+    expect(records[0]).toBeInstanceOf(models.User);
+    expect(records).toEqual([{ id: users[0].id, name: users[0].name, age: users[0].age }]);
 
     const count = await models.User.query()
       .join(models.Computer)
       .where({ 'Computer.brand': { $ceq: '$name' } })
       .count();
-    expect(count).to.eql(1);
+    expect(count).toEqual(1);
   });
 
   it('belongsTo', async () => {
@@ -133,9 +133,9 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { title: 'third post', body: 'This is the 3rd post.', user_id: users[1].id },
     ]);
     const records = await models.Post.query().join(models.User).where({ 'User.age': 27 });
-    expect(records).to.have.length(2);
-    expect(records[0]).to.be.an.instanceof(models.Post);
-    expect(records).to.eql([
+    expect(records).toHaveLength(2);
+    expect(records[0]).toBeInstanceOf(models.Post);
+    expect(records).toEqual([
       {
         id: posts[0].id,
         title: posts[0].title,
@@ -153,7 +153,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
     ]);
 
     const count = await models.Post.query().join(models.User).where({ 'User.age': 27 }).count();
-    expect(count).to.eql(2);
+    expect(count).toEqual(2);
   });
 
   it('specify key', async () => {
@@ -173,9 +173,9 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       .left_outer_join(models.Post, { alias: 'Comment', join_column: 'parent_post_id' })
       .where({ parent_post_id: null })
       .where({ 'Comment.id': null });
-    expect(records).to.have.length(1);
-    expect(records[0]).to.be.an.instanceof(models.Post);
-    expect(records).to.eql([
+    expect(records).toHaveLength(1);
+    expect(records[0]).toBeInstanceOf(models.Post);
+    expect(records).toEqual([
       {
         id: post2.id,
         title: post2.title,
@@ -190,7 +190,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       .where({ parent_post_id: null })
       .where({ 'Comment.id': null })
       .count();
-    expect(count).to.eql(1);
+    expect(count).toEqual(1);
   });
 
   it('distinct', async () => {
@@ -205,15 +205,15 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       { title: 'third post', body: 'This is the 3rd post.', user_id: users[1].id },
     ]);
     const records = await models.User.query().join(models.Post).distinct();
-    expect(records).to.have.length(2);
-    expect(records[0]).to.be.an.instanceof(models.User);
-    expect(records).to.eql([
+    expect(records).toHaveLength(2);
+    expect(records[0]).toBeInstanceOf(models.User);
+    expect(records).toEqual([
       { id: users[0].id, name: users[0].name, age: users[0].age },
       { id: users[1].id, name: users[1].name, age: users[1].age },
     ]);
 
     const count = await models.User.query().join(models.Post).distinct().count();
-    expect(count).to.eql(2);
+    expect(count).toEqual(2);
   });
 
   it('group by', async () => {
@@ -230,8 +230,8 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
     const records = await models.User.query()
       .join(models.Post)
       .group('id', { count: { $sum: 1 } });
-    expect(records).to.have.length(2);
-    expect(records).to.eql([
+    expect(records).toHaveLength(2);
+    expect(records).toEqual([
       { id: users[0].id, count: 2 },
       { id: users[1].id, count: 1 },
     ]);
@@ -240,6 +240,6 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       .join(models.Post)
       .group('id', { count: { $sum: 1 } })
       .count();
-    expect(count).to.eql(2);
+    expect(count).toEqual(2);
   });
 }

@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, afterEach, beforeEach, it } from 'vitest';
 import * as sinon from 'sinon';
 import * as cormo from '../../src/index.js';
 
@@ -14,11 +14,11 @@ export type UserRefVO = cormo.ModelValueObject<UserRef>;
 const fake_date = new Date(2021, 1, 5, 10, 23).getTime();
 
 function _compareUserUnique(user: UserRef, expected: UserRefVO) {
-  expect(user).to.have.keys('id', 'name', 'age', 'count', 'date_created');
-  expect(user.name).to.equal(expected.name);
-  expect(user.age).to.equal(expected.age);
-  expect(user.count).to.equal(expected.count);
-  expect(user.date_created?.getTime()).to.equal(fake_date);
+  expect(user).toHaveKeys('id', 'name', 'age', 'count', 'date_created');
+  expect(user.name).toBe(expected.name);
+  expect(user.age).toBe(expected.age);
+  expect(user.count).toBe(expected.count);
+  expect(user.date_created?.getTime()).toBe(fake_date);
 }
 
 async function _createUserUniques(User: typeof UserRef, data?: UserRefVO[]) {
@@ -66,7 +66,7 @@ export default function (_models: { connection: cormo.Connection | null }) {
     await User.where({ name: 'Elsa Wood' }).upsert({ age: 10 });
     const users = await User.where();
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
-    expect(users).to.have.length(3);
+    expect(users).toHaveLength(3);
     _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
     _compareUserUnique(users[1], { name: 'Bill Smith', age: 45, count: 5 });
     _compareUserUnique(users[2], { name: 'Elsa Wood', age: 10, count: 5 });
@@ -77,7 +77,7 @@ export default function (_models: { connection: cormo.Connection | null }) {
     await User.where({ name: 'Bill Smith' }).upsert({ age: 10 });
     const users = await User.where();
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
-    expect(users).to.have.length(2);
+    expect(users).toHaveLength(2);
     _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
     _compareUserUnique(users[1], { name: 'Bill Smith', age: 10, count: 5 });
   });
@@ -88,7 +88,7 @@ export default function (_models: { connection: cormo.Connection | null }) {
     await User.where({ name: 'Bill Smith' }).upsert({ age: 10 });
     const users = await User.where();
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
-    expect(users).to.have.length(2);
+    expect(users).toHaveLength(2);
     _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
     _compareUserUnique(users[1], { name: 'Bill Smith', age: 10, count: 8 });
   });
@@ -98,7 +98,7 @@ export default function (_models: { connection: cormo.Connection | null }) {
     await User.where({ name: 'Elsa Wood' }).upsert({ age: { $inc: 4 } });
     const users = await User.where();
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
-    expect(users).to.have.length(3);
+    expect(users).toHaveLength(3);
     _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
     _compareUserUnique(users[1], { name: 'Bill Smith', age: 45, count: 5 });
     _compareUserUnique(users[2], { name: 'Elsa Wood', age: 4, count: 5 });
@@ -109,7 +109,7 @@ export default function (_models: { connection: cormo.Connection | null }) {
     await User.where({ name: 'Bill Smith' }).upsert({ age: { $inc: 4 } });
     const users = await User.where();
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
-    expect(users).to.have.length(2);
+    expect(users).toHaveLength(2);
     _compareUserUnique(users[0], { name: 'Alice Jackson', age: 27, count: 5 });
     _compareUserUnique(users[1], { name: 'Bill Smith', age: 49, count: 5 });
   });
@@ -117,36 +117,36 @@ export default function (_models: { connection: cormo.Connection | null }) {
   it('set field only on update', async () => {
     await User.where({ name: 'Elsa Wood' }).upsert({ age: 10, count: { $inc: 1 } }, { ignore_on_update: ['age'] });
     const users1 = await User.where();
-    expect(users1).to.have.length(1);
+    expect(users1).toHaveLength(1);
     _compareUserUnique(users1[0], { name: 'Elsa Wood', age: 10, count: 1 });
 
     await User.where({ name: 'Elsa Wood' }).upsert({ age: 30, count: { $inc: 1 } }, { ignore_on_update: ['age'] });
     const users2 = await User.where();
-    expect(users2).to.have.length(1);
+    expect(users2).toHaveLength(1);
     _compareUserUnique(users2[0], { name: 'Elsa Wood', age: 10, count: 2 });
   });
 
   it('set field only on update with $inc', async () => {
     await User.where({ name: 'Elsa Wood' }).upsert({ age: 10, count: { $inc: 1 } }, { ignore_on_update: ['count'] });
     const users1 = await User.where();
-    expect(users1).to.have.length(1);
+    expect(users1).toHaveLength(1);
     _compareUserUnique(users1[0], { name: 'Elsa Wood', age: 10, count: 1 });
 
     await User.where({ name: 'Elsa Wood' }).upsert({ age: 30, count: { $inc: 1 } }, { ignore_on_update: ['count'] });
     const users2 = await User.where();
-    expect(users2).to.have.length(1);
+    expect(users2).toHaveLength(1);
     _compareUserUnique(users2[0], { name: 'Elsa Wood', age: 30, count: 1 });
   });
 
   it('upsert with no update field', async () => {
     await User.where({ name: 'Elsa Wood' }).upsert({ age: 10 }, { ignore_on_update: ['age'] });
     const users1 = await User.where();
-    expect(users1).to.have.length(1);
+    expect(users1).toHaveLength(1);
     _compareUserUnique(users1[0], { name: 'Elsa Wood', age: 10, count: 5 });
 
     await User.where({ name: 'Elsa Wood' }).upsert({ age: 30 }, { ignore_on_update: ['age'] });
     const users2 = await User.where();
-    expect(users2).to.have.length(1);
+    expect(users2).toHaveLength(1);
     _compareUserUnique(users2[0], { name: 'Elsa Wood', age: 10, count: 5 });
   });
 }

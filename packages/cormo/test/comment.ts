@@ -3,7 +3,7 @@
  */
 
 import { Readable } from 'stream';
-import { expect } from 'chai';
+import { expect, afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { AdapterFindOptions, AdapterCountOptions, AdapterDeleteOptions } from '../src/adapters/base.js';
 import { SQLAdapterBase } from '../src/adapters/sql_base.js';
 import * as cormo from '../src/index.js';
@@ -102,97 +102,97 @@ describe('Query Comment', () => {
   describe('sanitizeComment', () => {
     it('should allow alphanumeric characters', () => {
       const result = adapter.sanitizeComment('test123ABC');
-      expect(result).to.equal('test123ABC');
+      expect(result).toBe('test123ABC');
     });
 
     it('should allow spaces', () => {
       const result = adapter.sanitizeComment('test query comment');
-      expect(result).to.equal('test query comment');
+      expect(result).toBe('test query comment');
     });
 
     it('should allow underscores and hyphens', () => {
       const result = adapter.sanitizeComment('test_query-comment');
-      expect(result).to.equal('test_query-comment');
+      expect(result).toBe('test_query-comment');
     });
 
     it('should allow Korean characters', () => {
       const result = adapter.sanitizeComment('사용자 조회');
-      expect(result).to.equal('사용자 조회');
+      expect(result).toBe('사용자 조회');
     });
 
     it('should allow mixed Korean and English', () => {
       const result = adapter.sanitizeComment('사용자 User 조회');
-      expect(result).to.equal('사용자 User 조회');
+      expect(result).toBe('사용자 User 조회');
     });
 
     it('should remove SQL special characters', () => {
       const result = adapter.sanitizeComment("'; DROP TABLE users; --");
-      expect(result).to.equal(' DROP TABLE users --');
+      expect(result).toBe(' DROP TABLE users --');
     });
 
     it('should remove quotes', () => {
       const result = adapter.sanitizeComment('test"query\'comment');
-      expect(result).to.equal('testquerycomment');
+      expect(result).toBe('testquerycomment');
     });
 
     it('should remove SQL comment markers', () => {
       const result = adapter.sanitizeComment('test /* comment */ query');
-      expect(result).to.equal('test  comment  query');
+      expect(result).toBe('test  comment  query');
     });
 
     it('should limit length to 100 characters', () => {
       const longString = 'a'.repeat(300);
       const result = adapter.sanitizeComment(longString);
-      expect(result.length).to.equal(100);
+      expect(result.length).toBe(100);
     });
 
     it('should return empty string for undefined', () => {
       const result = adapter.sanitizeComment(undefined);
-      expect(result).to.equal('');
+      expect(result).toBe('');
     });
 
     it('should return empty string for empty string', () => {
       const result = adapter.sanitizeComment('');
-      expect(result).to.equal('');
+      expect(result).toBe('');
     });
   });
 
   describe('createCommentedSQL', () => {
     it('should create SQL with comment prepended', () => {
       const result = adapter.createCommentedSQL('SELECT * FROM users', 'test query');
-      expect(result).to.equal('/* test query */ SELECT * FROM users');
+      expect(result).toBe('/* test query */ SELECT * FROM users');
     });
 
     it('should return original SQL for undefined comment', () => {
       const result = adapter.createCommentedSQL('SELECT * FROM users', undefined);
-      expect(result).to.equal('SELECT * FROM users');
+      expect(result).toBe('SELECT * FROM users');
     });
 
     it('should return original SQL for empty comment', () => {
       const result = adapter.createCommentedSQL('SELECT * FROM users', '');
-      expect(result).to.equal('SELECT * FROM users');
+      expect(result).toBe('SELECT * FROM users');
     });
 
     it('should sanitize comment text before creating SQL comment', () => {
       const result = adapter.createCommentedSQL('SELECT * FROM users', "test'; DROP TABLE");
-      expect(result).to.equal('/* test DROP TABLE */ SELECT * FROM users');
+      expect(result).toBe('/* test DROP TABLE */ SELECT * FROM users');
     });
 
     it('should work with Korean characters', () => {
       const result = adapter.createCommentedSQL('SELECT * FROM users', '사용자 조회');
-      expect(result).to.equal('/* 사용자 조회 */ SELECT * FROM users');
+      expect(result).toBe('/* 사용자 조회 */ SELECT * FROM users');
     });
 
     it('should work with complex SQL', () => {
       const sql = 'INSERT INTO users (name, age) VALUES (?, ?)';
       const result = adapter.createCommentedSQL(sql, '사용자 생성');
-      expect(result).to.equal('/* 사용자 생성 */ INSERT INTO users (name, age) VALUES (?, ?)');
+      expect(result).toBe('/* 사용자 생성 */ INSERT INTO users (name, age) VALUES (?, ?)');
     });
 
     it('should work with UPDATE statements', () => {
       const sql = 'UPDATE users SET name = ? WHERE id = ?';
       const result = adapter.createCommentedSQL(sql, '프로필 업데이트');
-      expect(result).to.equal('/* 프로필 업데이트 */ UPDATE users SET name = ? WHERE id = ?');
+      expect(result).toBe('/* 프로필 업데이트 */ UPDATE users SET name = ? WHERE id = ?');
     });
   });
 });
@@ -209,7 +209,7 @@ _dbs.forEach((db) => {
     let User: typeof IUser;
     let lastQuery = '';
 
-    before(async () => {
+    beforeAll(async () => {
       _g.connection = connection = new cormo.Connection(db as any, _g.db_configs[db]);
 
       // Enable query logging and capture last query
@@ -238,7 +238,7 @@ _dbs.forEach((db) => {
       await _g.deleteAllRecords([User]);
     });
 
-    after(async () => {
+    afterAll(async () => {
       if (connection) {
         await connection.dropAllModels();
         connection.close();
@@ -259,14 +259,14 @@ _dbs.forEach((db) => {
       it('should only find with comment', async () => {
         const user = await User.find(1).comment('1번 사용자 조회');
 
-        expect(user).to.eql({
+        expect(user).toEqual({
           id: 1,
           name: 'John Doe',
           age: 27,
           email: 'john@example.com',
         });
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 1번 사용자 조회 */');
+          expect(lastQuery).toContain('/* 1번 사용자 조회 */');
         }
       });
 
@@ -276,20 +276,20 @@ _dbs.forEach((db) => {
           .comment('사용자 조회 - 30세 이상')
           .exec();
 
-        expect(users).to.have.length(2);
-        expect(users.map((u: any) => u.name).sort()).to.eql(['Bob Johnson', 'Jane Smith']);
+        expect(users).toHaveLength(2);
+        expect(users.map((u: any) => u.name).sort()).toEqual(['Bob Johnson', 'Jane Smith']);
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 사용자 조회 - 30세 이상 */');
+          expect(lastQuery).toContain('/* 사용자 조회 - 30세 이상 */');
         }
       });
 
       it('should execute find with Korean and English mixed comment', async () => {
         const user = await User.query().where({ name: 'John Doe' }).comment('User 조회 - John').exec();
 
-        expect(user).to.have.length(1);
-        expect(user[0].name).to.equal('John Doe');
+        expect(user).toHaveLength(1);
+        expect(user[0].name).toBe('John Doe');
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* User 조회 - John */');
+          expect(lastQuery).toContain('/* User 조회 - John */');
         }
       });
 
@@ -298,8 +298,8 @@ _dbs.forEach((db) => {
           .where({ age: { $lt: 40 } })
           .exec();
 
-        expect(users).to.have.length(2);
-        expect(lastQuery).to.not.include('/*');
+        expect(users).toHaveLength(2);
+        expect(lastQuery).not.toContain('/*');
       });
 
       it('should execute count with comment', async () => {
@@ -308,9 +308,9 @@ _dbs.forEach((db) => {
           .comment('사용자 수 집계')
           .count();
 
-        expect(count).to.equal(2);
+        expect(count).toBe(2);
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 사용자 수 집계 */');
+          expect(lastQuery).toContain('/* 사용자 수 집계 */');
         }
       });
 
@@ -320,11 +320,11 @@ _dbs.forEach((db) => {
           .comment("'; DROP TABLE users; --")
           .exec();
 
-        expect(users).to.have.length(2);
+        expect(users).toHaveLength(2);
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/*  DROP TABLE users -- */');
-          expect(lastQuery).to.not.include("'");
-          expect(lastQuery).to.not.include(';');
+          expect(lastQuery).toContain('/*  DROP TABLE users -- */');
+          expect(lastQuery).not.toContain("'");
+          expect(lastQuery).not.toContain(';');
         }
       });
     });
@@ -340,10 +340,10 @@ _dbs.forEach((db) => {
           { comment: '신규 사용자 생성' },
         );
 
-        expect(user.name).to.equal('New User');
+        expect(user.name).toBe('New User');
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 신규 사용자 생성 */');
-          expect(lastQuery).to.include('INSERT');
+          expect(lastQuery).toContain('/* 신규 사용자 생성 */');
+          expect(lastQuery).toContain('INSERT');
         }
       });
 
@@ -356,20 +356,20 @@ _dbs.forEach((db) => {
           { comment: '대량 사용자 생성' },
         );
 
-        expect(users).to.have.length(2);
+        expect(users).toHaveLength(2);
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 대량 사용자 생성 */');
-          expect(lastQuery).to.include('INSERT');
+          expect(lastQuery).toContain('/* 대량 사용자 생성 */');
+          expect(lastQuery).toContain('INSERT');
         }
       });
 
       it('should execute create without comment', async () => {
         const user = await User.create({ name: 'No Comment User', age: 29, email: 'nocomment@example.com' });
 
-        expect(user.name).to.equal('No Comment User');
+        expect(user.name).toBe('No Comment User');
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.not.include('/*');
-          expect(lastQuery).to.include('INSERT');
+          expect(lastQuery).not.toContain('/*');
+          expect(lastQuery).toContain('INSERT');
         }
       });
     });
@@ -392,14 +392,14 @@ _dbs.forEach((db) => {
           .comment('프로필 업데이트')
           .update({ name: 'John Updated' });
 
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 프로필 업데이트 */');
-          expect(lastQuery).to.include('UPDATE');
+          expect(lastQuery).toContain('/* 프로필 업데이트 */');
+          expect(lastQuery).toContain('UPDATE');
         }
 
         const user = await User.find(userId);
-        expect(user.name).to.equal('John Updated');
+        expect(user.name).toBe('John Updated');
       });
 
       it('should execute bulk update with comment', async () => {
@@ -409,14 +409,14 @@ _dbs.forEach((db) => {
           .comment('나이 업데이트 - 30세 이상')
           .update({ age: 35 });
 
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 나이 업데이트 - 30세 이상 */');
-          expect(lastQuery).to.include('UPDATE');
+          expect(lastQuery).toContain('/* 나이 업데이트 - 30세 이상 */');
+          expect(lastQuery).toContain('UPDATE');
         }
 
         const users = await User.query().where({ age: 35 }).exec();
-        expect(users).to.have.length(1);
+        expect(users).toHaveLength(1);
       });
 
       it('should execute Model.update with comment', async () => {
@@ -427,14 +427,14 @@ _dbs.forEach((db) => {
           { comment: 'Model.update - 나이 일괄 수정' },
         );
 
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* Modelupdate - 나이 일괄 수정 */');
-          expect(lastQuery).to.include('UPDATE');
+          expect(lastQuery).toContain('/* Modelupdate - 나이 일괄 수정 */');
+          expect(lastQuery).toContain('UPDATE');
         }
 
         const users = await User.query().where({ age: 40 }).exec();
-        expect(users).to.have.length(1);
+        expect(users).toHaveLength(1);
       });
     });
 
@@ -455,13 +455,13 @@ _dbs.forEach((db) => {
         await user.save({ comment: '프로필 수정 - 사용자 편집' });
 
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 프로필 수정 - 사용자 편집 */');
-          expect(lastQuery).to.include('UPDATE');
+          expect(lastQuery).toContain('/* 프로필 수정 - 사용자 편집 */');
+          expect(lastQuery).toContain('UPDATE');
         }
 
         const updated = await User.find(userId);
-        expect(updated.age).to.equal(30);
-        expect(updated.name).to.equal('John Updated');
+        expect(updated.age).toBe(30);
+        expect(updated.name).toBe('John Updated');
       });
 
       it('should execute save (create) with comment', async () => {
@@ -471,13 +471,13 @@ _dbs.forEach((db) => {
         await newUser.save({ comment: '신규 사용자 저장' });
 
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 신규 사용자 저장 */');
-          expect(lastQuery).to.include('INSERT');
+          expect(lastQuery).toContain('/* 신규 사용자 저장 */');
+          expect(lastQuery).toContain('INSERT');
         }
 
-        expect(newUser.id).to.exist;
+        expect(newUser.id).toExist();
         const found = await User.find(newUser.id);
-        expect(found.name).to.equal('New User');
+        expect(found.name).toBe('New User');
       });
 
       it('should execute save without comment', async () => {
@@ -488,8 +488,8 @@ _dbs.forEach((db) => {
         await user.save();
 
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.not.include('/*');
-          expect(lastQuery).to.include('UPDATE');
+          expect(lastQuery).not.toContain('/*');
+          expect(lastQuery).toContain('UPDATE');
         }
       });
     });
@@ -510,28 +510,28 @@ _dbs.forEach((db) => {
           .comment('사용자 삭제 - 30세 미만')
           .delete();
 
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 사용자 삭제 - 30세 미만 */');
-          expect(lastQuery).to.include('DELETE');
+          expect(lastQuery).toContain('/* 사용자 삭제 - 30세 미만 */');
+          expect(lastQuery).toContain('DELETE');
         }
 
         const remaining = await User.count();
-        expect(remaining).to.equal(2);
+        expect(remaining).toBe(2);
       });
 
       it('should execute Model.delete with comment', async () => {
         lastQuery = '';
         const count = await User.delete({ age: { $gte: 40 } }, { comment: 'Model.delete - 40세 이상 삭제' });
 
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* Modeldelete - 40세 이상 삭제 */');
-          expect(lastQuery).to.include('DELETE');
+          expect(lastQuery).toContain('/* Modeldelete - 40세 이상 삭제 */');
+          expect(lastQuery).toContain('DELETE');
         }
 
         const remaining = await User.count();
-        expect(remaining).to.equal(2);
+        expect(remaining).toBe(2);
       });
     });
 
@@ -544,13 +544,13 @@ _dbs.forEach((db) => {
           .upsert({ name: 'New User', age: 25, email: 'new@example.com' });
 
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 사용자 Upsert - 신규 */');
-          expect(lastQuery).to.include('INSERT');
+          expect(lastQuery).toContain('/* 사용자 Upsert - 신규 */');
+          expect(lastQuery).toContain('INSERT');
         }
 
         const users = await User.query().where({ email: 'new@example.com' }).exec();
-        expect(users).to.have.length.at.least(1);
-        expect(users[0].name).to.equal('New User');
+        expect(users.length).toBeGreaterThanOrEqual(1);
+        expect(users[0].name).toBe('New User');
       });
 
       // Note: upsert update behavior differs by database
@@ -568,12 +568,12 @@ _dbs.forEach((db) => {
             .upsert({ name: 'Updated User', age: 31 });
 
           const user = await User.find(createdId);
-          expect(user.name).to.equal('Updated User');
-          expect(user.age).to.equal(31);
+          expect(user.name).toBe('Updated User');
+          expect(user.age).toBe(31);
 
           // Verify no duplicate was created
           const allUsers = await User.count();
-          expect(allUsers).to.equal(1);
+          expect(allUsers).toBe(1);
         });
       }
     });
@@ -598,12 +598,12 @@ _dbs.forEach((db) => {
           .comment('복잡한 쿼리 - 상위 2명')
           .exec();
 
-        expect(users).to.have.length(2);
-        expect((users[0] as any).name).to.equal('Eve');
-        expect((users[1] as any).name).to.equal('David');
-        expect((users[0] as any).email).to.be.undefined;
+        expect(users).toHaveLength(2);
+        expect((users[0] as any).name).toBe('Eve');
+        expect((users[1] as any).name).toBe('David');
+        expect((users[0] as any).email).toBeUndefined();
         if (db !== 'sqlite3') {
-          expect(lastQuery).to.include('/* 복잡한 쿼리 - 상위 2명 */');
+          expect(lastQuery).toContain('/* 복잡한 쿼리 - 상위 2명 */');
         }
       });
 
@@ -614,7 +614,7 @@ _dbs.forEach((db) => {
           .comment('범위 쿼리 - 30-40세')
           .count();
 
-        expect(count).to.equal(3);
+        expect(count).toBe(3);
       });
     });
   });

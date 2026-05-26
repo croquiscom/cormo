@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class UserRef extends cormo.BaseModel {
@@ -18,22 +18,22 @@ class _Archive extends cormo.BaseModel {
 }
 
 function _compareUser(archive: _Archive, expected: UserRef) {
-  expect(archive.model).to.equal('User');
+  expect(archive.model).toBe('User');
   const user = archive.data;
-  expect(user).to.have.keys('id', 'name', 'age');
-  expect(user.id).to.equal(expected.id);
-  expect(user.name).to.equal(expected.name);
-  expect(user.age).to.equal(expected.age);
+  expect(user).toHaveKeys('id', 'name', 'age');
+  expect(user.id).toBe(expected.id);
+  expect(user.name).toBe(expected.name);
+  expect(user.age).toBe(expected.age);
 }
 
 function _comparePost(archive: _Archive, expected: PostRef) {
-  expect(archive.model).to.equal('Post');
+  expect(archive.model).toBe('Post');
   const post = archive.data;
-  expect(post).to.have.keys('id', 'title', 'body', 'user_id');
-  expect(post.id).to.equal(expected.id);
-  expect(post.title).to.equal(expected.title);
-  expect(post.body).to.equal(expected.body);
-  expect(post.user_id).to.equal(expected.user_id);
+  expect(post).toHaveKeys('id', 'title', 'body', 'user_id');
+  expect(post.id).toBe(expected.id);
+  expect(post.title).toBe(expected.title);
+  expect(post.body).toBe(expected.body);
+  expect(post.user_id).toBe(expected.user_id);
 }
 
 export default function (models: { User: typeof UserRef; Post: typeof PostRef; connection: cormo.Connection | null }) {
@@ -47,16 +47,16 @@ export default function (models: { User: typeof UserRef; Post: typeof PostRef; c
     ]);
     const users = [0, 1, 2, 3, 4].map((i) => id_to_record_map['user' + i]);
     let records: _Archive[] = await models.connection!._Archive.where();
-    expect(records).to.have.length(0);
+    expect(records).toHaveLength(0);
     let count = await models.User.find(users[3].id).delete();
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     records = await models.connection!._Archive.where();
-    expect(records).to.have.length(1);
+    expect(records).toHaveLength(1);
     _compareUser(records[0], users[3]);
     count = await models.User.delete({ age: 27 });
-    expect(count).to.equal(2);
+    expect(count).toBe(2);
     records = await models.connection!._Archive.where();
-    expect(records).to.have.length(3);
+    expect(records).toHaveLength(3);
     records.sort((a, b) => (a.data.id < b.data.id ? -1 : 1));
     users.sort((a, b) => (a.id < b.id ? -1 : 1));
     _compareUser(records[0], users[0]);
@@ -75,11 +75,11 @@ export default function (models: { User: typeof UserRef; Post: typeof PostRef; c
     const users = [0].map((i) => id_to_record_map['user' + i]);
     const posts = [0, 1].map((i) => id_to_record_map['post' + i]);
     let records: _Archive[] = await models.connection!._Archive.where();
-    expect(records).to.have.length(0);
+    expect(records).toHaveLength(0);
     const count = await models.User.find(users[0].id).delete();
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     records = await models.connection!._Archive.where();
-    expect(records).to.have.length(3);
+    expect(records).toHaveLength(3);
     records.sort((a, b) => {
       if (a.model < b.model) {
         return -1;

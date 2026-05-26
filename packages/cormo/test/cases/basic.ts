@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class User extends cormo.BaseModel {
@@ -31,49 +31,49 @@ export default function (models: { User: typeof User }, db: string) {
     const user = new models.User();
     user.name = 'John Doe';
     user.age = 27;
-    expect(user).to.have.property('name', 'John Doe');
-    expect(user).to.have.property('age', 27);
+    expect(user).toHaveProperty('name', 'John Doe');
+    expect(user).toHaveProperty('age', 27);
   });
 
   it('initialize in constructor', () => {
     const user = new models.User({ name: 'John Doe', age: 27 });
-    expect(user).to.have.property('name', 'John Doe');
-    expect(user).to.have.property('age', 27);
+    expect(user).toHaveProperty('name', 'John Doe');
+    expect(user).toHaveProperty('age', 27);
   });
 
   it('build method', () => {
     const user = models.User.build({ name: 'John Doe', age: 27 });
-    expect(user).to.have.property('name', 'John Doe');
-    expect(user).to.have.property('age', 27);
+    expect(user).toHaveProperty('name', 'John Doe');
+    expect(user).toHaveProperty('age', 27);
   });
 
   it('add a new record to the database', async () => {
     const user = new models.User({ name: 'John Doe', age: 27 });
     await user.save();
-    expect(user).to.have.keys('id', 'name', 'age');
+    expect(user).toHaveKeys('id', 'name', 'age');
   });
 
   it('create method', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
-    expect(user).to.be.an.instanceof(models.User);
-    expect(user).to.have.keys('id', 'name', 'age');
-    expect(user.id).to.exist;
+    expect(user).toBeInstanceOf(models.User);
+    expect(user).toHaveKeys('id', 'name', 'age');
+    expect(user.id).toExist();
   });
 
   it('string id for created', async () => {
     models.User.query_record_id_as_string = true;
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     models.User.query_record_id_as_string = false;
-    expect(user).to.be.an.instanceof(models.User);
-    expect(user).to.have.keys('id', 'name', 'age');
-    expect(user.id).to.exist;
-    expect(user.id).to.be.a('string');
+    expect(user).toBeInstanceOf(models.User);
+    expect(user).toHaveKeys('id', 'name', 'age');
+    expect(user.id).toExist();
+    expect(user.id).toBeType('string');
   });
 
   it('create with id', async () => {
     const fixed_id = getFixedId(db);
     const user = await models.User.create({ name: 'John Doe', age: 27, id: fixed_id + 0 }, { use_id_in_data: true });
-    expect(user.id).to.eql(fixed_id + 0);
+    expect(user.id).toEqual(fixed_id + 0);
   });
 
   it('create without id', async () => {
@@ -81,17 +81,17 @@ export default function (models: { User: typeof User }, db: string) {
     const user = await models.User.create({ name: 'John Doe', age: 27, id: fixed_id + 0 } as any, {
       use_id_in_data: false,
     });
-    expect(user.id).not.to.eql(fixed_id + 0);
+    expect(user.id).not.toEqual(fixed_id + 0);
   });
 
   it('find a record', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const record = await models.User.find(user.id);
-    expect(record).to.exist;
-    expect(record).to.be.an.instanceof(models.User);
-    expect(record).to.have.property('id', user.id);
-    expect(record).to.have.property('name', user.name);
-    expect(record).to.have.property('age', user.age);
+    expect(record).toExist();
+    expect(record).toBeInstanceOf(models.User);
+    expect(record).toHaveProperty('id', user.id);
+    expect(record).toHaveProperty('name', user.name);
+    expect(record).toHaveProperty('age', user.age);
   });
 
   it('find non-existing record', async () => {
@@ -101,8 +101,8 @@ export default function (models: { User: typeof User }, db: string) {
       await models.User.find(id);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.be.an.instanceof(Error);
-      expect(error.message).to.equal('not found');
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe('not found');
     }
   });
 
@@ -112,8 +112,8 @@ export default function (models: { User: typeof User }, db: string) {
       await models.User.find(undefined as any);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.be.an.instanceof(Error);
-      expect(error.message).to.equal('not found');
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe('not found');
     }
   });
 
@@ -123,8 +123,8 @@ export default function (models: { User: typeof User }, db: string) {
       await models.User.find(undefined as any).where({ age: { $gt: 0 } });
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.be.an.instanceof(Error);
-      expect(error.message).to.equal('not found');
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe('not found');
     }
   });
 
@@ -133,32 +133,32 @@ export default function (models: { User: typeof User }, db: string) {
     user.name = 'Bill Smith';
     const record1 = await models.User.find(user.id);
     // not yet saved, you will get previous values
-    expect(record1).to.exist;
-    expect(record1).to.have.property('id', user.id);
-    expect(record1).to.have.property('name', 'John Doe');
-    expect(record1).to.have.property('age', 27);
+    expect(record1).toExist();
+    expect(record1).toHaveProperty('id', user.id);
+    expect(record1).toHaveProperty('name', 'John Doe');
+    expect(record1).toHaveProperty('age', 27);
     await user.save();
     const record2 = await models.User.find(user.id);
-    expect(record2).to.exist;
-    expect(record2).to.have.property('id', user.id);
-    expect(record2).to.have.property('name', 'Bill Smith');
-    expect(record2).to.have.property('age', 27);
+    expect(record2).toExist();
+    expect(record2).toHaveProperty('id', user.id);
+    expect(record2).toHaveProperty('name', 'Bill Smith');
+    expect(record2).toHaveProperty('age', 27);
   });
 
   it('destroy a record', async () => {
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const record = await models.User.find(user.id);
-    expect(record).to.exist;
-    expect(record).to.have.property('id', user.id);
-    expect(record).to.have.property('name', 'John Doe');
-    expect(record).to.have.property('age', 27);
+    expect(record).toExist();
+    expect(record).toHaveProperty('id', user.id);
+    expect(record).toHaveProperty('name', 'John Doe');
+    expect(record).toHaveProperty('age', 27);
     await user.destroy();
     try {
       await models.User.find(user.id);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.be.an.instanceof(Error);
-      expect(error.message).to.equal('not found');
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe('not found');
     }
   });
 
@@ -169,26 +169,26 @@ export default function (models: { User: typeof User }, db: string) {
 
   it('try to create with extra data', async () => {
     const user = new models.User({ id: 1, name: 'John Doe', age: 27, extra: 'extra' });
-    expect(user).to.have.property('id', null);
-    expect(user).to.not.have.property('extra');
+    expect(user).toHaveProperty('id', null);
+    expect(user).not.toHaveProperty('extra');
     try {
       (user as any).id = 1;
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.be.an.instanceof(Error);
-      expect(error.message).to.have.string("Cannot assign to read only property 'id' of object ");
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toContain("Cannot assign to read only property 'id' of object ");
     }
-    expect(user).to.have.property('id', null); // id is read only
+    expect(user).toHaveProperty('id', null); // id is read only
     (user as any).extra = 'extra';
-    expect(user).to.have.property('extra', 'extra');
+    expect(user).toHaveProperty('extra', 'extra');
     const record1 = await user.save();
-    expect(user).to.equal(record1);
-    expect(user).to.have.property('extra', 'extra');
+    expect(user).toBe(record1);
+    expect(user).toHaveProperty('extra', 'extra');
     const record2 = await models.User.find(user.id);
-    expect(record2).to.have.property('id', user.id);
-    expect(record2).to.have.property('name', user.name);
-    expect(record2).to.have.property('age', user.age);
-    expect(record2).to.not.have.property('extra');
+    expect(record2).toHaveProperty('id', user.id);
+    expect(record2).toHaveProperty('name', user.name);
+    expect(record2).toHaveProperty('age', user.age);
+    expect(record2).not.toHaveProperty('extra');
   });
 
   it('delete some fields', async () => {
@@ -196,11 +196,11 @@ export default function (models: { User: typeof User }, db: string) {
     user.name = null;
     user.age = null;
     const record1 = await user.save();
-    expect(user).to.equal(record1);
+    expect(user).toBe(record1);
     const record2 = await models.User.find(user.id);
-    expect(record2).to.have.keys('id', 'name', 'age');
-    expect(record2).to.have.property('name', null);
-    expect(record2).to.have.property('age', null);
+    expect(record2).toHaveKeys('id', 'name', 'age');
+    expect(record2).toHaveProperty('name', null);
+    expect(record2).toHaveProperty('age', null);
   });
 
   it('find records', async () => {
@@ -212,10 +212,10 @@ export default function (models: { User: typeof User }, db: string) {
     users.sort((a, b) => (a.id < b.id ? -1 : 1));
     const records = await models.User.find([users[0].id, users[1].id]);
     records.sort((a, b) => (a.id < b.id ? -1 : 1));
-    expect(records[0]).to.be.an.instanceof(models.User);
-    expect(records[1]).to.be.an.instanceof(models.User);
-    expect(records[0]).to.eql(users[0]);
-    expect(records[1]).to.eql(users[1]);
+    expect(records[0]).toBeInstanceOf(models.User);
+    expect(records[1]).toBeInstanceOf(models.User);
+    expect(records[0]).toEqual(users[0]);
+    expect(records[1]).toEqual(users[1]);
   });
 
   it('find records with non-existing id', async () => {
@@ -229,8 +229,8 @@ export default function (models: { User: typeof User }, db: string) {
       await models.User.find([users[2].id, users[1].id, _getInvalidID(users[0].id)]);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.be.an.instanceof(Error);
-      expect(error.message).to.equal('not found');
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe('not found');
     }
   });
 
@@ -243,10 +243,10 @@ export default function (models: { User: typeof User }, db: string) {
     users.sort((a, b) => (a.id < b.id ? -1 : 1));
     const records = await models.User.find([users[2].id, users[0].id, users[0].id, users[0].id, users[2].id]);
     records.sort((a, b) => (a.id < b.id ? -1 : 1));
-    expect(records[0]).to.be.an.instanceof(models.User);
-    expect(records[1]).to.be.an.instanceof(models.User);
-    expect(records[0]).to.eql(users[0]);
-    expect(records[1]).to.eql(users[2]);
+    expect(records[0]).toBeInstanceOf(models.User);
+    expect(records[1]).toBeInstanceOf(models.User);
+    expect(records[0]).toEqual(users[0]);
+    expect(records[1]).toEqual(users[2]);
   });
 
   it('find while preserving order', async () => {
@@ -256,12 +256,12 @@ export default function (models: { User: typeof User }, db: string) {
       models.User.create({ name: 'Alice Jackson', age: 27 }),
     ]);
     const records = await models.User.findPreserve([users[2].id, users[0].id, users[0].id, users[0].id, users[2].id]);
-    expect(records).to.have.length(5);
-    expect(records[0]).to.eql(users[2]);
-    expect(records[1]).to.eql(users[0]);
-    expect(records[2]).to.eql(users[0]);
-    expect(records[3]).to.eql(users[0]);
-    expect(records[4]).to.eql(users[2]);
+    expect(records).toHaveLength(5);
+    expect(records[0]).toEqual(users[2]);
+    expect(records[1]).toEqual(users[0]);
+    expect(records[2]).toEqual(users[0]);
+    expect(records[3]).toEqual(users[0]);
+    expect(records[4]).toEqual(users[2]);
   });
 
   it('createBulk', async () => {
@@ -271,15 +271,15 @@ export default function (models: { User: typeof User }, db: string) {
       { name: 'Alice Jackson', age: 27 },
     ];
     const users = await models.User.createBulk(data);
-    expect(users).to.exist;
-    expect(users).to.be.an.instanceof(Array);
-    expect(users).to.have.length(3);
+    expect(users).toExist();
+    expect(users).toBeInstanceOf(Array);
+    expect(users).toHaveLength(3);
     for (const user of users) {
-      expect(user).to.be.an.instanceof(models.User);
-      expect(user).to.have.keys('id', 'name', 'age');
-      expect(user.id).to.exist;
+      expect(user).toBeInstanceOf(models.User);
+      expect(user).toHaveKeys('id', 'name', 'age');
+      expect(user.id).toExist();
       const record = await models.User.find(user.id);
-      expect(user).to.eql(record);
+      expect(user).toEqual(record);
     }
   });
 
@@ -292,18 +292,18 @@ export default function (models: { User: typeof User }, db: string) {
     models.User.query_record_id_as_string = true;
     const users = await models.User.createBulk(data);
     models.User.query_record_id_as_string = false;
-    expect(users).to.exist;
-    expect(users).to.be.an.instanceof(Array);
-    expect(users).to.have.length(3);
+    expect(users).toExist();
+    expect(users).toBeInstanceOf(Array);
+    expect(users).toHaveLength(3);
     for (const user of users) {
-      expect(user).to.be.an.instanceof(models.User);
-      expect(user).to.have.keys('id', 'name', 'age');
-      expect(user.id).to.exist;
-      expect(user.id).to.be.a('string');
+      expect(user).toBeInstanceOf(models.User);
+      expect(user).toHaveKeys('id', 'name', 'age');
+      expect(user.id).toExist();
+      expect(user.id).toBeType('string');
       models.User.query_record_id_as_string = true;
       const record = await models.User.find(user.id);
       models.User.query_record_id_as_string = false;
-      expect(user).to.eql(record);
+      expect(user).toEqual(record);
     }
   });
 
@@ -316,7 +316,7 @@ export default function (models: { User: typeof User }, db: string) {
     ];
     const users = await models.User.createBulk(data, { use_id_in_data: true });
     for (const user of users) {
-      expect(user.id).to.eql(data.find((item) => item.name === user.name)!.id);
+      expect(user.id).toEqual(data.find((item) => item.name === user.name)!.id);
     }
   });
 
@@ -329,7 +329,7 @@ export default function (models: { User: typeof User }, db: string) {
     ];
     const users = await models.User.createBulk(data, { use_id_in_data: false });
     for (const user of users) {
-      expect(user.id).not.to.eql(data.find((item) => item.name === user.name)!.id);
+      expect(user.id).not.toEqual(data.find((item) => item.name === user.name)!.id);
     }
   });
 
@@ -338,28 +338,28 @@ export default function (models: { User: typeof User }, db: string) {
       return;
     }
     const user = await models.User.create({ name: 'John Doe', age: 27 });
-    expect(user.isDirty()).to.equal(false);
-    expect(user.getChanged()).to.eql([]);
-    expect(user.getPrevious('name')).to.not.exist;
+    expect(user.isDirty()).toBe(false);
+    expect(user.getChanged()).toEqual([]);
+    expect(user.getPrevious('name')).not.toExist();
     user.name = 'Bill Smith';
-    expect(user.isDirty()).to.equal(true);
-    expect(user.getChanged()).to.eql(['name']);
-    expect(user.getPrevious('name')).to.equal('John Doe');
+    expect(user.isDirty()).toBe(true);
+    expect(user.getChanged()).toEqual(['name']);
+    expect(user.getPrevious('name')).toBe('John Doe');
     user.name = 'Alice Jackson';
-    expect(user.isDirty()).to.equal(true);
-    expect(user.getChanged()).to.eql(['name']);
-    expect(user.getPrevious('name')).to.equal('John Doe');
+    expect(user.isDirty()).toBe(true);
+    expect(user.getChanged()).toEqual(['name']);
+    expect(user.getPrevious('name')).toBe('John Doe');
     user.age = 10;
-    expect(user.isDirty()).to.equal(true);
-    expect(user.getChanged().sort()).to.eql(['age', 'name']);
-    expect(user.getPrevious('name')).to.equal('John Doe');
-    expect(user.getPrevious('age')).to.equal(27);
+    expect(user.isDirty()).toBe(true);
+    expect(user.getChanged().sort()).toEqual(['age', 'name']);
+    expect(user.getPrevious('name')).toBe('John Doe');
+    expect(user.getPrevious('age')).toBe(27);
     user.reset();
-    expect(user.name).to.equal('John Doe');
-    expect(user.age).to.equal(27);
-    expect(user.isDirty()).to.equal(false);
-    expect(user.getChanged()).to.eql([]);
-    expect(user.getPrevious('name')).to.not.exist;
+    expect(user.name).toBe('John Doe');
+    expect(user.age).toBe(27);
+    expect(user.isDirty()).toBe(false);
+    expect(user.getChanged()).toEqual([]);
+    expect(user.getPrevious('name')).not.toExist();
   });
 
   it('dirty after save', async () => {
@@ -368,18 +368,18 @@ export default function (models: { User: typeof User }, db: string) {
     }
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     user.name = 'Bill Smith';
-    expect(user.isDirty()).to.equal(true);
-    expect(user.getChanged()).to.eql(['name']);
+    expect(user.isDirty()).toBe(true);
+    expect(user.getChanged()).toEqual(['name']);
     await user.save();
-    expect(user.isDirty()).to.equal(false);
-    expect(user.getChanged()).to.eql([]);
+    expect(user.isDirty()).toBe(false);
+    expect(user.getChanged()).toEqual([]);
   });
 
   it('get & set', () => {
     const user = new models.User({ name: 'John Doe', age: 27 });
-    expect(user.get('name')).to.equal('John Doe');
-    expect(user.get('age')).to.equal(27);
+    expect(user.get('name')).toBe('John Doe');
+    expect(user.get('age')).toBe(27);
     user.set('name', 'Bill Smith');
-    expect(user.get('name')).to.equal('Bill Smith');
+    expect(user.get('name')).toBe('Bill Smith');
   });
 }

@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class TeamRef extends cormo.BaseModel {
@@ -32,10 +32,10 @@ export default function (models: {
     const team0_id = id_to_record_map.team0.id;
     const event0_id = id_to_record_map.event0.id;
     const count = await models.Team.find(team0_id).delete();
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     const event0 = await models.Event.find(event0_id);
-    expect(event0.id).to.equal(event0_id);
-    expect(event0.team_id).to.equal(team0_id);
+    expect(event0.id).toBe(event0_id);
+    expect(event0.team_id).toBe(team0_id);
   });
 
   it('nullify (hasMany)', async () => {
@@ -51,10 +51,10 @@ export default function (models: {
     const team0_id = id_to_record_map.team0.id;
     const event0_id = id_to_record_map.event0.id;
     const count = await models.Team.find(team0_id).delete();
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     const event0 = await models.Event.find(event0_id);
-    expect(event0.id).to.equal(event0_id);
-    expect(event0.team_id).to.not.exist;
+    expect(event0.id).toBe(event0_id);
+    expect(event0.team_id).not.toExist();
   });
 
   it('nullify (hasOne)', async () => {
@@ -69,10 +69,10 @@ export default function (models: {
     const team0_id = id_to_record_map.team0.id;
     const event0_id = id_to_record_map.event0.id;
     const count = await models.Team.find(team0_id).delete();
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     const event0 = await models.Event.find(event0_id);
-    expect(event0.id).to.equal(event0_id);
-    expect(event0.team_id).to.not.exist;
+    expect(event0.id).toBe(event0_id);
+    expect(event0.team_id).not.toExist();
   });
 
   it('restrict (hasMany)', async () => {
@@ -91,17 +91,17 @@ export default function (models: {
       await models.Team.find(team0_id).delete();
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.exist;
-      expect(error.message).to.equal('rejected');
+      expect(error).toExist();
+      expect(error.message).toBe('rejected');
     }
     // not deleted
     const team = await models.Team.find(team0_id);
-    expect(team.name).to.equal('Croquis');
+    expect(team.name).toBe('Croquis');
     // make no dependent records
     await models.Event.delete();
     // can delete
     const count = await models.Team.find(team0_id).delete();
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
   });
 
   it('restrict (hasOne)', async () => {
@@ -119,17 +119,17 @@ export default function (models: {
       await models.Team.find(team0_id).delete();
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.exist;
-      expect(error.message).to.equal('rejected');
+      expect(error).toExist();
+      expect(error.message).toBe('rejected');
     }
     // not deleted
     const team = await models.Team.find(team0_id);
-    expect(team.name).to.equal('Croquis');
+    expect(team.name).toBe('Croquis');
     // make no dependent records
     await models.Event.delete();
     // can delete
     const count = await models.Team.find(team0_id).delete();
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
   });
 
   it('delete (hasMany)', async () => {
@@ -151,17 +151,17 @@ export default function (models: {
     const team0_id = id_to_record_map.team0.id;
     const event1_id = id_to_record_map.event1.id;
     const count = await models.Team.find(team0_id).delete();
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     try {
       await models.Event.find(event1_id);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.exist;
-      expect(error.message).to.equal('not found');
+      expect(error).toExist();
+      expect(error.message).toBe('not found');
     }
     const records = await models.Comment.where();
-    expect(records).to.have.length(1);
-    expect(records[0].content).to.equal('First comment of event2');
+    expect(records).toHaveLength(1);
+    expect(records[0].content).toBe('First comment of event2');
   });
 
   it('delete (hasOne)', async () => {
@@ -185,17 +185,17 @@ export default function (models: {
     const team0_id = id_to_record_map.team0.id;
     const event0_id = id_to_record_map.event0.id;
     const count = await models.Team.find(team0_id).delete();
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     try {
       await models.Event.find(event0_id);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.exist;
-      expect(error.message).to.equal('not found');
+      expect(error).toExist();
+      expect(error.message).toBe('not found');
     }
     const records = await models.Comment.where();
-    expect(records).to.have.length(1);
-    expect(records[0].content).to.equal('First comment of event1');
+    expect(records).toHaveLength(1);
+    expect(records[0].content).toBe('First comment of event1');
   });
 
   it('nullfy by delete', async () => {
@@ -222,17 +222,17 @@ export default function (models: {
     const event0_id = id_to_record_map.event0.id;
     const comment0_id = id_to_record_map.comment0.id;
     const count = await models.Team.find(team0_id).delete();
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     try {
       await models.Event.find(event0_id);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.exist;
-      expect(error.message).to.equal('not found');
+      expect(error).toExist();
+      expect(error.message).toBe('not found');
     }
     const comment = await models.Comment.find(comment0_id);
-    expect(comment.content).to.equal('First comment of event0');
-    expect(comment.event_id).to.not.exist;
+    expect(comment.content).toBe('First comment of event0');
+    expect(comment.event_id).not.toExist();
   });
 
   it('get inconsistencies', async () => {
@@ -260,8 +260,8 @@ export default function (models: {
     await models.Team.find(id_to_record_map.team0.id).delete();
     await models.Event.find(id_to_record_map.event2.id).delete();
     const inconsistencies = await models.connection!.getInconsistencies();
-    expect(inconsistencies).to.have.keys('Event', 'Comment');
-    expect(inconsistencies.Event).to.have.length(2);
+    expect(inconsistencies).toHaveKeys('Event', 'Comment');
+    expect(inconsistencies.Event).toHaveLength(2);
     inconsistencies.Event.sort((a: any, b: any) => {
       if (a < b) {
         return -1;
@@ -276,10 +276,10 @@ export default function (models: {
         return 1;
       }
     });
-    expect(inconsistencies.Event[0]).to.equal(events[0].id);
-    expect(inconsistencies.Event[1]).to.equal(events[1].id);
-    expect(inconsistencies.Comment).to.have.length(1);
-    expect(inconsistencies.Comment[0]).to.equal(comments[0].id);
+    expect(inconsistencies.Event[0]).toBe(events[0].id);
+    expect(inconsistencies.Event[1]).toBe(events[1].id);
+    expect(inconsistencies.Comment).toHaveLength(1);
+    expect(inconsistencies.Comment[0]).toBe(comments[0].id);
   });
 
   it('get inconsistencies (exclude null)', async () => {
@@ -306,8 +306,8 @@ export default function (models: {
     await models.Team.find(id_to_record_map.team0.id).delete();
     await models.Event.find(id_to_record_map.event2.id).delete();
     const inconsistencies = await models.connection!.getInconsistencies();
-    expect(inconsistencies).to.have.keys('Comment');
-    expect(inconsistencies.Comment).to.have.length(1);
-    expect(inconsistencies.Comment[0]).to.equal(comments[0].id);
+    expect(inconsistencies).toHaveKeys('Comment');
+    expect(inconsistencies.Comment).toHaveLength(1);
+    expect(inconsistencies.Comment[0]).toBe(comments[0].id);
   });
 }

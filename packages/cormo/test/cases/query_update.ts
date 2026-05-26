@@ -1,12 +1,12 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 import { UserRef, UserRefVO } from './query.js';
 
 function _compareUser(user: UserRef, expected: UserRefVO) {
-  expect(user).to.have.keys('id', 'name', 'age');
-  expect(user.name).to.equal(expected.name);
-  expect(user.age).to.equal(expected.age);
+  expect(user).toHaveKeys('id', 'name', 'age');
+  expect(user.name).toBe(expected.name);
+  expect(user.age).toBe(expected.age);
 }
 
 async function _createUsers(User: typeof UserRef, data?: UserRefVO[]) {
@@ -27,7 +27,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
   it('update all', async () => {
     await _createUsers(models.User);
     const count = await models.User.update({ age: 10 });
-    expect(count).to.equal(5);
+    expect(count).toBe(5);
     const users = await models.User.where();
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 10 });
@@ -40,7 +40,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
   it('update condition', async () => {
     await _createUsers(models.User);
     const count = await models.User.update({ age: 10 }, { age: 27 });
-    expect(count).to.equal(2);
+    expect(count).toBe(2);
     const users = await models.User.where();
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 10 });
@@ -54,7 +54,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     const sources = await _createUsers(models.User);
     sources.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     const count = await models.User.find(sources[2].id).update({ age: 10 });
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     const users = await models.User.where();
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
@@ -68,7 +68,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     const sources = await _createUsers(models.User);
     sources.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     const count = await models.User.find([sources[2].id, sources[3].id]).update({ age: 10 });
-    expect(count).to.equal(2);
+    expect(count).toBe(2);
     const users = await models.User.where();
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
@@ -81,7 +81,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
   it('find undefined & update', async () => {
     await _createUsers(models.User);
     const count = await models.User.find(undefined as any).update({ age: 10 });
-    expect(count).to.equal(0);
+    expect(count).toBe(0);
     const users = await models.User.where();
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     _compareUser(users[0], { name: 'Alice Jackson', age: 27 });
@@ -94,16 +94,16 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
   it('update to remove a field (set null)', async () => {
     const users = await _createUsers(models.User);
     const count = await models.User.find(users[2].id).update({ age: null });
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     const user = await models.User.find(users[2].id);
-    expect(user).to.have.keys('id', 'name', 'age');
+    expect(user).toHaveKeys('id', 'name', 'age');
   });
 
   it('$inc', async () => {
     const users = await _createUsers(models.User);
     users.sort((a, b) => (a.name! < b.name! ? -1 : 1));
     const count = await models.User.find(users[2].id).update({ age: { $inc: 4 } });
-    expect(count).to.equal(1);
+    expect(count).toBe(1);
     const user = await models.User.find(users[2].id);
     _compareUser(user, { name: 'Daniel Smith', age: 12 });
   });
@@ -115,8 +115,8 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       await models.User.find(users[2].id).update({ name: { $inc: 4 } });
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.exist;
-      expect(error.message).to.equal("'name' is not a number type");
+      expect(error).toExist();
+      expect(error.message).toBe("'name' is not a number type");
     }
   });
 }

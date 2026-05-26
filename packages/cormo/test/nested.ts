@@ -1,3 +1,4 @@
+import { describe } from 'vitest';
 import cases from './cases/nested.js';
 import _g from './support/common.js';
 

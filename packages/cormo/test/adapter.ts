@@ -1,3 +1,4 @@
+import { afterAll, afterEach, beforeAll, describe } from 'vitest';
 import * as cormo from '../src/index.js';
 import cases_mongodb from './cases/adapter-mongodb.js';
 import cases_mysql from './cases/adapter-mysql.js';
@@ -17,7 +18,7 @@ _dbs.forEach((db) => {
       connection: null as cormo.Connection | null,
     };
 
-    before(async () => {
+    beforeAll(async () => {
       _g.connection = models.connection = new cormo.Connection(db as any, _g.db_configs[db]);
 
       await models.connection.dropAllModels();
@@ -27,7 +28,7 @@ _dbs.forEach((db) => {
       await models.connection!.dropAllModels();
     });
 
-    after(() => {
+    afterAll(() => {
       models.connection!.close();
       models.connection = null;
       _g.connection = null;

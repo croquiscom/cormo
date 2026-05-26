@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import _ from 'lodash';
 import * as types from '../types.js';
 import { tableize } from '../util/inflector.js';

@@ -1,11 +1,10 @@
-import { expect } from 'chai';
+import { expect, afterAll, afterEach, beforeAll, beforeEach, describe, it } from 'vitest';
 import * as cormo from 'cormo';
 import { graphql, GraphQLSchema, printSchema } from 'graphql';
 import sinon, { createSandbox } from 'sinon';
 import { Column, createDefaultCrudSchema, Model } from '../../src/index.js';
 import _g from '../common.js';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class UserRef extends cormo.BaseModel {
   public name!: string;
   public age?: number | null;
@@ -17,7 +16,7 @@ describe('createDefaultCrudSchema (timestamp)', () => {
   let schema: GraphQLSchema;
   let sandbox: sinon.SinonSandbox;
 
-  before(() => {
+  beforeAll(() => {
     connection = new cormo.Connection('mysql', _g.db_configs.mysql);
     @Model({ connection, description: 'A user model' })
     class User extends cormo.BaseModel {
@@ -54,13 +53,13 @@ describe('createDefaultCrudSchema (timestamp)', () => {
     await UserModel.deleteAll();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await UserModel.drop();
     connection.close();
   });
 
   it('schema', () => {
-    expect(printSchema(schema)).to.eql(`type Query {
+    expect(printSchema(schema)).toEqual(`type Query {
   """Single query for User"""
   user(id: ID): User
 
@@ -143,12 +142,12 @@ input DeleteUserInput {
       const variables = { input: { name: 'Test', age: 15 } };
       const result = await graphql({ schema, source: query, variableValues: variables });
       const id = (result.data as any).createUser.id;
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           createUser: { id, name: 'Test', age: 15 },
         },
       });
-      expect(await UserModel.where()).to.eql([
+      expect(await UserModel.where()).toEqual([
         { id: Number(id), name: 'Test', age: 15, date_created: now, date_updated: now },
       ]);
     });
@@ -173,12 +172,12 @@ input DeleteUserInput {
       const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
       const variables = { input: { id: String(id), name: 'Sample', age: 30 } };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           updateUser: { id: String(id), name: 'Sample', age: 30 },
         },
       });
-      expect(await UserModel.where()).to.eql([
+      expect(await UserModel.where()).toEqual([
         { id, name: 'Sample', age: 30, date_created: new Date(2019, 5, 13), date_updated: now },
       ]);
     });

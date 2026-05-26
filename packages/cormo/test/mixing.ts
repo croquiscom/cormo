@@ -1,3 +1,4 @@
+import { afterAll, beforeAll, beforeEach, describe } from 'vitest';
 import * as cormo from '../src/index.js';
 import { ComputerRef, PostRef, UserRef } from './cases/association.js';
 import cases_as from './cases/association_as.js';
@@ -16,7 +17,7 @@ if (_g.db_configs.mysql && _g.db_configs.mongodb) {
       connection: null as cormo.Connection | null,
     };
 
-    before(async () => {
+    beforeAll(async () => {
       mysql = new cormo.MySQLConnection(_g.db_configs.mysql);
       mongodb = new cormo.MongoDBConnection(_g.db_configs.mongodb);
       if (_g.use_class) {
@@ -79,7 +80,7 @@ if (_g.db_configs.mysql && _g.db_configs.mongodb) {
       await _g.deleteAllRecords([models.User, models.Post]);
     });
 
-    after(async () => {
+    afterAll(async () => {
       await mysql!.dropAllModels();
       await mongodb!.dropAllModels();
       mysql!.close();

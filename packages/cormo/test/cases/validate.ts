@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class User extends cormo.BaseModel {
@@ -17,8 +17,8 @@ export default function (models: { User: typeof User; connection: cormo.Connecti
       await models.User.create({ name: 'John Doe', age: 10 });
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.exist;
-      expect(error.message).to.equal('too young');
+      expect(error).toExist();
+      expect(error.message).toBe('too young');
     }
   });
 
@@ -27,8 +27,8 @@ export default function (models: { User: typeof User; connection: cormo.Connecti
       await models.User.create({ name: 'John Doe', age: 27, email: 'invalid' });
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.exist;
-      expect(error.message).to.equal('invalid email');
+      expect(error).toExist();
+      expect(error.message).toBe('invalid email');
     }
   });
 
@@ -37,9 +37,9 @@ export default function (models: { User: typeof User; connection: cormo.Connecti
       await models.User.create({ name: 'John Doe', age: 10, email: 'invalid' });
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.exist;
+      expect(error).toExist();
       if (error.message !== 'invalid email,too young') {
-        expect(error.message).to.equal('too young,invalid email');
+        expect(error.message).toBe('too young,invalid email');
       }
     }
   });

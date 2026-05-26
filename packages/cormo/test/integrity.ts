@@ -1,3 +1,4 @@
+import { afterAll, beforeAll, beforeEach, describe } from 'vitest';
 import * as cormo from '../src/index.js';
 import cases, { TeamRef, EventRef, CommentRef } from './cases/integrity.js';
 import _g from './support/common.js';
@@ -17,7 +18,7 @@ _dbs.forEach((db) => {
       connection: null as cormo.Connection | null,
     };
 
-    before(() => {
+    beforeAll(() => {
       _g.connection = models.connection = new cormo.Connection(db as any, _g.db_configs[db]);
     });
 
@@ -30,7 +31,6 @@ _dbs.forEach((db) => {
       models.Team = Team;
 
       @cormo.Model()
-      // eslint-disable-next-line @typescript-eslint/no-shadow
       class Event extends _g.BaseModel {
         @cormo.Column('date')
         public time?: Date;
@@ -47,7 +47,7 @@ _dbs.forEach((db) => {
       await _g.connection!.dropAllModels();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await models.connection!.dropAllModels();
       models.connection!.close();
       models.connection = null;

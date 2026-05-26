@@ -1,3 +1,4 @@
+import { afterAll, beforeAll, beforeEach, describe } from 'vitest';
 import * as cormo from '../src/index.js';
 import cases, { Type as TypeRef } from './cases/type.js';
 import cases_compare from './cases/type_compare.js';
@@ -18,7 +19,7 @@ _dbs.forEach((db) => {
       connection: null as cormo.Connection | null,
     };
 
-    before(async () => {
+    beforeAll(async () => {
       _g.connection = models.connection = new cormo.Connection(db as any, _g.db_configs[db]);
 
       if (_g.use_class) {
@@ -85,7 +86,7 @@ _dbs.forEach((db) => {
       await _g.deleteAllRecords([models.Type]);
     });
 
-    after(async () => {
+    afterAll(async () => {
       await models.connection!.dropAllModels();
       models.connection!.close();
       models.connection = null;

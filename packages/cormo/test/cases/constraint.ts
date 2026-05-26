@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class UserRef extends cormo.BaseModel {
@@ -38,8 +38,8 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
       throw new Error('must throw an error.');
     } catch (error: any) {
       // 'duplicated email' or 'duplicated'
-      expect(error.message).to.match(/^duplicated( email)?$/);
-      expect(user).to.not.exist;
+      expect(error.message).toMatch(/^duplicated( email)?$/);
+      expect(user).not.toExist();
     }
   });
 
@@ -51,7 +51,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
       throw new Error('must throw an error.');
     } catch (error: any) {
       // 'duplicated email' or 'duplicated'
-      expect(error.message).to.match(/^duplicated( email)?$/);
+      expect(error.message).toMatch(/^duplicated( email)?$/);
     }
   });
 
@@ -62,7 +62,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
       throw new Error('must throw an error.');
     } catch (error: any) {
       // 'duplicated email' or 'duplicated'
-      expect(error.message).to.match(/^duplicated( email)?$/);
+      expect(error.message).toMatch(/^duplicated( email)?$/);
     }
   });
 
@@ -71,19 +71,19 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
       await models.User.create({ age: 10, email: 'test1@example.com' } as any);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error.message).to.equal("'name' is required");
+      expect(error.message).toBe("'name' is required");
     }
     try {
       await models.User.create({ name: 'test', email: 'test2@example.com' } as any);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error.message).to.equal("'age' is required");
+      expect(error.message).toBe("'age' is required");
     }
     try {
       await models.User.create({ name: 'test', age: 10 } as any);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error.message).to.equal("'email' is required");
+      expect(error.message).toBe("'email' is required");
     }
   });
 
@@ -101,7 +101,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
       await users[0].save();
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error.message).to.equal("'name' is required");
+      expect(error.message).toBe("'name' is required");
     }
   });
 
@@ -111,7 +111,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
       await models.User.find(users[0].id).update({ name: null });
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error.message).to.equal("'name' is required");
+      expect(error.message).toBe("'name' is required");
     }
   });
 
@@ -121,7 +121,7 @@ export default function (models: { Post: typeof PostRef; User: typeof UserRef })
       await models.Post.create({ title: 'first post', body: 'This is the 1st post.' } as any);
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error.message).to.equal("'user_id' is required");
+      expect(error.message).toBe("'user_id' is required");
     }
     await models.Post.create({ title: 'first post', body: 'This is the 1st post.', user_id: user.id });
   });

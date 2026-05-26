@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class VersionRef extends cormo.BaseModel {
@@ -14,8 +14,8 @@ export default function (models: { Version: typeof VersionRef }) {
       throw new Error('must throw an error.');
     } catch (error: any) {
       // 'duplicated email' or 'duplicated'
-      expect(error.message).to.match(/^duplicated( major_minor| versions_major_minor)?$/);
-      expect(error).to.exist;
+      expect(error.message).toMatch(/^duplicated( major_minor| versions_major_minor)?$/);
+      expect(error).toExist();
     }
   });
 

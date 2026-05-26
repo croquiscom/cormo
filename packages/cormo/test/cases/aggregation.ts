@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class Order extends cormo.BaseModel {
@@ -13,8 +13,8 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       total: { $sum: '$price' },
     });
-    expect(records).to.have.length(1);
-    expect(records[0]).to.eql({ count: 9, total: 155 });
+    expect(records).toHaveLength(1);
+    expect(records[0]).toEqual({ count: 9, total: 155 });
   });
 
   it('sum some', async () => {
@@ -22,8 +22,8 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       total: { $sum: '$price' },
     });
-    expect(records).to.have.length(1);
-    expect(records[0]).to.eql({ count: 2, total: 9 });
+    expect(records).toHaveLength(1);
+    expect(records[0]).toEqual({ count: 2, total: 9 });
   });
 
   it('sum by group', async () => {
@@ -31,11 +31,11 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       total: { $sum: '$price' },
     });
-    expect(records).to.have.length(3);
+    expect(records).toHaveLength(3);
     records.sort((a, b) => (a.customer < b.customer ? -1 : 1));
-    expect(records[0]).to.eql({ customer: 'Bill Smith', count: 2, total: 76 });
-    expect(records[1]).to.eql({ customer: 'Daniel Smith', count: 3, total: 30 });
-    expect(records[2]).to.eql({ customer: 'John Doe', count: 4, total: 49 });
+    expect(records[0]).toEqual({ customer: 'Bill Smith', count: 2, total: 76 });
+    expect(records[1]).toEqual({ customer: 'Daniel Smith', count: 3, total: 30 });
+    expect(records[2]).toEqual({ customer: 'John Doe', count: 4, total: 49 });
   });
 
   it('order on group column', async () => {
@@ -43,10 +43,10 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       total: { $sum: '$price' },
     }).order('customer');
-    expect(records).to.have.length(3);
-    expect(records[0]).to.eql({ customer: 'Bill Smith', count: 2, total: 76 });
-    expect(records[1]).to.eql({ customer: 'Daniel Smith', count: 3, total: 30 });
-    expect(records[2]).to.eql({ customer: 'John Doe', count: 4, total: 49 });
+    expect(records).toHaveLength(3);
+    expect(records[0]).toEqual({ customer: 'Bill Smith', count: 2, total: 76 });
+    expect(records[1]).toEqual({ customer: 'Daniel Smith', count: 3, total: 30 });
+    expect(records[2]).toEqual({ customer: 'John Doe', count: 4, total: 49 });
   });
 
   it('order on aggregated column', async () => {
@@ -54,10 +54,10 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       total: { $sum: '$price' },
     }).order('total');
-    expect(records).to.have.length(3);
-    expect(records[0]).to.eql({ customer: 'Daniel Smith', count: 3, total: 30 });
-    expect(records[1]).to.eql({ customer: 'John Doe', count: 4, total: 49 });
-    expect(records[2]).to.eql({ customer: 'Bill Smith', count: 2, total: 76 });
+    expect(records).toHaveLength(3);
+    expect(records[0]).toEqual({ customer: 'Daniel Smith', count: 3, total: 30 });
+    expect(records[1]).toEqual({ customer: 'John Doe', count: 4, total: 49 });
+    expect(records[2]).toEqual({ customer: 'Bill Smith', count: 2, total: 76 });
   });
 
   it('condition on group column', async () => {
@@ -65,10 +65,10 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       total: { $sum: '$price' },
     });
-    expect(records).to.have.length(2);
+    expect(records).toHaveLength(2);
     records.sort((a, b) => (a.customer < b.customer ? -1 : 1));
-    expect(records[0]).to.eql({ customer: 'Bill Smith', count: 2, total: 76 });
-    expect(records[1]).to.eql({ customer: 'Daniel Smith', count: 3, total: 30 });
+    expect(records[0]).toEqual({ customer: 'Bill Smith', count: 2, total: 76 });
+    expect(records[1]).toEqual({ customer: 'Daniel Smith', count: 3, total: 30 });
   });
 
   it('condition on aggregated column', async () => {
@@ -76,10 +76,10 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       total: { $sum: '$price' },
     }).where({ count: { $gte: 3 } });
-    expect(records).to.have.length(2);
+    expect(records).toHaveLength(2);
     records.sort((a, b) => (a.customer < b.customer ? -1 : 1));
-    expect(records[0]).to.eql({ customer: 'Daniel Smith', count: 3, total: 30 });
-    expect(records[1]).to.eql({ customer: 'John Doe', count: 4, total: 49 });
+    expect(records[0]).toEqual({ customer: 'Daniel Smith', count: 3, total: 30 });
+    expect(records[1]).toEqual({ customer: 'John Doe', count: 4, total: 49 });
   });
 
   it('group by multiple columns', async () => {
@@ -87,13 +87,13 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       total: { $sum: '$price' },
     }).order('customer date');
-    expect(records).to.have.length(6);
-    expect(records[0]).to.eql({ customer: 'Bill Smith', date: new Date('2012/02/03'), count: 2, total: 76 });
-    expect(records[1]).to.eql({ customer: 'Daniel Smith', date: new Date('2012/01/19'), count: 1, total: 6 });
-    expect(records[2]).to.eql({ customer: 'Daniel Smith', date: new Date('2012/04/23'), count: 2, total: 24 });
-    expect(records[3]).to.eql({ customer: 'John Doe', date: new Date('2012/01/01'), count: 2, total: 31 });
-    expect(records[4]).to.eql({ customer: 'John Doe', date: new Date('2012/09/23'), count: 1, total: 3 });
-    expect(records[5]).to.eql({ customer: 'John Doe', date: new Date('2012/12/07'), count: 1, total: 15 });
+    expect(records).toHaveLength(6);
+    expect(records[0]).toEqual({ customer: 'Bill Smith', date: new Date('2012/02/03'), count: 2, total: 76 });
+    expect(records[1]).toEqual({ customer: 'Daniel Smith', date: new Date('2012/01/19'), count: 1, total: 6 });
+    expect(records[2]).toEqual({ customer: 'Daniel Smith', date: new Date('2012/04/23'), count: 2, total: 24 });
+    expect(records[3]).toEqual({ customer: 'John Doe', date: new Date('2012/01/01'), count: 2, total: 31 });
+    expect(records[4]).toEqual({ customer: 'John Doe', date: new Date('2012/09/23'), count: 1, total: 3 });
+    expect(records[5]).toEqual({ customer: 'John Doe', date: new Date('2012/12/07'), count: 1, total: 15 });
   });
 
   it('limit for group', async () => {
@@ -103,9 +103,9 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
     })
       .order('customer date')
       .limit(2);
-    expect(records).to.have.length(2);
-    expect(records[0]).to.eql({ customer: 'Bill Smith', date: new Date('2012/02/03'), count: 2, total: 76 });
-    expect(records[1]).to.eql({ customer: 'Daniel Smith', date: new Date('2012/01/19'), count: 1, total: 6 });
+    expect(records).toHaveLength(2);
+    expect(records[0]).toEqual({ customer: 'Bill Smith', date: new Date('2012/02/03'), count: 2, total: 76 });
+    expect(records[1]).toEqual({ customer: 'Daniel Smith', date: new Date('2012/01/19'), count: 1, total: 6 });
   });
 
   it('group by string array', async () => {
@@ -113,13 +113,13 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       total: { $sum: '$price' },
     }).order('customer date');
-    expect(records).to.have.length(6);
-    expect(records[0]).to.eql({ customer: 'Bill Smith', date: new Date('2012/02/03'), count: 2, total: 76 });
-    expect(records[1]).to.eql({ customer: 'Daniel Smith', date: new Date('2012/01/19'), count: 1, total: 6 });
-    expect(records[2]).to.eql({ customer: 'Daniel Smith', date: new Date('2012/04/23'), count: 2, total: 24 });
-    expect(records[3]).to.eql({ customer: 'John Doe', date: new Date('2012/01/01'), count: 2, total: 31 });
-    expect(records[4]).to.eql({ customer: 'John Doe', date: new Date('2012/09/23'), count: 1, total: 3 });
-    expect(records[5]).to.eql({ customer: 'John Doe', date: new Date('2012/12/07'), count: 1, total: 15 });
+    expect(records).toHaveLength(6);
+    expect(records[0]).toEqual({ customer: 'Bill Smith', date: new Date('2012/02/03'), count: 2, total: 76 });
+    expect(records[1]).toEqual({ customer: 'Daniel Smith', date: new Date('2012/01/19'), count: 1, total: 6 });
+    expect(records[2]).toEqual({ customer: 'Daniel Smith', date: new Date('2012/04/23'), count: 2, total: 24 });
+    expect(records[3]).toEqual({ customer: 'John Doe', date: new Date('2012/01/01'), count: 2, total: 31 });
+    expect(records[4]).toEqual({ customer: 'John Doe', date: new Date('2012/09/23'), count: 1, total: 3 });
+    expect(records[5]).toEqual({ customer: 'John Doe', date: new Date('2012/12/07'), count: 1, total: 15 });
   });
 
   it('min/max of all', async () => {
@@ -127,8 +127,8 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       max_price: { $max: '$price' },
       min_price: { $min: '$price' },
     });
-    expect(records).to.have.length(1);
-    expect(records[0]).to.eql({ min_price: 3, max_price: 60 });
+    expect(records).toHaveLength(1);
+    expect(records[0]).toEqual({ min_price: 3, max_price: 60 });
   });
 
   it('min/max by group', async () => {
@@ -136,11 +136,11 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       max_price: { $max: '$price' },
       min_price: { $min: '$price' },
     });
-    expect(records).to.have.length(3);
+    expect(records).toHaveLength(3);
     records.sort((a, b) => (a.customer < b.customer ? -1 : 1));
-    expect(records[0]).to.eql({ customer: 'Bill Smith', min_price: 16, max_price: 60 });
-    expect(records[1]).to.eql({ customer: 'Daniel Smith', min_price: 6, max_price: 13 });
-    expect(records[2]).to.eql({ customer: 'John Doe', min_price: 3, max_price: 20 });
+    expect(records[0]).toEqual({ customer: 'Bill Smith', min_price: 16, max_price: 60 });
+    expect(records[1]).toEqual({ customer: 'Daniel Smith', min_price: 6, max_price: 13 });
+    expect(records[2]).toEqual({ customer: 'John Doe', min_price: 3, max_price: 20 });
   });
 
   it('explain', async () => {
@@ -148,12 +148,12 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       total: { $sum: '$price' },
     }).explain();
-    expect(result).to.not.eql([{ count: 9, total: 155 }]);
+    expect(result).not.toEqual([{ count: 9, total: 155 }]);
   });
 
   it('count of group', async () => {
     const count = await models.Order.group('customer').count();
-    expect(count).to.eql(3);
+    expect(count).toEqual(3);
   });
 
   it('count of group with condition on group column', async () => {
@@ -162,7 +162,7 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
     })
       .group('customer')
       .count();
-    expect(count).to.eql(2);
+    expect(count).toEqual(2);
   });
 
   it('count of group with condition on aggregated column', async () => {
@@ -171,18 +171,18 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
     })
       .where({ count: { $gte: 3 } })
       .count();
-    expect(count).to.eql(2);
+    expect(count).toEqual(2);
   });
 
   it('avg', async () => {
     const records = await models.Order.group('customer', {
       average_price: { $avg: '$price' },
     });
-    expect(records).to.have.length(3);
+    expect(records).toHaveLength(3);
     records.sort((a, b) => (a.customer < b.customer ? -1 : 1));
-    expect(records[0]).to.eql({ customer: 'Bill Smith', average_price: 38 });
-    expect(records[1]).to.eql({ customer: 'Daniel Smith', average_price: 10 });
-    expect(records[2]).to.eql({ customer: 'John Doe', average_price: 12.25 });
+    expect(records[0]).toEqual({ customer: 'Bill Smith', average_price: 38 });
+    expect(records[1]).toEqual({ customer: 'Daniel Smith', average_price: 10 });
+    expect(records[2]).toEqual({ customer: 'John Doe', average_price: 12.25 });
   });
 
   it('any', async () => {
@@ -190,11 +190,11 @@ export default function (models: { Order: typeof Order; connection: cormo.Connec
       count: { $sum: 1 },
       date: { $any: '$date' },
     });
-    expect(records).to.have.length(3);
+    expect(records).toHaveLength(3);
     records.sort((a, b) => (a.customer < b.customer ? -1 : 1));
     records.forEach((r) => (r.date = new Date(r.date)));
-    expect(records[0]).to.eql({ customer: 'Bill Smith', count: 2, date: new Date('2012/02/03') });
-    expect(records[1]).to.eql({ customer: 'Daniel Smith', count: 3, date: new Date('2012/01/19') });
-    expect(records[2]).to.eql({ customer: 'John Doe', count: 4, date: new Date('2012/01/01') });
+    expect(records[0]).toEqual({ customer: 'Bill Smith', count: 2, date: new Date('2012/02/03') });
+    expect(records[1]).toEqual({ customer: 'Daniel Smith', count: 3, date: new Date('2012/01/19') });
+    expect(records[2]).toEqual({ customer: 'John Doe', count: 4, date: new Date('2012/01/01') });
   });
 }

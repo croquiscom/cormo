@@ -1,3 +1,4 @@
+import { afterEach, beforeEach, describe } from 'vitest';
 import * as cormo from '../src/index.js';
 import cases, { UserRef } from './cases/callbacks.js';
 import _g from './support/common.js';

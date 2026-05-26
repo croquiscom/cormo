@@ -1,3 +1,4 @@
+import { afterAll, beforeAll, beforeEach, describe } from 'vitest';
 import * as cormo from '../src/index.js';
 import cases, { User as UserRef } from './cases/basic.js';
 import _g from './support/common.js';
@@ -15,7 +16,7 @@ _dbs.forEach((db) => {
       User: UserRef,
     };
 
-    before(async () => {
+    beforeAll(async () => {
       _g.connection = connection = new cormo.Connection(db as any, _g.db_configs[db]);
       if (_g.use_class) {
         @cormo.Model()
@@ -40,7 +41,7 @@ _dbs.forEach((db) => {
       await _g.deleteAllRecords([models.User]);
     });
 
-    after(async () => {
+    afterAll(async () => {
       await connection!.dropAllModels();
       connection!.close();
       connection = null;

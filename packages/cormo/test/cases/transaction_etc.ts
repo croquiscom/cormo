@@ -1,11 +1,11 @@
-import { expect } from 'chai';
+import { expect, afterAll, beforeAll, beforeEach, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export default function (models: { connection: cormo.Connection | null }) {
   let User: typeof cormo.BaseModel;
   let Post: typeof cormo.BaseModel;
 
-  before(async () => {
+  beforeAll(async () => {
     User = models.connection!.model('User', { name: String, age: Number });
     Post = models.connection!.model('Post', { title: String, body: String });
 
@@ -20,7 +20,7 @@ export default function (models: { connection: cormo.Connection | null }) {
     await Post.deleteAll();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await User.drop();
     await Post.drop();
   });
@@ -38,7 +38,7 @@ export default function (models: { connection: cormo.Connection | null }) {
         { transaction: tx },
       );
       const users = await User.query({ transaction: tx }).include('posts', 'title');
-      expect(users).to.eql([
+      expect(users).toEqual([
         {
           age: 27,
           id: user.id,

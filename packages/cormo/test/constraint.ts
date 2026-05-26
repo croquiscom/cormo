@@ -1,3 +1,4 @@
+import { afterAll, beforeAll, beforeEach, describe } from 'vitest';
 import * as cormo from '../src/index.js';
 import cases, { PostRef, UserRef } from './cases/constraint.js';
 import cases_multicolumn, { VersionRef } from './cases/constraint_multicolumn.js';
@@ -18,7 +19,7 @@ _dbs.forEach((db) => {
         User: UserRef,
       };
 
-      before(async () => {
+      beforeAll(async () => {
         _g.connection = connection = new cormo.Connection(db as any, _g.db_configs[db]);
         if (_g.use_class) {
           @cormo.Model()
@@ -70,7 +71,7 @@ _dbs.forEach((db) => {
         await _g.deleteAllRecords([models.User, models.Post]);
       });
 
-      after(async () => {
+      afterAll(async () => {
         await connection!.dropAllModels();
         connection!.close();
         connection = null;
@@ -86,7 +87,7 @@ _dbs.forEach((db) => {
         Version: VersionRef,
       };
 
-      before(async () => {
+      beforeAll(async () => {
         _g.connection = connection = new cormo.Connection(db as any, _g.db_configs[db]);
         if (_g.use_class) {
           @cormo.Model()
@@ -110,7 +111,7 @@ _dbs.forEach((db) => {
         await _g.deleteAllRecords([models.Version]);
       });
 
-      after(async () => {
+      afterAll(async () => {
         await connection!.dropAllModels();
         connection!.close();
         connection = null;

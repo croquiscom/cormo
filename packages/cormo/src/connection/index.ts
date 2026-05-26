@@ -621,7 +621,6 @@ class Connection<AdapterType extends AdapterBase = AdapterBase> extends EventEmi
   /**
    * Logs
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public log(model_name: string, type: string, data: object) {
     /**/
   }

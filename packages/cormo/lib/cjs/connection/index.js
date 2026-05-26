@@ -483,7 +483,6 @@ class Connection extends events_1.EventEmitter {
     /**
      * Logs
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     log(model_name, type, data) {
         /**/
     }

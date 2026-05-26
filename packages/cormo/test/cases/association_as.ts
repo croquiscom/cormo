@@ -1,10 +1,10 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import { ComputerRef, PostRef, UserRef } from './association.js';
 
 function _compareComment(a: PostRef, b: PostRef) {
-  expect(a).to.have.property('title', b.title);
-  expect(a).to.have.property('body', b.body);
-  return expect(a).to.have.property('parent_post_id', b.parent_post_id);
+  expect(a).toHaveProperty('title', b.title);
+  expect(a).toHaveProperty('body', b.body);
+  return expect(a).toHaveProperty('parent_post_id', b.parent_post_id);
 }
 
 export default function (models: { Computer: typeof ComputerRef; Post: typeof PostRef; User: typeof UserRef }) {
@@ -21,7 +21,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       title: 'second comment',
     });
     const comments = await post.comments!();
-    expect(comments).to.have.length(2);
+    expect(comments).toHaveLength(2);
     comments.sort((a, b) => (a.body! < b.body! ? -1 : 1));
     _compareComment(comments[0], comment1);
     _compareComment(comments[1], comment2);
@@ -35,8 +35,8 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
       title: 'first comment',
     });
     const record = await comment1.parent_post!();
-    expect(post).to.have.property('id', record!.id);
-    expect(post).to.have.property('title', record!.title);
-    expect(post).to.have.property('body', record!.body);
+    expect(post).toHaveProperty('id', record!.id);
+    expect(post).toHaveProperty('title', record!.title);
+    expect(post).toHaveProperty('body', record!.body);
   });
 }

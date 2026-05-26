@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 import _g from '../support/common.js';
 
@@ -27,7 +27,7 @@ export default function (models: { connection: cormo.Connection<cormo.PostgreSQL
         name: String,
       });
       const user = await User.create({ name: 'John Doe', age: 27 });
-      expect(await User.find(user.id)).to.eql({ id: user.id, name: 'John Doe', age: 27 });
+      expect(await User.find(user.id)).toEqual({ id: user.id, name: 'John Doe', age: 27 });
       await conn.dropAllModels();
     });
 
@@ -42,23 +42,23 @@ export default function (models: { connection: cormo.Connection<cormo.PostgreSQL
       const records = await Reference.createBulk(data);
 
       const record = await Reference.find(records[0].id).select('group');
-      expect(record.id).to.eql(records[0].id);
-      expect(record.group).to.eql(records[0].group);
+      expect(record.id).toEqual(records[0].id);
+      expect(record.group).toEqual(records[0].group);
 
       const count = await Reference.count({ group: 1 });
-      expect(count).to.eql(2);
+      expect(count).toEqual(2);
 
       const count_per_group = await Reference.where()
         .group('group', { count: { $sum: 1 } })
         .order('group');
-      expect(count_per_group).to.eql([
+      expect(count_per_group).toEqual([
         { group: 1, count: 2 },
         { group: 2, count: 1 },
         { group: 3, count: 1 },
       ]);
 
       const sum_of_group = await Reference.where().group(null, { count: { $sum: '$group' } });
-      expect(sum_of_group).to.eql([{ count: 7 }]);
+      expect(sum_of_group).toEqual([{ count: 7 }]);
     });
   });
 
@@ -79,9 +79,9 @@ export default function (models: { connection: cormo.Connection<cormo.PostgreSQL
       ];
       const users = await User.createBulk(data);
       const result = await models.connection!.adapter.query('SELECT * FROM users WHERE age=$1', [27]);
-      expect(result.rows).to.have.length(2);
-      expect(result.rows[0]).to.eql({ id: users[0].id, name: users[0].name, age: users[0].age });
-      expect(result.rows[1]).to.eql({ id: users[2].id, name: users[2].name, age: users[2].age });
+      expect(result.rows).toHaveLength(2);
+      expect(result.rows[0]).toEqual({ id: users[0].id, name: users[0].name, age: users[0].age });
+      expect(result.rows[1]).toEqual({ id: users[2].id, name: users[2].name, age: users[2].age });
     });
   });
 }
