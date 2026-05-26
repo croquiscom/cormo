@@ -1,5 +1,11 @@
 # cormo
 
+## 2.8.1
+
+### Patch Changes
+
+- cbf249e: Store null as SQL NULL for object and array columns instead of the string `'null'`, so `$not: null` queries correctly match rows with values
+
 ## 2.8.0
 
 ### Minor Changes
