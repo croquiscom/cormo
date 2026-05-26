@@ -220,15 +220,13 @@ class AdapterBase {
     }
     /** @internal */
     valueToDB(value, column, property) {
+        if (value == null) {
+            return null;
+        }
         if (property.type_class === types.Object || property.array) {
             return JSON.stringify(value);
         }
-        else if (value != null) {
-            return value;
-        }
-        else {
-            return null;
-        }
+        return value;
     }
     /** @internal */
     setValuesFromDB(instance, data, schema, selected_columns, query_record_id_as_string) {

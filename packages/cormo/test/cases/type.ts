@@ -216,6 +216,32 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
     }
   });
 
+  it('null array is queryable with $not: null', async () => {
+    await models.Type.create({ int_array: [1, 2, 3] });
+    await models.Type.create({ int_array: null as any });
+
+    const with_value = await models.Type.where({ int_array: { $not: null } });
+    expect(with_value).to.have.length(1);
+    expect(with_value[0].int_array).to.eql([1, 2, 3]);
+
+    const without_value = await models.Type.where({ int_array: null });
+    expect(without_value).to.have.length(1);
+    expect(without_value[0].int_array).to.equal(null);
+  });
+
+  it('null object is queryable with $not: null', async () => {
+    await models.Type.create({ object: { a: 1 } });
+    await models.Type.create({ object: null as any });
+
+    const with_value = await models.Type.where({ object: { $not: null } });
+    expect(with_value).to.have.length(1);
+    expect(with_value[0].object).to.eql({ a: 1 });
+
+    const without_value = await models.Type.where({ object: null });
+    expect(without_value).to.have.length(1);
+    expect(without_value[0].object).to.equal(null);
+  });
+
   it('recordid', async () => {
     const types = await models.Type.createBulk([{ int_c: 1 }]);
     const type = await models.Type.create({ recordid: types[0].id });

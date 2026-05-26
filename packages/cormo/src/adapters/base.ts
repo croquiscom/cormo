@@ -293,13 +293,13 @@ abstract class AdapterBase {
 
   /** @internal */
   public valueToDB(value: any, column: any, property: any) {
-    if (property.type_class === types.Object || property.array) {
-      return JSON.stringify(value);
-    } else if (value != null) {
-      return value;
-    } else {
+    if (value == null) {
       return null;
     }
+    if (property.type_class === types.Object || property.array) {
+      return JSON.stringify(value);
+    }
+    return value;
   }
 
   /** @internal */
