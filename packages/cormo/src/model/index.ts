@@ -387,7 +387,6 @@ class BaseModel {
   public static [inspect.custom](_depth: number) {
     const schema = Object.keys(this._schema)
       .sort()
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       .map((column) => `${column}: ${this._schema[column]?.type}`)
       .join(', ');
     return '\u001b[36m' + `[Model: ${this.name}(` + '\u001b[90m' + schema + '\u001b[36m' + ')]' + '\u001b[39m';
@@ -835,7 +834,6 @@ class BaseModel {
   ) {
     let obj: any;
     let last: any;
-    // eslint-disable-next-line prefer-const
     [obj, last] = util.getLeafOfPath(data, property._parts, false);
     const value = obj && obj[last];
     if (value != null) {
@@ -1054,7 +1052,6 @@ class BaseModel {
 
     if (arguments.length === 4) {
       // if this has 4 arguments, this is called from adapter with database record data
-      // eslint-disable-next-line prefer-rest-params
       const [id, selected_columns, selected_columns_raw] = [arguments[1], arguments[2], arguments[3]];
       adapter.setValuesFromDB(this, data, schema, selected_columns, ctor.query_record_id_as_string);
       ctor._collapseNestedNulls(this, selected_columns_raw, ctor.dirty_tracking ? this._intermediates : undefined);

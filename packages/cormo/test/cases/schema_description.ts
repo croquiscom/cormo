@@ -28,7 +28,6 @@ export default function (db: any, db_config: any) {
 
     // using Decorator
     @cormo.Model({ description: 'Guest model' })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class Guest extends cormo.BaseModel {
       @cormo.Column(String)
       public name!: string;
@@ -111,7 +110,6 @@ export default function (db: any, db_config: any) {
 
     // using Decorator
     @cormo.Model()
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class Guest extends cormo.BaseModel {
       @cormo.Column({ type: String, description: 'user name' })
       public name!: string;

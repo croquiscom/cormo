@@ -31,7 +31,6 @@ _dbs.forEach((db) => {
       models.Team = Team;
 
       @cormo.Model()
-      // eslint-disable-next-line @typescript-eslint/no-shadow
       class Event extends _g.BaseModel {
         @cormo.Column('date')
         public time?: Date;

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import stream from 'stream';
 import _ from 'lodash';
 import { Connection } from '../connection/index.js';

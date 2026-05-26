@@ -64,7 +64,6 @@ export default function (db: any, db_config: any) {
 
     @cormo.Model()
     @cormo.Index({ user_id: 1 })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class Post extends cormo.BaseModel {
       @cormo.Column(String)
       public title?: string | null;
@@ -203,7 +202,6 @@ export default function (db: any, db_config: any) {
 
     // using Decorator
     @cormo.Model({ name: 'Guest' })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class Guest extends cormo.BaseModel {
       @cormo.Column(String)
       public name!: string;
@@ -349,7 +347,6 @@ export default function (db: any, db_config: any) {
   it('column name alias for indexed column', async () => {
     @cormo.Model()
     @cormo.Index({ name: 1 })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class User extends cormo.BaseModel {
       @cormo.Column({ type: String, name: 'n' })
       public name!: string;
@@ -598,7 +595,6 @@ export default function (db: any, db_config: any) {
   });
 
   it('check schema changes of type', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const Type = connection.model('Type', {
       boolean: Boolean,
       date: Date,

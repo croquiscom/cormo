@@ -9,7 +9,6 @@ class UserRef extends cormo.BaseModel {
   public age?: number | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class PostRef extends cormo.BaseModel {
   public body!: string;
 

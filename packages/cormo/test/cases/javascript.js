@@ -1,5 +1,3 @@
-/* global it */
-
 import { expect, it } from 'vitest';
 import _g from '../support/common';
 

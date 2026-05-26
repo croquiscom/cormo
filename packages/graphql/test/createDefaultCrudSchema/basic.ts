@@ -4,7 +4,6 @@ import { graphql, GraphQLSchema, printSchema } from 'graphql';
 import { Column, createDefaultCrudSchema, Model } from '../../src/index.js';
 import _g from '../common.js';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class UserRef extends cormo.BaseModel {
   public name!: string;
   public age?: number | null;
