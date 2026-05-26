@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class UserRef extends cormo.BaseModel {
@@ -28,7 +28,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       name: 'John Doe',
       age: 27,
     });
-    expect(logs).to.eql(['after_initialize1 : John Doe', 'after_initialize2 : John Doe']);
+    expect(logs).toEqual(['after_initialize1 : John Doe', 'after_initialize2 : John Doe']);
   });
 
   it('callbacks for finding a record', async () => {
@@ -54,7 +54,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       return logs.push('after_initialize2 : ' + this.name);
     });
     await User.find(users[0].id);
-    expect(logs).to.eql([
+    expect(logs).toEqual([
       'after_find1 : John Doe',
       'after_find2 : John Doe',
       'after_initialize1 : John Doe',
@@ -85,7 +85,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     await User.where({
       age: 27,
     });
-    expect(logs).to.eql([
+    expect(logs).toEqual([
       'after_find1 : John Doe',
       'after_find2 : John Doe',
       'after_initialize1 : John Doe',
@@ -160,7 +160,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
       name: 'John Doe',
       age: 27,
     });
-    expect(logs).to.eql([
+    expect(logs).toEqual([
       'before_validate1 : John Doe',
       'before_validate2 : John Doe',
       'after_validate1 : John Doe',
@@ -241,7 +241,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     });
     user.name = 'Alice Jackson';
     await user.save();
-    expect(logs).to.eql([
+    expect(logs).toEqual([
       'before_validate1 : Alice Jackson',
       'before_validate2 : Alice Jackson',
       'after_validate1 : Alice Jackson',
@@ -276,7 +276,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     });
     let user = new User({ name: 'John Doe', age: 27 });
     await user.destroy();
-    expect(logs).to.eql([
+    expect(logs).toEqual([
       'before_destroy1 : John Doe',
       'before_destroy2 : John Doe',
       'after_destroy1 : John Doe',
@@ -288,7 +288,7 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     });
     logs = [];
     await user.destroy();
-    expect(logs).to.eql([
+    expect(logs).toEqual([
       'before_destroy1 : John Doe',
       'before_destroy2 : John Doe',
       'after_destroy1 : John Doe',

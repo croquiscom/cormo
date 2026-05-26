@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class UserRef extends cormo.BaseModel {
@@ -13,10 +13,10 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
   it('created_at', async () => {
     const now = Date.now();
     const user = await models.User.create({ name: 'John Doe', age: 27 });
-    expect(user).to.have.property('created_at');
-    expect(user).to.have.property('updated_at');
-    expect(user.created_at).to.equal(user.updated_at);
-    expect(user.created_at!.getTime()).to.be.closeTo(now, 10);
+    expect(user).toHaveProperty('created_at');
+    expect(user).toHaveProperty('updated_at');
+    expect(user.created_at).toBe(user.updated_at);
+    expect(Math.abs(user.created_at!.getTime() - now)).toBeLessThanOrEqual(10);
   });
 
   it('updated_at', async () => {
@@ -31,8 +31,8 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
     user.age = 30;
     await user.save();
     // created_at remains unchanged
-    expect(user.created_at!.getTime()).to.equal(created_at!.getTime());
+    expect(user.created_at!.getTime()).toBe(created_at!.getTime());
     // updated_at is changed to the current date
-    expect(user.updated_at!.getTime()).to.be.closeTo(now, 10);
+    expect(Math.abs(user.updated_at!.getTime() - now)).toBeLessThanOrEqual(10);
   });
 }

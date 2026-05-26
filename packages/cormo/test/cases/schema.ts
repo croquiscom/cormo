@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, afterEach, beforeEach, it } from 'vitest';
 import * as sinon from 'sinon';
 import * as cormo from '../../src/index.js';
 
@@ -30,17 +30,17 @@ export default function (db: any, db_config: any) {
 
     // add unique index
     User.index({ age: 1 }, { unique: true });
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: 'Add index on users age' },
       ...(db === 'mysql'
         ? [{ message: '  (CREATE UNIQUE INDEX `age` ON `users` (`age` ASC))', is_query: true, ignorable: true }]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
 
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     try {
       // can not add same age with unique index
@@ -48,7 +48,7 @@ export default function (db: any, db_config: any) {
       throw new Error('must throw an error.');
     } catch (error: any) {
       // 'duplicated email' or 'duplicated'
-      expect(error.message).to.match(/^duplicated( age| users_age)?$/);
+      expect(error.message).toMatch(/^duplicated( age| users_age)?$/);
     }
   });
 
@@ -86,7 +86,7 @@ export default function (db: any, db_config: any) {
     User.index({ name: 1, age: 1 });
     User.column('name', String);
     User.column('age', Number);
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: 'Add table users' },
       ...(db === 'mysql'
         ? [
@@ -109,15 +109,15 @@ export default function (db: any, db_config: any) {
           ]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
 
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     User.column('address', String);
     if (db !== 'mongodb') {
-      expect(await connection.getSchemaChanges()).to.eql([
+      expect(await connection.getSchemaChanges()).toEqual([
         { message: 'Add column address to users' },
         ...(db === 'mysql'
           ? [
@@ -129,22 +129,22 @@ export default function (db: any, db_config: any) {
             ]
           : []),
       ]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
     } else {
-      expect(await connection.getSchemaChanges()).to.eql([]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+      expect(await connection.getSchemaChanges()).toEqual([]);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
     }
 
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
   });
 
   it('add column', async () => {
     class User extends cormo.BaseModel {}
     User.column('name', String);
     User.column('age', Number);
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: 'Add table users' },
       ...(db === 'mysql'
         ? [
@@ -157,15 +157,15 @@ export default function (db: any, db_config: any) {
           ]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
 
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     User.column('address', String);
     if (db !== 'mongodb') {
-      expect(await connection.getSchemaChanges()).to.eql([
+      expect(await connection.getSchemaChanges()).toEqual([
         { message: 'Add column address to users' },
         ...(db === 'mysql'
           ? [
@@ -177,18 +177,18 @@ export default function (db: any, db_config: any) {
             ]
           : []),
       ]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
     } else {
-      expect(await connection.getSchemaChanges()).to.eql([]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+      expect(await connection.getSchemaChanges()).toEqual([]);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
     }
 
     const user1 = await User.create({ name: 'John Doe', age: 27, address: 'Moon' });
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
     const user2 = await User.find(user1.id);
-    expect(user2).to.have.keys('id', 'name', 'age', 'address');
-    expect((user2 as any).address).to.eql('Moon');
+    expect(user2).toHaveKeys('id', 'name', 'age', 'address');
+    expect((user2 as any).address).toEqual('Moon');
   });
 
   it('table name', async () => {
@@ -208,7 +208,7 @@ export default function (db: any, db_config: any) {
       @cormo.Column(String)
       public name!: string;
     }
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: 'Add table people' },
       ...(db === 'mysql'
         ? [
@@ -243,15 +243,15 @@ export default function (db: any, db_config: any) {
           ]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
 
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     const schema = await (connection._adapter as any).getSchemas();
     const table_names = Object.keys(schema.tables);
-    expect(table_names.sort()).to.eql(['Guest', 'User', 'people']);
+    expect(table_names.sort()).toEqual(['Guest', 'User', 'people']);
   });
 
   it('column name', async () => {
@@ -264,7 +264,7 @@ export default function (db: any, db_config: any) {
       @cormo.Column(Number)
       public a!: number;
     }
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: 'Add table users' },
       ...(db === 'mysql'
         ? [
@@ -281,12 +281,12 @@ export default function (db: any, db_config: any) {
         ? [{ message: '  (CREATE INDEX `n` ON `users` (`n` ASC))', is_query: true, ignorable: true }]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
 
     // must create table before define an alias Model
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     @cormo.Model({ name: 'users' })
     @cormo.Index({ name: 1 })
@@ -297,23 +297,23 @@ export default function (db: any, db_config: any) {
       @cormo.Column({ type: Number, name: 'a' })
       public age!: number;
     }
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false); // no table to create
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false); // no table to create
 
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     // create new records
     const user1 = await User1.create({ n: 'Jone Doe', a: 34 });
     const user2 = await User2.create({ name: 'Bill Smith', age: 25 });
 
     // check database
-    expect(await User1.where().order('id')).to.eql([
+    expect(await User1.where().order('id')).toEqual([
       { id: user1.id, n: 'Jone Doe', a: 34 },
       { id: user2.id, n: 'Bill Smith', a: 25 },
     ]);
-    expect(await User2.where().order('id')).to.eql([
+    expect(await User2.where().order('id')).toEqual([
       { id: user1.id, name: 'Jone Doe', age: 34 },
       { id: user2.id, name: 'Bill Smith', age: 25 },
     ]);
@@ -324,23 +324,23 @@ export default function (db: any, db_config: any) {
     await user2.save();
 
     // check database
-    expect(await User1.where().order('id')).to.eql([
+    expect(await User1.where().order('id')).toEqual([
       { id: user1.id, n: 'Jone Doe', a: 36 },
       { id: user2.id, n: 'Bill Smith', a: 28 },
     ]);
-    expect(await User2.where().order('id')).to.eql([
+    expect(await User2.where().order('id')).toEqual([
       { id: user1.id, name: 'Jone Doe', age: 36 },
       { id: user2.id, name: 'Bill Smith', age: 28 },
     ]);
 
     // query
-    expect(await User2.where({ name: { $contains: 'Doe' } }).order('id')).to.eql([
+    expect(await User2.where({ name: { $contains: 'Doe' } }).order('id')).toEqual([
       { id: user1.id, name: 'Jone Doe', age: 36 },
     ]);
-    expect(await User2.where({ age: 28 }).order('id')).to.eql([{ id: user2.id, name: 'Bill Smith', age: 28 }]);
+    expect(await User2.where({ age: 28 }).order('id')).toEqual([{ id: user2.id, name: 'Bill Smith', age: 28 }]);
 
     // group
-    expect(await User2.group(['name'], { max_age: { $max: '$age' } }).order('name')).to.eql([
+    expect(await User2.group(['name'], { max_age: { $max: '$age' } }).order('name')).toEqual([
       { name: 'Bill Smith', max_age: 28 },
       { name: 'Jone Doe', max_age: 36 },
     ]);
@@ -385,7 +385,7 @@ export default function (db: any, db_config: any) {
     const user2 = new User();
     await user2.save();
 
-    expect(await User.where().order('id')).to.eql([
+    expect(await User.where().order('id')).toEqual([
       { id: user1.id, name: 'Jone Doe', age: 27, created_at: new Date(2018, 7, 3, 5, 24) },
       { id: user2.id, name: 'unknown', age: -1, created_at: new Date(2018, 8, 21, 17, 13) },
     ]);
@@ -416,7 +416,7 @@ export default function (db: any, db_config: any) {
     const user2 = new User();
     await user2.save();
 
-    expect(await User.where().order('id')).to.eql([
+    expect(await User.where().order('id')).toEqual([
       { id: user1.id, name: 'Jone Doe', age: 27, created_at: new Date(2018, 7, 3, 5, 24) },
       { id: user2.id, name: 'unknown', age: -1, created_at: new Date(2018, 8, 21, 17, 13) },
     ]);
@@ -443,7 +443,7 @@ export default function (db: any, db_config: any) {
       {} as User, // create without values
     ]);
 
-    expect(await User.where().order('id')).to.eql([
+    expect(await User.where().order('id')).toEqual([
       { id: users[0].id, name: 'Jone Doe', age: 27, created_at: new Date(2018, 7, 3, 5, 24) },
       { id: users[1].id, name: 'unknown', age: -1, created_at: new Date(2018, 8, 21, 17, 13) },
     ]);
@@ -461,7 +461,7 @@ export default function (db: any, db_config: any) {
 
     User.column('address', String);
     if (db !== 'mongodb') {
-      expect(await connection.getSchemaChanges()).to.eql([
+      expect(await connection.getSchemaChanges()).toEqual([
         { message: 'Add column address to users' },
         ...(db === 'mysql'
           ? [
@@ -474,16 +474,16 @@ export default function (db: any, db_config: any) {
           : []),
         { message: 'Remove table people', ignorable: true },
       ]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
     } else {
-      expect(await connection.getSchemaChanges()).to.eql([{ message: 'Remove table people', ignorable: true }]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+      expect(await connection.getSchemaChanges()).toEqual([{ message: 'Remove table people', ignorable: true }]);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
     }
 
     await connection.applySchemas();
 
-    expect(await connection.getSchemaChanges()).to.eql([{ message: 'Remove table people', ignorable: true }]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([{ message: 'Remove table people', ignorable: true }]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     connection.models.Person = Person;
   });
@@ -497,13 +497,13 @@ export default function (db: any, db_config: any) {
     delete User._schema.address;
 
     if (db !== 'mongodb') {
-      expect(await connection.getSchemaChanges()).to.eql([
+      expect(await connection.getSchemaChanges()).toEqual([
         { message: 'Remove column address from users', ignorable: true },
       ]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
     } else {
-      expect(await connection.getSchemaChanges()).to.eql([]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+      expect(await connection.getSchemaChanges()).toEqual([]);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
     }
   });
 
@@ -517,7 +517,7 @@ export default function (db: any, db_config: any) {
     User.column('age', { type: String, name: 'a' });
 
     if (db !== 'mongodb') {
-      expect(await connection.getSchemaChanges()).to.eql([
+      expect(await connection.getSchemaChanges()).toEqual([
         { message: 'Add column address to users' },
         ...(db === 'mysql'
           ? [
@@ -533,10 +533,10 @@ export default function (db: any, db_config: any) {
           ? [{ message: '  (ALTER TABLE `users` ADD COLUMN `a` VARCHAR(255) NULL)', is_query: true, ignorable: true }]
           : []),
       ]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
     } else {
-      expect(await connection.getSchemaChanges()).to.eql([]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+      expect(await connection.getSchemaChanges()).toEqual([]);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
     }
   });
 
@@ -550,14 +550,14 @@ export default function (db: any, db_config: any) {
     User._schema.address!.required = true;
 
     if (db !== 'mongodb') {
-      expect(await connection.getSchemaChanges()).to.eql([
+      expect(await connection.getSchemaChanges()).toEqual([
         { message: 'Change users.name to optional', ignorable: true },
         { message: 'Change users.address to required', ignorable: true },
       ]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
     } else {
-      expect(await connection.getSchemaChanges()).to.eql([]);
-      expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+      expect(await connection.getSchemaChanges()).toEqual([]);
+      expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
     }
   });
 
@@ -571,10 +571,10 @@ export default function (db: any, db_config: any) {
     (User as any)._indexes.pop();
 
     const index_name = db === 'mysql' || db === 'mongodb' ? 'age' : 'users_age';
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: `Remove index on users ${index_name}`, ignorable: true },
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
   });
 
   it('handle indexes from association', async () => {
@@ -593,8 +593,8 @@ export default function (db: any, db_config: any) {
 
     await connection.applySchemas();
 
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
   });
 
   it('check schema changes of type', async () => {
@@ -613,7 +613,7 @@ export default function (db: any, db_config: any) {
     });
     await connection.applySchemas();
 
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
   });
 }

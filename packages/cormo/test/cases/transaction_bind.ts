@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 import { UserExtraRef, UserRef } from './transaction.js';
@@ -19,7 +19,7 @@ export default function (models: {
     );
 
     const users = await models.User.where();
-    expect(users).to.eql([
+    expect(users).toEqual([
       { id: user1_id, name: 'John Doe', age: 27 },
       { id: user2_id, name: 'Bill Smith', age: 45 },
     ]);
@@ -34,11 +34,11 @@ export default function (models: {
       });
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error.message).to.equal('force fail');
+      expect(error.message).toBe('force fail');
     }
 
     const users = await models.User.where();
-    expect(users).to.eql([]);
+    expect(users).toEqual([]);
   });
 
   it('can not run command with finished transaction', async () => {
@@ -56,8 +56,8 @@ export default function (models: {
       await TxUser.create({ name: 'John Doe', age: 27 });
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error).to.be.an.instanceof(Error);
-      expect(error.message).to.equal('transaction finished');
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe('transaction finished');
     }
   });
 
@@ -73,11 +73,11 @@ export default function (models: {
       });
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error.message).to.equal('force fail');
+      expect(error.message).toBe('force fail');
     }
 
     const users = await models.User.where();
-    expect(users).to.eql([{ id: user3_id, name: 'Alice Jackson', age: 27 }]);
+    expect(users).toEqual([{ id: user3_id, name: 'Alice Jackson', age: 27 }]);
   });
 
   it('multiple model', async () => {
@@ -92,7 +92,7 @@ export default function (models: {
           const user_extra1 = await TxUserExtra.create({ user_id: user.id, phone_number: '1234-5678' });
           const user_extra2 = await models.UserExtra.create({ user_id: user.id, phone_number: '9876-5432' });
           user_extra2_id = user_extra2.id;
-          expect(await TxUserExtra.where()).to.eql([
+          expect(await TxUserExtra.where()).toEqual([
             { id: user_extra1.id, user_id, phone_number: '1234-5678' },
             { id: user_extra2_id, user_id, phone_number: '9876-5432' },
           ]);
@@ -101,11 +101,11 @@ export default function (models: {
       );
       throw new Error('must throw an error.');
     } catch (error: any) {
-      expect(error.message).to.equal('force fail');
+      expect(error.message).toBe('force fail');
     }
 
-    expect(await models.User.where()).to.eql([]);
-    expect(await models.UserExtra.where()).to.eql([{ id: user_extra2_id, user_id, phone_number: '9876-5432' }]);
+    expect(await models.User.where()).toEqual([]);
+    expect(await models.UserExtra.where()).toEqual([{ id: user_extra2_id, user_id, phone_number: '9876-5432' }]);
   });
 
   describe('isolation levels', () => {
@@ -125,13 +125,13 @@ export default function (models: {
             user2_id = user2.id;
             await TxUser2.find(user1.id).update({ age: 30 });
 
-            expect(await TxUser1.where()).to.eql([
+            expect(await TxUser1.where()).toEqual([
               { id: user1.id, name: 'John Doe', age: 30 },
               { id: user2.id, name: 'Bill Smith', age: 45 },
             ]);
           });
 
-          expect(await TxUser1.where().order('id')).to.eql([
+          expect(await TxUser1.where().order('id')).toEqual([
             { id: user1.id, name: 'John Doe', age: 30 },
             { id: user2_id, name: 'Bill Smith', age: 45 },
           ]);
@@ -152,10 +152,10 @@ export default function (models: {
             user2_id = user2.id;
             await TxUser2.find(user1.id).update({ age: 30 });
 
-            expect(await TxUser1.where()).to.eql([{ id: user1.id, name: 'John Doe', age: 27 }]);
+            expect(await TxUser1.where()).toEqual([{ id: user1.id, name: 'John Doe', age: 27 }]);
           });
 
-          expect(await TxUser1.where().order('id')).to.eql([
+          expect(await TxUser1.where().order('id')).toEqual([
             { id: user1.id, name: 'John Doe', age: 30 },
             { id: user2_id, name: 'Bill Smith', age: 45 },
           ]);
@@ -178,20 +178,20 @@ export default function (models: {
             user2_id = user2.id;
             await TxUser2.find(user1.id).update({ age: 30 });
 
-            expect(await TxUser1.where()).to.eql([{ id: user1.id, name: 'John Doe', age: 27 }]);
+            expect(await TxUser1.where()).toEqual([{ id: user1.id, name: 'John Doe', age: 27 }]);
           });
 
-          expect(await TxUser1.where().order('id')).to.eql([{ id: user1.id, name: 'John Doe', age: 27 }]);
+          expect(await TxUser1.where().order('id')).toEqual([{ id: user1.id, name: 'John Doe', age: 27 }]);
 
           TxUser1.find(user2_id).update({ age: 55 });
-          expect(await TxUser1.where().order('id')).to.eql([
+          expect(await TxUser1.where().order('id')).toEqual([
             { id: user1.id, name: 'John Doe', age: 27 },
             { id: user2_id, name: 'Bill Smith', age: 55 },
           ]);
         },
       );
 
-      expect(await models.User.where().order('id')).to.eql([
+      expect(await models.User.where().order('id')).toEqual([
         { id: user1.id, name: 'John Doe', age: 30 },
         { id: user2_id, name: 'Bill Smith', age: 55 },
       ]);
@@ -203,30 +203,30 @@ export default function (models: {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.where()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+          expect(await TxUser.where()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.createBulk', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const users = await TxUser.createBulk([{ name: 'John Doe', age: 27 }]);
-          expect(await TxUser.where()).to.eql([{ id: users[0].id, name: 'John Doe', age: 27 }]);
+          expect(await TxUser.where()).toEqual([{ id: users[0].id, name: 'John Doe', age: 27 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model::save', async () => {
@@ -236,30 +236,30 @@ export default function (models: {
           user.name = 'John Doe';
           user.age = 27;
           await user.save();
-          expect(await TxUser.where()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+          expect(await TxUser.where()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.count', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const _user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.count()).to.eql(1);
+          expect(await TxUser.count()).toEqual(1);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.update', async () => {
@@ -268,15 +268,15 @@ export default function (models: {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           await TxUser.update({ age: 30 });
-          expect(await TxUser.where()).to.eql([{ id: user.id, name: 'John Doe', age: 30 }]);
+          expect(await TxUser.where()).toEqual([{ id: user.id, name: 'John Doe', age: 30 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+      expect(await models.User.where()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
     });
 
     it('Model.delete', async () => {
@@ -285,150 +285,150 @@ export default function (models: {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           await TxUser.delete();
-          expect(await TxUser.where()).to.eql([]);
+          expect(await TxUser.where()).toEqual([]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+      expect(await models.User.where()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
     });
 
     it('Model.query', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.query()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+          expect(await TxUser.query()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.find', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.find(user.id)).to.eql({ id: user.id, name: 'John Doe', age: 27 });
+          expect(await TxUser.find(user.id)).toEqual({ id: user.id, name: 'John Doe', age: 27 });
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.findPreserve', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.findPreserve([user.id])).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+          expect(await TxUser.findPreserve([user.id])).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.where', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.where({ age: 27 })).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+          expect(await TxUser.where({ age: 27 })).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.select', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.select('name')).to.eql([{ id: user.id, name: 'John Doe' }]);
+          expect(await TxUser.select('name')).toEqual([{ id: user.id, name: 'John Doe' }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.order', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.order('name')).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+          expect(await TxUser.order('name')).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Model.group', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const _user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.group(null, { sum: { $sum: '$age' } })).to.eql([{ sum: 27 }]);
+          expect(await TxUser.group(null, { sum: { $sum: '$age' } })).toEqual([{ sum: 27 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Query::exec', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.query().where({ age: 27 })).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+          expect(await TxUser.query().where({ age: 27 })).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Query::count', async () => {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           const _user = await TxUser.create({ name: 'John Doe', age: 27 });
-          expect(await TxUser.query().count()).to.eql(1);
+          expect(await TxUser.query().count()).toEqual(1);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([]);
+      expect(await models.User.where()).toEqual([]);
     });
 
     it('Query::update', async () => {
@@ -437,15 +437,15 @@ export default function (models: {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           await TxUser.query().update({ age: 30 });
-          expect(await TxUser.where()).to.eql([{ id: user.id, name: 'John Doe', age: 30 }]);
+          expect(await TxUser.where()).toEqual([{ id: user.id, name: 'John Doe', age: 30 }]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+      expect(await models.User.where()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
     });
 
     it('Query::delete', async () => {
@@ -454,15 +454,15 @@ export default function (models: {
       try {
         await models.connection!.transaction<void, UserRef>({ models: [models.User] }, async (TxUser) => {
           await TxUser.query().delete({ age: 27 });
-          expect(await TxUser.where()).to.eql([]);
+          expect(await TxUser.where()).toEqual([]);
           throw new Error('force fail');
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error.message).to.equal('force fail');
+        expect(error.message).toBe('force fail');
       }
 
-      expect(await models.User.where()).to.eql([{ id: user.id, name: 'John Doe', age: 27 }]);
+      expect(await models.User.where()).toEqual([{ id: user.id, name: 'John Doe', age: 27 }]);
     });
   });
 }

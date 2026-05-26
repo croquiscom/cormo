@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 import { Type } from './type.js';
@@ -18,12 +18,12 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         if (item[1] === null) {
           throw new Error('must throw an error.');
         }
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         type = await models.Type.find(type.id);
-        expect(type.number).to.equal(item[1]);
+        expect(type.number).toBe(item[1]);
       } catch (error: any) {
-        expect(error).to.exist;
-        expect(error.message).to.equal("'number' is not a number");
+        expect(error).toExist();
+        expect(error.message).toBe("'number' is not a number");
       }
     }
   });
@@ -43,12 +43,12 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         if (item[1] === null) {
           throw new Error('must throw an error.');
         }
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         type = await models.Type.find(type.id);
-        expect(type.int_c).to.equal(item[1]);
+        expect(type.int_c).toBe(item[1]);
       } catch (error: any) {
-        expect(error).to.exist;
-        expect(error.message).to.equal("'int_c' is not an integer");
+        expect(error).toExist();
+        expect(error.message).toBe("'int_c' is not an integer");
       }
     }
   });
@@ -68,12 +68,12 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         if (item[1] === null) {
           throw new Error('must throw an error.');
         }
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         type = await models.Type.find(type.id);
-        expect(type.bigint_c).to.equal(item[1]);
+        expect(type.bigint_c).toBe(item[1]);
       } catch (error: any) {
-        expect(error).to.exist;
-        expect(error.message).to.equal("'bigint_c' is not a big integer");
+        expect(error).toExist();
+        expect(error.message).toBe("'bigint_c' is not a big integer");
       }
     }
   });
@@ -94,13 +94,13 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         if (item[1] === null) {
           throw new Error('must throw an error.');
         }
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         type = await models.Type.find(type.id);
-        expect(type.date).to.be.an.instanceof(Date);
-        expect(type.date!.getTime()).to.equal(item[1]);
+        expect(type.date).toBeInstanceOf(Date);
+        expect(type.date!.getTime()).toBe(item[1]);
       } catch (error: any) {
-        expect(error).to.exist;
-        expect(error.message).to.equal("'date' is not a date");
+        expect(error).toExist();
+        expect(error.message).toBe("'date' is not a date");
       }
     }
   });
@@ -119,12 +119,12 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         if (item[1] === null) {
           throw new Error('must throw an error.');
         }
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         type = await models.Type.find(type.id);
-        expect(type.boolean).to.equal(item[1]);
+        expect(type.boolean).toBe(item[1]);
       } catch (error: any) {
-        expect(error).to.exist;
-        expect(error.message).to.equal("'boolean' is not a boolean");
+        expect(error).toExist();
+        expect(error.message).toBe("'boolean' is not a boolean");
       }
     }
   });
@@ -143,12 +143,12 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
     for (const item of data) {
       let type = await models.Type.create();
       const count = await models.Type.find(type.id).update({ object: item[0] });
-      expect(count).to.equal(1);
+      expect(count).toBe(1);
       type = await models.Type.find(type.id);
       if (typeof item[1] === 'object') {
-        expect(type.object).to.eql(item[1]);
+        expect(type.object).toEqual(item[1]);
       } else {
-        expect(type.object).to.equal(item[1]);
+        expect(type.object).toBe(item[1]);
       }
     }
   });
@@ -169,12 +169,12 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
         if (item[1] === null) {
           throw new Error('must throw an error.');
         }
-        expect(count).to.equal(1);
+        expect(count).toBe(1);
         type = await models.Type.find(type.id);
-        expect(type.int_array).to.eql(item[1]);
+        expect(type.int_array).toEqual(item[1]);
       } catch (error: any) {
-        expect(error).to.exist;
-        expect(error.message).to.equal("'int_array' is not an array");
+        expect(error).toExist();
+        expect(error.message).toBe("'int_array' is not an array");
       }
     }
   });

@@ -1,3 +1,4 @@
+import { afterAll, beforeAll, beforeEach, describe } from 'vitest';
 /* global describe, before, beforeEach, after */
 
 import cases from './cases/javascript.js';
@@ -9,7 +10,7 @@ _dbs.forEach(function (db) {
     return;
   }
   describe('javascript-' + db, function () {
-    before(async function () {
+    beforeAll(async function () {
       _g.connection = new _g.Connection(db, _g.db_configs[db]);
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -22,7 +23,7 @@ _dbs.forEach(function (db) {
       await _g.deleteAllRecords([_g.connection.User]);
     });
 
-    after(async function () {
+    afterAll(async function () {
       await _g.connection.dropAllModels();
     });
 

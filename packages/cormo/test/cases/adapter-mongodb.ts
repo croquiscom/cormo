@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, describe, it } from 'vitest';
 import { ObjectId } from 'mongodb';
 import * as cormo from '../../src/index.js';
 import _g from '../support/common.js';
@@ -28,7 +28,7 @@ export default function (models: { connection: cormo.Connection<cormo.MongoDBAda
         name: String,
       });
       const user = await User.create({ name: 'John Doe', age: 27 });
-      expect(await User.find(user.id)).to.eql({ id: user.id, name: 'John Doe', age: 27 });
+      expect(await User.find(user.id)).toEqual({ id: user.id, name: 'John Doe', age: 27 });
       await conn.dropAllModels();
     });
 
@@ -38,7 +38,7 @@ export default function (models: { connection: cormo.Connection<cormo.MongoDBAda
       const range = Array.from({ length: 1500 }, (v, i) => i + 1);
       const records = await Simple.createBulk(range.map((i) => ({ value: i })));
       for (const i of range) {
-        expect(records[i - 1]).to.have.property('value', i);
+        expect(records[i - 1]).toHaveProperty('value', i);
       }
     });
   });
@@ -61,9 +61,9 @@ export default function (models: { connection: cormo.Connection<cormo.MongoDBAda
       const users = await User.createBulk(data);
       const cursor = await models.connection!.adapter.collection('User').find({ age: 27 });
       const result = await cursor.toArray();
-      expect(result).to.have.length(2);
-      expect(result[0]).to.eql({ _id: new ObjectId(users[0].id), name: users[0].name, age: users[0].age });
-      expect(result[1]).to.eql({ _id: new ObjectId(users[2].id), name: users[2].name, age: users[2].age });
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ _id: new ObjectId(users[0].id), name: users[0].name, age: users[0].age });
+      expect(result[1]).toEqual({ _id: new ObjectId(users[2].id), name: users[2].name, age: users[2].age });
     });
   });
 }

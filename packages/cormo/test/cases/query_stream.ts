@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 import { UserRef, UserRefVO } from './query.js';
@@ -26,12 +26,12 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         .stream()
         .on('data', (user: UserRef) => {
           count++;
-          expect(user).to.be.an.instanceof(models.User);
-          expect(user).to.have.keys('id', 'name', 'age');
-          expect(user.age).to.eql(27);
+          expect(user).toBeInstanceOf(models.User);
+          expect(user).toHaveKeys('id', 'name', 'age');
+          expect(user.age).toEqual(27);
         })
         .on('end', () => {
-          expect(count).to.eql(2);
+          expect(count).toEqual(2);
           resolve();
         })
         .on('error', (error) => {
@@ -49,12 +49,12 @@ export default function (models: { User: typeof UserRef; connection: cormo.Conne
         .stream()
         .on('data', (user: UserRefVO) => {
           count++;
-          expect(user).to.not.be.an.instanceof(models.User);
-          expect(user).to.have.keys('id', 'name', 'age');
-          expect(user.age).to.eql(27);
+          expect(user).not.toBeInstanceOf(models.User);
+          expect(user).toHaveKeys('id', 'name', 'age');
+          expect(user.age).toEqual(27);
         })
         .on('end', () => {
-          expect(count).to.eql(2);
+          expect(count).toEqual(2);
           resolve();
         })
         .on('error', (error) => {

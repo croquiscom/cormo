@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, afterAll, afterEach, beforeAll, describe, it } from 'vitest';
 import * as cormo from 'cormo';
 import { graphql, GraphQLSchema, printSchema } from 'graphql';
 import { BelongsTo, Column, createDefaultCrudSchema, Model } from '../../src/index.js';
@@ -24,7 +24,7 @@ describe('createDefaultCrudSchema (association)', () => {
   let PostModel: typeof PostRef;
   let schema: GraphQLSchema;
 
-  before(() => {
+  beforeAll(() => {
     connection = new cormo.Connection('mysql', _g.db_configs.mysql);
 
     @Model({ connection, description: 'A user model' })
@@ -56,14 +56,14 @@ describe('createDefaultCrudSchema (association)', () => {
     await PostModel.deleteAll();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await UserModel.drop();
     await PostModel.drop();
     connection.close();
   });
 
   it('schema', () => {
-    expect(printSchema(schema)).to.eql(`type Query {
+    expect(printSchema(schema)).toEqual(`type Query {
   """Single query for Post"""
   post(id: ID): Post
 
@@ -126,7 +126,7 @@ input DeletePostInput {
         const query = 'query($user_id: ID) { post_list(user_id: $user_id) { item_list { id } } }';
         const variables = { user_id: String(id_to_record_map.user1.id) };
         const result = await graphql({ schema, source: query, variableValues: variables });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             post_list: {
               item_list: [{ id: String(id_to_record_map.post1.id) }, { id: String(id_to_record_map.post3.id) }],

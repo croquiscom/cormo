@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, afterEach, beforeEach, it } from 'vitest';
 import * as sinon from 'sinon';
 import * as cormo from '../../src/index.js';
 
@@ -34,7 +34,7 @@ export default function (db: any, db_config: any) {
       public name!: string;
     }
 
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: 'Add table users' },
       ...(db === 'mysql'
         ? [
@@ -58,15 +58,15 @@ export default function (db: any, db_config: any) {
           ]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
 
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     const schema = await (connection._adapter as any).getSchemas();
     const table_names = Object.keys(schema.tables);
-    expect(table_names.sort()).to.eql(['guests', 'users']);
+    expect(table_names.sort()).toEqual(['guests', 'users']);
   });
 
   it('change table description after create', async () => {
@@ -78,31 +78,31 @@ export default function (db: any, db_config: any) {
     User.description = 'User model';
     connection._schema_changed = true;
 
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: "Change table users's description to 'User model'", ignorable: true },
       ...(db === 'mysql'
         ? [{ message: "  (ALTER TABLE users COMMENT 'User model')", is_query: true, ignorable: true }]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: "Change table users's description to 'User model'", ignorable: true },
       ...(db === 'mysql'
         ? [{ message: "  (ALTER TABLE users COMMENT 'User model')", is_query: true, ignorable: true }]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     connection._schema_changed = true;
     await connection.applySchemas({ apply_description_change: true });
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     const schema = await (connection._adapter as any).getSchemas();
     const table_names = Object.keys(schema.tables);
-    expect(table_names.sort()).to.eql(['users']);
+    expect(table_names.sort()).toEqual(['users']);
   });
 
   it('set column description at create', async () => {
@@ -117,7 +117,7 @@ export default function (db: any, db_config: any) {
       public name!: string;
     }
 
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: 'Add table users' },
       ...(db === 'mysql'
         ? [
@@ -141,15 +141,15 @@ export default function (db: any, db_config: any) {
           ]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
 
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     const schema = await (connection._adapter as any).getSchemas();
     const table_names = Object.keys(schema.tables);
-    expect(table_names.sort()).to.eql(['guests', 'users']);
+    expect(table_names.sort()).toEqual(['guests', 'users']);
   });
 
   it('set column description on adding column', async () => {
@@ -160,7 +160,7 @@ export default function (db: any, db_config: any) {
     await connection.applySchemas();
 
     User.column('address', { type: String, description: 'Address of user' });
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: 'Add column address to users' },
       ...(db === 'mysql'
         ? [
@@ -172,7 +172,7 @@ export default function (db: any, db_config: any) {
           ]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(true);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(true);
   });
 
   it('change column description after create', async () => {
@@ -184,7 +184,7 @@ export default function (db: any, db_config: any) {
     User._schema.name!.description = 'Name of user';
     connection._schema_changed = true;
 
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: "Change users.name's description to 'Name of user'", ignorable: true },
       ...(db === 'mysql'
         ? [
@@ -196,10 +196,10 @@ export default function (db: any, db_config: any) {
           ]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     await connection.applySchemas();
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: "Change users.name's description to 'Name of user'", ignorable: true },
       ...(db === 'mysql'
         ? [
@@ -211,16 +211,16 @@ export default function (db: any, db_config: any) {
           ]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     connection._schema_changed = true;
     await connection.applySchemas({ apply_description_change: true });
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     const schema = await (connection._adapter as any).getSchemas();
     const table_names = Object.keys(schema.tables);
-    expect(table_names.sort()).to.eql(['users']);
+    expect(table_names.sort()).toEqual(['users']);
   });
 
   it('support special characters', async () => {
@@ -232,16 +232,16 @@ export default function (db: any, db_config: any) {
     User.description = "use ' in comment";
     connection._schema_changed = true;
 
-    expect(await connection.getSchemaChanges()).to.eql([
+    expect(await connection.getSchemaChanges()).toEqual([
       { message: "Change table users's description to 'use ' in comment'", ignorable: true },
       ...(db === 'mysql'
         ? [{ message: "  (ALTER TABLE users COMMENT 'use \\' in comment')", is_query: true, ignorable: true }]
         : []),
     ]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
 
     await connection.applySchemas({ apply_description_change: true });
-    expect(await connection.getSchemaChanges()).to.eql([]);
-    expect(await connection.isApplyingSchemasNecessary()).to.eql(false);
+    expect(await connection.getSchemaChanges()).toEqual([]);
+    expect(await connection.isApplyingSchemasNecessary()).toEqual(false);
   });
 }

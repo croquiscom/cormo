@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 export class PlaceRef extends cormo.BaseModel {
@@ -37,12 +37,12 @@ export default function (models: { Place: typeof PlaceRef; connection: cormo.Con
       location: [-76.136131, 43.03624],
     });
     const record = await models.Place.find(place.id);
-    expect(record).to.have.property('name', 'Carrier Dome');
-    expect(record).to.have.property('location');
-    expect(record.location).to.be.an.instanceof(Array);
-    expect(record.location).to.have.length(2);
-    expect(record.location[0]).to.equal(-76.136131);
-    expect(record.location[1]).to.equal(43.03624);
+    expect(record).toHaveProperty('name', 'Carrier Dome');
+    expect(record).toHaveProperty('location');
+    expect(record.location).toBeInstanceOf(Array);
+    expect(record.location).toHaveLength(2);
+    expect(record.location[0]).toBe(-76.136131);
+    expect(record.location[1]).toBe(43.03624);
   });
   it('invalid geopoint', async function () {
     const data = [-76.136131, [], [-76.136131], [-76.136131, 43.03624, 10.59]];
@@ -54,8 +54,8 @@ export default function (models: { Place: typeof PlaceRef; connection: cormo.Con
         });
         throw new Error('must throw an error.');
       } catch (error: any) {
-        expect(error).to.exist;
-        expect(error).to.have.property('message', "'location' is not a geo point");
+        expect(error).toExist();
+        expect(error).toHaveProperty('message', "'location' is not a geo point");
       }
     }
   });
@@ -78,7 +78,7 @@ export default function (models: { Place: typeof PlaceRef; connection: cormo.Con
       'Jamsil Baseball Stadium',
       'Sapporo Dome',
     ];
-    expect(places.map((place) => place.name)).to.eql(expected);
+    expect(places.map((place) => place.name)).toEqual(expected);
   });
 
   it('near query 2', async function () {
@@ -87,7 +87,7 @@ export default function (models: { Place: typeof PlaceRef; connection: cormo.Con
       .near({ location: [-5, 45] })
       .limit(4);
     const expected = ['Wimbledon', 'Palace of Versailles', 'Eurosites Parc des Princes', 'Anfield Football Stadium'];
-    expect(places.map((place) => place.name)).to.eql(expected);
+    expect(places.map((place) => place.name)).toEqual(expected);
   });
 
   it('near query 3', async function () {
@@ -96,7 +96,7 @@ export default function (models: { Place: typeof PlaceRef; connection: cormo.Con
       .near({ location: [170, 45] })
       .limit(1);
     const expected = ['Sapporo Dome'];
-    expect(places.map((place) => place.name)).to.eql(expected);
+    expect(places.map((place) => place.name)).toEqual(expected);
   });
 
   it('near query 4', async function () {
@@ -106,7 +106,7 @@ export default function (models: { Place: typeof PlaceRef; connection: cormo.Con
       .skip(3)
       .limit(3);
     const expected = ['Dodgers Stadium', 'Candlestick Park', 'Anfield Football Stadium'];
-    expect(places.map((place) => place.name)).to.eql(expected);
+    expect(places.map((place) => place.name)).toEqual(expected);
   });
 
   it('near and condition', async function () {
@@ -115,6 +115,6 @@ export default function (models: { Place: typeof PlaceRef; connection: cormo.Con
       .near({ location: [170, 45] })
       .limit(2);
     const expected = ['Jamsil Baseball Stadium', 'Anfield Football Stadium'];
-    expect(places.map((place) => place.name)).to.eql(expected);
+    expect(places.map((place) => place.name)).toEqual(expected);
   });
 }

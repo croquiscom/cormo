@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import { ComputerRef, PostRef, UserRef } from './association.js';
 
 export default function (models: { Computer: typeof ComputerRef; Post: typeof PostRef; User: typeof UserRef }) {
@@ -6,6 +6,6 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
     const user = await models.User.create({ name: 'John Doe', age: 27 });
     const computer = await models.Computer.create({ brand: 'Maple', user_id: user.id });
     const record = await user.computer!();
-    expect(computer).to.eql(record);
+    expect(computer).toEqual(record);
   });
 }

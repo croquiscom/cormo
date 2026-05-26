@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, afterEach, describe, it } from 'vitest';
 import * as cormo from '../src/index.js';
 import _g from './support/common.js';
 
@@ -26,11 +26,11 @@ _dbs.forEach((db) => {
       });
       const user = await User.create({ name: 'John Doe', age: 27 });
       const record = await User.find(user.id);
-      expect(record).to.exist;
-      expect(record).to.be.an.instanceof(User);
-      expect(record).to.have.property('id', user.id);
-      expect(record).to.have.property('name', (user as any).name);
-      expect(record).to.have.property('age', (user as any).age);
+      expect(record).toExist();
+      expect(record).toBeInstanceOf(User);
+      expect(record).toHaveProperty('id', user.id);
+      expect(record).toHaveProperty('name', (user as any).name);
+      expect(record).toHaveProperty('age', (user as any).age);
     });
 
     it('association order', async () => {

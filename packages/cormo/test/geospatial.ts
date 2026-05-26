@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import * as cormo from '../src/index.js';
 import cases, { PlaceRef } from './cases/geospatial.js';
 import _g from './support/common.js';
@@ -16,7 +16,7 @@ _dbs.forEach((db) => {
       connection: null as cormo.Connection | null,
     };
 
-    before(async () => {
+    beforeAll(async () => {
       _g.connection = models.connection = new cormo.Connection(db as any, _g.db_configs[db]);
 
       @cormo.Model()
@@ -36,7 +36,7 @@ _dbs.forEach((db) => {
       await _g.deleteAllRecords([models.Place]);
     });
 
-    after(async () => {
+    afterAll(async () => {
       await models.connection!.dropAllModels();
       models.connection!.close();
       models.connection = null;
@@ -55,7 +55,7 @@ _dbs_not.forEach((db) => {
   }
 
   describe('geospatial-' + db, () => {
-    before(() => {
+    beforeAll(() => {
       _g.connection = new cormo.Connection(db as any, _g.db_configs[db]);
     });
 
@@ -65,7 +65,7 @@ _dbs_not.forEach((db) => {
           name: String,
           location: cormo.types.GeoPoint,
         });
-      }).to.throw('this adapter does not support GeoPoint type');
+      }).toThrow('this adapter does not support GeoPoint type');
     });
   });
 });

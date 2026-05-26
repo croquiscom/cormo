@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, beforeEach, it } from 'vitest';
 import { ComputerRef, PostRef, UserRef } from './association.js';
 
 function _checkPost(
@@ -10,23 +10,23 @@ function _checkPost(
   user_name?: string,
   user_age?: number,
 ) {
-  expect(post).to.be.an.instanceof(Post);
-  expect(post).to.have.property('title', title);
-  expect(post).to.have.property('user');
+  expect(post).toBeInstanceOf(Post);
+  expect(post).toHaveProperty('title', title);
+  expect(post).toHaveProperty('user');
   if (user_id) {
-    expect(post.user).to.be.an.instanceof(User);
+    expect(post.user).toBeInstanceOf(User);
     if (user_age) {
-      expect(post.user).to.have.keys('id', 'name', 'age');
+      expect(post.user).toHaveKeys('id', 'name', 'age');
     } else {
-      expect(post.user).to.have.keys('id', 'name');
+      expect(post.user).toHaveKeys('id', 'name');
     }
-    expect(post.user).to.have.property('id', user_id);
-    expect(post.user).to.have.property('name', user_name);
+    expect(post.user).toHaveProperty('id', user_id);
+    expect(post.user).toHaveProperty('name', user_name);
     if (user_age) {
-      expect(post.user).to.have.property('age', user_age);
+      expect(post.user).toHaveProperty('age', user_age);
     }
   } else {
-    expect(post.user).to.not.exist;
+    expect(post.user).not.toExist();
   }
 }
 
@@ -39,19 +39,19 @@ function _checkUser(
   post_titles: string[],
   has_post_body: boolean,
 ) {
-  expect(user).to.be.an.instanceof(User);
-  expect(user).to.have.property('name', name);
-  expect(user).to.have.property('posts');
-  expect(user.posts).to.have.length(post_ids.length);
+  expect(user).toBeInstanceOf(User);
+  expect(user).toHaveProperty('name', name);
+  expect(user).toHaveProperty('posts');
+  expect(user.posts).toHaveLength(post_ids.length);
   (user.posts as any as PostRef[]).forEach((post, i) => {
-    expect(post).to.be.an.instanceof(Post);
+    expect(post).toBeInstanceOf(Post);
     if (!has_post_body) {
-      expect(post).to.have.keys('id', 'user_id', 'title');
+      expect(post).toHaveKeys('id', 'user_id', 'title');
     } else {
-      expect(post).to.have.keys('id', 'user_id', 'title', 'body', 'parent_post_id');
+      expect(post).toHaveKeys('id', 'user_id', 'title', 'body', 'parent_post_id');
     }
-    expect(post.id).to.equal(post_ids[i]);
-    expect(post.title).to.equal(post_titles[i]);
+    expect(post.id).toBe(post_ids[i]);
+    expect(post.title).toBe(post_titles[i]);
   });
 }
 
@@ -75,7 +75,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
 
   it('include objects that belong to', async () => {
     const posts = await models.Post.query().include('user');
-    expect(posts).to.have.length(3);
+    expect(posts).toHaveLength(3);
     _checkPost(models.Post, models.User, posts[0], 'first post', preset_users[0].id, 'John Doe', 27);
     _checkPost(models.Post, models.User, posts[1], 'second post', preset_users[0].id, 'John Doe', 27);
     _checkPost(models.Post, models.User, posts[2], 'another post', preset_users[1].id, 'Bill Smith', 45);
@@ -88,7 +88,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
 
   it('include objects that belong to with select', async () => {
     const posts = await models.Post.query().include('user', 'name');
-    expect(posts).to.have.length(3);
+    expect(posts).toHaveLength(3);
     _checkPost(models.Post, models.User, posts[0], 'first post', preset_users[0].id, 'John Doe');
     _checkPost(models.Post, models.User, posts[1], 'second post', preset_users[0].id, 'John Doe');
     _checkPost(models.Post, models.User, posts[2], 'another post', preset_users[1].id, 'Bill Smith');
@@ -96,7 +96,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
 
   it('include objects that have many', async () => {
     const users = await models.User.query().include('posts');
-    expect(users).to.have.length(2);
+    expect(users).toHaveLength(2);
     _checkUser(
       models.User,
       models.Post,
@@ -124,7 +124,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
 
   it('include objects that have many with select', async () => {
     const users = await models.User.query().include('posts', 'title');
-    expect(users).to.have.length(2);
+    expect(users).toHaveLength(2);
     _checkUser(
       models.User,
       models.Post,
@@ -140,12 +140,12 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
   it('null id', async () => {
     await models.Post.find(preset_posts[1].id).update({ user_id: null });
     const posts = await models.Post.query().include('user').order('id');
-    expect(posts).to.have.length(3);
+    expect(posts).toHaveLength(3);
     _checkPost(models.Post, models.User, posts[0], 'first post', preset_users[0].id, 'John Doe', 27);
     _checkPost(models.Post, models.User, posts[1], 'second post', null);
     _checkPost(models.Post, models.User, posts[2], 'another post', preset_users[1].id, 'Bill Smith', 45);
     const users = await models.User.query().include('posts').order('id');
-    expect(users).to.have.length(2);
+    expect(users).toHaveLength(2);
     _checkUser(models.User, models.Post, users[0], 'John Doe', [preset_posts[0].id], ['first post'], true);
     _checkUser(models.User, models.Post, users[1], 'Bill Smith', [preset_posts[2].id], ['another post'], true);
   });
@@ -153,7 +153,7 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
   it('invalid id', async () => {
     await models.User.find(preset_users[1].id).delete();
     const posts = await models.Post.query().include('user').order('id');
-    expect(posts).to.have.length(3);
+    expect(posts).toHaveLength(3);
     _checkPost(models.Post, models.User, posts[0], 'first post', preset_users[0].id, 'John Doe', 27);
     _checkPost(models.Post, models.User, posts[1], 'second post', preset_users[0].id, 'John Doe', 27);
     _checkPost(models.Post, models.User, posts[2], 'another post', null);
@@ -167,16 +167,16 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
     const posts = await models.Post.query().include('user').order('id');
     const posts_lean = await models.Post.query().lean().include('user').order('id');
     models.Post.query_record_id_as_string = false;
-    expect(posts).to.have.length(3);
-    expect(posts[0]).to.have.property('id', preset_posts[0].id.toString());
-    expect(posts[0]).to.have.property('user_id', preset_users[0].id.toString());
-    expect(posts[0].user).to.have.property('id', preset_users[0].id);
-    expect(posts[1]).to.have.property('user_id', null);
-    expect(posts_lean).to.have.length(3);
-    expect(posts_lean[0]).to.have.property('id', preset_posts[0].id.toString());
-    expect(posts_lean[0]).to.have.property('user_id', preset_users[0].id.toString());
-    expect(posts_lean[0].user).to.have.property('id', preset_users[0].id);
-    expect(posts_lean[1]).to.have.property('user_id', null);
+    expect(posts).toHaveLength(3);
+    expect(posts[0]).toHaveProperty('id', preset_posts[0].id.toString());
+    expect(posts[0]).toHaveProperty('user_id', preset_users[0].id.toString());
+    expect(posts[0].user).toHaveProperty('id', preset_users[0].id);
+    expect(posts[1]).toHaveProperty('user_id', null);
+    expect(posts_lean).toHaveLength(3);
+    expect(posts_lean[0]).toHaveProperty('id', preset_posts[0].id.toString());
+    expect(posts_lean[0]).toHaveProperty('user_id', preset_users[0].id.toString());
+    expect(posts_lean[0].user).toHaveProperty('id', preset_users[0].id);
+    expect(posts_lean[1]).toHaveProperty('user_id', null);
   });
 
   it('query record id as string include sub', async () => {
@@ -187,15 +187,15 @@ export default function (models: { Computer: typeof ComputerRef; Post: typeof Po
     const posts_lean = await models.Post.query().lean().include('user').order('id');
     models.Post.query_record_id_as_string = false;
     models.User.query_record_id_as_string = false;
-    expect(posts).to.have.length(3);
-    expect(posts[0]).to.have.property('id', preset_posts[0].id.toString());
-    expect(posts[0]).to.have.property('user_id', preset_users[0].id.toString());
-    expect(posts[0].user).to.have.property('id', preset_users[0].id.toString());
-    expect(posts[1]).to.have.property('user_id', null);
-    expect(posts_lean).to.have.length(3);
-    expect(posts_lean[0]).to.have.property('id', preset_posts[0].id.toString());
-    expect(posts_lean[0]).to.have.property('user_id', preset_users[0].id.toString());
-    expect(posts_lean[0].user).to.have.property('id', preset_users[0].id.toString());
-    expect(posts_lean[1]).to.have.property('user_id', null);
+    expect(posts).toHaveLength(3);
+    expect(posts[0]).toHaveProperty('id', preset_posts[0].id.toString());
+    expect(posts[0]).toHaveProperty('user_id', preset_users[0].id.toString());
+    expect(posts[0].user).toHaveProperty('id', preset_users[0].id.toString());
+    expect(posts[1]).toHaveProperty('user_id', null);
+    expect(posts_lean).toHaveLength(3);
+    expect(posts_lean[0]).toHaveProperty('id', preset_posts[0].id.toString());
+    expect(posts_lean[0]).toHaveProperty('user_id', preset_users[0].id.toString());
+    expect(posts_lean[0].user).toHaveProperty('id', preset_users[0].id.toString());
+    expect(posts_lean[1]).toHaveProperty('user_id', null);
   });
 }

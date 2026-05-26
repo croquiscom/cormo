@@ -1,3 +1,4 @@
+import { afterAll, beforeAll, beforeEach, describe } from 'vitest';
 import * as cormo from '../src/index.js';
 import cases, { DocumentRef } from './cases/vector.js';
 import _g from './support/common.js';
@@ -15,7 +16,7 @@ _dbs.forEach((db) => {
       connection: null as cormo.Connection | null,
     };
 
-    before(async () => {
+    beforeAll(async () => {
       _g.connection = models.connection = new cormo.Connection(db as any, _g.db_configs[db]);
 
       @cormo.Model()
@@ -35,7 +36,7 @@ _dbs.forEach((db) => {
       await _g.deleteAllRecords([models.Document]);
     });
 
-    after(async () => {
+    afterAll(async () => {
       await models.connection!.dropAllModels();
       models.connection!.close();
       models.connection = null;

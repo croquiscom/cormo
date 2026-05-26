@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, afterAll, afterEach, beforeAll, describe, it } from 'vitest';
 import * as cormo from 'cormo';
 import { graphql, GraphQLSchema, printSchema } from 'graphql';
 import { Column, createDefaultCrudSchema, Model } from '../../src/index.js';
@@ -15,7 +15,7 @@ describe('createDefaultCrudSchema (basic)', () => {
   let UserModel: typeof UserRef;
   let schema: GraphQLSchema;
 
-  before(() => {
+  beforeAll(() => {
     connection = new cormo.Connection('mysql', _g.db_configs.mysql);
     @Model({ connection, description: 'A user model' })
     class User extends cormo.BaseModel {
@@ -39,13 +39,13 @@ describe('createDefaultCrudSchema (basic)', () => {
     await UserModel.deleteAll();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await UserModel.drop();
     connection.close();
   });
 
   it('schema', () => {
-    expect(printSchema(schema)).to.eql(`type Query {
+    expect(printSchema(schema)).toEqual(`type Query {
   """Single query for User"""
   user(id: ID): User
 
@@ -116,7 +116,7 @@ input DeleteUserInput {
       const _id_to_record_map = await connection.manipulate([{ create_user: { id: 'user', name: 'Test', age: 15 } }]);
       const query = '{ user { id } }';
       const result = await graphql({ schema, source: query });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           user: null,
         },
@@ -128,7 +128,7 @@ input DeleteUserInput {
       const query = 'query($id: ID) { user(id: $id) { id } }';
       const variables = { id: String(id_to_record_map.user.id) };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           user: {
             id: String(id_to_record_map.user.id),
@@ -141,7 +141,7 @@ input DeleteUserInput {
       const query = 'query($id: ID) { user(id: $id) { id } }';
       const variables = { id: '1' };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           user: null,
         },
@@ -153,7 +153,7 @@ input DeleteUserInput {
       const query = 'query($id: ID) { user(id: $id) { id name age } }';
       const variables = { id: String(id_to_record_map.user.id) };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           user: { id: String(id_to_record_map.user.id), name: 'Test', age: 15 },
         },
@@ -170,7 +170,7 @@ input DeleteUserInput {
       ]);
       const query = '{ user_list { item_list { id } } }';
       const result = await graphql({ schema, source: query });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           user_list: {
             item_list: [
@@ -194,7 +194,7 @@ input DeleteUserInput {
         id_list: [String(id_to_record_map.user1.id), String(id_to_record_map.user3.id)],
       };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           user_list: {
             item_list: [{ id: String(id_to_record_map.user1.id) }, { id: String(id_to_record_map.user3.id) }],
@@ -214,7 +214,7 @@ input DeleteUserInput {
         id_list: [String(id_to_record_map.user1.id), String(id_to_record_map.user3.id + 100)],
       };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           user_list: {
             item_list: [{ id: String(id_to_record_map.user1.id) }],
@@ -234,7 +234,7 @@ input DeleteUserInput {
         id_list: [String(id_to_record_map.user1.id), String(id_to_record_map.user3.id)],
       };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           user_list: {
             item_list: [
@@ -255,7 +255,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(name: "Test") { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [{ id: String(id_to_record_map.user1.id) }],
@@ -272,7 +272,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(name_istartswith: "Te") { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [{ id: String(id_to_record_map.user1.id) }, { id: String(id_to_record_map.user2.id) }],
@@ -289,7 +289,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(name_icontains: "s") { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [{ id: String(id_to_record_map.user1.id) }, { id: String(id_to_record_map.user2.id) }],
@@ -306,7 +306,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(age: 30) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [{ id: String(id_to_record_map.user2.id) }],
@@ -323,7 +323,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(age_gte: 18) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [{ id: String(id_to_record_map.user2.id) }, { id: String(id_to_record_map.user3.id) }],
@@ -340,7 +340,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(age_gt: 15) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [{ id: String(id_to_record_map.user2.id) }, { id: String(id_to_record_map.user3.id) }],
@@ -357,7 +357,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(age_lte: 18) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [{ id: String(id_to_record_map.user1.id) }, { id: String(id_to_record_map.user3.id) }],
@@ -374,7 +374,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(age_lt: 30) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [{ id: String(id_to_record_map.user1.id) }, { id: String(id_to_record_map.user3.id) }],
@@ -394,7 +394,7 @@ input DeleteUserInput {
           id_list: [String(id_to_record_map.user1.id), String(id_to_record_map.user3.id)],
         };
         const result = await graphql({ schema, source: query, variableValues: variables });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [{ id: String(id_to_record_map.user1.id) }],
@@ -414,7 +414,7 @@ input DeleteUserInput {
           id_list: [String(id_to_record_map.user1.id), String(id_to_record_map.user3.id)],
         };
         const result = await graphql({ schema, source: query, variableValues: variables });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [{ id: String(id_to_record_map.user2.id) }, { id: String(id_to_record_map.user3.id) }],
@@ -433,7 +433,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(order: ID_ASC) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [
@@ -454,7 +454,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(order: ID_DESC) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [
@@ -475,7 +475,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(order: NAME_ASC) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [
@@ -496,7 +496,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(order: NAME_DESC) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [
@@ -517,7 +517,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(order: AGE_ASC) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [
@@ -538,7 +538,7 @@ input DeleteUserInput {
         ]);
         const query = '{ user_list(order: AGE_DESC) { item_list { id } } }';
         const result = await graphql({ schema, source: query });
-        expect(result).to.eql({
+        expect(result).toEqual({
           data: {
             user_list: {
               item_list: [
@@ -559,12 +559,12 @@ input DeleteUserInput {
       const variables = { input: { name: 'Test', age: 15 } };
       const result = await graphql({ schema, source: query, variableValues: variables });
       const id = (result.data as any).createUser.id;
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           createUser: { id, name: 'Test', age: 15 },
         },
       });
-      expect(await UserModel.where()).to.eql([{ id: Number(id), name: 'Test', age: 15 }]);
+      expect(await UserModel.where()).toEqual([{ id: Number(id), name: 'Test', age: 15 }]);
     });
 
     it('optional field', async () => {
@@ -572,12 +572,12 @@ input DeleteUserInput {
       const variables = { input: { name: 'Test', age: null } };
       const result = await graphql({ schema, source: query, variableValues: variables });
       const id = (result.data as any).createUser.id;
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           createUser: { id, name: 'Test', age: null },
         },
       });
-      expect(await UserModel.where()).to.eql([{ id: Number(id), name: 'Test', age: null }]);
+      expect(await UserModel.where()).toEqual([{ id: Number(id), name: 'Test', age: null }]);
     });
   });
 
@@ -588,12 +588,12 @@ input DeleteUserInput {
       const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
       const variables = { input: { id: String(id), name: 'Sample', age: 30 } };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           updateUser: { id: String(id), name: 'Sample', age: 30 },
         },
       });
-      expect(await UserModel.where()).to.eql([{ id, name: 'Sample', age: 30 }]);
+      expect(await UserModel.where()).toEqual([{ id, name: 'Sample', age: 30 }]);
     });
 
     it('omit optional field', async () => {
@@ -602,19 +602,19 @@ input DeleteUserInput {
       const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
       const variables = { input: { id: String(id), name: 'Sample' } };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           updateUser: { id: String(id), name: 'Sample', age: 15 },
         },
       });
-      expect(await UserModel.where()).to.eql([{ id, name: 'Sample', age: 15 }]);
+      expect(await UserModel.where()).toEqual([{ id, name: 'Sample', age: 15 }]);
     });
 
     it('record not found', async () => {
       const query = 'mutation($input: UpdateUserInput!) { updateUser(input: $input) { id name age } }';
       const variables = { input: { id: '1', name: 'Sample' } };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(JSON.parse(JSON.stringify(result))).to.eql({
+      expect(JSON.parse(JSON.stringify(result))).toEqual({
         data: null,
         errors: [
           {
@@ -634,19 +634,19 @@ input DeleteUserInput {
       const query = 'mutation($input: DeleteUserInput!) { deleteUser(input: $input) }';
       const variables = { input: { id: String(id) } };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(result).to.eql({
+      expect(result).toEqual({
         data: {
           deleteUser: true,
         },
       });
-      expect(await UserModel.where()).to.eql([]);
+      expect(await UserModel.where()).toEqual([]);
     });
 
     it('record not found', async () => {
       const query = 'mutation($input: DeleteUserInput!) { deleteUser(input: $input) }';
       const variables = { input: { id: '1' } };
       const result = await graphql({ schema, source: query, variableValues: variables });
-      expect(JSON.parse(JSON.stringify(result))).to.eql({
+      expect(JSON.parse(JSON.stringify(result))).toEqual({
         data: null,
         errors: [
           {

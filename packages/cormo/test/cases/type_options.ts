@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect, it } from 'vitest';
 import * as cormo from '../../src/index.js';
 
 import { Type } from './type.js';
@@ -21,10 +21,10 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
       }
       // MySQL non-strict mode accepts long string
       const result = await TypeOptionsString1.find(record.id);
-      expect(result.col).to.eql('01234');
+      expect(result.col).toEqual('01234');
     } catch (error: any) {
       // MongoDB, Sqlite3 does not support String type with length, just skip
-      expect(error.message).to.eql('this adapter does not support String type with length');
+      expect(error.message).toEqual('this adapter does not support String type with length');
       return;
     }
   });
@@ -46,10 +46,10 @@ export default function (models: { Type: typeof Type; connection: cormo.Connecti
       }
       // MySQL non-strict mode accepts long string
       const result = await TypeOptionsString2.find(record.id);
-      expect(result.col).to.eql('01234');
+      expect(result.col).toEqual('01234');
     } catch (error: any) {
       // MongoDB, Sqlite3 does not support String type with length, just skip
-      expect(error.message).to.eql('this adapter does not support String type with length');
+      expect(error.message).toEqual('this adapter does not support String type with length');
       return;
     }
   });
