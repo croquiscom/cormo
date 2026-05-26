@@ -8,8 +8,8 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "typedoc": "^0.28.18",
+    "lint-staged": "^17.0.5",
+    "typedoc": "^0.28.19",
     "typescript": "^5.9.3"
   },
   "lint-staged": {
