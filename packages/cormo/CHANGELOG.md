@@ -1,5 +1,11 @@
 # cormo
 
+## 2.9.0
+
+### Minor Changes
+
+- 3ce671e: Support the latest MongoDB driver (v7). Requires MongoDB server 4.2+.
+
 ## 2.8.1
 
 ### Patch Changes
