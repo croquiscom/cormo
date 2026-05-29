@@ -39,7 +39,7 @@ function _convertValueToObjectID(value: any, key: any) {
     return null;
   }
   try {
-    return new mongodb.ObjectID(value);
+    return new mongodb.ObjectId(value);
   } catch {
     throw new Error(`'${key}' is not a valid id`);
   }
@@ -367,7 +367,7 @@ export class MongoDBAdapter extends AdapterBase {
     const options = {
       name: index.options.name,
       sparse: false,
-      unique: index.options.unique,
+      unique: index.options.unique === true,
     };
     if (index.options.unique && !index.options.required) {
       options.sparse = true;
@@ -423,9 +423,9 @@ export class MongoDBAdapter extends AdapterBase {
     let result: any;
     try {
       if (options.use_id_in_data) {
-        result = await this._collection(model_name).insertOne({ ...data, _id: data.id }, { safe: true });
+        result = await this._collection(model_name).insertOne({ ...data, _id: data.id });
       } else {
-        result = await this._collection(model_name).insertOne(data, { safe: true });
+        result = await this._collection(model_name).insertOne(data);
       }
     } catch (error: any) {
       throw _processSaveError(error);
@@ -461,12 +461,9 @@ export class MongoDBAdapter extends AdapterBase {
     let result: any;
     try {
       if (options.use_id_in_data) {
-        result = await this._collection(model_name).insertMany(
-          data.map((item) => ({ ...item, _id: item.id })),
-          { safe: true },
-        );
+        result = await this._collection(model_name).insertMany(data.map((item) => ({ ...item, _id: item.id })));
       } else {
-        result = await this._collection(model_name).insertMany(data, { safe: true });
+        result = await this._collection(model_name).insertMany(data);
       }
     } catch (e: any) {
       throw _processSaveError(e);
@@ -491,7 +488,7 @@ export class MongoDBAdapter extends AdapterBase {
     const id = data.id;
     delete data.id;
     try {
-      await this._collection(model_name).replaceOne({ _id: id }, data, { safe: true });
+      await this._collection(model_name).replaceOne({ _id: id }, data);
     } catch (error: any) {
       throw _processSaveError(error);
     }
@@ -529,7 +526,7 @@ export class MongoDBAdapter extends AdapterBase {
       delete update_ops.$inc;
     }
     try {
-      const result = await this._collection(model_name).updateMany(conditions, update_ops, { safe: true, multi: true });
+      const result = await this._collection(model_name).updateMany(conditions, update_ops);
       return result.modifiedCount;
     } catch (error: any) {
       throw _processSaveError(error);
@@ -576,7 +573,7 @@ export class MongoDBAdapter extends AdapterBase {
       delete update_ops.$inc;
     }
     try {
-      await this._collection(model_name).updateMany(conditions, update_ops, { safe: true, upsert: true });
+      await this._collection(model_name).updateMany(conditions, update_ops, { upsert: true });
     } catch (error: any) {
       throw _processSaveError(error);
     }
@@ -599,8 +596,7 @@ export class MongoDBAdapter extends AdapterBase {
       client_options.projection = fields;
     }
     if (options.explain) {
-      client_options.explain = true;
-      return await this._collection(model_name).findOne({ _id: id }, client_options);
+      return await this._collection(model_name).find({ _id: id }, client_options).explain();
     }
     let result: any;
     try {
@@ -643,8 +639,7 @@ export class MongoDBAdapter extends AdapterBase {
         pipeline.push({ $limit: options.limit });
       }
       if (options.explain) {
-        const cursor = await this._collection(model_name).aggregate(pipeline, { explain: true });
-        return await cursor.toArray();
+        return await this._collection(model_name).aggregate(pipeline).explain();
       }
       let result: any;
       try {
@@ -673,9 +668,7 @@ export class MongoDBAdapter extends AdapterBase {
       });
     } else {
       if (options.explain) {
-        client_options.explain = true;
-        const cursor = await this._collection(model_name).find(conditions, client_options);
-        return await cursor.toArray();
+        return await this._collection(model_name).find(conditions, client_options).explain();
       }
       let result: any;
       try {
@@ -793,7 +786,7 @@ export class MongoDBAdapter extends AdapterBase {
     const conditions = _buildWhere(model_class._schema, conditions_arg);
     try {
       // console.log(JSON.stringify(conditions))
-      const result = await this._collection(model_name).deleteMany(conditions, { safe: true });
+      const result = await this._collection(model_name).deleteMany(conditions);
       return result.deletedCount;
     } catch (error: any) {
       throw MongoDBAdapter.wrapError('unknown error', error);
@@ -822,7 +815,7 @@ export class MongoDBAdapter extends AdapterBase {
       url = `mongodb://${host}:${port}/${settings.database}`;
     }
     try {
-      const client = await mongodb.MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+      const client = await mongodb.MongoClient.connect(url);
       this._client = client;
       this._db = client.db(settings.database);
     } catch (error: any) {
@@ -863,7 +856,7 @@ export class MongoDBAdapter extends AdapterBase {
         return value && _objectIdToString(value);
       }
     } else if (property.type_class === types.Blob) {
-      return value.read(0, value.length);
+      return Buffer.from(value.value());
     } else {
       return value;
     }
@@ -1008,13 +1001,14 @@ export class MongoDBAdapter extends AdapterBase {
           dir = 1;
         }
         if (options.group_by) {
+          const dbname = model_class._schema[column]?._dbname_us || column;
           if (options.group_by.length === 1) {
-            if (column === options.group_by[0]) {
+            if (dbname === options.group_by[0]) {
               column = '_id';
             }
           } else {
-            if (options.group_by.indexOf(column) >= 0) {
-              column = '_id.' + column;
+            if (options.group_by.indexOf(dbname) >= 0) {
+              column = '_id.' + dbname;
             }
           }
         } else {

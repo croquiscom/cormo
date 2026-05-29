@@ -23,7 +23,7 @@ jobs:
         ports:
           - 21860:3306
       mongo:
-        image: mongo:3.6-jessie
+        image: mongo:7.0
         ports:
           - 21861:27017
       postgres:
