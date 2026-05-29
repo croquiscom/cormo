@@ -10,7 +10,7 @@ services:
       - 21860:3306
 
   mongo:
-    image: mongo:3.6-xenial
+    image: mongo:8.0
     ports:
       - 21861:27017
 

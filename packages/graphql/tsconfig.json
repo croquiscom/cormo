@@ -9,6 +9,7 @@
     "stripInternal": true,
     "esModuleInterop": true,
     "useDefineForClassFields": false,
+    "skipLibCheck": true,
     "lib": ["ES2023"]
   }
 }
