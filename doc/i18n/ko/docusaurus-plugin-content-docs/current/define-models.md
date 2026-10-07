@@ -65,3 +65,13 @@ Model.column('method_2', 'string(50)');
 ```
 
 `String`이 아니라 `cormo.types.String`을 사용해야 한다는 점에 주의 하십시오.
+
+텍스트 타입과 객체 타입에는 크기(`'tiny'`, `'small'`, `'medium'`, `'long'`)를 지정할 수 있으며, MySQL에서 각각 TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT 컬럼으로 생성됩니다. 다른 어댑터에서는 크기를 무시합니다.
+
+```typescript
+Model.column('method_1', cormo.types.Text('medium'));
+Model.column('method_2', cormo.types.Object('long'));
+// 또는
+Model.column('method_3', 'text(medium)');
+Model.column('method_4', 'object(long)');
+```

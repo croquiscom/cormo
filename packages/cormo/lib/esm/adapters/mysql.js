@@ -20,6 +20,20 @@ const module_promise = import('mysql2')
         //
     });
 });
+function _textTypeToSQL(size) {
+    switch (size) {
+        case 'tiny':
+            return 'TINYTEXT';
+        case 'small':
+            return 'TEXT';
+        case 'medium':
+            return 'MEDIUMTEXT';
+        case 'long':
+            return 'LONGTEXT';
+        default:
+            return 'TEXT';
+    }
+}
 function _typeToSQL(property, support_fractional_seconds, major_version) {
     if (property.array) {
         return 'TEXT';
@@ -46,22 +60,9 @@ function _typeToSQL(property, support_fractional_seconds, major_version) {
             }
             break;
         case types.Object:
-            return 'TEXT';
-        case types.Text: {
-            const size = property.type.size;
-            switch (size) {
-                case 'tiny':
-                    return 'TINYTEXT';
-                case 'small':
-                    return 'TEXT';
-                case 'medium':
-                    return 'MEDIUMTEXT';
-                case 'long':
-                    return 'LONGTEXT';
-                default:
-                    return 'TEXT';
-            }
-        }
+            return _textTypeToSQL(property.type.size);
+        case types.Text:
+            return _textTypeToSQL(property.type.size);
         case types.Blob:
             return 'BLOB';
     }

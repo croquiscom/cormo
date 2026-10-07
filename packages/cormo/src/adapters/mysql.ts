@@ -69,6 +69,21 @@ export interface AdapterSettingsMySQL {
   hide_unknown_error?: boolean;
 }
 
+function _textTypeToSQL(size: types.CormoTypesTextSize | undefined) {
+  switch (size) {
+    case 'tiny':
+      return 'TINYTEXT';
+    case 'small':
+      return 'TEXT';
+    case 'medium':
+      return 'MEDIUMTEXT';
+    case 'long':
+      return 'LONGTEXT';
+    default:
+      return 'TEXT';
+  }
+}
+
 function _typeToSQL(property: ColumnPropertyInternal, support_fractional_seconds: boolean, major_version: number) {
   if (property.array) {
     return 'TEXT';
@@ -94,22 +109,9 @@ function _typeToSQL(property: ColumnPropertyInternal, support_fractional_seconds
       }
       break;
     case types.Object:
-      return 'TEXT';
-    case types.Text: {
-      const size = (property.type as types.CormoTypesText).size;
-      switch (size) {
-        case 'tiny':
-          return 'TINYTEXT';
-        case 'small':
-          return 'TEXT';
-        case 'medium':
-          return 'MEDIUMTEXT';
-        case 'long':
-          return 'LONGTEXT';
-        default:
-          return 'TEXT';
-      }
-    }
+      return _textTypeToSQL((property.type as types.CormoTypesObject).size);
+    case types.Text:
+      return _textTypeToSQL((property.type as types.CormoTypesText).size);
     case types.Blob:
       return 'BLOB';
   }

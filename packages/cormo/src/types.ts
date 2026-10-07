@@ -188,20 +188,28 @@ const CormoTypesDate: CormoTypesDateConstructor = function (this: CormoTypesDate
  * @namespace types
  * @class Object
  */
+export type CormoTypesObjectSize = CormoTypesTextSize;
+
 export interface CormoTypesObject {
   _type: 'object';
+  /** Storage size of the JSON string column (MySQL only: TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT) */
+  size?: CormoTypesObjectSize;
 }
 
 export interface CormoTypesObjectConstructor {
-  new (): CormoTypesObject;
-  (): CormoTypesObject;
+  new (size?: CormoTypesObjectSize): CormoTypesObject;
+  (size?: CormoTypesObjectSize): CormoTypesObject;
 }
 
-const CormoTypesObject: CormoTypesObjectConstructor = function (this: CormoTypesObject): void {
+const CormoTypesObject: CormoTypesObjectConstructor = function (
+  this: CormoTypesObject,
+  size?: CormoTypesObjectSize,
+): void {
   if (!(this instanceof CormoTypesObject)) {
-    return new (CormoTypesObject as any)();
+    return new (CormoTypesObject as any)(size);
   }
-  this.toString = () => 'object';
+  this.size = size;
+  this.toString = () => (this.size ? `object(${this.size})` : 'object');
 } as CormoTypesObjectConstructor;
 
 /**
@@ -312,6 +320,10 @@ type ColumnTypeString =
   | 'boolean'
   | 'date'
   | 'object'
+  | 'object(tiny)'
+  | 'object(small)'
+  | 'object(medium)'
+  | 'object(long)'
   | 'integer'
   | 'biginteger'
   | 'geopoint'
@@ -359,6 +371,14 @@ function _toCORMOType(type: ColumnType): ColumnTypeInternal {
         return new CormoTypesDate();
       case 'object':
         return new CormoTypesObject();
+      case 'object(tiny)':
+        return new CormoTypesObject('tiny');
+      case 'object(small)':
+        return new CormoTypesObject('small');
+      case 'object(medium)':
+        return new CormoTypesObject('medium');
+      case 'object(long)':
+        return new CormoTypesObject('long');
       case 'recordid':
         return new CormoTypesRecordID();
       case 'text':

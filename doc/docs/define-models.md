@@ -70,3 +70,13 @@ Model.column('method_2', 'string(50)');
 ```
 
 Please note that you must use `cormo.types.String`, not `String`.
+
+To choose the MySQL column type for text and object types, you can give a size (`'tiny'`, `'small'`, `'medium'`, `'long'`), which maps to TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT respectively. Other adapters ignore the size.
+
+```typescript
+Model.column('method_1', cormo.types.Text('medium'));
+Model.column('method_2', cormo.types.Object('long'));
+// or
+Model.column('method_3', 'text(medium)');
+Model.column('method_4', 'object(long)');
+```
