@@ -1,5 +1,11 @@
 # cormo
 
+## 2.10.0
+
+### Minor Changes
+
+- 2f19b6a: Add size option to Object type for MySQL text variants (TINYTEXT, MEDIUMTEXT, LONGTEXT), e.g. `cormo.types.Object('medium')` or `'object(medium)'`
+
 ## 2.9.0
 
 ### Minor Changes
