@@ -40,7 +40,7 @@ jobs:
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1.5.1
         with:
-          version: npm run changeset version && npm install --package-lock-only --ignore-scripts
+          version: npm run changeset:version
           publish: npm run release
           title: 'chore(graphql): release x.y.z'
           cwd: ./packages/graphql
