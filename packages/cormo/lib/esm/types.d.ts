@@ -121,12 +121,15 @@ declare const CormoTypesDate: CormoTypesDateConstructor;
  * @namespace types
  * @class Object
  */
+export type CormoTypesObjectSize = CormoTypesTextSize;
 export interface CormoTypesObject {
     _type: 'object';
+    /** Storage size of the JSON string column (MySQL only: TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT) */
+    size?: CormoTypesObjectSize;
 }
 export interface CormoTypesObjectConstructor {
-    new (): CormoTypesObject;
-    (): CormoTypesObject;
+    new (size?: CormoTypesObjectSize): CormoTypesObject;
+    (size?: CormoTypesObjectSize): CormoTypesObject;
 }
 declare const CormoTypesObject: CormoTypesObjectConstructor;
 /**
@@ -173,7 +176,7 @@ declare const CormoTypesBlob: CormoTypesBlobConstructor;
 export type ColumnTypeInternal = CormoTypesString | CormoTypesNumber | CormoTypesBoolean | CormoTypesDate | CormoTypesObject | CormoTypesInteger | CormoTypesBigInteger | CormoTypesGeoPoint | CormoTypesVector | CormoTypesRecordID | CormoTypesText | CormoTypesBlob;
 export type ColumnTypeInternalConstructor = CormoTypesStringConstructor | CormoTypesNumberConstructor | CormoTypesBooleanConstructor | CormoTypesDateConstructor | CormoTypesObjectConstructor | CormoTypesIntegerConstructor | CormoTypesBigIntegerConstructor | CormoTypesGeoPointConstructor | CormoTypesVectorConstructor | CormoTypesRecordIDConstructor | CormoTypesTextConstructor | CormoTypesBlobConstructor;
 type ColumnTypeNativeConstructor = StringConstructor | NumberConstructor | BooleanConstructor | DateConstructor | ObjectConstructor;
-type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'integer' | 'biginteger' | 'geopoint' | 'vector' | 'recordid' | 'text' | 'text(tiny)' | 'text(small)' | 'text(medium)' | 'text(long)' | 'blob';
+type ColumnTypeString = 'string' | 'number' | 'boolean' | 'date' | 'object' | 'object(tiny)' | 'object(small)' | 'object(medium)' | 'object(long)' | 'integer' | 'biginteger' | 'geopoint' | 'vector' | 'recordid' | 'text' | 'text(tiny)' | 'text(small)' | 'text(medium)' | 'text(long)' | 'blob';
 export type ColumnType = ColumnTypeInternal | ColumnTypeInternalConstructor | ColumnTypeNativeConstructor | ColumnTypeString;
 /**
  * Converts JavaScript built-in class to CORMO type

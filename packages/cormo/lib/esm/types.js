@@ -53,11 +53,12 @@ const CormoTypesDate = function () {
     }
     this.toString = () => 'date';
 };
-const CormoTypesObject = function () {
+const CormoTypesObject = function (size) {
     if (!(this instanceof CormoTypesObject)) {
-        return new CormoTypesObject();
+        return new CormoTypesObject(size);
     }
-    this.toString = () => 'object';
+    this.size = size;
+    this.toString = () => (this.size ? `object(${this.size})` : 'object');
 };
 const CormoTypesRecordID = function () {
     if (!(this instanceof CormoTypesRecordID)) {
@@ -107,6 +108,14 @@ function _toCORMOType(type) {
                 return new CormoTypesDate();
             case 'object':
                 return new CormoTypesObject();
+            case 'object(tiny)':
+                return new CormoTypesObject('tiny');
+            case 'object(small)':
+                return new CormoTypesObject('small');
+            case 'object(medium)':
+                return new CormoTypesObject('medium');
+            case 'object(long)':
+                return new CormoTypesObject('long');
             case 'recordid':
                 return new CormoTypesRecordID();
             case 'text':

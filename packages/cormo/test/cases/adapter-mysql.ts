@@ -73,6 +73,56 @@ export default function (models: { connection: cormo.Connection<cormo.MySQLAdapt
       expect(records).toEqual([{ id: records[0].id, name: 'croquis', object: null, array: null }]);
     });
 
+    it('text size of object type', async () => {
+      class Test extends cormo.BaseModel {
+        public default_size!: object;
+        public tiny!: object;
+        public small!: object;
+        public medium!: object;
+        public long!: object;
+        public medium_by_string!: object;
+      }
+      Test.column('default_size', cormo.types.Object);
+      Test.column('tiny', cormo.types.Object('tiny'));
+      Test.column('small', cormo.types.Object('small'));
+      Test.column('medium', cormo.types.Object('medium'));
+      Test.column('long', cormo.types.Object('long'));
+      Test.column('medium_by_string', 'object(medium)');
+      await models.connection!.applySchemas();
+
+      const columns = await models.connection!.adapter.query('SHOW COLUMNS FROM `tests`');
+      const types_by_field = Object.fromEntries(columns.map((column: any) => [column.Field, column.Type]));
+      expect(types_by_field).toEqual({
+        id: expect.any(String),
+        default_size: 'text',
+        tiny: 'tinytext',
+        small: 'text',
+        medium: 'mediumtext',
+        long: 'longtext',
+        medium_by_string: 'mediumtext',
+      });
+      expect(await models.connection!.getSchemaChanges()).toEqual([]);
+
+      const value = { key: 'value', nested: [1, 2, 3] };
+      const record = await Test.create({
+        default_size: value,
+        tiny: value,
+        small: value,
+        medium: value,
+        long: value,
+        medium_by_string: value,
+      });
+      expect(await Test.find(record.id)).toEqual({
+        id: record.id,
+        default_size: value,
+        tiny: value,
+        small: value,
+        medium: value,
+        long: value,
+        medium_by_string: value,
+      });
+    });
+
     it('select for associated column without applySchemas', async () => {
       await models.connection!.adapter.query(`
         CREATE TABLE users (id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY, name VARCHAR(255));
